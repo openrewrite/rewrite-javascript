@@ -1,0 +1,9 @@
+build/
+.gradle/
+.idea/
+out/
+bin/
+
+/js/.parcel-cache/
+/js/dist
+/js/node_modules/
