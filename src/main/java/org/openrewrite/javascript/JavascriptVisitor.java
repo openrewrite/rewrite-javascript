@@ -18,7 +18,9 @@ package org.openrewrite.javascript;
 import org.openrewrite.SourceFile;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.java.tree.Space;
 import org.openrewrite.javascript.tree.JS;
 
 public class JavascriptVisitor<P> extends JavaVisitor<P> {
@@ -44,7 +46,10 @@ public class JavascriptVisitor<P> extends JavaVisitor<P> {
     }
 
     public J visitCompilationUnit(JS.CompilationUnit cu, P p) {
-        // FIXME implement
+//        beforeSyntax(cu, Space.Location.COMPILATION_UNIT_PREFIX, p);
+        visit(cu.getStatements(), p);
+//        afterSyntax(cu, p);
+        visitSpace(cu.getEof(), Space.Location.COMPILATION_UNIT_EOF, p);
         return cu;
     }
 

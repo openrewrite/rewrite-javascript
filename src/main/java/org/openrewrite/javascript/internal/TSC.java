@@ -23,19 +23,14 @@ import com.caoccao.javet.interop.callback.JavetCallbackContext;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.primitive.V8ValueInteger;
 import com.caoccao.javet.values.primitive.V8ValueString;
-import com.caoccao.javet.values.reference.V8ValueFunction;
-import com.caoccao.javet.values.reference.V8ValueMap;
-import com.caoccao.javet.values.reference.V8ValueObject;
+import com.caoccao.javet.values.reference.*;
 import org.openrewrite.IOUtils;
+import org.openrewrite.internal.lang.Nullable;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -86,7 +81,7 @@ public interface TSC {
             }
         }
 
-        public <T> T parseSourceText(String sourceText, Function<TSC.Node, T> callback) {
+        public void parseSourceText(String sourceText, Consumer<TSC.Node> callback) {
             importTS();
             try {
                 try (V8Value tmp = tsParse.call(null, sourceText)) {
@@ -98,17 +93,11 @@ public interface TSC {
                     TSC.Context context;
                     TSC.Node node;
 
-                    try (V8Value metaV8 = obj.get("meta")) {
-                        if (!(metaV8 instanceof V8ValueObject)) {
-                            throw new RuntimeException("expected `meta` to be an Object");
-                        }
-                        context = TSC.Context.fromJS(metaV8);
-                        System.out.println(context.syntaxKindCode("InterfaceDeclaration"));
-                    }
+                    context = TSC.Context.fromJS(obj);
 
                     try (V8Value nodeV8 = obj.get("sourceFile")) {
                         node = context.tscNode(nodeV8);
-                        return callback.apply(node);
+                        callback.accept(node);
                     }
                 }
             } catch (JavetException e) {
@@ -154,34 +143,45 @@ public interface TSC {
 
         private final V8Runtime runtime;
         private final WeakHashMap<V8Value, Node> cache = new WeakHashMap<>();
+        private final V8ValueObject scanner;
 
-        public static Context fromJS(V8Value metaV8) {
-            Context context = new Context(metaV8.getV8Runtime());
-            if (metaV8 instanceof V8ValueObject) {
-                try (V8Value syntaxKinds = ((V8ValueObject) metaV8).get("syntaxKinds")) {
-                    if (syntaxKinds instanceof V8ValueMap) {
-                        ((V8ValueMap) syntaxKinds).forEach((V8Value keyV8, V8Value valueV8) -> {
-                            if (keyV8 instanceof V8ValueString && valueV8 instanceof V8ValueInteger) {
-                                int code = ((V8ValueInteger) valueV8).getValue();
-                                String name = ((V8ValueString) keyV8).getValue();
-                                context.syntaxKindsByCode.put(code, name);
-                                context.syntaxKindsByName.put(name, code);
-                            }
-                        });
-                    }
-                } catch (JavetException e) {
-                    throw new RuntimeException(e);
+        public static Context fromJS(V8ValueObject contextV8) {
+            try {
+                V8ValueObject metaV8Object = contextV8.get("meta");
+                metaV8Object.setWeak();
+
+                V8Value syntaxKinds = metaV8Object.get("syntaxKinds");
+
+                V8ValueObject scanner = contextV8.get("scanner");
+                scanner.setWeak();
+
+                List<Integer> nodeEndPositions = metaV8Object.getObject("nodeEndPositions");
+
+                Context context = new Context(metaV8Object.getV8Runtime(), scanner, nodeEndPositions);
+                if (syntaxKinds instanceof V8ValueMap) {
+                    ((V8ValueMap) syntaxKinds).forEach((V8Value keyV8, V8Value valueV8) -> {
+                        if (keyV8 instanceof V8ValueString && valueV8 instanceof V8ValueInteger) {
+                            int code = ((V8ValueInteger) valueV8).getValue();
+                            String name = ((V8ValueString) keyV8).getValue();
+                            context.syntaxKindsByCode.put(code, name);
+                            context.syntaxKindsByName.put(name, code);
+                        }
+                    });
                 }
+                return context;
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
             }
-            return context;
         }
 
         private final Map<String, Integer> syntaxKindsByName = new HashMap<>();
         private final Map<Integer, String> syntaxKindsByCode = new HashMap<>();
+        private final List<Integer> nodeEndPositions;
 
-        private Context(V8Runtime runtime) {
-
+        private Context(V8Runtime runtime, V8ValueObject scanner, List<Integer> nodeEndPositions) {
             this.runtime = runtime;
+            this.scanner = scanner;
+            this.nodeEndPositions = nodeEndPositions;
         }
 
         public Node tscNode(V8Value v8) {
@@ -189,10 +189,44 @@ public interface TSC {
                 if (!(arg instanceof V8ValueObject)) {
                     throw new IllegalArgumentException("can only wrap a V8 object as a Node");
                 }
-                System.out.println("*** creating new Node instance");
+//                System.out.println("*** creating new Node instance");
                 return new Node(this, (V8ValueObject) arg);
             });
         }
+
+        public int scannerTokenStart() {
+            try {
+                return this.scanner.invokeInteger("getTokenStart");
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public int scannerTokenEnd() {
+            try {
+                return this.scanner.invokeInteger("getTokenEnd");
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public void resetScanner(int offset) {
+            try {
+                this.scanner.invokeVoid("resetTokenState");
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public String nextScannerSyntaxType() {
+            try {
+                final int code = this.scanner.invokeInteger("scan");
+                return this.syntaxKindName(code);
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
 
         public V8ValueFunction asJSFunction(ContextCallback func) {
             JavetCallbackContext callbackContext = new JavetCallbackContext(func, CONTEXT_CALLBACK_APPLY_METHOD);
@@ -254,6 +288,39 @@ public interface TSC {
             }
         }
 
+        public @Nullable Node getChildNode(String name) {
+            try {
+                V8Value child = this.object.getProperty(name);
+                if (child == null) {
+                    return null;
+                }
+                return context.tscNode(child);
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Node getChildNodeRequired(String name) {
+            Node child = this.getChildNode(name);
+            if (child == null) {
+                throw new IllegalArgumentException("property " + name + " is not required");
+            }
+            return child;
+        }
+
+        public List<Node> getChildNodes(String name) {
+            try (V8ValueArray children = this.object.getProperty(name)) {
+                final int childCount = children.getLength();
+                List<Node> result = new ArrayList<>(childCount);
+                for (int i = 0; i < childCount; i++) {
+                    result.add(context.tscNode(children.get(i)));
+                }
+                return result;
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         public String getText() {
             try {
                 return this.object.invokeString("getText");
@@ -262,13 +329,51 @@ public interface TSC {
             }
         }
 
+        public <T> List<T> collectChildren(Function<Node, @Nullable T> fn) {
+            List<T> result = new ArrayList<>();
+            forEachChild(node -> {
+                @Nullable T nodeResult = fn.apply(node);
+                if (nodeResult != null) {
+                    result.add(nodeResult);
+                }
+            });
+            return result;
+        }
+
+        public <T> List<T> mapChildren(Function<Node, T> fn) {
+            List<T> result = new ArrayList<>();
+            forEachChild(node -> {
+                result.add(fn.apply(node));
+            });
+            return result;
+        }
+
         public void forEachChild(Consumer<Node> callback) {
             Consumer<V8Value> v8Callback = v8Value -> callback.accept(context.tscNode(v8Value));
-            try {
-                this.object.invoke("forEachChild", context.asJSFunction(v8Callback));
+            try (V8Value v8Function = context.asJSFunction(v8Callback)) {
+                this.object.invoke("forEachChild", v8Function);
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        public void printTree(PrintStream ps) {
+            printTree(ps, "");
+        }
+
+        private void printTree(PrintStream ps, String indent) {
+            ps.print(indent);
+            ps.print(syntaxKindName());
+            if (syntaxKindName().contains("Literal")) {
+                ps.print(" (" + this.getText() + ")");
+            }
+            ps.println();
+
+            String childIndent = indent + "  ";
+            forEachChild(child -> {
+                child.printTree(ps, childIndent);
+            });
+
         }
     }
 

@@ -14,19 +14,32 @@
  * limitations under the License.
  */
 import * as ts from 'typescript';
-import {ScriptTarget} from 'typescript';
+import {createScanner, ScriptTarget} from 'typescript';
 
 // (entry point from Java code)
 // noinspection JSUnusedGlobalSymbols
 export default function parse(text: string) {
     try {
+        const sourceFile = ts.createSourceFile('example.ts', text, ScriptTarget.ESNext, true);
         return {
             meta: {
                 syntaxKinds: new Map(Object.entries(ts.SyntaxKind))
             },
-            sourceFile: ts.createSourceFile('example.ts', text, ScriptTarget.ESNext, true)
+            sourceFile,
+            nodeEndPositions: collectNodeEndPositions(sourceFile),
+            scanner: createScanner(ScriptTarget.ESNext, false, undefined, text),
         };
     } catch (err) {
         console.error(err);
     }
+}
+
+function collectNodeEndPositions(root: ts.Node) {
+    const positions = new Set<number>();
+    const processNode = (node: ts.Node) => {
+        positions.add(node.end);
+        node.forEachChild(processNode);
+    };
+    processNode(root);
+    return [...positions].sort();
 }
