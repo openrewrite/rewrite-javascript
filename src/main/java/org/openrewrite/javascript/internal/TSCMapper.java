@@ -48,35 +48,9 @@ public abstract class TSCMapper implements Closeable {
     public void add(Parser.Input input, ExecutionContext ctx) {
         EncodingDetectingInputStream is = input.getSource(ctx);
         String inputSourceText = is.readFully();
-        this.runtime.parseSourceText(inputSourceText, node -> {
-            List<JRightPadded<Statement>> statements = node.collectChildren(
-                    child -> {
-                        @Nullable J mapped = mapNode(child);
-                        if (mapped != null) {
-                            return new JRightPadded<>((Statement) mapped, Space.EMPTY, Markers.EMPTY);
-                        } else {
-                            return null;
-                        }
-                    }
-            );
-            JS.CompilationUnit cu = new JS.CompilationUnit(
-                    randomId(),
-                    Space.EMPTY,
-                    Markers.EMPTY,
-                    input.getRelativePath(this.relativeTo),
-                    FileAttributes.fromPath(input.getPath()),
-                    is.getCharset().toString(),
-                    is.isCharsetBomMarked(),
-                    null,
-                    node.getText(),
-                    emptyList(),
-                    statements,
-                    Space.EMPTY
-            );
-            System.err.println();
-            System.err.println(TreeVisitingPrinter.printTree(cu));
-            System.err.println();
-            this.compilationUnits.add(cu);
+        this.runtime.parseSourceText(inputSourceText, (node, context) -> {
+            TSCFileMapper fileMapper = new TSCFileMapper(node, context, input.getPath(), relativeTo, is.getCharset().toString(), is.isCharsetBomMarked());
+            this.compilationUnits.add(fileMapper.mapSourceFile());
         });
     }
 
@@ -89,51 +63,6 @@ public abstract class TSCMapper implements Closeable {
     @Override
     public void close() {
         this.runtime.close();
-    }
-
-    private J mapNode(TSC.Node node) {
-        switch (node.syntaxKindName()) {
-            case "FunctionDeclaration":
-                return mapFunctionDeclaration(node);
-            default:
-//                throw new UnsupportedOperationException("unsupported syntax kind: " + node.syntaxKindName());
-                System.err.println("unsupported syntax kind: " + node.syntaxKindName());
-                return null;
-        }
-    }
-
-    private J mapFunctionDeclaration(TSC.Node node) {
-        J.Identifier name = new J.Identifier(
-                UUID.randomUUID(),
-                Space.EMPTY,
-                Markers.EMPTY,
-                node.getChildNodeRequired("name").getText(),
-                null,
-                null
-        );
-        J.Block block = new J.Block(
-                UUID.randomUUID(),
-                Space.EMPTY,
-                Markers.EMPTY,
-                JRightPadded.build(false),
-                Collections.emptyList(),
-                Space.EMPTY
-        );
-        return new J.MethodDeclaration(
-                UUID.randomUUID(),
-                Space.EMPTY,
-                Markers.EMPTY,
-                Collections.emptyList(),
-                Collections.emptyList(),
-                null,
-                null,
-                new J.MethodDeclaration.IdentifierWithAnnotations(name, Collections.emptyList()),
-                JContainer.empty(),
-                null,
-                block,
-                null,
-                null
-        );
     }
 
 }

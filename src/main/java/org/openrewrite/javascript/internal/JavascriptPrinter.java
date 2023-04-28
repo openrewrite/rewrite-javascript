@@ -36,6 +36,12 @@ public class JavascriptPrinter<P> extends JavascriptVisitor<PrintOutputCapture<P
 //        return cu;
 //    }
 
+    public J visitCompilationUnit(JS.CompilationUnit cu, PrintOutputCapture<P> p) {
+        // FIXME Implement
+        visit(cu.getStatements(), p);
+        return cu;
+    }
+
     private static final UnaryOperator<String> JAVA_MARKER_WRAPPER =
             out -> "/*~~" + out + (out.isEmpty() ? "" : "~~") + ">*/";
 

@@ -31,6 +31,7 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -81,7 +82,7 @@ public interface TSC {
             }
         }
 
-        public void parseSourceText(String sourceText, Consumer<TSC.Node> callback) {
+        public void parseSourceText(String sourceText, BiConsumer<Node, Context> callback) {
             importTS();
             try {
                 try (V8Value tmp = tsParse.call(null, sourceText)) {
@@ -97,7 +98,7 @@ public interface TSC {
 
                     try (V8Value nodeV8 = obj.get("sourceFile")) {
                         node = context.tscNode(nodeV8);
-                        callback.accept(node);
+                        callback.accept(node, context);
                     }
                 }
             } catch (JavetException e) {
@@ -155,9 +156,7 @@ public interface TSC {
                 V8ValueObject scanner = contextV8.get("scanner");
                 scanner.setWeak();
 
-                List<Integer> nodeEndPositions = metaV8Object.getObject("nodeEndPositions");
-
-                Context context = new Context(metaV8Object.getV8Runtime(), scanner, nodeEndPositions);
+                Context context = new Context(metaV8Object.getV8Runtime(), scanner);
                 if (syntaxKinds instanceof V8ValueMap) {
                     ((V8ValueMap) syntaxKinds).forEach((V8Value keyV8, V8Value valueV8) -> {
                         if (keyV8 instanceof V8ValueString && valueV8 instanceof V8ValueInteger) {
@@ -176,12 +175,11 @@ public interface TSC {
 
         private final Map<String, Integer> syntaxKindsByName = new HashMap<>();
         private final Map<Integer, String> syntaxKindsByCode = new HashMap<>();
-        private final List<Integer> nodeEndPositions;
 
-        private Context(V8Runtime runtime, V8ValueObject scanner, List<Integer> nodeEndPositions) {
+        private Context(V8Runtime runtime, V8ValueObject scanner) {
             this.runtime = runtime;
             this.scanner = scanner;
-            this.nodeEndPositions = nodeEndPositions;
+            resetScanner(0);
         }
 
         public Node tscNode(V8Value v8) {
@@ -194,17 +192,25 @@ public interface TSC {
             });
         }
 
-        public int scannerTokenStart() {
+        public Integer scannerTokenStart() {
             try {
-                return this.scanner.invokeInteger("getTokenStart");
+                return this.scanner.invokeInteger("getTokenPos");
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        public int scannerTokenEnd() {
+        public Integer scannerTokenEnd() {
             try {
-                return this.scanner.invokeInteger("getTokenEnd");
+                return this.scanner.invokeInteger("getTextPos");
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public String scannerTokenText() {
+            try {
+                return this.scanner.invokeString("getTokenText");
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
@@ -280,6 +286,22 @@ public interface TSC {
             return context.syntaxKindName(this.syntaxKindCode());
         }
 
+        public int getStart() {
+            try {
+                return this.object.getPropertyInteger("pos");
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public int getEnd() {
+            try {
+                return this.object.getPropertyInteger("end");
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         public int getChildCount() {
             try {
                 return this.object.invokeInteger("getChildCount");
@@ -329,23 +351,23 @@ public interface TSC {
             }
         }
 
-        public <T> List<T> collectChildren(Function<Node, @Nullable T> fn) {
-            List<T> result = new ArrayList<>();
-            forEachChild(node -> {
-                @Nullable T nodeResult = fn.apply(node);
-                if (nodeResult != null) {
-                    result.add(nodeResult);
+        public <T> List<T> collectChildNodes(String name, Function<Node, @Nullable T> fn) {
+            List<T> results = new ArrayList<>();
+            for (Node child : this.getChildNodes(name)) {
+                @Nullable T result = fn.apply(child);
+                if (result != null) {
+                    results.add(result);
                 }
-            });
-            return result;
+            }
+            return results;
         }
 
-        public <T> List<T> mapChildren(Function<Node, T> fn) {
-            List<T> result = new ArrayList<>();
-            forEachChild(node -> {
-                result.add(fn.apply(node));
-            });
-            return result;
+        public <T> List<T> mapChildNodes(String name, Function<Node, @Nullable T> fn) {
+            List<T> results = new ArrayList<>();
+            for (Node child : this.getChildNodes(name)) {
+                results.add(fn.apply(child));
+            }
+            return results;
         }
 
         public void forEachChild(Consumer<Node> callback) {

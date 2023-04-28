@@ -24,7 +24,9 @@ public class BasicParserTest implements RewriteTest {
     public void test() {
         rewriteRun(Assertions.javascript(
                 """
-                        function foo() {
+                        function    
+                          
+                        foo() {
                         }
                         """
         ));
