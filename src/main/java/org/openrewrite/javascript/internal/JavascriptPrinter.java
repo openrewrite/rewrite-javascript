@@ -18,7 +18,6 @@ package org.openrewrite.javascript.internal;
 import org.openrewrite.Cursor;
 import org.openrewrite.PrintOutputCapture;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.marker.CompactConstructor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavascriptVisitor;
 import org.openrewrite.javascript.tree.JS;
@@ -97,6 +96,17 @@ public class JavascriptPrinter<P> extends JavascriptVisitor<PrintOutputCapture<P
         p.append(after == null ? "" : after);
     }
 
+    @Override
+    public Space visitSpace(Space space, Space.Location loc, PrintOutputCapture<P> p) {
+        p.append(space.getWhitespace());
+
+        for (Comment comment : space.getComments()) {
+            visitMarkers(comment.getMarkers(), p);
+            comment.printComment(getCursor(), p);
+            p.append(comment.getSuffix());
+        }
+        return space;
+    }
 
     @Override
     public J visitIdentifier(J.Identifier ident, PrintOutputCapture<P> p) {
@@ -108,12 +118,11 @@ public class JavascriptPrinter<P> extends JavascriptVisitor<PrintOutputCapture<P
 
     @Override
     public J visitMethodDeclaration(J.MethodDeclaration method, PrintOutputCapture<P> p) {
-        System.err.println("*** in visitMethodDeclaration");
-//        beforeSyntax(method, Space.Location.METHOD_DECLARATION_PREFIX, p);
+        beforeSyntax(method, Space.Location.METHOD_DECLARATION_PREFIX, p);
         visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
         visit(method.getLeadingAnnotations(), p);
         // FIXME extra spacing
-        p.append("function ");
+        p.append("function");
 //        for (J.Modifier m : method.getModifiers()) {
 //            visitModifier(m, p);
 //        }
@@ -126,8 +135,8 @@ public class JavascriptPrinter<P> extends JavascriptVisitor<PrintOutputCapture<P
 //            visitRightPadded(typeParameters.getPadding().getTypeParameters(), JRightPadded.Location.TYPE_PARAMETER, ",", p);
 //            p.append(">");
 //        }
-        visit(method.getReturnTypeExpression(), p);
-        visit(method.getAnnotations().getName().getAnnotations(), p);
+//        visit(method.getReturnTypeExpression(), p);
+//        visit(method.getAnnotations().getName().getAnnotations(), p);
         visit(method.getName(), p);
 //        if (!method.getMarkers().findFirst(CompactConstructor.class).isPresent()) {
             visitContainer("(", method.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, ",", ")", p);

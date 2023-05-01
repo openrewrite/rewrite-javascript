@@ -218,16 +218,17 @@ public interface TSC {
 
         public void resetScanner(int offset) {
             try {
-                this.scanner.invokeVoid("resetTokenState");
+                this.scanner.invokeVoid("setTextPos", offset);
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        public String nextScannerSyntaxType() {
+        public TSCSyntaxKind nextScannerSyntaxType() {
             try {
                 final int code = this.scanner.invokeInteger("scan");
-                return this.syntaxKindName(code);
+                final String name = this.syntaxKindName(code);
+                return TSCSyntaxKind.fromJS(name);
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
@@ -284,6 +285,10 @@ public interface TSC {
 
         public String syntaxKindName() {
             return context.syntaxKindName(this.syntaxKindCode());
+        }
+
+        public TSCSyntaxKind syntaxKind() {
+            return TSCSyntaxKind.fromJS(syntaxKindName());
         }
 
         public int getStart() {
