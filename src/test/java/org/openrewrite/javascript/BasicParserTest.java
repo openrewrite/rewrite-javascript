@@ -18,15 +18,19 @@ package org.openrewrite.javascript;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.javascript.ParserAssertions.javascript;
+
 public class BasicParserTest implements RewriteTest {
 
     @Test
     public void test() {
-        rewriteRun(Assertions.javascript(
-                """
-                        function foo () {}
-                        """
-        ));
+        rewriteRun(
+          javascript(
+            """
+              function foo () {}
+              """
+          )
+        );
     }
 
 }
