@@ -19,7 +19,7 @@ import org.openrewrite.Cursor;
 import org.openrewrite.PrintOutputCapture;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.tree.*;
-import org.openrewrite.javascript.JavascriptVisitor;
+import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
@@ -27,7 +27,7 @@ import org.openrewrite.marker.Markers;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-public class JavascriptPrinter<P> extends JavascriptVisitor<PrintOutputCapture<P>> {
+public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P>> {
 //    @Override
 //    public J visitCompilationUnit(JS.CompilationUnit cu, PrintOutputCapture<P> p) {
 //        // FIXME implement

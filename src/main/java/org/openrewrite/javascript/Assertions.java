@@ -34,7 +34,7 @@ public final class Assertions {
     }
 
     public static SourceSpecs javascript(@Language("js") @Nullable String before, Consumer<SourceSpec<JS.CompilationUnit>> spec) {
-        SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavascriptParser.builder(), before, null);
+        SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, null);
         spec.accept(js);
         return js;
     }
@@ -46,7 +46,7 @@ public final class Assertions {
 
     public static SourceSpecs javascript(@Language("js") @Nullable String before, @Language("js") String after,
                                      Consumer<SourceSpec<JS.CompilationUnit>> spec) {
-        SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavascriptParser.builder(), before, s -> after);
+        SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, s -> after);
         spec.accept(js);
         return js;
     }

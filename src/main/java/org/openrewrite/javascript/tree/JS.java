@@ -22,8 +22,8 @@ import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.TypesInUse;
 import org.openrewrite.java.tree.*;
-import org.openrewrite.javascript.JavascriptVisitor;
-import org.openrewrite.javascript.internal.JavascriptPrinter;
+import org.openrewrite.javascript.JavaScriptVisitor;
+import org.openrewrite.javascript.internal.JavaScriptPrinter;
 import org.openrewrite.marker.Markers;
 
 import java.beans.Transient;
@@ -47,16 +47,16 @@ public interface JS extends J {
             return (R) this;
         }
         //noinspection unchecked
-        return (R) acceptJavaScript(v.adapt(JavascriptVisitor.class), p);
+        return (R) acceptJavaScript(v.adapt(JavaScriptVisitor.class), p);
     }
 
     @Override
     default <P> boolean isAcceptable(TreeVisitor<?, P> v, P p) {
-        return v.isAdaptableTo(JavascriptVisitor.class);
+        return v.isAdaptableTo(JavaScriptVisitor.class);
     }
 
     @Nullable
-    default <P> J acceptJavaScript(JavascriptVisitor<P> v, P p) {
+    default <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
         return v.defaultValue(this, p);
     }
 
@@ -168,13 +168,13 @@ public interface JS extends J {
         }
 
         @Override
-        public <P> J acceptJavaScript(JavascriptVisitor<P> v, P p) {
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
             return v.visitJavaSourceFile(this, p);
         }
 
         @Override
         public <P> TreeVisitor<?, PrintOutputCapture<P>> printer(Cursor cursor) {
-            return new JavascriptPrinter<>();
+            return new JavaScriptPrinter<>();
         }
 
         @Transient

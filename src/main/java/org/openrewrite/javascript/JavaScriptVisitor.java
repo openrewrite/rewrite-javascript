@@ -21,7 +21,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.javascript.tree.JS;
 
-public class JavascriptVisitor<P> extends JavaVisitor<P> {
+public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
     @Override
     public boolean isAcceptable(SourceFile sourceFile, P p) {

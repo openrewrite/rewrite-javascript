@@ -20,6 +20,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.ParserAssertions.javascript;
 
+@SuppressWarnings("JSUnusedLocalSymbols")
 public class BasicParserTest implements RewriteTest {
 
     @Test
@@ -27,7 +28,7 @@ public class BasicParserTest implements RewriteTest {
         rewriteRun(
           javascript(
             """
-              function foo () {}
+              function foo ( ) { }
               """
           )
         );

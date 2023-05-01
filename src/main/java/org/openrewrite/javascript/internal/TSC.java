@@ -48,7 +48,10 @@ public interface TSC {
 
     class Runtime implements Closeable {
         public final V8Runtime v8Runtime;
-        public V8ValueFunction tsParse;
+
+        @Nullable
+        public V8ValueFunction tsParse = null;
+
         private final JavetStandardConsoleInterceptor javetStandardConsoleInterceptor;
 
         public static Runtime init() {
@@ -85,6 +88,7 @@ public interface TSC {
         public void parseSourceText(String sourceText, BiConsumer<Node, Context> callback) {
             importTS();
             try {
+                assert tsParse != null;
                 try (V8Value tmp = tsParse.call(null, sourceText)) {
                     if (!(tmp instanceof V8ValueObject)) {
                         throw new RuntimeException();
@@ -114,7 +118,7 @@ public interface TSC {
 
                 try {
                     javetStandardConsoleInterceptor.unregister(v8Runtime.getGlobalObject());
-                } catch (JavetException e) {
+                } catch (JavetException ignored) {
                 }
                 v8Runtime.await();
                 v8Runtime.lowMemoryNotification();
