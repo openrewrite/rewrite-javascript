@@ -20,6 +20,7 @@ import org.openrewrite.PrintOutputCapture;
 import org.openrewrite.Tree;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaPrinter;
+import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.tree.JS;
@@ -60,22 +61,23 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             out -> "/*~~" + out + (out.isEmpty() ? "" : "~~") + ">*/";
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
-        @Override
-        public J visitBlock(J.Block block, PrintOutputCapture<P> p) {
-            beforeSyntax(block, Space.Location.BLOCK_PREFIX, p);
 
-            if (block.isStatic()) {
-                p.append("static");
-                visitRightPadded(block.getPadding().getStatic(), JRightPadded.Location.STATIC_INIT, p);
-            }
-
-            p.append('{');
-//        visitStatements(block.getPadding().getStatements(), JRightPadded.Location.BLOCK_STATEMENT, p);
-            visitSpace(block.getEnd(), Space.Location.BLOCK_END, p);
-            p.append('}');
-            afterSyntax(block, p);
-            return block;
-        }
+//        @Override
+//        public J visitBlock(J.Block block, PrintOutputCapture<P> p) {
+//            beforeSyntax(block, Space.Location.BLOCK_PREFIX, p);
+//
+//            if (block.isStatic()) {
+//                p.append("static");
+//                visitRightPadded(block.getPadding().getStatic(), JRightPadded.Location.STATIC_INIT, p);
+//            }
+//
+//            p.append('{');
+//            visitStatements(block.getPadding().getStatements(), JRightPadded.Location.BLOCK_STATEMENT, p);
+//            visitSpace(block.getEnd(), Space.Location.BLOCK_END, p);
+//            p.append('}');
+//            afterSyntax(block, p);
+//            return block;
+//        }
 
         @Override
         public J visitMethodDeclaration(J.MethodDeclaration method, PrintOutputCapture<P> p) {
@@ -107,6 +109,25 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 //        visitLeftPadded("default", method.getPadding().getDefaultValue(), JLeftPadded.Location.METHOD_DECLARATION_DEFAULT_VALUE, p);
 //        afterSyntax(method, p);
             return method;
+        }
+
+        @Override
+        protected void visitRightPadded(List<? extends JRightPadded<? extends J>> nodes, JRightPadded.Location location, String suffixBetween, PrintOutputCapture<P> p) {
+            for (int i = 0; i < nodes.size(); i++) {
+                JRightPadded<? extends J> node = nodes.get(i);
+                visit(node.getElement(), p);
+                visitSpace(node.getAfter(), location.getAfterLocation(), p);
+                visitMarkers(node.getMarkers(), p);
+                if (i < nodes.size() - 1) {
+                    p.append(suffixBetween);
+                } else {
+                    TrailingComma trailingComma = node.getMarkers().findFirst(TrailingComma.class).orElse(null);
+                    if (trailingComma != null) {
+                        p.append(suffixBetween);
+                        visitSpace(trailingComma.getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
+                    }
+                }
+            }
         }
     }
 
@@ -145,6 +166,12 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitMarkers(node.getMarkers(), p);
             if (i < nodes.size() - 1) {
                 p.append(suffixBetween);
+            } else {
+                TrailingComma trailingComma = node.getMarkers().findFirst(TrailingComma.class).orElse(null);
+                if (trailingComma != null) {
+                    p.append(suffixBetween);
+                    visitSpace(trailingComma.getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
+                }
             }
         }
     }

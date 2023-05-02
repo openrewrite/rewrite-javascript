@@ -20,6 +20,7 @@ import org.openrewrite.FileAttributes;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
+import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.TypeScriptTypeMapping;
 import org.openrewrite.javascript.tree.JS;
@@ -153,14 +154,50 @@ public class TypeScriptParserVisitor {
         JContainer<J.TypeParameter> typeParams = null;
 
         J.Block body;
+        List<JRightPadded<Statement>> members;
         if (node.hasProperty("members")) {
-            // TODO: assess; maybe revise mapBlock with an input of List<TSC.Node> nodes.
             Space bodyPrefix = sourceBefore(TSCSyntaxKind.OpenBraceToken);
 
+            TSC.Node membersNode = node.getChildNodeRequired("members");
             List<TSC.Node> nodes = node.getChildNodes("members");
-            List<JRightPadded<Statement>> members = new ArrayList<>(nodes.size());
-            for (TSC.Node statement : nodes) {
-                members.add(mapStatement(statement));
+            if (kind.getType() == J.ClassDeclaration.Kind.Type.Enum) {
+                Space enumPrefix = whitespace();
+
+                members = new ArrayList<>(1);
+                List<JRightPadded<J.EnumValue>> enumValues = new ArrayList<>(nodes.size());
+                for (int i = 0; i < nodes.size(); i++) {
+                    TSC.Node enumValue = nodes.get(i);
+                    J.EnumValue value = (J.EnumValue) mapNode(enumValue);
+                    if (value != null) {
+                        boolean hasTrailingComma = i == nodes.size() - 1 && membersNode.getBooleanPropertyValue("hasTrailingComma");
+                        Space after = i < nodes.size() - 1 ? sourceBefore(TSCSyntaxKind.CommaToken) :
+                                hasTrailingComma ? sourceBefore(TSCSyntaxKind.CommaToken) : EMPTY;
+                        JRightPadded<J.EnumValue> ev = padRight(value, after);
+                        if (i == nodes.size() - 1) {
+                            if (hasTrailingComma) {
+                                ev = ev.withMarkers(ev.getMarkers().addIfAbsent(new TrailingComma(randomId(), EMPTY)));
+                            }
+                        }
+                        enumValues.add(ev);
+                    }
+                }
+
+                JRightPadded<Statement> enumSet = padRight(
+                        new J.EnumValueSet(
+                                randomId(),
+                                enumPrefix,
+                                Markers.EMPTY,
+                                enumValues,
+                                false
+                        ),
+                        EMPTY
+                );
+                members.add(enumSet);
+            } else {
+                members = new ArrayList<>(nodes.size());
+                for (TSC.Node statement : nodes) {
+                    members.add(mapStatement(statement));
+                }
             }
 
             body = new J.Block(randomId(), bodyPrefix, Markers.EMPTY, new JRightPadded<>(false, EMPTY, Markers.EMPTY),
@@ -193,6 +230,18 @@ public class TypeScriptParserVisitor {
                 (JavaType.FullyQualified) typeMapping.type(node));
     }
 
+    private J mapEnumMember(TSC.Node node) {
+        Space prefix = whitespace();
+
+        List<J.Annotation> annotations = null; // FIXME
+        return new J.EnumValue(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                annotations == null ? emptyList() : annotations,
+                mapIdentifier(node.getChildNodeRequired("name")),
+                null);
+    }
 
     // FIXME
     private J mapFunctionDeclaration(TSC.Node node) {
@@ -232,8 +281,6 @@ public class TypeScriptParserVisitor {
     }
 
     private J.Identifier mapIdentifier(TSC.Node node) {
-        expect(TSCSyntaxKind.Identifier, node);
-
         Space prefix = sourceBefore(node);
         return new J.Identifier(
                 randomId(),
@@ -276,9 +323,12 @@ public class TypeScriptParserVisitor {
         J j;
         switch (node.syntaxKind()) {
             case EnumDeclaration:
-            case InterfaceDeclaration:
             case ClassDeclaration:
+            case InterfaceDeclaration:
                 j = mapClassDeclaration(node);
+                break;
+            case EnumMember:
+                j = mapEnumMember(node);
                 break;
             case FunctionDeclaration:
                 j = mapFunctionDeclaration(node);
@@ -321,9 +371,9 @@ public class TypeScriptParserVisitor {
     }
 
     private TSCSyntaxKind scan() {
-        System.err.println("[scanner] scanning at pos=" + this.getCursorPosition());
+//        System.err.println("[scanner] scanning at pos=" + this.getCursorPosition());
         TSCSyntaxKind kind = this.cursorContext.nextScannerSyntaxType();
-        System.err.println("[scanner]     scan returned kind=" + kind + "; start=" + cursorContext.scannerTokenStart() + "; end=" + cursorContext.scannerTokenEnd() + ");");
+//        System.err.println("[scanner]     scan returned kind=" + kind + "; start=" + cursorContext.scannerTokenStart() + "; end=" + cursorContext.scannerTokenEnd() + ");");
         return kind;
     }
 
@@ -408,7 +458,7 @@ public class TypeScriptParserVisitor {
      * Consume whitespace and leading comments until the current node.
      */
     private Space whitespace() {
-        System.err.println("[scanner] consuming space, starting at pos=" + getCursorPosition());
+//        System.err.println("[scanner] consuming space, starting at pos=" + getCursorPosition());
         String initialSpace = "";
         List<Comment> comments = Collections.emptyList();
         TSCSyntaxKind kind;
@@ -418,7 +468,7 @@ public class TypeScriptParserVisitor {
             switch (kind) {
                 case WhitespaceTrivia:
                 case NewLineTrivia:
-                    System.err.println("[scanner]     appending whitespace");
+//                    System.err.println("[scanner]     appending whitespace");
                     if (comments.isEmpty()) {
                         initialSpace += lastToken();
                     } else {
@@ -430,7 +480,7 @@ public class TypeScriptParserVisitor {
                     break;
                 case SingleLineCommentTrivia:
                 case MultiLineCommentTrivia:
-                    System.err.println("[scanner]     appending comment");
+//                    System.err.println("[scanner]     appending comment");
                     Comment comment = new TextComment(
                             kind == TSCSyntaxKind.MultiLineCommentTrivia,
                             lastToken(),
@@ -445,7 +495,7 @@ public class TypeScriptParserVisitor {
                     break;
                 default:
                     // rewind to before this token
-                    System.err.println("[scanner]     resetting to pos=" + cursorContext.scannerTokenStart());
+//                    System.err.println("[scanner]     resetting to pos=" + cursorContext.scannerTokenStart());
                     cursor(cursorContext.scannerTokenStart());
                     done = true;
                     break;

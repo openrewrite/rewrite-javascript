@@ -21,6 +21,7 @@ import com.caoccao.javet.interop.V8Host;
 import com.caoccao.javet.interop.V8Runtime;
 import com.caoccao.javet.interop.callback.JavetCallbackContext;
 import com.caoccao.javet.values.V8Value;
+import com.caoccao.javet.values.primitive.V8ValueBoolean;
 import com.caoccao.javet.values.primitive.V8ValueInteger;
 import com.caoccao.javet.values.primitive.V8ValueString;
 import com.caoccao.javet.values.primitive.V8ValueUndefined;
@@ -351,6 +352,16 @@ public interface TSC {
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        public boolean getBooleanPropertyValue(String propertyName) {
+            boolean propertyValue = false;
+            try {
+                V8Value val = this.object.getProperty(propertyName);
+                propertyValue = val instanceof V8ValueBoolean && ((V8ValueBoolean) val).getValue();
+            } catch (JavetException ignored) {
+            }
+            return propertyValue;
         }
 
         public boolean hasProperty(String propertyName) {
