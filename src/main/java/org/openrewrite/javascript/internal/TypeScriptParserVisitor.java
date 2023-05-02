@@ -345,6 +345,18 @@ public class TypeScriptParserVisitor {
         return mapIdentifier(node);
     }
 
+    private J mapNumericLiteral(TSC.Node node) {
+        return new J.Literal(
+                randomId(),
+                sourceBefore(TSCSyntaxKind.NumericLiteral),
+                Markers.EMPTY,
+                node.getStringPropertyValue("text"),
+                node.getText(),
+                null, // TODO
+                typeMapping.primitive(node)
+        );
+    }
+
     private J.Literal mapStringLiteral(TSC.Node node) {
         // singleQuote
         // hasExtendedUnicodeEscape
@@ -366,8 +378,18 @@ public class TypeScriptParserVisitor {
         List<J.Modifier> modifiers = emptyList();
         implementMe(node, "modifiers");
 
-        skip("let");
-        JS.JSVariableDeclaration.VariableModifier modifier = JS.JSVariableDeclaration.VariableModifier.LET;
+        JS.JSVariableDeclaration.VariableModifier modifier = null;
+        TSCSyntaxKind keyword = scan();
+        if (keyword == TSCSyntaxKind.ConstKeyword) {
+            modifier = JS.JSVariableDeclaration.VariableModifier.CONST;
+        } else if (keyword == TSCSyntaxKind.LetKeyword) {
+            modifier = JS.JSVariableDeclaration.VariableModifier.LET;
+        } else if (keyword == TSCSyntaxKind.VarKeyword) {
+            modifier = JS.JSVariableDeclaration.VariableModifier.VAR;
+        } else {
+            // Unclear if the modifier should be `@Nullable` in the `JSVariableDeclaration`.
+            implementMe(node);
+        }
 
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = emptyList();
         if (node.hasProperty("declarationList")) {
@@ -474,6 +496,9 @@ public class TypeScriptParserVisitor {
                 break;
             case NumberKeyword:
                 j = mapNumberKeyword(node);
+                break;
+            case NumericLiteral:
+                j = mapNumericLiteral(node);
                 break;
             case StringLiteral:
                 j = mapStringLiteral(node);

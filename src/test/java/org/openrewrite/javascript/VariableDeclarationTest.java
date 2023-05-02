@@ -6,7 +6,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.ParserAssertions.javascript;
 
-@SuppressWarnings("JSUnresolvedVariable")
+@SuppressWarnings({"JSUnresolvedVariable", "JSUnusedLocalSymbols"})
 public class VariableDeclarationTest implements RewriteTest {
 
     @Test
@@ -20,7 +20,7 @@ public class VariableDeclarationTest implements RewriteTest {
         );
     }
 
-    @ExpectedToFail
+    @ExpectedToFail("Added support for union type expressions")
     @Test
     void multiTypeLet() {
         rewriteRun(
@@ -32,13 +32,23 @@ public class VariableDeclarationTest implements RewriteTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void constant() {
         rewriteRun(
           javascript(
             """
               const hello = "World" ;
+              """
+          )
+        );
+    }
+
+    @Test
+    void var() {
+        rewriteRun(
+          javascript(
+            """
+              var hello = "World" ;
               """
           )
         );
