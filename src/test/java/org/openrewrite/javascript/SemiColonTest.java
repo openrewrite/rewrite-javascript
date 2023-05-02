@@ -16,7 +16,6 @@
 package org.openrewrite.javascript;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.ParserAssertions.javascript;
@@ -46,7 +45,6 @@ public class SemiColonTest implements RewriteTest {
         );
     }
 
-    @ExpectedToFail("Implement EmptyStatement")
     @Test
     void multiSemiColon() {
         rewriteRun(

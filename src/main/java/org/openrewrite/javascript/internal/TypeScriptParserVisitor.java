@@ -231,6 +231,10 @@ public class TypeScriptParserVisitor {
                 (JavaType.FullyQualified) typeMapping.type(node));
     }
 
+    private Statement mapEmptyStatement(TSC.Node ignored) {
+        return new J.Empty(randomId(), EMPTY, Markers.EMPTY);
+    }
+
     private J.EnumValue mapEnumMember(TSC.Node node) {
         Space prefix = whitespace();
 
@@ -459,6 +463,9 @@ public class TypeScriptParserVisitor {
             case InterfaceDeclaration:
                 j = mapClassDeclaration(node);
                 break;
+            case EmptyStatement:
+                j = mapEmptyStatement(node);
+                break;
             case EnumMember:
                 j = mapEnumMember(node);
                 break;
@@ -595,6 +602,8 @@ public class TypeScriptParserVisitor {
 
     /**
      * Consume whitespace and leading comments until the current node.
+     * The type-script spec is not actively maintained, so we need to rely on the parser elements to collect
+     * whitespace and comments.
      */
     private Space whitespace() {
 //        System.err.println("[scanner] consuming space, starting at pos=" + getCursorPosition());

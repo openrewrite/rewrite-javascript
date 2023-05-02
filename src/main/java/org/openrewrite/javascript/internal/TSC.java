@@ -505,7 +505,7 @@ public interface TSC {
                 throw new IllegalStateException(String.format("Property <%s> does not exist on syntaxKind %s", propertyName, this.syntaxKind()));
             }
 
-            boolean propertyValue = false;
+            boolean propertyValue;
             if (val instanceof V8ValueBoolean) {
                 propertyValue = ((V8ValueBoolean) val).getValue();
             } else {

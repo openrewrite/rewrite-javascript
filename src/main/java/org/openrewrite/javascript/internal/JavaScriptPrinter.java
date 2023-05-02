@@ -126,14 +126,13 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 visitMarkers(node.getMarkers(), p);
                 if (i < nodes.size() - 1) {
                     p.append(suffixBetween);
-                } else {
-                    for (Marker marker : node.getMarkers().getMarkers()) {
-                        if (marker instanceof TrailingComma) {
-                            p.append(suffixBetween);
-                            visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
-                        } else if (marker instanceof Semicolon) {
-                            p.append(";");
-                        }
+                }
+                for (Marker marker : node.getMarkers().getMarkers()) {
+                    if (marker instanceof TrailingComma) {
+                        p.append(suffixBetween);
+                        visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
+                    } else if (marker instanceof Semicolon) {
+                        p.append(";");
                     }
                 }
             }
@@ -192,14 +191,13 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitMarkers(node.getMarkers(), p);
             if (i < nodes.size() - 1) {
                 p.append(suffixBetween);
-            } else {
-                for (Marker marker : node.getMarkers().getMarkers()) {
-                    if (marker instanceof TrailingComma) {
-                        p.append(suffixBetween);
-                        visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
-                    } else if (marker instanceof Semicolon) {
-                        p.append(";");
-                    }
+            }
+            for (Marker marker : node.getMarkers().getMarkers()) {
+                if (marker instanceof TrailingComma) {
+                    p.append(suffixBetween);
+                    visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
+                } else if (marker instanceof Semicolon) {
+                    p.append(";");
                 }
             }
         }
