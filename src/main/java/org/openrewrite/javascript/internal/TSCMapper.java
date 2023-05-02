@@ -19,6 +19,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.javascript.tree.JS;
 
 import java.io.Closeable;
@@ -46,7 +47,8 @@ public abstract class TSCMapper implements Closeable {
         EncodingDetectingInputStream is = input.getSource(ctx);
         String inputSourceText = is.readFully();
         this.runtime.parseSourceText(inputSourceText, (node, context) -> {
-            TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(node, context, input.getPath(), relativeTo, is.getCharset().toString(), is.isCharsetBomMarked());
+            // TODO: sort out type caching
+            TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(node, context, input.getPath(), relativeTo, new JavaTypeCache(), is.getCharset().toString(), is.isCharsetBomMarked());
             this.compilationUnits.add(fileMapper.mapSourceFile());
         });
     }

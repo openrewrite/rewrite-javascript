@@ -18,6 +18,7 @@ package org.openrewrite;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeSignatureBuilder;
 
+@Incubating(since = "0.0")
 public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
 
     @Override

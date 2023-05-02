@@ -17,7 +17,9 @@ package org.openrewrite.javascript.internal;
 
 import org.openrewrite.Cursor;
 import org.openrewrite.PrintOutputCapture;
+import org.openrewrite.Tree;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.JavaPrinter;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.tree.JS;
@@ -35,15 +37,78 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 //        return cu;
 //    }
 
+    private final JavaScriptJavaPrinter delegate = new JavaScriptJavaPrinter();
+
+    @Override
+    public J visit(@Nullable Tree tree, PrintOutputCapture<P> p) {
+        if (!(tree instanceof JS)) {
+            // re-route printing to the java printer
+            return delegate.visit(tree, p);
+        } else {
+            return super.visit(tree, p);
+        }
+    }
+
     public J visitCompilationUnit(JS.CompilationUnit cu, PrintOutputCapture<P> p) {
         // FIXME Implement
         visit(cu.getStatements(), p);
         return cu;
     }
 
-    private static final UnaryOperator<String> JAVA_MARKER_WRAPPER =
+    // TODO: fix for JS.
+    private static final UnaryOperator<String> JAVA_SCRIPT_MARKER_WRAPPER =
             out -> "/*~~" + out + (out.isEmpty() ? "" : "~~") + ">*/";
 
+    private class JavaScriptJavaPrinter extends JavaPrinter<P> {
+        @Override
+        public J visitBlock(J.Block block, PrintOutputCapture<P> p) {
+            beforeSyntax(block, Space.Location.BLOCK_PREFIX, p);
+
+            if (block.isStatic()) {
+                p.append("static");
+                visitRightPadded(block.getPadding().getStatic(), JRightPadded.Location.STATIC_INIT, p);
+            }
+
+            p.append('{');
+//        visitStatements(block.getPadding().getStatements(), JRightPadded.Location.BLOCK_STATEMENT, p);
+            visitSpace(block.getEnd(), Space.Location.BLOCK_END, p);
+            p.append('}');
+            afterSyntax(block, p);
+            return block;
+        }
+
+        @Override
+        public J visitMethodDeclaration(J.MethodDeclaration method, PrintOutputCapture<P> p) {
+            beforeSyntax(method, Space.Location.METHOD_DECLARATION_PREFIX, p);
+            visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
+            visit(method.getLeadingAnnotations(), p);
+            // FIXME extra spacing
+            p.append("function");
+//        for (J.Modifier m : method.getModifiers()) {
+//            visitModifier(m, p);
+//        }
+//        J.TypeParameters typeParameters = method.getAnnotations().getTypeParameters();
+//        if (typeParameters != null) {
+//            visit(typeParameters.getAnnotations(), p);
+//            visitSpace(typeParameters.getPrefix(), Space.Location.TYPE_PARAMETERS, p);
+//            visitMarkers(typeParameters.getMarkers(), p);
+//            p.append("<");
+//            visitRightPadded(typeParameters.getPadding().getTypeParameters(), JRightPadded.Location.TYPE_PARAMETER, ",", p);
+//            p.append(">");
+//        }
+//        visit(method.getReturnTypeExpression(), p);
+//        visit(method.getAnnotations().getName().getAnnotations(), p);
+            visit(method.getName(), p);
+//        if (!method.getMarkers().findFirst(CompactConstructor.class).isPresent()) {
+            visitContainer("(", method.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, ",", ")", p);
+//        }
+//        visitContainer("throws", method.getPadding().getThrows(), JContainer.Location.THROWS, ",", null, p);
+            visit(method.getBody(), p);
+//        visitLeftPadded("default", method.getPadding().getDefaultValue(), JLeftPadded.Location.METHOD_DECLARATION_DEFAULT_VALUE, p);
+//        afterSyntax(method, p);
+            return method;
+        }
+    }
 
     protected void beforeSyntax(J j, Space.Location loc, PrintOutputCapture<P> p) {
         beforeSyntax(j.getPrefix(), j.getMarkers(), loc, p);
@@ -51,14 +116,14 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
     protected void beforeSyntax(Space prefix, Markers markers, @Nullable Space.Location loc, PrintOutputCapture<P> p) {
         for (Marker marker : markers.getMarkers()) {
-            p.out.append(p.getMarkerPrinter().beforePrefix(marker, new Cursor(getCursor(), marker), JAVA_MARKER_WRAPPER));
+            p.out.append(p.getMarkerPrinter().beforePrefix(marker, new Cursor(getCursor(), marker), JAVA_SCRIPT_MARKER_WRAPPER));
         }
         if (loc != null) {
             visitSpace(prefix, loc, p);
         }
         visitMarkers(markers, p);
         for (Marker marker : markers.getMarkers()) {
-            p.out.append(p.getMarkerPrinter().beforeSyntax(marker, new Cursor(getCursor(), marker), JAVA_MARKER_WRAPPER));
+            p.out.append(p.getMarkerPrinter().beforeSyntax(marker, new Cursor(getCursor(), marker), JAVA_SCRIPT_MARKER_WRAPPER));
         }
     }
 
@@ -68,7 +133,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
     protected void afterSyntax(Markers markers, PrintOutputCapture<P> p) {
         for (Marker marker : markers.getMarkers()) {
-            p.out.append(p.getMarkerPrinter().afterSyntax(marker, new Cursor(getCursor(), marker), JAVA_MARKER_WRAPPER));
+            p.out.append(p.getMarkerPrinter().afterSyntax(marker, new Cursor(getCursor(), marker), JAVA_SCRIPT_MARKER_WRAPPER));
         }
     }
 
@@ -106,62 +171,5 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             p.append(comment.getSuffix());
         }
         return space;
-    }
-
-    @Override
-    public J visitIdentifier(J.Identifier ident, PrintOutputCapture<P> p) {
-        beforeSyntax(ident, Space.Location.IDENTIFIER_PREFIX, p);
-        p.append(ident.getSimpleName());
-        afterSyntax(ident, p);
-        return ident;
-    }
-
-    @Override
-    public J visitMethodDeclaration(J.MethodDeclaration method, PrintOutputCapture<P> p) {
-        beforeSyntax(method, Space.Location.METHOD_DECLARATION_PREFIX, p);
-        visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
-        visit(method.getLeadingAnnotations(), p);
-        // FIXME extra spacing
-        p.append("function");
-//        for (J.Modifier m : method.getModifiers()) {
-//            visitModifier(m, p);
-//        }
-//        J.TypeParameters typeParameters = method.getAnnotations().getTypeParameters();
-//        if (typeParameters != null) {
-//            visit(typeParameters.getAnnotations(), p);
-//            visitSpace(typeParameters.getPrefix(), Space.Location.TYPE_PARAMETERS, p);
-//            visitMarkers(typeParameters.getMarkers(), p);
-//            p.append("<");
-//            visitRightPadded(typeParameters.getPadding().getTypeParameters(), JRightPadded.Location.TYPE_PARAMETER, ",", p);
-//            p.append(">");
-//        }
-//        visit(method.getReturnTypeExpression(), p);
-//        visit(method.getAnnotations().getName().getAnnotations(), p);
-        visit(method.getName(), p);
-//        if (!method.getMarkers().findFirst(CompactConstructor.class).isPresent()) {
-            visitContainer("(", method.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, ",", ")", p);
-//        }
-//        visitContainer("throws", method.getPadding().getThrows(), JContainer.Location.THROWS, ",", null, p);
-        visit(method.getBody(), p);
-//        visitLeftPadded("default", method.getPadding().getDefaultValue(), JLeftPadded.Location.METHOD_DECLARATION_DEFAULT_VALUE, p);
-//        afterSyntax(method, p);
-        return method;
-    }
-
-    @Override
-    public J visitBlock(J.Block block, PrintOutputCapture<P> p) {
-        beforeSyntax(block, Space.Location.BLOCK_PREFIX, p);
-
-        if (block.isStatic()) {
-            p.append("static");
-            visitRightPadded(block.getPadding().getStatic(), JRightPadded.Location.STATIC_INIT, p);
-        }
-
-        p.append('{');
-//        visitStatements(block.getPadding().getStatements(), JRightPadded.Location.BLOCK_STATEMENT, p);
-        visitSpace(block.getEnd(), Space.Location.BLOCK_END, p);
-        p.append('}');
-        afterSyntax(block, p);
-        return block;
     }
 }

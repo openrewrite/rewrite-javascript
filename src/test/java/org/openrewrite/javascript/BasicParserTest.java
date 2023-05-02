@@ -33,5 +33,4 @@ public class BasicParserTest implements RewriteTest {
           )
         );
     }
-
 }

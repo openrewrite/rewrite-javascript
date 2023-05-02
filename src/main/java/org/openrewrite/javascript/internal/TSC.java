@@ -23,6 +23,7 @@ import com.caoccao.javet.interop.callback.JavetCallbackContext;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.primitive.V8ValueInteger;
 import com.caoccao.javet.values.primitive.V8ValueString;
+import com.caoccao.javet.values.primitive.V8ValueUndefined;
 import com.caoccao.javet.values.reference.*;
 import org.openrewrite.IOUtils;
 import org.openrewrite.internal.lang.Nullable;
@@ -352,6 +353,15 @@ public interface TSC {
             }
         }
 
+        public boolean hasProperty(String propertyName) {
+            boolean isFound = false;
+            try {
+                isFound = !(this.object.getProperty(propertyName) instanceof V8ValueUndefined);
+            } catch (JavetException ignored) {
+            }
+            return isFound;
+        }
+
         public String getText() {
             try {
                 return this.object.invokeString("getText");
@@ -390,6 +400,33 @@ public interface TSC {
 
         public void printTree(PrintStream ps) {
             printTree(ps, "");
+        }
+
+        // FIXME: Remove. Temporary method to view object
+        public V8ValueObject getObject() {
+            return object;
+        }
+
+
+        // FIXME: Remove. Temporary method to view context
+        public Context getContext() {
+            return context;
+        }
+
+        public List<String> getOwnPropertyNames() {
+            try {
+                return this.object.getOwnPropertyNames().getOwnPropertyNameStrings();
+            } catch (JavetException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        public List<String> getPropertyNames() {
+            try {
+                return this.object.getPropertyNames().getOwnPropertyNameStrings();
+            } catch (JavetException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
         private void printTree(PrintStream ps, String indent) {

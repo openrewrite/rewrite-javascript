@@ -28,9 +28,8 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<Object> {
     private final TypeScriptSignatureBuilder signatureBuilder;
     private final JavaTypeCache typeCache;
 
-    public TypeScriptTypeMapping(TypeScriptSignatureBuilder signatureBuilder,
-                                 JavaTypeCache typeCache) {
-        this.signatureBuilder = signatureBuilder;
+    public TypeScriptTypeMapping(JavaTypeCache typeCache) {
+        this.signatureBuilder = new TypeScriptSignatureBuilder();
         this.typeCache = typeCache;
     }
 
@@ -40,15 +39,38 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<Object> {
 
         // TODO: remove after type visiting in signature builder is completed.
         // Prevent null signatures from returning types.
-        if (signature == null) {
-            return null;
+        if (signature != null) {
+            JavaType existing = typeCache.get(signature);
+            if (existing != null) {
+                return existing;
+            }
         }
 
-        JavaType existing = typeCache.get(signature);
-        if (existing != null) {
-            return existing;
-        }
         return null;
     }
 
+    @Nullable
+    private JavaType.FullyQualified classType(Object classType) {
+        return null;
+    }
+
+    @Nullable
+    public JavaType.Method methodDeclarationType(Object type) {
+        return null;
+    }
+
+    @Nullable
+    public JavaType.Method methodInvocationType(Object type) {
+        return null;
+    }
+
+    // FIXME
+    public JavaType.Primitive primitive(Object type) {
+        return JavaType.Primitive.None;
+    }
+
+    @Nullable
+    public JavaType.Variable variableType(Object type) {
+        return null;
+    }
 }
