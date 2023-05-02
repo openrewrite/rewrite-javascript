@@ -17,15 +17,15 @@ import static org.openrewrite.Tree.randomId;
 public class TSCFileMapper {
 
     private final TSC.Node sourceFile;
-    private final TSC.Context context;
+    private final TSC.SourceFileContext sourceFileContext;
     private final Path inputPath;
     private final Path relativeTo;
     private final String charset;
     private final boolean isCharsetBomMarked;
 
-    public TSCFileMapper(TSC.Node sourceFile, TSC.Context context, Path inputPath, Path relativeTo, String charset, boolean isCharsetBomMarked) {
+    public TSCFileMapper(TSC.Node sourceFile, TSC.SourceFileContext sourceFileContext, Path inputPath, Path relativeTo, String charset, boolean isCharsetBomMarked) {
         this.sourceFile = sourceFile;
-        this.context = context;
+        this.sourceFileContext = sourceFileContext;
         this.inputPath = inputPath;
         this.relativeTo = relativeTo;
         this.charset = charset;
@@ -33,33 +33,33 @@ public class TSCFileMapper {
     }
 
     private Integer offset() {
-        return this.context.scannerTokenEnd();
+        return this.sourceFileContext.scannerTokenEnd();
     }
 
     private void reset(int offset) {
         System.err.println("[scanner] reset to pos=" + offset + " (from pos=" + this.offset() + ")");
-        this.context.resetScanner(offset);
+        this.sourceFileContext.resetScanner(offset);
     }
 
     private void resetToAfter(TSC.Node node) {
-        this.context.resetScanner(node.getEnd());
+        this.sourceFileContext.resetScanner(node.getEnd());
     }
 
     private TSCSyntaxKind scan() {
         System.err.println("[scanner] scanning at pos=" + this.offset());
-        TSCSyntaxKind kind = this.context.nextScannerSyntaxType();
-        System.err.println("[scanner]     scan returned kind=" + kind + "; start=" + context.scannerTokenStart() + "; end=" + context.scannerTokenEnd() + ");");
+        TSCSyntaxKind kind = this.sourceFileContext.nextScannerSyntaxType();
+        System.err.println("[scanner]     scan returned kind=" + kind + "; start=" + sourceFileContext.scannerTokenStart() + "; end=" + sourceFileContext.scannerTokenEnd() + ");");
         return kind;
     }
 
     private String lastToken() {
-        return this.context.scannerTokenText();
+        return this.sourceFileContext.scannerTokenText();
     }
 
     private void consumeToken(TSCSyntaxKind kind) {
         TSCSyntaxKind actual = scan();
         if (kind != actual) {
-            throw new IllegalStateException(String.format("expected kind '%s'; found '%s' at position %d", kind, actual, context.scannerTokenStart()));
+            throw new IllegalStateException(String.format("expected kind '%s'; found '%s' at position %d", kind, actual, sourceFileContext.scannerTokenStart()));
         }
     }
 
@@ -89,7 +89,7 @@ public class TSCFileMapper {
     }
 
     private String tokenStreamDebug() {
-        return String.format("[start=%d, end=%d, text=`%s`]", this.context.scannerTokenStart(), this.context.scannerTokenEnd(), this.context.scannerTokenText().replace("\n", "⏎"));
+        return String.format("[start=%d, end=%d, text=`%s`]", this.sourceFileContext.scannerTokenStart(), this.sourceFileContext.scannerTokenEnd(), this.sourceFileContext.scannerTokenText().replace("\n", "⏎"));
     }
 
     private Space consumeSpace() {
@@ -130,8 +130,8 @@ public class TSCFileMapper {
                     break;
                 default:
                     // rewind to before this token
-                    System.err.println("[scanner]     resetting to pos=" + context.scannerTokenStart());
-                    reset(context.scannerTokenStart());
+                    System.err.println("[scanner]     resetting to pos=" + sourceFileContext.scannerTokenStart());
+                    reset(sourceFileContext.scannerTokenStart());
                     done = true;
                     break;
             }

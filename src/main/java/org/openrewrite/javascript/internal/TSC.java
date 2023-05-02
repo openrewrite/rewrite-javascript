@@ -76,30 +76,29 @@ public interface TSC {
                 v8Runtime.getExecutor("const module = {exports: {}};").executeVoid();
                 v8Runtime.getExecutor(getJSEntryProgramText()).executeVoid();
                 this.tsParse = v8Runtime.getExecutor("module.exports.default").execute();
-                this.tsParse.setWeak();
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        public void parseSourceText(String sourceText, BiConsumer<Node, Context> callback) {
+        public void parseSourceTexts(Map<String, String> sourceTexts, BiConsumer<Node, SourceFileContext> callback) {
             importTS();
-            try {
-                try (V8Value tmp = tsParse.call(null, sourceText)) {
-                    if (!(tmp instanceof V8ValueObject)) {
-                        throw new RuntimeException();
-                    }
-
-                    V8ValueObject obj = (V8ValueObject) tmp;
-                    TSC.Context context;
-                    TSC.Node node;
-
-                    context = TSC.Context.fromJS(obj);
-
-                    try (V8Value nodeV8 = obj.get("sourceFile")) {
-                        node = context.tscNode(nodeV8);
-                        callback.accept(node, context);
-                    }
+            try (V8ValueMap sourceTextsV8 = v8Runtime.createV8ValueMap()) {
+                for (Map.Entry<String, String> entry : sourceTexts.entrySet()) {
+                    sourceTextsV8.set(entry.getKey(), entry.getValue());
+                }
+                try (
+                        V8ValueObject parseResultV8 = tsParse.call(null, sourceTextsV8);
+                        ProgramContext programContext = ProgramContext.fromJS(parseResultV8);
+                        V8ValueArray sourceFilesV8 = parseResultV8.get("sourceFiles")
+                ) {
+                    sourceFilesV8.forEach((sourceFileV8) -> {
+                        String sourceText = ((V8ValueObject) sourceFileV8).invokeString("getText");
+                        try (SourceFileContext sourceFileContext = new SourceFileContext(programContext, sourceText)) {
+                            TSC.Node node = programContext.tscNode((V8ValueObject) sourceFileV8);
+                            callback.accept(node, sourceFileContext);
+                        }
+                    });
                 }
             } catch (JavetException e) {
                 throw new RuntimeException(e);
@@ -108,6 +107,11 @@ public interface TSC {
 
         @Override
         public void close() {
+            try {
+                this.tsParse.close();
+            } catch (JavetException e) {
+            }
+
             if (!v8Runtime.isClosed()) {
                 v8Runtime.await();
                 v8Runtime.lowMemoryNotification();
@@ -131,7 +135,45 @@ public interface TSC {
         V8Value apply(V8Value... args);
     }
 
-    class Context {
+    class Meta {
+        private final Map<String, Integer> syntaxKindsByName = new HashMap<>();
+        private final Map<Integer, String> syntaxKindsByCode = new HashMap<>();
+
+        public static Meta fromJS(V8ValueObject metaV8) throws JavetException {
+            try {
+                Meta result = new Meta();
+
+                try (V8Value syntaxKinds = metaV8.get("syntaxKinds")) {
+                    if (!(syntaxKinds instanceof V8ValueMap)) {
+                        throw new IllegalArgumentException("expected syntaxKinds to be a Map");
+                    }
+
+                    ((V8ValueMap) syntaxKinds).forEach((V8Value keyV8, V8Value valueV8) -> {
+                        if (keyV8 instanceof V8ValueString && valueV8 instanceof V8ValueInteger) {
+                            int code = ((V8ValueInteger) valueV8).getValue();
+                            String name = ((V8ValueString) keyV8).getValue();
+                            result.syntaxKindsByCode.put(code, name);
+                            result.syntaxKindsByName.put(name, code);
+                        }
+                    });
+                }
+
+                return result;
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public int syntaxKindCode(String name) {
+            return this.syntaxKindsByName.get(name);
+        }
+
+        public String syntaxKindName(int code) {
+            return this.syntaxKindsByCode.get(code);
+        }
+    }
+
+    class ProgramContext implements Closeable {
         private static final Method CONTEXT_CALLBACK_APPLY_METHOD;
 
         static {
@@ -142,54 +184,147 @@ public interface TSC {
             }
         }
 
+
         private final V8Runtime runtime;
-        private final WeakHashMap<V8Value, Node> cache = new WeakHashMap<>();
-        private final V8ValueObject scanner;
+        private final Meta metadata;
+        private final V8ValueObject program;
+        private final V8ValueObject typeChecker;
+        private final V8ValueFunction createScanner;
+        private final V8ValueFunction getNodeId;
+        private final Map<Long, Node> nodeCache = new HashMap<>();
+        private final Map<Long, Type> typeCache = new HashMap<>();
 
-        public static Context fromJS(V8ValueObject contextV8) {
-            try {
-                V8ValueObject metaV8Object = contextV8.get("meta");
-                metaV8Object.setWeak();
+        public ProgramContext(V8Runtime runtime, Meta metadata, V8ValueObject program, V8ValueObject typeChecker, V8ValueFunction createScanner, V8ValueFunction getNodeId) {
+            this.runtime = runtime;
+            this.metadata = metadata;
+            this.program = program;
+            this.typeChecker = typeChecker;
+            this.createScanner = createScanner;
+            this.getNodeId = getNodeId;
+        }
 
-                V8Value syntaxKinds = metaV8Object.get("syntaxKinds");
+        public static ProgramContext fromJS(V8ValueObject contextV8) {
+            try (V8ValueObject metaV8Object = contextV8.get("meta")) {
+                Meta metadata = Meta.fromJS(metaV8Object);
 
-                V8ValueObject scanner = contextV8.get("scanner");
-                scanner.setWeak();
+                V8ValueObject program = contextV8.get("program");
+                V8ValueObject typeChecker = contextV8.get("typeChecker");
+                V8ValueFunction createScanner = contextV8.get("createScanner");
+                V8ValueFunction getNodeId = contextV8.get("getNodeId");
 
-                Context context = new Context(metaV8Object.getV8Runtime(), scanner);
-                if (syntaxKinds instanceof V8ValueMap) {
-                    ((V8ValueMap) syntaxKinds).forEach((V8Value keyV8, V8Value valueV8) -> {
-                        if (keyV8 instanceof V8ValueString && valueV8 instanceof V8ValueInteger) {
-                            int code = ((V8ValueInteger) valueV8).getValue();
-                            String name = ((V8ValueString) keyV8).getValue();
-                            context.syntaxKindsByCode.put(code, name);
-                            context.syntaxKindsByName.put(name, code);
-                        }
-                    });
-                }
-                return context;
+                return new ProgramContext(contextV8.getV8Runtime(), metadata, program, typeChecker, createScanner, getNodeId);
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        private final Map<String, Integer> syntaxKindsByName = new HashMap<>();
-        private final Map<Integer, String> syntaxKindsByCode = new HashMap<>();
+        public Type tscType(V8ValueObject v8Value) {
+            final long typeId;
+            try {
+                Number tmp = v8Value.getPrimitive("id");
+                typeId = tmp.longValue();
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
 
-        private Context(V8Runtime runtime, V8ValueObject scanner) {
-            this.runtime = runtime;
-            this.scanner = scanner;
-            resetScanner(0);
+            Type type = this.typeCache.computeIfAbsent(typeId, (_handle) -> new Type(this, v8Value));
+            if (type.typeV8 != v8Value) {
+                try {
+                    v8Value.setWeak();
+                } catch (JavetException e) {
+                }
+            }
+
+            return type;
         }
 
-        public Node tscNode(V8Value v8) {
-            return this.cache.computeIfAbsent(v8, (arg) -> {
-                if (!(arg instanceof V8ValueObject)) {
-                    throw new IllegalArgumentException("can only wrap a V8 object as a Node");
+        public Node tscNode(V8ValueObject v8Value) {
+            final long nodeId;
+            try {
+                nodeId = this.getNodeId.callLong(null, v8Value);
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+
+            Node node = this.nodeCache.computeIfAbsent(nodeId, (_handle) -> new Node(this, v8Value));
+            if (node.nodeV8 != v8Value) {
+                try {
+                    v8Value.setWeak();
+                } catch (JavetException e) {
                 }
-//                System.out.println("*** creating new Node instance");
-                return new Node(this, (V8ValueObject) arg);
+            }
+            return node;
+        }
+
+        public V8ValueFunction asJSFunction(ContextCallback func) {
+            JavetCallbackContext callbackContext = new JavetCallbackContext(func, CONTEXT_CALLBACK_APPLY_METHOD);
+            try {
+                return this.runtime.createV8ValueFunction(callbackContext);
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public V8ValueFunction asJSFunction(Function<? super V8Value, ? extends V8Value> func) {
+            ContextCallback callback = (V8Value[] args) -> func.apply(args[0]);
+            return asJSFunction(callback);
+        }
+
+        public V8ValueFunction asJSFunction(Consumer<? super V8Value> func) {
+            ContextCallback callback = (V8Value[] args) -> {
+                func.accept(args[0]);
+                return runtime.createV8ValueUndefined();
+            };
+            return asJSFunction(callback);
+        }
+
+        @Override
+        public void close() {
+            try {
+                program.close();
+            } catch (JavetException e) {
+            }
+            try {
+                typeChecker.close();
+            } catch (JavetException e) {
+            }
+            try {
+                createScanner.close();
+            } catch (JavetException e) {
+            }
+            try {
+                getNodeId.close();
+            } catch (JavetException e) {
+            }
+
+            this.nodeCache.values().forEach(node -> {
+                try {
+                    node.nodeV8.close();
+                } catch (JavetException e) {
+                }
             });
+            this.typeCache.values().forEach(type -> {
+                try {
+                    type.typeV8.close();
+                } catch (JavetException e) {
+                }
+            });
+        }
+    }
+
+    class SourceFileContext implements Closeable {
+        private final ProgramContext programContext;
+        private final V8ValueObject scanner;
+
+        private SourceFileContext(ProgramContext programContext, String sourceText) {
+            this.programContext = programContext;
+            try {
+                this.scanner = programContext.createScanner.call(null);
+                this.scanner.invokeVoid("setText", sourceText);
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+            resetScanner(0);
         }
 
         public Integer scannerTokenStart() {
@@ -227,73 +362,81 @@ public interface TSC {
         public TSCSyntaxKind nextScannerSyntaxType() {
             try {
                 final int code = this.scanner.invokeInteger("scan");
-                final String name = this.syntaxKindName(code);
+                final String name = programContext.metadata.syntaxKindName(code);
                 return TSCSyntaxKind.fromJS(name);
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
         }
 
-
-        public V8ValueFunction asJSFunction(ContextCallback func) {
-            JavetCallbackContext callbackContext = new JavetCallbackContext(func, CONTEXT_CALLBACK_APPLY_METHOD);
+        @Override
+        public void close() {
             try {
-                return this.runtime.createV8ValueFunction(callbackContext);
+                this.scanner.close();
+            } catch (JavetException e) {
+            }
+        }
+    }
+
+    class Type {
+        private final ProgramContext programContext;
+        private final V8ValueObject typeV8;
+
+        public Type(ProgramContext programContext, V8ValueObject typeV8) {
+            this.programContext = programContext;
+            this.typeV8 = typeV8;
+        }
+
+        public Number getTypeId() {
+            try {
+                return this.typeV8.getPrimitive("id");
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
         }
-
-        public V8ValueFunction asJSFunction(Function<? super V8Value, ? extends V8Value> func) {
-            ContextCallback callback = (V8Value[] args) -> func.apply(args[0]);
-            return asJSFunction(callback);
-        }
-
-        public V8ValueFunction asJSFunction(Consumer<? super V8Value> func) {
-            ContextCallback callback = (V8Value[] args) -> {
-                func.accept(args[0]);
-                return runtime.createV8ValueUndefined();
-            };
-            return asJSFunction(callback);
-        }
-
-        public int syntaxKindCode(String name) {
-            return this.syntaxKindsByName.get(name);
-        }
-
-        public String syntaxKindName(int code) {
-            return this.syntaxKindsByCode.get(code);
-        }
     }
 
     class Node {
-        private final Context context;
-        private final V8ValueObject object;
+        private final ProgramContext programContext;
+        private final V8ValueObject nodeV8;
 
-        public Node(Context context, V8ValueObject object) {
-            this.context = context;
-            this.object = object;
+        public Node(ProgramContext programContext, V8ValueObject nodeV8) {
+            this.programContext = programContext;
+            this.nodeV8 = nodeV8;
         }
 
         public int syntaxKindCode() {
             try {
-                return object.getInteger("kind");
+                return nodeV8.getInteger("kind");
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
         }
 
         public String syntaxKindName() {
-            return context.syntaxKindName(this.syntaxKindCode());
+            return programContext.metadata.syntaxKindName(this.syntaxKindCode());
         }
 
         public TSCSyntaxKind syntaxKind() {
             return TSCSyntaxKind.fromJS(syntaxKindName());
         }
 
+        public Type getTypeAtNodeLocation() {
+            try {
+                V8ValueObject type = this.programContext.typeChecker.invoke("getTypeAtLocation");
+                if (type == null) {
+                    return null;
+                } else {
+                    return this.programContext.tscType(type);
+                }
+            } catch (JavetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         public int getStart() {
             try {
-                return this.object.getPropertyInteger("pos");
+                return this.nodeV8.getPropertyInteger("pos");
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
@@ -301,7 +444,7 @@ public interface TSC {
 
         public int getEnd() {
             try {
-                return this.object.getPropertyInteger("end");
+                return this.nodeV8.getPropertyInteger("end");
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
@@ -309,7 +452,7 @@ public interface TSC {
 
         public int getChildCount() {
             try {
-                return this.object.invokeInteger("getChildCount");
+                return this.nodeV8.invokeInteger("getChildCount");
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
@@ -317,11 +460,11 @@ public interface TSC {
 
         public @Nullable Node getChildNode(String name) {
             try {
-                V8Value child = this.object.getProperty(name);
+                V8ValueObject child = this.nodeV8.getProperty(name);
                 if (child == null) {
                     return null;
                 }
-                return context.tscNode(child);
+                return programContext.tscNode(child);
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
@@ -336,11 +479,11 @@ public interface TSC {
         }
 
         public List<Node> getChildNodes(String name) {
-            try (V8ValueArray children = this.object.getProperty(name)) {
+            try (V8ValueArray children = this.nodeV8.getProperty(name)) {
                 final int childCount = children.getLength();
                 List<Node> result = new ArrayList<>(childCount);
                 for (int i = 0; i < childCount; i++) {
-                    result.add(context.tscNode(children.get(i)));
+                    result.add(programContext.tscNode(children.get(i)));
                 }
                 return result;
             } catch (JavetException e) {
@@ -350,7 +493,7 @@ public interface TSC {
 
         public String getText() {
             try {
-                return this.object.invokeString("getText");
+                return this.nodeV8.invokeString("getText");
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
@@ -376,9 +519,9 @@ public interface TSC {
         }
 
         public void forEachChild(Consumer<Node> callback) {
-            Consumer<V8Value> v8Callback = v8Value -> callback.accept(context.tscNode(v8Value));
-            try (V8Value v8Function = context.asJSFunction(v8Callback)) {
-                this.object.invoke("forEachChild", v8Function);
+            Consumer<V8Value> v8Callback = v8Value -> callback.accept(programContext.tscNode((V8ValueObject) v8Value));
+            try (V8Value v8Function = programContext.asJSFunction(v8Callback)) {
+                this.nodeV8.invoke("forEachChild", v8Function);
             } catch (JavetException e) {
                 throw new RuntimeException(e);
             }
