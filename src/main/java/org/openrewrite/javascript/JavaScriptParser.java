@@ -36,7 +36,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class JavascriptParser implements Parser<JS.CompilationUnit> {
+public class JavaScriptParser implements Parser<JS.CompilationUnit> {
     @Override
     public List<JS.CompilationUnit> parse(@NonNull String... sources) {
         List<Input> inputs = new ArrayList<>(sources.length);
@@ -64,7 +64,7 @@ public class JavascriptParser implements Parser<JS.CompilationUnit> {
         try (TSCMapper mapper = new TSCMapper(relativeTo) {
             @Override
             protected void onParseFailure(Input input, Throwable error) {
-                ctx.parseFailure(input, relativeTo, JavascriptParser.this, error);
+                ctx.parseFailure(input, relativeTo, JavaScriptParser.this, error);
                 ctx.getOnError().accept(error);
             }
         }) {
@@ -111,8 +111,8 @@ public class JavascriptParser implements Parser<JS.CompilationUnit> {
             super(JS.CompilationUnit.class);
         }
 
-        public JavascriptParser build() {
-            return new JavascriptParser();
+        public JavaScriptParser build() {
+            return new JavaScriptParser();
         }
 
         @Override

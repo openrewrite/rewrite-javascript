@@ -18,14 +18,18 @@ package org.openrewrite.javascript;
 
 import org.intellij.lang.annotations.Language;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.tree.Space;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.test.SourceSpec;
 import org.openrewrite.test.SourceSpecs;
 
 import java.util.function.Consumer;
 
-public final class Assertions {
-    private Assertions() {
+import static org.assertj.core.api.Assertions.assertThat;
+
+public final class ParserAssertions {
+    private ParserAssertions() {
     }
 
     public static SourceSpecs javascript(@Language("js") @Nullable String before) {
@@ -35,7 +39,7 @@ public final class Assertions {
 
     public static SourceSpecs javascript(@Language("js") @Nullable String before, Consumer<SourceSpec<JS.CompilationUnit>> spec) {
         SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, null);
-        spec.accept(js);
+        acceptSpec(spec, js);
         return js;
     }
 
@@ -47,7 +51,23 @@ public final class Assertions {
     public static SourceSpecs javascript(@Language("js") @Nullable String before, @Language("js") String after,
                                      Consumer<SourceSpec<JS.CompilationUnit>> spec) {
         SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, s -> after);
-        spec.accept(js);
+        acceptSpec(spec, js);
         return js;
+    }
+
+    private static void acceptSpec(Consumer<SourceSpec<JS.CompilationUnit>> spec, SourceSpec<JS.CompilationUnit> javaScript) {
+        Consumer<JS.CompilationUnit> userSuppliedAfterRecipe = javaScript.getAfterRecipe();
+        javaScript.afterRecipe(userSuppliedAfterRecipe::accept);
+        spec.andThen(isFullyParsed()).accept(javaScript);
+    }
+
+    public static Consumer<SourceSpec<JS.CompilationUnit>> isFullyParsed() {
+        return spec -> spec.afterRecipe(cu -> new JavaVisitor<Integer>() {
+            @Override
+            public Space visitSpace(Space space, Space.Location loc, Integer integer) {
+                assertThat(space.getWhitespace().trim()).isEmpty();
+                return super.visitSpace(space, loc, integer);
+            }
+        }.visit(cu, 0));
     }
 }

@@ -22,8 +22,8 @@ import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.TypesInUse;
 import org.openrewrite.java.tree.*;
-import org.openrewrite.javascript.JavascriptVisitor;
-import org.openrewrite.javascript.internal.JavascriptPrinter;
+import org.openrewrite.javascript.JavaScriptVisitor;
+import org.openrewrite.javascript.internal.JavaScriptPrinter;
 import org.openrewrite.marker.Markers;
 
 import java.beans.Transient;
@@ -47,16 +47,16 @@ public interface JS extends J {
             return (R) this;
         }
         //noinspection unchecked
-        return (R) acceptJavaScript(v.adapt(JavascriptVisitor.class), p);
+        return (R) acceptJavaScript(v.adapt(JavaScriptVisitor.class), p);
     }
 
     @Override
     default <P> boolean isAcceptable(TreeVisitor<?, P> v, P p) {
-        return v.isAdaptableTo(JavascriptVisitor.class);
+        return v.isAdaptableTo(JavaScriptVisitor.class);
     }
 
     @Nullable
-    default <P> J acceptJavaScript(JavascriptVisitor<P> v, P p) {
+    default <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
         return v.defaultValue(this, p);
     }
 
@@ -168,13 +168,13 @@ public interface JS extends J {
         }
 
         @Override
-        public <P> J acceptJavaScript(JavascriptVisitor<P> v, P p) {
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
             return v.visitJavaSourceFile(this, p);
         }
 
         @Override
         public <P> TreeVisitor<?, PrintOutputCapture<P>> printer(Cursor cursor) {
-            return new JavascriptPrinter<>();
+            return new JavaScriptPrinter<>();
         }
 
         @Transient
@@ -242,6 +242,67 @@ public interface JS extends J {
                 return t.statements == statements ? t : new JS.CompilationUnit(t.id, t.prefix, t.markers, t.sourcePath,
                         t.fileAttributes, t.charsetName, t.charsetBomMarked, t.checksum, t.sourceText, t.imports, statements, t.eof);
             }
+        }
+
+        @Override
+        public String print(Cursor cursor) {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @Data
+    final class JSVariableDeclaration implements JS, Statement {
+
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        @With
+        VariableModifier modifier;
+
+        @With
+        J.VariableDeclarations variableDeclarations;
+
+        public enum VariableModifier {
+            VAR("var"), LET("let"), CONST("const");
+
+            final String keyword;
+            VariableModifier(String keyword) {
+                this.keyword = keyword;
+            }
+
+            public String getKeyword() {
+                return keyword;
+            }
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJSVariableDeclaration(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        @Override
+        public String toString() {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
+        }
+
+        @Override
+        public String print(Cursor cursor) {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
         }
     }
 

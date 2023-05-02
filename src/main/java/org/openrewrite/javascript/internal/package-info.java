@@ -13,20 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript;
+@NonNullApi
+@NonNullFields
+package org.openrewrite.javascript.internal;
 
-import org.junit.jupiter.api.Test;
-import org.openrewrite.test.RewriteTest;
-
-public class BasicParserTest implements RewriteTest {
-
-    @Test
-    public void test() {
-        rewriteRun(Assertions.javascript(
-                """
-                        function foo () {}
-                        """
-        ));
-    }
-
-}
+import org.openrewrite.internal.lang.NonNullApi;
+import org.openrewrite.internal.lang.NonNullFields;

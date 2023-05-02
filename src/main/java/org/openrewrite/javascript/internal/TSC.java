@@ -21,8 +21,10 @@ import com.caoccao.javet.interop.V8Host;
 import com.caoccao.javet.interop.V8Runtime;
 import com.caoccao.javet.interop.callback.JavetCallbackContext;
 import com.caoccao.javet.values.V8Value;
+import com.caoccao.javet.values.primitive.V8ValueBoolean;
 import com.caoccao.javet.values.primitive.V8ValueInteger;
 import com.caoccao.javet.values.primitive.V8ValueString;
+import com.caoccao.javet.values.primitive.V8ValueUndefined;
 import com.caoccao.javet.values.reference.*;
 import org.openrewrite.IOUtils;
 import org.openrewrite.internal.lang.Nullable;
@@ -48,7 +50,10 @@ public interface TSC {
 
     class Runtime implements Closeable {
         public final V8Runtime v8Runtime;
-        public V8ValueFunction tsParse;
+
+        @Nullable
+        public V8ValueFunction tsParse = null;
+
         private final JavetStandardConsoleInterceptor javetStandardConsoleInterceptor;
 
         public static Runtime init() {
@@ -83,6 +88,7 @@ public interface TSC {
 
         public void parseSourceTexts(Map<String, String> sourceTexts, BiConsumer<Node, SourceFileContext> callback) {
             importTS();
+            assert tsParse != null;
             try (V8ValueMap sourceTextsV8 = v8Runtime.createV8ValueMap()) {
                 for (Map.Entry<String, String> entry : sourceTexts.entrySet()) {
                     sourceTextsV8.set(entry.getKey(), entry.getValue());
@@ -118,7 +124,7 @@ public interface TSC {
 
                 try {
                     javetStandardConsoleInterceptor.unregister(v8Runtime.getGlobalObject());
-                } catch (JavetException e) {
+                } catch (JavetException ignored) {
                 }
                 v8Runtime.await();
                 v8Runtime.lowMemoryNotification();
@@ -491,6 +497,49 @@ public interface TSC {
             }
         }
 
+        public boolean getBooleanPropertyValue(String propertyName) {
+            V8Value val;
+            try {
+                val = this.nodeV8.getProperty(propertyName);
+            } catch (JavetException ignored) {
+                throw new IllegalStateException(String.format("Property <%s> does not exist on syntaxKind %s", propertyName, this.syntaxKind()));
+            }
+
+            boolean propertyValue = false;
+            if (val instanceof V8ValueBoolean) {
+                propertyValue = ((V8ValueBoolean) val).getValue();
+            } else {
+                throw new IllegalStateException(String.format("Property <%s> is not a boolean type.", propertyName));
+            }
+            return propertyValue;
+        }
+
+        public String getStringPropertyValue(String propertyName) {
+            V8Value val;
+            try {
+                val = this.nodeV8.getProperty(propertyName);
+            } catch (JavetException ignored) {
+                throw new IllegalStateException(String.format("Property <%s> does not exist on syntaxKind %s", propertyName, this.syntaxKind()));
+            }
+
+            String propertyValue = "";
+            if (val instanceof V8ValueString) {
+                propertyValue = ((V8ValueString) val).getValue();
+            } else {
+                throw new IllegalStateException(String.format("Property <%s> is not a boolean type.", propertyName));
+            }
+            return propertyValue;
+        }
+
+        public boolean hasProperty(String propertyName) {
+            boolean isFound = false;
+            try {
+                isFound = !(this.nodeV8.getProperty(propertyName) instanceof V8ValueUndefined);
+            } catch (JavetException ignored) {
+            }
+            return isFound;
+        }
+
         public String getText() {
             try {
                 return this.nodeV8.invokeString("getText");
@@ -529,6 +578,33 @@ public interface TSC {
 
         public void printTree(PrintStream ps) {
             printTree(ps, "");
+        }
+
+        // FIXME: Remove. Temporary method to view object
+        public V8ValueObject getObject() {
+            return nodeV8;
+        }
+
+
+        // FIXME: Remove. Temporary method to view context
+        public ProgramContext getContext() {
+            return this.programContext;
+        }
+
+        public List<String> getOwnPropertyNames() {
+            try {
+                return this.nodeV8.getOwnPropertyNames().getOwnPropertyNameStrings();
+            } catch (JavetException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        public List<String> getPropertyNames() {
+            try {
+                return this.nodeV8.getPropertyNames().getOwnPropertyNameStrings();
+            } catch (JavetException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
         private void printTree(PrintStream ps, String indent) {

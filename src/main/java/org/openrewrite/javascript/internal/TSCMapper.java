@@ -19,6 +19,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.javascript.tree.JS;
 
 import java.io.Closeable;
@@ -29,7 +30,10 @@ import java.util.List;
 
 public abstract class TSCMapper implements Closeable {
     private final TSC.Runtime runtime;
-    private final @Nullable Path relativeTo;
+
+    @Nullable
+    private final Path relativeTo;
+
     private final List<JS.CompilationUnit> compilationUnits = new ArrayList<>();
 
     public TSCMapper(@Nullable Path relativeTo) {
@@ -37,13 +41,17 @@ public abstract class TSCMapper implements Closeable {
         this.relativeTo = relativeTo;
     }
 
+    // TODO: add method that parses all inputs.
+
+    // Temporary method to parse files.
     public void add(Parser.Input input, ExecutionContext ctx) {
         EncodingDetectingInputStream is = input.getSource(ctx);
         String inputSourceText = is.readFully();
         this.runtime.parseSourceTexts(
                 Collections.singletonMap("example.ts", inputSourceText),
                 (node, context) -> {
-                    TSCFileMapper fileMapper = new TSCFileMapper(node, context, input.getPath(), relativeTo, is.getCharset().toString(), is.isCharsetBomMarked());
+                    // TODO: sort out type caching
+                    TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(node, context, input.getPath(), relativeTo, new JavaTypeCache(), is.getCharset().toString(), is.isCharsetBomMarked());
                     this.compilationUnits.add(fileMapper.mapSourceFile());
                 }
         );
