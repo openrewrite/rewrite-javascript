@@ -18,6 +18,7 @@ package org.openrewrite.javascript.internal;
 import org.openrewrite.Cursor;
 import org.openrewrite.PrintOutputCapture;
 import org.openrewrite.Tree;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaPrinter;
 import org.openrewrite.java.marker.TrailingComma;
@@ -62,23 +63,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
-//        @Override
-//        public J visitBlock(J.Block block, PrintOutputCapture<P> p) {
-//            beforeSyntax(block, Space.Location.BLOCK_PREFIX, p);
-//
-//            if (block.isStatic()) {
-//                p.append("static");
-//                visitRightPadded(block.getPadding().getStatic(), JRightPadded.Location.STATIC_INIT, p);
-//            }
-//
-//            p.append('{');
-//            visitStatements(block.getPadding().getStatements(), JRightPadded.Location.BLOCK_STATEMENT, p);
-//            visitSpace(block.getEnd(), Space.Location.BLOCK_END, p);
-//            p.append('}');
-//            afterSyntax(block, p);
-//            return block;
-//        }
-
         @Override
         public J visitMethodDeclaration(J.MethodDeclaration method, PrintOutputCapture<P> p) {
             beforeSyntax(method, Space.Location.METHOD_DECLARATION_PREFIX, p);
@@ -109,6 +93,22 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 //        visitLeftPadded("default", method.getPadding().getDefaultValue(), JLeftPadded.Location.METHOD_DECLARATION_DEFAULT_VALUE, p);
 //        afterSyntax(method, p);
             return method;
+        }
+
+        @Override
+        public J visitVariableDeclarations(J.VariableDeclarations multiVariable, PrintOutputCapture<P> p) {
+            beforeSyntax(multiVariable, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
+            visit(multiVariable.getLeadingAnnotations(), p);
+            for (J.Modifier m : multiVariable.getModifiers()) {
+                visitModifier(m, p);
+            }
+
+            // FIXME: this will not print more complex TS variable decs correctly.
+            ListUtils.map(multiVariable.getPadding().getVariables(), it -> visitRightPadded(it, JRightPadded.Location.NAMED_VARIABLE, p));
+            p.append(":");
+            visit(multiVariable.getTypeExpression(), p);
+            afterSyntax(multiVariable, p);
+            return multiVariable;
         }
 
         @Override

@@ -15,7 +15,6 @@
  */
 package org.openrewrite.javascript.internal;
 
-import com.caoccao.javet.values.primitive.V8ValueInteger;
 import org.openrewrite.FileAttributes;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
@@ -88,9 +87,10 @@ public class TypeScriptParserVisitor {
     }
 
     private J.Block mapBlock(@Nullable TSC.Node node) {
-        // TODO: handle null TSC.Node.
-
-        expect(TSCSyntaxKind.Block, node);
+        if (node == null) {
+            // Some bodies can return a null block.
+            throw new UnsupportedOperationException("FIXME");
+        }
 
         Space prefix = sourceBefore(TSCSyntaxKind.OpenBraceToken);
 
@@ -277,11 +277,59 @@ public class TypeScriptParserVisitor {
     }
 
     private Statement mapFunctionParameter(TSC.Node node) {
-        throw new UnsupportedOperationException();
+        Space prefix = whitespace();
+        if (node.hasProperty("modifiers")) {
+            throw new UnsupportedOperationException("implement me.");
+        }
+
+        Space variablePrefix = whitespace();
+        J.Identifier name = mapIdentifier(node.getChildNodeRequired("name"));
+        if (node.hasProperty("questionToken")) {
+            throw new UnsupportedOperationException("implement me.");
+        }
+
+        Space afterName = EMPTY;
+        TypeTree typeTree = null;
+        if (node.hasProperty("type")) {
+            // FIXME: method(x: { suit: string; card: number }[])
+            afterName = sourceBefore(TSCSyntaxKind.ColonToken);
+            TSC.Node type = node.getChildNode("type");
+            assert type != null;
+            typeTree = (TypeTree) mapNode(type);
+        }
+        List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = new ArrayList<>(1);
+        variables.add(padRight(new J.VariableDeclarations.NamedVariable(
+                randomId(),
+                variablePrefix,
+                Markers.EMPTY,
+                name,
+                emptyList(),
+                null,
+                typeMapping.variableType(node)
+        ), afterName));
+        if (node.hasProperty("initializer")) {
+            throw new UnsupportedOperationException("implement me.");
+        }
+
+        Space varargs = null;
+        List<JLeftPadded<Space>> dimensionsBeforeName = emptyList();
+
+        return new J.VariableDeclarations(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                emptyList(), // TODO:
+                emptyList(), // TODO:
+                typeTree,
+                varargs,
+                dimensionsBeforeName,
+                variables
+        );
     }
 
     private J.Identifier mapIdentifier(TSC.Node node) {
-        Space prefix = sourceBefore(node);
+        Space prefix = sourceBefore(node.getText());
+        // TODO: check on escapedText property.
         return new J.Identifier(
                 randomId(),
                 prefix,
@@ -290,6 +338,10 @@ public class TypeScriptParserVisitor {
                 typeMapping.type(node),
                 null // FIXME
         );
+    }
+
+    private J.Identifier  mapNumberKeyword(TSC.Node node) {
+        return mapIdentifier(node);
     }
 
     private JRightPadded<Statement> mapStatement(TSC.Node node) {
@@ -333,6 +385,9 @@ public class TypeScriptParserVisitor {
             case FunctionDeclaration:
                 j = mapFunctionDeclaration(node);
                 break;
+            case NumberKeyword:
+                j = mapNumberKeyword(node);
+                break;
             default:
                 System.err.println("unsupported syntax kind: " + node.syntaxKindName());
                 j = null;
@@ -356,10 +411,10 @@ public class TypeScriptParserVisitor {
     }
 
     /**
-     * Increment the cursor position to the end of the node.
+     * Increment the cursor position past the text.
      */
-    private void skip(TSC.Node node) {
-        this.cursorContext.resetScanner(node.getEnd());
+    private void skip(String text) {
+        this.cursorContext.resetScanner(getCursorPosition() + text.length());
     }
 
     private <T> JLeftPadded<T> padLeft(Space left, T tree) {
@@ -388,31 +443,6 @@ public class TypeScriptParserVisitor {
         }
     }
 
-    private TSC.Node expect(TSC.Node node) {
-        if (this.getCursorPosition() != node.getEnd()) {
-            throw new IllegalStateException(String.format("expected position '%d'; found '%d'", node.getEnd(), this.getCursorPosition()));
-        }
-        return node;
-    }
-
-    private TSC.Node expect(TSCSyntaxKind kind, TSC.Node node) {
-        if (node.syntaxKind() != kind) {
-            throw new IllegalStateException(String.format("expected kind '%s'; found '%s'", kind, node.syntaxKindName()));
-        }
-        if (this.getCursorPosition() != node.getStart()) {
-            throw new IllegalStateException(
-                    String.format(
-                            "expected position %d; found %d (node text=`%s`, end=%d)",
-                            node.getStart(),
-                            this.getCursorPosition(),
-                            node.getText().replace("\n", "⏎"),
-                            node.getEnd()
-                    )
-            );
-        }
-        return node;
-    }
-
     private String tokenStreamDebug() {
         return String.format("[start=%d, end=%d, text=`%s`]", this.cursorContext.scannerTokenStart(), this.cursorContext.scannerTokenEnd(), this.cursorContext.scannerTokenText().replace("\n", "⏎"));
     }
@@ -429,11 +459,13 @@ public class TypeScriptParserVisitor {
             );
         } else {
             rightPaddeds = new ArrayList<>(nodes.size());
-            for (TSC.Node node : nodes) {
+            for (int i = 0; i < nodes.size(); i++) {
+                TSC.Node node = nodes.get(i);
                 T mapped = mapFn.apply(node);
                 Space after = whitespace();
                 rightPaddeds.add(JRightPadded.build(mapped).withAfter(after));
-                if (delimiter != null) {
+                // FIXME: check on trailing commas. Trailing comma property may not be available here. pass in bool val?
+                if (i < nodes.size() - 1 && delimiter != null) {
                     consumeToken(delimiter);
                 }
             }
@@ -442,9 +474,9 @@ public class TypeScriptParserVisitor {
         return JContainer.build(containerPrefix, rightPaddeds, Markers.EMPTY);
     }
 
-    private Space sourceBefore(TSC.Node node) {
+    private Space sourceBefore(String text) {
         Space prefix = whitespace();
-        skip(node);
+        skip(text);
         return prefix;
     }
 

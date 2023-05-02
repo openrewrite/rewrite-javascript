@@ -20,7 +20,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.ParserAssertions.javascript;
 
-@SuppressWarnings("JSUnusedLocalSymbols")
+@SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable"})
 public class MethodDeclarationTest implements RewriteTest {
 
     @Test
@@ -29,6 +29,17 @@ public class MethodDeclarationTest implements RewriteTest {
           javascript(
             """
               function foo ( ) { }
+              """
+          )
+        );
+    }
+
+    @Test
+    public void methodParameters() {
+        rewriteRun(
+          javascript(
+            """
+              function foo ( x : number , y : number ) { }
               """
           )
         );
