@@ -25,6 +25,8 @@ import org.openrewrite.java.tree.JavaType;
 @Incubating(since = "0.0")
 public class TypeScriptTypeMapping implements JavaTypeMapping<Object> {
 
+    // FIXME: we need to pass in the owner (source file) if it is not accessible from the Node.
+
     private final TypeScriptSignatureBuilder signatureBuilder;
     private final JavaTypeCache typeCache;
 

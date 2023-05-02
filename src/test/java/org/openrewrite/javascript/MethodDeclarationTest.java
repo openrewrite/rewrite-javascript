@@ -21,10 +21,10 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.javascript.ParserAssertions.javascript;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
-public class BasicParserTest implements RewriteTest {
+public class MethodDeclarationTest implements RewriteTest {
 
     @Test
-    public void test() {
+    public void methodDeclaration() {
         rewriteRun(
           javascript(
             """
