@@ -53,16 +53,6 @@ export default function parse(inputs: Map<string, string>) {
             sourceFiles: program.getSourceFiles(),
             createScanner: () => createScanner(ScriptTarget.ESNext, false, undefined),
         };
-
-        // const sourceFile = ts.createSourceFile('example.ts', text, ScriptTarget.ESNext, true);
-        // return {
-        //     meta: {
-        //         syntaxKinds: new Map(Object.entries(ts.SyntaxKind))
-        //     },
-        //     sourceFile,
-        //     nodeEndPositions: collectNodeEndPositions(sourceFile),
-        //     scanner: createScanner(ScriptTarget.ESNext, false, undefined, text),
-        // };
     } catch (err) {
         console.error(err);
     }
