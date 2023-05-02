@@ -25,6 +25,7 @@ import org.openrewrite.javascript.tree.JS;
 import java.io.Closeable;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class TSCMapper implements Closeable {
@@ -46,11 +47,14 @@ public abstract class TSCMapper implements Closeable {
     public void add(Parser.Input input, ExecutionContext ctx) {
         EncodingDetectingInputStream is = input.getSource(ctx);
         String inputSourceText = is.readFully();
-        this.runtime.parseSourceText(inputSourceText, (node, context) -> {
-            // TODO: sort out type caching
-            TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(node, context, input.getPath(), relativeTo, new JavaTypeCache(), is.getCharset().toString(), is.isCharsetBomMarked());
-            this.compilationUnits.add(fileMapper.mapSourceFile());
-        });
+        this.runtime.parseSourceTexts(
+                Collections.singletonMap("example.ts", inputSourceText),
+                (node, context) -> {
+                    // TODO: sort out type caching
+                    TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(node, context, input.getPath(), relativeTo, new JavaTypeCache(), is.getCharset().toString(), is.isCharsetBomMarked());
+                    this.compilationUnits.add(fileMapper.mapSourceFile());
+                }
+        );
     }
 
     protected abstract void onParseFailure(Parser.Input input, Throwable error);

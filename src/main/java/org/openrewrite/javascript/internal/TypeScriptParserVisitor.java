@@ -37,7 +37,7 @@ import static org.openrewrite.java.tree.Space.EMPTY;
 public class TypeScriptParserVisitor {
 
     private final TSC.Node source;
-    private final TSC.Context cursorContext;
+    private final TSC.SourceFileContext cursorContext;
     private final Path sourcePath;
     private final TypeScriptTypeMapping typeMapping;
 
@@ -47,7 +47,7 @@ public class TypeScriptParserVisitor {
     private final String charset;
     private final boolean isCharsetBomMarked;
 
-    public TypeScriptParserVisitor(TSC.Node source, TSC.Context sourceContext, Path sourcePath, @Nullable Path relativeTo, JavaTypeCache typeCache, String charset, boolean isCharsetBomMarked) {
+    public TypeScriptParserVisitor(TSC.Node source, TSC.SourceFileContext sourceContext, Path sourcePath, @Nullable Path relativeTo, JavaTypeCache typeCache, String charset, boolean isCharsetBomMarked) {
         this.source = source;
         this.cursorContext = sourceContext;
         this.sourcePath = sourcePath;
