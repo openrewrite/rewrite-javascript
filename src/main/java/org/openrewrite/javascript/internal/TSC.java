@@ -427,6 +427,7 @@ public interface TSC {
             return TSCSyntaxKind.fromJS(syntaxKindName());
         }
 
+        @Nullable
         public Type getTypeAtNodeLocation() {
             try {
                 V8ValueObject type = this.programContext.typeChecker.invoke("getTypeAtLocation");
@@ -464,7 +465,8 @@ public interface TSC {
             }
         }
 
-        public @Nullable Node getChildNode(String name) {
+        @Nullable
+        public Node getChildNode(String name) {
             try {
                 V8ValueObject child = this.nodeV8.getProperty(name);
                 if (child == null) {
