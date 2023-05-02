@@ -9,7 +9,7 @@ import static org.openrewrite.javascript.ParserAssertions.javascript;
 public class ClassDeclarationTest implements RewriteTest {
 
     @Test
-    public void classDeclaration() {
+    void classDeclaration() {
         rewriteRun(
             javascript(
               "class Foo { }"
@@ -18,7 +18,7 @@ public class ClassDeclarationTest implements RewriteTest {
     }
 
     @Test
-    public void abstractClass() {
+    void abstractClass() {
         rewriteRun(
             javascript(
               "abstract class Foo { }"
@@ -27,7 +27,7 @@ public class ClassDeclarationTest implements RewriteTest {
     }
 
     @Test
-    public void interfaceDeclaration() {
+    void interfaceDeclaration() {
         rewriteRun(
             javascript(
               "interface Foo { }"

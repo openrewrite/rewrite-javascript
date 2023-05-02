@@ -21,10 +21,12 @@ import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaPrinter;
+import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.javascript.tree.JsSpace;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
 
@@ -32,12 +34,9 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P>> {
-//    @Override
-//    public J visitCompilationUnit(JS.CompilationUnit cu, PrintOutputCapture<P> p) {
-//        // FIXME implement
-//        p.append(cu.getSourceText());
-//        return cu;
-//    }
+
+    private static final UnaryOperator<String> JAVA_SCRIPT_MARKER_WRAPPER =
+            out -> "/*~~" + out + (out.isEmpty() ? "" : "~~") + ">*/";
 
     private final JavaScriptJavaPrinter delegate = new JavaScriptJavaPrinter();
 
@@ -53,13 +52,18 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
     public J visitCompilationUnit(JS.CompilationUnit cu, PrintOutputCapture<P> p) {
         // FIXME Implement
-        visit(cu.getStatements(), p);
+        visitRightPadded(cu.getPadding().getStatements(), JRightPadded.Location.LANGUAGE_EXTENSION, "", p);
         return cu;
     }
 
-    // TODO: fix for JS.
-    private static final UnaryOperator<String> JAVA_SCRIPT_MARKER_WRAPPER =
-            out -> "/*~~" + out + (out.isEmpty() ? "" : "~~") + ">*/";
+    @Override
+    public J visitJSVariableDeclaration(JS.JSVariableDeclaration jsVariableDeclaration, PrintOutputCapture<P> p) {
+        beforeSyntax(jsVariableDeclaration, JsSpace.Location.VARIABLE_DECLARATION_PREFIX, p);
+        p.append(jsVariableDeclaration.getModifier().getKeyword());
+        visit(jsVariableDeclaration.getVariableDeclarations(), p);
+        afterSyntax(jsVariableDeclaration, p);
+        return jsVariableDeclaration;
+    }
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
@@ -91,7 +95,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 //        visitContainer("throws", method.getPadding().getThrows(), JContainer.Location.THROWS, ",", null, p);
             visit(method.getBody(), p);
 //        visitLeftPadded("default", method.getPadding().getDefaultValue(), JLeftPadded.Location.METHOD_DECLARATION_DEFAULT_VALUE, p);
-//        afterSyntax(method, p);
+            afterSyntax(method, p);
             return method;
         }
 
@@ -105,8 +109,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
             // FIXME: this will not print more complex TS variable decs correctly.
             ListUtils.map(multiVariable.getPadding().getVariables(), it -> visitRightPadded(it, JRightPadded.Location.NAMED_VARIABLE, p));
-            p.append(":");
-            visit(multiVariable.getTypeExpression(), p);
+            if (multiVariable.getTypeExpression() != null) {
+                p.append(":");
+                visit(multiVariable.getTypeExpression(), p);
+            }
             afterSyntax(multiVariable, p);
             return multiVariable;
         }
@@ -121,13 +127,33 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 if (i < nodes.size() - 1) {
                     p.append(suffixBetween);
                 } else {
-                    TrailingComma trailingComma = node.getMarkers().findFirst(TrailingComma.class).orElse(null);
-                    if (trailingComma != null) {
-                        p.append(suffixBetween);
-                        visitSpace(trailingComma.getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
+                    for (Marker marker : node.getMarkers().getMarkers()) {
+                        if (marker instanceof TrailingComma) {
+                            p.append(suffixBetween);
+                            visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
+                        } else if (marker instanceof Semicolon) {
+                            p.append(";");
+                        }
                     }
                 }
             }
+        }
+    }
+
+    protected void beforeSyntax(J j, JsSpace.Location loc, PrintOutputCapture<P> p) {
+        beforeSyntax(j.getPrefix(), j.getMarkers(), loc, p);
+    }
+
+    private void beforeSyntax(Space prefix, Markers markers, @Nullable JsSpace.Location loc, PrintOutputCapture<P> p) {
+        for (Marker marker : markers.getMarkers()) {
+            p.append(p.getMarkerPrinter().beforePrefix(marker, new Cursor(getCursor(), marker), JAVA_SCRIPT_MARKER_WRAPPER));
+        }
+        if (loc != null) {
+            visitSpace(prefix, loc, p);
+        }
+        visitMarkers(markers, p);
+        for (Marker marker : markers.getMarkers()) {
+            p.append(p.getMarkerPrinter().beforeSyntax(marker, new Cursor(getCursor(), marker), JAVA_SCRIPT_MARKER_WRAPPER));
         }
     }
 
@@ -167,10 +193,13 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             if (i < nodes.size() - 1) {
                 p.append(suffixBetween);
             } else {
-                TrailingComma trailingComma = node.getMarkers().findFirst(TrailingComma.class).orElse(null);
-                if (trailingComma != null) {
-                    p.append(suffixBetween);
-                    visitSpace(trailingComma.getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
+                for (Marker marker : node.getMarkers().getMarkers()) {
+                    if (marker instanceof TrailingComma) {
+                        p.append(suffixBetween);
+                        visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
+                    } else if (marker instanceof Semicolon) {
+                        p.append(";");
+                    }
                 }
             }
         }

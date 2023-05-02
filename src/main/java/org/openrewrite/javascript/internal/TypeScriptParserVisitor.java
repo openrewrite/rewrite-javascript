@@ -19,6 +19,7 @@ import org.openrewrite.FileAttributes;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
+import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.TypeScriptTypeMapping;
@@ -63,7 +64,7 @@ public class TypeScriptParserVisitor {
                 child -> {
                     @Nullable J mapped = mapNode(child);
                     if (mapped != null) {
-                        return new JRightPadded<>((Statement) mapped, EMPTY, Markers.EMPTY);
+                        return maybeSemicolon((Statement) mapped);
                     } else {
                         return null;
                     }
@@ -230,7 +231,7 @@ public class TypeScriptParserVisitor {
                 (JavaType.FullyQualified) typeMapping.type(node));
     }
 
-    private J mapEnumMember(TSC.Node node) {
+    private J.EnumValue mapEnumMember(TSC.Node node) {
         Space prefix = whitespace();
 
         List<J.Annotation> annotations = null; // FIXME
@@ -244,7 +245,7 @@ public class TypeScriptParserVisitor {
     }
 
     // FIXME
-    private J mapFunctionDeclaration(TSC.Node node) {
+    private J.MethodDeclaration mapFunctionDeclaration(TSC.Node node) {
         Space prefix = sourceBefore(TSCSyntaxKind.FunctionKeyword);
 
         J.Identifier name = mapIdentifier(node.getChildNodeRequired("name"));
@@ -278,15 +279,12 @@ public class TypeScriptParserVisitor {
 
     private Statement mapFunctionParameter(TSC.Node node) {
         Space prefix = whitespace();
-        if (node.hasProperty("modifiers")) {
-            throw new UnsupportedOperationException("implement me.");
-        }
+        implementMe(node, "modifiers");
 
         Space variablePrefix = whitespace();
         J.Identifier name = mapIdentifier(node.getChildNodeRequired("name"));
-        if (node.hasProperty("questionToken")) {
-            throw new UnsupportedOperationException("implement me.");
-        }
+
+        implementMe(node, "questionToken");
 
         Space afterName = EMPTY;
         TypeTree typeTree = null;
@@ -307,9 +305,8 @@ public class TypeScriptParserVisitor {
                 null,
                 typeMapping.variableType(node)
         ), afterName));
-        if (node.hasProperty("initializer")) {
-            throw new UnsupportedOperationException("implement me.");
-        }
+
+        implementMe(node, "initializer");
 
         Space varargs = null;
         List<JLeftPadded<Space>> dimensionsBeforeName = emptyList();
@@ -340,8 +337,81 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J.Identifier  mapNumberKeyword(TSC.Node node) {
+    private J.Identifier mapNumberKeyword(TSC.Node node) {
         return mapIdentifier(node);
+    }
+
+    private J.Literal mapStringLiteral(TSC.Node node) {
+        // singleQuote
+        // hasExtendedUnicodeEscape
+        return new J.Literal(
+                randomId(),
+                sourceBefore(TSCSyntaxKind.StringLiteral),
+                Markers.EMPTY,
+                node.getStringPropertyValue("text"),
+                node.getText(),
+                null, // TODO
+                JavaType.Primitive.String
+        );
+    }
+
+    private JS.JSVariableDeclaration mapVariableStatement(TSC.Node node) {
+        Space prefix = whitespace();
+
+        List<J.Annotation> annotations = emptyList();
+        List<J.Modifier> modifiers = emptyList();
+        implementMe(node, "modifiers");
+
+        skip("let");
+        JS.JSVariableDeclaration.VariableModifier modifier = JS.JSVariableDeclaration.VariableModifier.LET;
+
+        List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = emptyList();
+        if (node.hasProperty("declarationList")) {
+            TSC.Node declarationList = node.getChildNode("declarationList");
+            assert declarationList != null;
+
+            List<TSC.Node> declarations = declarationList.getChildNodes("declarations");
+            namedVariables = new ArrayList<>(declarations.size());
+            for (int i = 0; i < declarations.size(); i++) {
+                TSC.Node declaration = declarations.get(i);
+                // name
+                // exclamationToken
+                // type
+                // initializer
+                J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
+                        randomId(),
+                        whitespace(),
+                        Markers.EMPTY,
+                        mapIdentifier(declaration.getChildNodeRequired("name")),
+                        emptyList(),
+                        declaration.hasProperty("initializer") ?
+                                padLeft(sourceBefore(TSCSyntaxKind.EqualsToken),
+                                        (Expression) Objects.requireNonNull(mapNode(declaration.getChildNodeRequired("initializer")))) : null,
+                        typeMapping.variableType(node)
+                );
+
+                Space after = i < declarations.size() - 1 ? sourceBefore(TSCSyntaxKind.CommaToken) : EMPTY;
+                namedVariables.add(padRight(variable, after));
+            }
+        }
+
+        return new JS.JSVariableDeclaration(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                modifier,
+                new J.VariableDeclarations(
+                        randomId(),
+                        prefix,
+                        Markers.EMPTY,
+                        annotations,
+                        modifiers,
+                        null,
+                        null,
+                        emptyList(),
+                        namedVariables
+                )
+        );
     }
 
     private JRightPadded<Statement> mapStatement(TSC.Node node) {
@@ -363,11 +433,21 @@ public class TypeScriptParserVisitor {
                     modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Abstract, annotations));
                     break;
                 default:
-                    throw new UnsupportedOperationException("implement me.");
+                    implementMe(node);
             }
         }
 
         return modifiers;
+    }
+
+    private void implementMe(TSC.Node node) {
+        throw new UnsupportedOperationException(String.format("Implement syntax kind: %s.", node.syntaxKind()));
+    }
+
+    private void implementMe(TSC.Node node, String propertyName) {
+        if (node.hasProperty(propertyName)) {
+            throw new UnsupportedOperationException(String.format("Implement syntax kind: %s property %s", node.syntaxKind(), propertyName));
+        }
     }
 
     @Nullable
@@ -388,7 +468,14 @@ public class TypeScriptParserVisitor {
             case NumberKeyword:
                 j = mapNumberKeyword(node);
                 break;
+            case StringLiteral:
+                j = mapStringLiteral(node);
+                break;
+            case VariableStatement:
+                j = mapVariableStatement(node);
+                break;
             default:
+                implementMe(node); // TODO: remove ... temp for velocity.
                 System.err.println("unsupported syntax kind: " + node.syntaxKindName());
                 j = null;
         }
@@ -423,6 +510,26 @@ public class TypeScriptParserVisitor {
 
     private <T> JRightPadded<T> padRight(T tree, @Nullable Space right) {
         return new JRightPadded<>(tree, right == null ? EMPTY : right, Markers.EMPTY);
+    }
+
+    private <K2 extends J> JRightPadded<K2> maybeSemicolon(K2 k) {
+        int saveCursor = getCursorPosition();
+        Space beforeSemi = whitespace();
+        Semicolon semicolon = null;
+        if (getCursorPosition() < source.getText().length() && source.getText().charAt(getCursorPosition()) == ';') {
+            semicolon = new Semicolon(randomId());
+            consumeToken(TSCSyntaxKind.SemicolonToken);
+        } else {
+            beforeSemi = EMPTY;
+            cursor(saveCursor);
+        }
+
+        JRightPadded<K2> padded = JRightPadded.build(k).withAfter(beforeSemi);
+        if (semicolon != null) {
+            padded = padded.withMarkers(padded.getMarkers().add(semicolon));
+        }
+
+        return padded;
     }
 
     private TSCSyntaxKind scan() {

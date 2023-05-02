@@ -16,36 +16,45 @@
 package org.openrewrite.javascript;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.ParserAssertions.javascript;
 
-@SuppressWarnings("JSUnusedLocalSymbols")
-public class EnumTest implements RewriteTest {
+@SuppressWarnings({"JSUnusedLocalSymbols", "TrailingWhitespacesInTextBlock"})
+public class SemiColonTest implements RewriteTest {
 
     @Test
-    void enumDeclaration() {
+    void semiColon() {
         rewriteRun(
           javascript(
             """
-              enum Foo {
-                Bar , Buz
-              }
+              let hello = "World" ;
               """
           )
         );
     }
 
     @Test
-    void hasTrailingComma() {
+    void noSemiColon() {
         rewriteRun(
-            javascript(
+          javascript(
+            """
+              let hello = "World" 
               """
-                enum Foo {
-                  Bar , Buz ,
-                }
-                """
-            )
+          )
+        );
+    }
+
+    @ExpectedToFail("Implement EmptyStatement")
+    @Test
+    void multiSemiColon() {
+        rewriteRun(
+          javascript(
+            """
+              let hello = "World" ; ;
+              """
+          )
         );
     }
 }

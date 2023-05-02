@@ -24,7 +24,7 @@ import static org.openrewrite.javascript.ParserAssertions.javascript;
 public class MethodDeclarationTest implements RewriteTest {
 
     @Test
-    public void methodDeclaration() {
+    void methodDeclaration() {
         rewriteRun(
           javascript(
             """
@@ -35,7 +35,7 @@ public class MethodDeclarationTest implements RewriteTest {
     }
 
     @Test
-    public void methodParameters() {
+    void methodParameters() {
         rewriteRun(
           javascript(
             """

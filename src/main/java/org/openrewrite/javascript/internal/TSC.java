@@ -355,11 +355,35 @@ public interface TSC {
         }
 
         public boolean getBooleanPropertyValue(String propertyName) {
-            boolean propertyValue = false;
+            V8Value val;
             try {
-                V8Value val = this.object.getProperty(propertyName);
-                propertyValue = val instanceof V8ValueBoolean && ((V8ValueBoolean) val).getValue();
+                val = this.object.getProperty(propertyName);
             } catch (JavetException ignored) {
+                throw new IllegalStateException(String.format("Property <%s> does not exist on syntaxKind %s", propertyName, this.syntaxKind()));
+            }
+
+            boolean propertyValue = false;
+            if (val instanceof V8ValueBoolean) {
+                propertyValue = ((V8ValueBoolean) val).getValue();
+            } else {
+                throw new IllegalStateException(String.format("Property <%s> is not a boolean type.", propertyName));
+            }
+            return propertyValue;
+        }
+
+        public String getStringPropertyValue(String propertyName) {
+            V8Value val;
+            try {
+                val = this.object.getProperty(propertyName);
+            } catch (JavetException ignored) {
+                throw new IllegalStateException(String.format("Property <%s> does not exist on syntaxKind %s", propertyName, this.syntaxKind()));
+            }
+
+            String propertyValue = "";
+            if (val instanceof V8ValueString) {
+                propertyValue = ((V8ValueString) val).getValue();
+            } else {
+                throw new IllegalStateException(String.format("Property <%s> is not a boolean type.", propertyName));
             }
             return propertyValue;
         }

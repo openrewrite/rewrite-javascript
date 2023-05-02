@@ -19,7 +19,9 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.java.tree.Space;
 import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.javascript.tree.JsSpace;
 
 public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
@@ -43,10 +45,21 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         throw new UnsupportedOperationException("JS has a different structure for its compilation unit. See JS.CompilationUnit.");
     }
 
+    public J visitJSVariableDeclaration(JS.JSVariableDeclaration jsVariableDeclaration, P p) {
+        JS.JSVariableDeclaration vd = jsVariableDeclaration;
+        vd = vd.withPrefix(visitSpace(vd.getPrefix(), JsSpace.Location.VARIABLE_DECLARATION_PREFIX, p));
+        vd = vd.withMarkers(visitMarkers(vd.getMarkers(), p));
+        vd = vd.withVariableDeclarations((J.VariableDeclarations) visit(vd.getVariableDeclarations(), p));
+        return vd;
+    }
+
     public J visitCompilationUnit(JS.CompilationUnit cu, P p) {
         // FIXME Implement
         visit(cu.getStatements(), p);
         return cu;
     }
 
+    public Space visitSpace(Space space, JsSpace.Location loc, P p) {
+        return visitSpace(space, Space.Location.LANGUAGE_EXTENSION, p);
+    }
 }
