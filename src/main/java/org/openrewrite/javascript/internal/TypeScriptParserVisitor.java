@@ -37,6 +37,7 @@ import static java.util.Collections.emptyList;
 import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.tree.Space.EMPTY;
 
+@SuppressWarnings("DataFlowIssue")
 public class TypeScriptParserVisitor {
 
     private final TSCNode source;
@@ -67,6 +68,9 @@ public class TypeScriptParserVisitor {
                 child -> {
                     @Nullable J mapped = mapNode(child);
                     if (mapped != null) {
+                        if (!(mapped instanceof Statement) && mapped instanceof Expression) {
+                            mapped = new JS.ExpressionStatement(randomId(), (Expression) mapped);
+                        }
                         return maybeSemicolon((Statement) mapped);
                     } else {
                         return null;
@@ -234,6 +238,169 @@ public class TypeScriptParserVisitor {
                 (JavaType.FullyQualified) typeMapping.type(node));
     }
 
+    private J.Assignment mapAssignment(TSCNode node) {
+        Space prefix = whitespace();
+        Expression left = (Expression) mapNode(node.getChildNodeRequired("left"));
+        Space before = sourceBefore(TSCSyntaxKind.EqualsToken);
+        Expression right = (Expression) mapNode(node.getChildNodeRequired("right"));
+        return new J.Assignment(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                left,
+                padLeft(before, right),
+                typeMapping.type(node)
+        );
+    }
+
+    private J.AssignmentOperation mapAssignmentOperation(TSCNode node) {
+        Space prefix = whitespace();
+        Expression left = (Expression) mapNode(node.getChildNodeRequired("left"));
+        JLeftPadded<J.AssignmentOperation.Type> op = null;
+        TSCSyntaxKind opKind = node.getChildNodeRequired("operatorToken").syntaxKind();
+        switch (opKind) {
+            case AsteriskEqualsToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.AsteriskEqualsToken), J.AssignmentOperation.Type.Multiplication);
+                break;
+            case MinusEqualsToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.MinusEqualsToken), J.AssignmentOperation.Type.Subtraction);
+                break;
+            case PlusEqualsToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.PlusEqualsToken), J.AssignmentOperation.Type.Addition);
+                break;
+            case SlashEqualsToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.SlashEqualsToken), J.AssignmentOperation.Type.Division);
+                break;
+            default:
+                implementMe(node);
+        }
+
+        Expression right = (Expression) mapNode(node.getChildNodeRequired("right"));
+        return new J.AssignmentOperation(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                left,
+                op,
+                right,
+                typeMapping.type(node)
+        );
+    }
+
+    private J.Binary mapBinary(TSCNode node) {
+        Space prefix = whitespace();
+        Expression left = (Expression) mapNode(node.getChildNodeRequired("left"));
+
+        JLeftPadded<J.Binary.Type> op = null;
+        TSCSyntaxKind opKind = node.getChildNodeRequired("operatorToken").syntaxKind();
+        switch (opKind) {
+            // Bitwise ops
+            case AmpersandToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.AmpersandToken), J.Binary.Type.BitAnd);
+                break;
+            case BarToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.BarToken), J.Binary.Type.BitOr);
+                break;
+            case CaretToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.CaretToken), J.Binary.Type.BitXor);
+                break;
+            case GreaterThanGreaterThanToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.GreaterThanGreaterThanToken), J.Binary.Type.RightShift);
+                break;
+            case LessThanLessThanToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.LessThanLessThanToken), J.Binary.Type.LeftShift);
+                break;
+            // Logical ops
+            case EqualsEqualsToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.EqualsEqualsToken), J.Binary.Type.Equal);
+                break;
+            case ExclamationEqualsToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.ExclamationEqualsToken), J.Binary.Type.NotEqual);
+                break;
+            case GreaterThanToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.GreaterThanToken), J.Binary.Type.GreaterThan);
+                break;
+            case GreaterThanEqualsToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.GreaterThanEqualsToken), J.Binary.Type.GreaterThanOrEqual);
+                break;
+            case GreaterThanGreaterThanGreaterThanToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.GreaterThanGreaterThanGreaterThanToken), J.Binary.Type.UnsignedRightShift);
+                break;
+            case LessThanToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.LessThanToken), J.Binary.Type.LessThan);
+                break;
+            case LessThanEqualsToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.LessThanEqualsToken), J.Binary.Type.LessThanOrEqual);
+                break;
+            // Arithmetic ops
+            case AsteriskToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.AsteriskToken), J.Binary.Type.Multiplication);
+                break;
+            case MinusToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.MinusToken), J.Binary.Type.Subtraction);
+                break;
+            case PercentToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.PercentToken), J.Binary.Type.Modulo);
+                break;
+            case PlusToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.PlusToken), J.Binary.Type.Addition);
+                break;
+            case SlashToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.SlashToken), J.Binary.Type.Division);
+                break;
+            default:
+                implementMe(node);
+        }
+
+        Expression right = (Expression) mapNode(node.getChildNodeRequired("right"));
+        return new J.Binary(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                left,
+                op,
+                right,
+                typeMapping.type(node)
+        );
+    }
+
+    private J mapBinaryExpression(TSCNode node) {
+
+        TSCSyntaxKind opKind = node.getChildNodeRequired("operatorToken").syntaxKind();
+        // TS represents J.Assignment, J.AssignmentOperation, and J.Binary as a BinaryExpression.
+        switch (opKind) {
+            case EqualsToken:
+                return mapAssignment(node);
+            case AsteriskEqualsToken:
+            case MinusEqualsToken:
+            case PlusEqualsToken:
+            case SlashEqualsToken:
+                return mapAssignmentOperation(node);
+            case AmpersandToken:
+            case AsteriskToken:
+            case BarToken:
+            case CaretToken:
+            case EqualsEqualsToken:
+            case ExclamationEqualsToken:
+            case GreaterThanToken:
+            case GreaterThanEqualsToken:
+            case GreaterThanGreaterThanToken:
+            case GreaterThanGreaterThanGreaterThanToken:
+            case LessThanToken:
+            case LessThanEqualsToken:
+            case LessThanLessThanToken:
+            case MinusToken:
+            case PercentToken:
+            case PlusToken:
+            case SlashToken:
+                return mapBinary(node);
+            default:
+                implementMe(node.getChildNodeRequired("operatorToken"));
+        }
+
+        return null;
+    }
+
     private Statement mapEmptyStatement(TSCNode ignored) {
         return new J.Empty(randomId(), EMPTY, Markers.EMPTY);
     }
@@ -249,6 +416,10 @@ public class TypeScriptParserVisitor {
                 annotations == null ? emptyList() : annotations,
                 mapIdentifier(node.getChildNodeRequired("name")),
                 null);
+    }
+
+    public Expression mapExpressionStatement(TSCNode node) {
+        return (Expression) mapNode(node.getChildNodeRequired("expression"));
     }
 
     // FIXME
@@ -344,7 +515,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J.Identifier mapNumberKeyword(TSCNode node) {
+    private J.Identifier mapKeyword(TSCNode node) {
         return mapIdentifier(node);
     }
 
@@ -395,6 +566,7 @@ public class TypeScriptParserVisitor {
         }
 
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = emptyList();
+        TypeTree typeTree = null;
         if (node.hasProperty("declarationList")) {
             TSCNode declarationList = node.getChildNode("declarationList");
             assert declarationList != null;
@@ -403,15 +575,22 @@ public class TypeScriptParserVisitor {
             namedVariables = new ArrayList<>(declarations.size());
             for (int i = 0; i < declarations.size(); i++) {
                 TSCNode declaration = declarations.get(i);
-                // name
-                // exclamationToken
-                // type
-                // initializer
+
+                Space variablePrefix = whitespace();
+                J.Identifier name = mapIdentifier(declaration.getChildNodeRequired("name"));
+                Space afterName = i < declarations.size() - 1 ? sourceBefore(TSCSyntaxKind.CommaToken) : EMPTY;
+                if (declaration.hasProperty("type")) {
+                    // FIXME: method(x: { suit: string; card: number }[])
+                    afterName = sourceBefore(TSCSyntaxKind.ColonToken);
+                    TSCNode type = declaration.getChildNode("type");
+                    assert type != null;
+                    typeTree = (TypeTree) mapNode(type);
+                }
                 J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
                         randomId(),
-                        whitespace(),
+                        variablePrefix,
                         Markers.EMPTY,
-                        mapIdentifier(declaration.getChildNodeRequired("name")),
+                        name,
                         emptyList(),
                         declaration.hasProperty("initializer") ?
                                 padLeft(sourceBefore(TSCSyntaxKind.EqualsToken),
@@ -419,8 +598,7 @@ public class TypeScriptParserVisitor {
                         typeMapping.variableType(node)
                 );
 
-                Space after = i < declarations.size() - 1 ? sourceBefore(TSCSyntaxKind.CommaToken) : EMPTY;
-                namedVariables.add(padRight(variable, after));
+                namedVariables.add(padRight(variable, afterName));
             }
         }
 
@@ -435,7 +613,7 @@ public class TypeScriptParserVisitor {
                         Markers.EMPTY,
                         annotations,
                         modifiers,
-                        null,
+                        typeTree,
                         null,
                         emptyList(),
                         namedVariables
@@ -488,17 +666,27 @@ public class TypeScriptParserVisitor {
             case InterfaceDeclaration:
                 j = mapClassDeclaration(node);
                 break;
+            case NumberKeyword:
+            case StringKeyword:
+                j = mapKeyword(node);
+                break;
+            case BinaryExpression:
+                j = mapBinaryExpression(node);
+                break;
             case EmptyStatement:
                 j = mapEmptyStatement(node);
                 break;
             case EnumMember:
                 j = mapEnumMember(node);
                 break;
+            case ExpressionStatement:
+                j = mapExpressionStatement(node);
+                break;
             case FunctionDeclaration:
                 j = mapFunctionDeclaration(node);
                 break;
-            case NumberKeyword:
-                j = mapNumberKeyword(node);
+            case Identifier:
+                j = mapIdentifier(node);
                 break;
             case NumericLiteral:
                 j = mapNumericLiteral(node);

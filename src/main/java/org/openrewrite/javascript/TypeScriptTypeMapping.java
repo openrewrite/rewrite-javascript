@@ -21,9 +21,11 @@ import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeMapping;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.javascript.internal.tsc.TSCNode;
+import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
 @Incubating(since = "0.0")
-public class TypeScriptTypeMapping implements JavaTypeMapping<Object> {
+public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
     // FIXME: we need to pass in the owner (source file) if it is not accessible from the Node.
 
@@ -35,16 +37,26 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<Object> {
         this.typeCache = typeCache;
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Override
-    public JavaType type(@Nullable Object type) {
+    public JavaType type(@Nullable TSCNode type) {
+        if (type == null) {
+            return null;
+        }
+
         String signature = signatureBuilder.signature(type);
 
         // TODO: remove after type visiting in signature builder is completed.
         // Prevent null signatures from returning types.
+        //noinspection ConstantValue
         if (signature != null) {
             JavaType existing = typeCache.get(signature);
             if (existing != null) {
                 return existing;
+            }
+
+            if (type.syntaxKind() == TSCSyntaxKind.ClassDeclaration) {
+                return classType(type);
             }
         }
 
@@ -52,27 +64,26 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<Object> {
     }
 
     @Nullable
-    private JavaType.FullyQualified classType(Object classType) {
+    private JavaType.FullyQualified classType(TSCNode classType) {
         return null;
     }
 
     @Nullable
-    public JavaType.Method methodDeclarationType(Object type) {
+    public JavaType.Method methodDeclarationType(TSCNode type) {
         return null;
     }
 
     @Nullable
-    public JavaType.Method methodInvocationType(Object type) {
+    public JavaType.Method methodInvocationType(TSCNode type) {
         return null;
     }
 
-    // FIXME
-    public JavaType.Primitive primitive(Object type) {
+    public JavaType.Primitive primitive(TSCNode type) {
         return JavaType.Primitive.None;
     }
 
     @Nullable
-    public JavaType.Variable variableType(Object type) {
+    public JavaType.Variable variableType(TSCNode type) {
         return null;
     }
 }
