@@ -370,8 +370,54 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J mapBinaryExpression(TSCNode node) {
+    private J.NewArray mapArrayLiteralExpression(TSCNode node) {
+        Space prefix = whitespace();
 
+        List<TSCNode> elements = node.getChildNodes("elements");
+        JContainer<Expression> expression = mapContainer(
+                TSCSyntaxKind.OpenBracketToken,
+                elements,
+                TSCSyntaxKind.CommaToken,
+                TSCSyntaxKind.CloseBracketToken,
+                t -> (Expression) mapNode(t));
+
+        return new J.NewArray(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                null,
+                emptyList(),
+                expression,
+                typeMapping.type(node)
+        );
+    }
+
+    private J mapArrayType(TSCNode node) {
+        Space prefix = whitespace();
+        TypeTree typeTree = mapIdentifier(node.getChildNodeRequired("elementType"));
+
+        List<JRightPadded<Space>> dimensions = new ArrayList<>();
+        while (true) {
+            int saveCursor = getCursorPosition();
+            Space before = whitespace();
+            if (source.getText().charAt(getCursorPosition()) != '[') {
+                cursor(saveCursor);
+                break;
+            }
+            consumeToken(TSCSyntaxKind.OpenBracketToken);
+            dimensions.add(padRight(before, sourceBefore(TSCSyntaxKind.CloseBracketToken)));
+        }
+
+        return new J.ArrayType(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                typeTree,
+                dimensions
+        );
+    }
+
+    private J mapBinaryExpression(TSCNode node) {
         TSCSyntaxKind opKind = node.getChildNodeRequired("operatorToken").syntaxKind();
         // TS represents J.Assignment, J.AssignmentOperation, and J.Binary as a BinaryExpression.
         switch (opKind) {
@@ -825,6 +871,12 @@ public class TypeScriptParserVisitor {
             case StringKeyword:
             case TrueKeyword:
                 j = mapKeyword(node);
+                break;
+            case ArrayLiteralExpression:
+                j = mapArrayLiteralExpression(node);
+                break;
+            case ArrayType:
+                j = mapArrayType(node);
                 break;
             case BinaryExpression:
                 j = mapBinaryExpression(node);

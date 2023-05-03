@@ -15,29 +15,18 @@
  */
 package org.openrewrite.javascript.tree;
 
-import org.junit.jupiter.api.Test;
+public class JsLeftPadded {
+    public enum Location {
+        TODO(JsSpace.Location.TODO);
 
-public class TrailingCommaTest extends ParserTest {
+        private final JsSpace.Location beforeLocation;
 
-    @Test
-    void methodInvocationParameter() {
-        rewriteRun(
-          javascript(
-            """
-              console . log ( "hello world" , )
-              """
-          )
-        );
-    }
+        Location(JsSpace.Location beforeLocation) {
+            this.beforeLocation = beforeLocation;
+        }
 
-    @Test
-    void array() {
-        rewriteRun(
-          javascript(
-            """
-              let arr : string [ ] = [ 'a' , 'b' , 'c' , ]
-              """
-          )
-        );
+        public JsSpace.Location getBeforeLocation() {
+            return beforeLocation;
+        }
     }
 }

@@ -15,29 +15,18 @@
  */
 package org.openrewrite.javascript.tree;
 
-import org.junit.jupiter.api.Test;
+public class JsRightPadded {
+    public enum Location {
+        ARRAY_LITERAL_ELEMENT_SUFFIX(JsSpace.Location.TOP_LEVEL_STATEMENT);
 
-public class TrailingCommaTest extends ParserTest {
+        private final JsSpace.Location afterLocation;
 
-    @Test
-    void methodInvocationParameter() {
-        rewriteRun(
-          javascript(
-            """
-              console . log ( "hello world" , )
-              """
-          )
-        );
-    }
+        Location(JsSpace.Location afterLocation) {
+            this.afterLocation = afterLocation;
+        }
 
-    @Test
-    void array() {
-        rewriteRun(
-          javascript(
-            """
-              let arr : string [ ] = [ 'a' , 'b' , 'c' , ]
-              """
-          )
-        );
+        public JsSpace.Location getAfterLocation() {
+            return afterLocation;
+        }
     }
 }

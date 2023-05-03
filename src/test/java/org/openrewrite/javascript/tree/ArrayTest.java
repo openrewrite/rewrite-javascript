@@ -17,25 +17,26 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-public class TrailingCommaTest extends ParserTest {
-
-    @Test
-    void methodInvocationParameter() {
-        rewriteRun(
-          javascript(
-            """
-              console . log ( "hello world" , )
-              """
-          )
-        );
-    }
+@SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable"})
+public class ArrayTest extends ParserTest {
 
     @Test
     void array() {
         rewriteRun(
           javascript(
             """
-              let arr : string [ ] = [ 'a' , 'b' , 'c' , ]
+              let arr : string [ ] = [ 'a' , 'b' , 'c' ]
+              """
+          )
+        );
+    }
+
+    @Test
+    void multiDimensional() {
+        rewriteRun(
+          javascript(
+            """
+              var multi : number [ ] [ ] = [ [ 1 , 2 , 3 ] , [ 23 , 24 , 25 ] ]
               """
           )
         );

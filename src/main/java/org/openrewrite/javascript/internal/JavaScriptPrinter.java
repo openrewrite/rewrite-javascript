@@ -18,7 +18,6 @@ package org.openrewrite.javascript.internal;
 import org.openrewrite.Cursor;
 import org.openrewrite.PrintOutputCapture;
 import org.openrewrite.Tree;
-import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaPrinter;
 import org.openrewrite.java.marker.Semicolon;
@@ -26,6 +25,8 @@ import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.javascript.tree.JsContainer;
+import org.openrewrite.javascript.tree.JsRightPadded;
 import org.openrewrite.javascript.tree.JsSpace;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
@@ -100,6 +101,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
+        public J visitNewArray(J.NewArray newArray, PrintOutputCapture<P> p) {
+            beforeSyntax(newArray, Space.Location.NEW_ARRAY_PREFIX, p);
+            visit(newArray.getTypeExpression(), p);
+            visit(newArray.getDimensions(), p);
+            visitContainer("[", newArray.getPadding().getInitializer(), JContainer.Location.NEW_ARRAY_INITIALIZER, ",", "]", p);
+            afterSyntax(newArray, p);
+            return newArray;
+        }
+
+        @Override
         public J visitVariableDeclarations(J.VariableDeclarations multiVariable, PrintOutputCapture<P> p) {
             beforeSyntax(multiVariable, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
             visit(multiVariable.getLeadingAnnotations(), p);
@@ -107,14 +118,30 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 visitModifier(m, p);
             }
 
-            // FIXME: this will not print more complex TS variable decs correctly.
-            ListUtils.map(multiVariable.getPadding().getVariables(), it -> visitRightPadded(it, JRightPadded.Location.NAMED_VARIABLE, p));
-            if (multiVariable.getTypeExpression() != null) {
-                p.append(":");
-                visit(multiVariable.getTypeExpression(), p);
+            List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = multiVariable.getPadding().getVariables();
+            for (JRightPadded<J.VariableDeclarations.NamedVariable> variable : variables) {
+                visitRightPadded(variable, JRightPadded.Location.NAMED_VARIABLE, p);
+                if (multiVariable.getTypeExpression() != null) {
+                    p.append(":");
+                    visit(multiVariable.getTypeExpression(), p);
+                }
+
+                if (variable.getElement().getInitializer() != null) {
+                    JavaScriptPrinter.this.visitLeftPadded("=", variable.getElement().getPadding().getInitializer(), JLeftPadded.Location.VARIABLE_INITIALIZER, p);
+                }
+                afterSyntax(variable.getElement(), p);
             }
+
             afterSyntax(multiVariable, p);
             return multiVariable;
+        }
+
+        @Override
+        public J visitVariable(J.VariableDeclarations.NamedVariable variable, PrintOutputCapture<P> p) {
+            beforeSyntax(variable, Space.Location.VARIABLE_PREFIX, p);
+            visit(variable.getName(), p);
+            afterSyntax(variable, p);
+            return variable;
         }
 
         @Override
@@ -250,10 +277,21 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
     }
 
+    protected void visitLeftPadded(@Nullable String prefix, @Nullable JLeftPadded<? extends J> leftPadded, JLeftPadded.Location location, PrintOutputCapture<P> p) {
+        if (leftPadded != null) {
+            beforeSyntax(leftPadded.getBefore(), leftPadded.getMarkers(), location.getBeforeLocation(), p);
+            if (prefix != null) {
+                p.append(prefix);
+            }
+            visit(leftPadded.getElement(), p);
+            afterSyntax(leftPadded.getMarkers(), p);
+        }
+    }
+
     protected void visitRightPadded(List<? extends JRightPadded<? extends J>> nodes, JRightPadded.Location location, String suffixBetween, PrintOutputCapture<P> p) {
         for (int i = 0; i < nodes.size(); i++) {
             JRightPadded<? extends J> node = nodes.get(i);
-            visit(node.getElement(), p);
+            JavaScriptPrinter.this.visit(node.getElement(), p);
             visitSpace(node.getAfter(), location.getAfterLocation(), p);
             visitMarkers(node.getMarkers(), p);
             if (i < nodes.size() - 1) {
@@ -280,6 +318,36 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visitRightPadded(container.getPadding().getElements(), location.getElementLocation(), suffixBetween, p);
         afterSyntax(container.getMarkers(), p);
         p.append(after == null ? "" : after);
+    }
+
+    protected void visitContainer(String before, @Nullable JContainer<? extends J> container, JsContainer.Location location,
+                                  String suffixBetween, @Nullable String after, PrintOutputCapture<P> p) {
+        if (container == null) {
+            return;
+        }
+        visitSpace(container.getBefore(), location.getBeforeLocation(), p);
+        p.append(before);
+        visitRightPadded(container.getPadding().getElements(), location.getElementLocation(), suffixBetween, p);
+        p.append(after == null ? "" : after);
+    }
+
+    protected void visitRightPadded(List<? extends JRightPadded<? extends J>> nodes, JsRightPadded.Location location, String suffixBetween, PrintOutputCapture<P> p) {
+        for (int i = 0; i < nodes.size(); i++) {
+            JRightPadded<? extends J> node = nodes.get(i);
+            visit(node.getElement(), p);
+            visitSpace(node.getAfter(), location.getAfterLocation(), p);
+            if (i < nodes.size() - 1) {
+                p.append(suffixBetween);
+            }
+            for (Marker marker : node.getMarkers().getMarkers()) {
+                if (marker instanceof TrailingComma) {
+                    p.append(suffixBetween);
+                    visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
+                } else if (marker instanceof Semicolon) {
+                    p.append(";");
+                }
+            }
+        }
     }
 
     @Override

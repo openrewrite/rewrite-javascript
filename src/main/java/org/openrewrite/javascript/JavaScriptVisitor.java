@@ -16,12 +16,10 @@
 package org.openrewrite.javascript;
 
 import org.openrewrite.SourceFile;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaSourceFile;
-import org.openrewrite.java.tree.Space;
-import org.openrewrite.javascript.tree.JS;
-import org.openrewrite.javascript.tree.JsSpace;
+import org.openrewrite.java.tree.*;
+import org.openrewrite.javascript.tree.*;
 
 public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
@@ -61,5 +59,17 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
     public Space visitSpace(Space space, JsSpace.Location loc, P p) {
         return visitSpace(space, Space.Location.LANGUAGE_EXTENSION, p);
+    }
+
+    public <T> JRightPadded<T> visitRightPadded(@Nullable JRightPadded<T> right, JsRightPadded.Location loc, P p) {
+        return super.visitRightPadded(right, JRightPadded.Location.LANGUAGE_EXTENSION, p);
+    }
+
+    public <T> JLeftPadded<T> visitLeftPadded(JLeftPadded<T> left, JsLeftPadded.Location loc, P p) {
+        return super.visitLeftPadded(left, JLeftPadded.Location.LANGUAGE_EXTENSION, p);
+    }
+
+    public <J2 extends J> JContainer<J2> visitContainer(JContainer<J2> container, JsContainer.Location loc, P p) {
+        return super.visitContainer(container, JContainer.Location.LANGUAGE_EXTENSION, p);
     }
 }

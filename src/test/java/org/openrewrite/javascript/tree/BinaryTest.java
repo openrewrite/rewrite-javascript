@@ -117,7 +117,7 @@ public class BinaryTest extends ParserTest {
         rewriteRun(
           javascript(
             """
-              if (1 === 2) {
+              if ( 1 === 2 ) {
               }
               """
           )

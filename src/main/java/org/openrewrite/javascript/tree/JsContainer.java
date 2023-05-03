@@ -15,12 +15,24 @@
  */
 package org.openrewrite.javascript.tree;
 
-public class JsSpace {
+public class JsContainer {
     public enum Location {
-        TODO,
-        ARRAY_LITERAL_PREFIX,
-        ARRAY_LITERAL_ELEMENTS,
-        TOP_LEVEL_STATEMENT,
-        VARIABLE_DECLARATION_PREFIX
+        ARRAY_LITERAL_EXPRESSION(JsSpace.Location.ARRAY_LITERAL_ELEMENTS, JsRightPadded.Location.ARRAY_LITERAL_ELEMENT_SUFFIX);
+
+        private final JsSpace.Location beforeLocation;
+        private final JsRightPadded.Location elementLocation;
+
+        Location(JsSpace.Location beforeLocation, JsRightPadded.Location elementLocation) {
+            this.beforeLocation = beforeLocation;
+            this.elementLocation = elementLocation;
+        }
+
+        public JsSpace.Location getBeforeLocation() {
+            return beforeLocation;
+        }
+
+        public JsRightPadded.Location getElementLocation() {
+            return elementLocation;
+        }
     }
 }

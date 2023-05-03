@@ -16,26 +16,17 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
-public class TrailingCommaTest extends ParserTest {
+public class TupleTest extends ParserTest {
 
+    @ExpectedToFail
     @Test
-    void methodInvocationParameter() {
+    void tuple() {
         rewriteRun(
           javascript(
             """
-              console . log ( "hello world" , )
-              """
-          )
-        );
-    }
-
-    @Test
-    void array() {
-        rewriteRun(
-          javascript(
-            """
-              let arr : string [ ] = [ 'a' , 'b' , 'c' , ]
+              let arr : [ ]
               """
           )
         );
