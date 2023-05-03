@@ -20,7 +20,7 @@ package org.openrewrite.javascript.internal.tsc.generated;
 // See `js/README.md` for instructions to regenerate this file.
 //
 
-public enum TokenFlags {
+public enum TSCTokenFlags {
     None(0),
     PrecedingLineBreak(1),
     PrecedingJSDocComment(2),
@@ -41,44 +41,44 @@ public enum TokenFlags {
 
     public final int code;
 
-    TokenFlags(int code) {
+    TSCTokenFlags(int code) {
         this.code = code;
     }
 
-    public static TokenFlags fromCode(int code) {
+    public static TSCTokenFlags fromCode(int code) {
         switch (code) {
             case 0:
-                return TokenFlags.None;
+                return TSCTokenFlags.None;
             case 1:
-                return TokenFlags.PrecedingLineBreak;
+                return TSCTokenFlags.PrecedingLineBreak;
             case 2:
-                return TokenFlags.PrecedingJSDocComment;
+                return TSCTokenFlags.PrecedingJSDocComment;
             case 4:
-                return TokenFlags.Unterminated;
+                return TSCTokenFlags.Unterminated;
             case 8:
-                return TokenFlags.ExtendedUnicodeEscape;
+                return TSCTokenFlags.ExtendedUnicodeEscape;
             case 16:
-                return TokenFlags.Scientific;
+                return TSCTokenFlags.Scientific;
             case 32:
-                return TokenFlags.Octal;
+                return TSCTokenFlags.Octal;
             case 64:
-                return TokenFlags.HexSpecifier;
+                return TSCTokenFlags.HexSpecifier;
             case 128:
-                return TokenFlags.BinarySpecifier;
+                return TSCTokenFlags.BinarySpecifier;
             case 256:
-                return TokenFlags.OctalSpecifier;
+                return TSCTokenFlags.OctalSpecifier;
             case 512:
-                return TokenFlags.ContainsSeparator;
+                return TSCTokenFlags.ContainsSeparator;
             case 1024:
-                return TokenFlags.UnicodeEscape;
+                return TSCTokenFlags.UnicodeEscape;
             case 2048:
-                return TokenFlags.ContainsInvalidEscape;
+                return TSCTokenFlags.ContainsInvalidEscape;
             case 384:
-                return TokenFlags.BinaryOrOctalSpecifier;
+                return TSCTokenFlags.BinaryOrOctalSpecifier;
             case 1008:
-                return TokenFlags.NumericLiteralFlags;
+                return TSCTokenFlags.NumericLiteralFlags;
             default:
-                throw new IllegalArgumentException("unknown TokenFlags code: " + code);
+                throw new IllegalArgumentException("unknown TSCTokenFlags code: " + code);
         }
     }
     public boolean matches(int bitfield) {

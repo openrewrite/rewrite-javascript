@@ -20,25 +20,25 @@ package org.openrewrite.javascript.internal.tsc.generated;
 // See `js/README.md` for instructions to regenerate this file.
 //
 
-public enum IndexKind {
-    String(0),
-    Number(1);
+public enum TSCSignatureKind {
+    Call(0),
+    Construct(1);
 
 
     public final int code;
 
-    IndexKind(int code) {
+    TSCSignatureKind(int code) {
         this.code = code;
     }
 
-    public static IndexKind fromCode(int code) {
+    public static TSCSignatureKind fromCode(int code) {
         switch (code) {
             case 0:
-                return IndexKind.String;
+                return TSCSignatureKind.Call;
             case 1:
-                return IndexKind.Number;
+                return TSCSignatureKind.Construct;
             default:
-                throw new IllegalArgumentException("unknown IndexKind code: " + code);
+                throw new IllegalArgumentException("unknown TSCSignatureKind code: " + code);
         }
     }
 }

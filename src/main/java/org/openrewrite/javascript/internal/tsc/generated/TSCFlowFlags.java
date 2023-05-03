@@ -20,7 +20,7 @@ package org.openrewrite.javascript.internal.tsc.generated;
 // See `js/README.md` for instructions to regenerate this file.
 //
 
-public enum FlowFlags {
+public enum TSCFlowFlags {
     Unreachable(1),
     Start(2),
     BranchLabel(4),
@@ -40,44 +40,44 @@ public enum FlowFlags {
 
     public final int code;
 
-    FlowFlags(int code) {
+    TSCFlowFlags(int code) {
         this.code = code;
     }
 
-    public static FlowFlags fromCode(int code) {
+    public static TSCFlowFlags fromCode(int code) {
         switch (code) {
             case 1:
-                return FlowFlags.Unreachable;
+                return TSCFlowFlags.Unreachable;
             case 2:
-                return FlowFlags.Start;
+                return TSCFlowFlags.Start;
             case 4:
-                return FlowFlags.BranchLabel;
+                return TSCFlowFlags.BranchLabel;
             case 8:
-                return FlowFlags.LoopLabel;
+                return TSCFlowFlags.LoopLabel;
             case 16:
-                return FlowFlags.Assignment;
+                return TSCFlowFlags.Assignment;
             case 32:
-                return FlowFlags.TrueCondition;
+                return TSCFlowFlags.TrueCondition;
             case 64:
-                return FlowFlags.FalseCondition;
+                return TSCFlowFlags.FalseCondition;
             case 128:
-                return FlowFlags.SwitchClause;
+                return TSCFlowFlags.SwitchClause;
             case 256:
-                return FlowFlags.ArrayMutation;
+                return TSCFlowFlags.ArrayMutation;
             case 512:
-                return FlowFlags.Call;
+                return TSCFlowFlags.Call;
             case 1024:
-                return FlowFlags.ReduceLabel;
+                return TSCFlowFlags.ReduceLabel;
             case 2048:
-                return FlowFlags.Referenced;
+                return TSCFlowFlags.Referenced;
             case 4096:
-                return FlowFlags.Shared;
+                return TSCFlowFlags.Shared;
             case 12:
-                return FlowFlags.Label;
+                return TSCFlowFlags.Label;
             case 96:
-                return FlowFlags.Condition;
+                return TSCFlowFlags.Condition;
             default:
-                throw new IllegalArgumentException("unknown FlowFlags code: " + code);
+                throw new IllegalArgumentException("unknown TSCFlowFlags code: " + code);
         }
     }
     public boolean matches(int bitfield) {

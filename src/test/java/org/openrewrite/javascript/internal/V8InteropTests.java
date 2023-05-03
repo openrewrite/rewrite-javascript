@@ -1,6 +1,9 @@
 package org.openrewrite.javascript.internal;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.javascript.internal.tsc.TSCNode;
+import org.openrewrite.javascript.internal.tsc.TSCRuntime;
+import org.openrewrite.javascript.internal.tsc.TSCType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,13 +16,13 @@ public class V8InteropTests {
 
     @Test
     public void testTypeIdentity() {
-        try (TSC.Runtime runtime = TSC.Runtime.init()) {
+        try (TSCRuntime runtime = TSCRuntime.init()) {
             Map<String, String> sources = new HashMap<>();
             sources.put("example.ts", "function foo() {}");
             runtime.parseSourceTexts(sources, (root, ctx) -> {
                 root.forEachChild(child -> {
-                    TSC.Type first = child.getTypeAtNodeLocation();
-                    TSC.Type second = child.getTypeAtNodeLocation();
+                    TSCType first = child.getTypeAtNodeLocation();
+                    TSCType second = child.getTypeAtNodeLocation();
                     assertSame(first, second);
                 });
             });
@@ -28,12 +31,12 @@ public class V8InteropTests {
 
     @Test
     public void testNodeIdentity() {
-        try (TSC.Runtime runtime = TSC.Runtime.init()) {
+        try (TSCRuntime runtime = TSCRuntime.init()) {
             Map<String, String> sources = new HashMap<>();
             sources.put("example.ts", "function foo() {}");
             runtime.parseSourceTexts(sources, (root, ctx) -> {
-                List<TSC.Node> first = new ArrayList<>();
-                List<TSC.Node> second = new ArrayList<>();
+                List<TSCNode> first = new ArrayList<>();
+                List<TSCNode> second = new ArrayList<>();
                 root.forEachChild(first::add);
                 root.forEachChild(second::add);
                 for (int i = 0; i < first.size(); i++) {

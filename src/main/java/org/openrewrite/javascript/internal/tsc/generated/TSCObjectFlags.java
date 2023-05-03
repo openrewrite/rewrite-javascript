@@ -20,7 +20,7 @@ package org.openrewrite.javascript.internal.tsc.generated;
 // See `js/README.md` for instructions to regenerate this file.
 //
 
-public enum ObjectFlags {
+public enum TSCObjectFlags {
     None(0),
     Class(1),
     Interface(2),
@@ -64,80 +64,80 @@ public enum ObjectFlags {
 
     public final int code;
 
-    ObjectFlags(int code) {
+    TSCObjectFlags(int code) {
         this.code = code;
     }
 
-    public static ObjectFlags fromCode(int code) {
+    public static TSCObjectFlags fromCode(int code) {
         switch (code) {
             case 0:
-                return ObjectFlags.None;
+                return TSCObjectFlags.None;
             case 1:
-                return ObjectFlags.Class;
+                return TSCObjectFlags.Class;
             case 2:
-                return ObjectFlags.Interface;
+                return TSCObjectFlags.Interface;
             case 4:
-                return ObjectFlags.Reference;
+                return TSCObjectFlags.Reference;
             case 8:
-                return ObjectFlags.Tuple;
+                return TSCObjectFlags.Tuple;
             case 16:
-                return ObjectFlags.Anonymous;
+                return TSCObjectFlags.Anonymous;
             case 32:
-                return ObjectFlags.Mapped;
+                return TSCObjectFlags.Mapped;
             case 64:
-                return ObjectFlags.Instantiated;
+                return TSCObjectFlags.Instantiated;
             case 128:
-                return ObjectFlags.ObjectLiteral;
+                return TSCObjectFlags.ObjectLiteral;
             case 256:
-                return ObjectFlags.EvolvingArray;
+                return TSCObjectFlags.EvolvingArray;
             case 512:
-                return ObjectFlags.ObjectLiteralPatternWithComputedProperties;
+                return TSCObjectFlags.ObjectLiteralPatternWithComputedProperties;
             case 1024:
-                return ObjectFlags.ReverseMapped;
+                return TSCObjectFlags.ReverseMapped;
             case 2048:
-                return ObjectFlags.JsxAttributes;
+                return TSCObjectFlags.JsxAttributes;
             case 4096:
-                return ObjectFlags.JSLiteral;
+                return TSCObjectFlags.JSLiteral;
             case 8192:
-                return ObjectFlags.FreshLiteral;
+                return TSCObjectFlags.FreshLiteral;
             case 16384:
-                return ObjectFlags.ArrayLiteral;
+                return TSCObjectFlags.ArrayLiteral;
             case 32768:
-                return ObjectFlags.PrimitiveUnion;
+                return TSCObjectFlags.PrimitiveUnion;
             case 65536:
-                return ObjectFlags.ContainsWideningType;
+                return TSCObjectFlags.ContainsWideningType;
             case 131072:
-                return ObjectFlags.ContainsObjectOrArrayLiteral;
+                return TSCObjectFlags.ContainsObjectOrArrayLiteral;
             case 262144:
-                return ObjectFlags.NonInferrableType;
+                return TSCObjectFlags.NonInferrableType;
             case 524288:
-                return ObjectFlags.CouldContainTypeVariablesComputed;
+                return TSCObjectFlags.CouldContainTypeVariablesComputed;
             case 1048576:
-                return ObjectFlags.CouldContainTypeVariables;
+                return TSCObjectFlags.CouldContainTypeVariables;
             case 3:
-                return ObjectFlags.ClassOrInterface;
+                return TSCObjectFlags.ClassOrInterface;
             case 196608:
-                return ObjectFlags.RequiresWidening;
+                return TSCObjectFlags.RequiresWidening;
             case 458752:
-                return ObjectFlags.PropagatingFlags;
+                return TSCObjectFlags.PropagatingFlags;
             case 1343:
-                return ObjectFlags.ObjectTypeKindMask;
+                return TSCObjectFlags.ObjectTypeKindMask;
             case 2097152:
-                return ObjectFlags.ContainsSpread;
+                return TSCObjectFlags.ContainsSpread;
             case 4194304:
-                return ObjectFlags.ObjectRestType;
+                return TSCObjectFlags.ObjectRestType;
             case 8388608:
-                return ObjectFlags.InstantiationExpressionType;
+                return TSCObjectFlags.InstantiationExpressionType;
             case 16777216:
-                return ObjectFlags.IsClassInstanceClone;
+                return TSCObjectFlags.IsClassInstanceClone;
             case 33554432:
-                return ObjectFlags.IdenticalBaseTypeCalculated;
+                return TSCObjectFlags.IdenticalBaseTypeCalculated;
             case 67108864:
-                return ObjectFlags.IdenticalBaseTypeExists;
+                return TSCObjectFlags.IdenticalBaseTypeExists;
             case 12582912:
-                return ObjectFlags.IsGenericType;
+                return TSCObjectFlags.IsGenericType;
             default:
-                throw new IllegalArgumentException("unknown ObjectFlags code: " + code);
+                throw new IllegalArgumentException("unknown TSCObjectFlags code: " + code);
         }
     }
     public boolean matches(int bitfield) {

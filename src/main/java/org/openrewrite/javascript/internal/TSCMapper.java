@@ -20,6 +20,7 @@ import org.openrewrite.Parser;
 import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
+import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.tree.JS;
 
 import java.io.Closeable;
@@ -29,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class TSCMapper implements Closeable {
-    private final TSC.Runtime runtime;
+    private final TSCRuntime runtime;
 
     @Nullable
     private final Path relativeTo;
@@ -37,7 +38,7 @@ public abstract class TSCMapper implements Closeable {
     private final List<JS.CompilationUnit> compilationUnits = new ArrayList<>();
 
     public TSCMapper(@Nullable Path relativeTo) {
-        this.runtime = TSC.Runtime.init();
+        this.runtime = TSCRuntime.init();
         this.relativeTo = relativeTo;
     }
 

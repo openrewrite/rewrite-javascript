@@ -20,7 +20,7 @@ package org.openrewrite.javascript.internal.tsc.generated;
 // See `js/README.md` for instructions to regenerate this file.
 //
 
-public enum TypePredicateKind {
+public enum TSCTypePredicateKind {
     This(0),
     Identifier(1),
     AssertsThis(2),
@@ -29,22 +29,22 @@ public enum TypePredicateKind {
 
     public final int code;
 
-    TypePredicateKind(int code) {
+    TSCTypePredicateKind(int code) {
         this.code = code;
     }
 
-    public static TypePredicateKind fromCode(int code) {
+    public static TSCTypePredicateKind fromCode(int code) {
         switch (code) {
             case 0:
-                return TypePredicateKind.This;
+                return TSCTypePredicateKind.This;
             case 1:
-                return TypePredicateKind.Identifier;
+                return TSCTypePredicateKind.Identifier;
             case 2:
-                return TypePredicateKind.AssertsThis;
+                return TSCTypePredicateKind.AssertsThis;
             case 3:
-                return TypePredicateKind.AssertsIdentifier;
+                return TSCTypePredicateKind.AssertsIdentifier;
             default:
-                throw new IllegalArgumentException("unknown TypePredicateKind code: " + code);
+                throw new IllegalArgumentException("unknown TSCTypePredicateKind code: " + code);
         }
     }
 }

@@ -20,7 +20,7 @@ package org.openrewrite.javascript.internal.tsc.generated;
 // See `js/README.md` for instructions to regenerate this file.
 //
 
-public enum NodeFlags {
+public enum TSCNodeFlags {
     None(0),
     Let(1),
     Const(2),
@@ -63,86 +63,86 @@ public enum NodeFlags {
 
     public final int code;
 
-    NodeFlags(int code) {
+    TSCNodeFlags(int code) {
         this.code = code;
     }
 
-    public static NodeFlags fromCode(int code) {
+    public static TSCNodeFlags fromCode(int code) {
         switch (code) {
             case 0:
-                return NodeFlags.None;
+                return TSCNodeFlags.None;
             case 1:
-                return NodeFlags.Let;
+                return TSCNodeFlags.Let;
             case 2:
-                return NodeFlags.Const;
+                return TSCNodeFlags.Const;
             case 4:
-                return NodeFlags.NestedNamespace;
+                return TSCNodeFlags.NestedNamespace;
             case 8:
-                return NodeFlags.Synthesized;
+                return TSCNodeFlags.Synthesized;
             case 16:
-                return NodeFlags.Namespace;
+                return TSCNodeFlags.Namespace;
             case 32:
-                return NodeFlags.OptionalChain;
+                return TSCNodeFlags.OptionalChain;
             case 64:
-                return NodeFlags.ExportContext;
+                return TSCNodeFlags.ExportContext;
             case 128:
-                return NodeFlags.ContainsThis;
+                return TSCNodeFlags.ContainsThis;
             case 256:
-                return NodeFlags.HasImplicitReturn;
+                return TSCNodeFlags.HasImplicitReturn;
             case 512:
-                return NodeFlags.HasExplicitReturn;
+                return TSCNodeFlags.HasExplicitReturn;
             case 1024:
-                return NodeFlags.GlobalAugmentation;
+                return TSCNodeFlags.GlobalAugmentation;
             case 2048:
-                return NodeFlags.HasAsyncFunctions;
+                return TSCNodeFlags.HasAsyncFunctions;
             case 4096:
-                return NodeFlags.DisallowInContext;
+                return TSCNodeFlags.DisallowInContext;
             case 8192:
-                return NodeFlags.YieldContext;
+                return TSCNodeFlags.YieldContext;
             case 16384:
-                return NodeFlags.DecoratorContext;
+                return TSCNodeFlags.DecoratorContext;
             case 32768:
-                return NodeFlags.AwaitContext;
+                return TSCNodeFlags.AwaitContext;
             case 65536:
-                return NodeFlags.DisallowConditionalTypesContext;
+                return TSCNodeFlags.DisallowConditionalTypesContext;
             case 131072:
-                return NodeFlags.ThisNodeHasError;
+                return TSCNodeFlags.ThisNodeHasError;
             case 262144:
-                return NodeFlags.JavaScriptFile;
+                return TSCNodeFlags.JavaScriptFile;
             case 524288:
-                return NodeFlags.ThisNodeOrAnySubNodesHasError;
+                return TSCNodeFlags.ThisNodeOrAnySubNodesHasError;
             case 1048576:
-                return NodeFlags.HasAggregatedChildData;
+                return TSCNodeFlags.HasAggregatedChildData;
             case 2097152:
-                return NodeFlags.PossiblyContainsDynamicImport;
+                return TSCNodeFlags.PossiblyContainsDynamicImport;
             case 4194304:
-                return NodeFlags.PossiblyContainsImportMeta;
+                return TSCNodeFlags.PossiblyContainsImportMeta;
             case 8388608:
-                return NodeFlags.JSDoc;
+                return TSCNodeFlags.JSDoc;
             case 16777216:
-                return NodeFlags.Ambient;
+                return TSCNodeFlags.Ambient;
             case 33554432:
-                return NodeFlags.InWithStatement;
+                return TSCNodeFlags.InWithStatement;
             case 67108864:
-                return NodeFlags.JsonFile;
+                return TSCNodeFlags.JsonFile;
             case 134217728:
-                return NodeFlags.TypeCached;
+                return TSCNodeFlags.TypeCached;
             case 268435456:
-                return NodeFlags.Deprecated;
+                return TSCNodeFlags.Deprecated;
             case 3:
-                return NodeFlags.BlockScoped;
+                return TSCNodeFlags.BlockScoped;
             case 768:
-                return NodeFlags.ReachabilityCheckFlags;
+                return TSCNodeFlags.ReachabilityCheckFlags;
             case 2816:
-                return NodeFlags.ReachabilityAndEmitFlags;
+                return TSCNodeFlags.ReachabilityAndEmitFlags;
             case 50720768:
-                return NodeFlags.ContextFlags;
+                return TSCNodeFlags.ContextFlags;
             case 40960:
-                return NodeFlags.TypeExcludesFlags;
+                return TSCNodeFlags.TypeExcludesFlags;
             case 6291456:
-                return NodeFlags.PermanentlySetIncrementalFlags;
+                return TSCNodeFlags.PermanentlySetIncrementalFlags;
             default:
-                throw new IllegalArgumentException("unknown NodeFlags code: " + code);
+                throw new IllegalArgumentException("unknown TSCNodeFlags code: " + code);
         }
     }
     public boolean matches(int bitfield) {

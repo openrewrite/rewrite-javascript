@@ -35,7 +35,7 @@ async function main() {
     console.info('    Done.');
 
     for (const [name, enumObj] of Object.entries(Mappings)) {
-        await exportEnum(name, enumObj);
+        await exportEnum('TSC' + name, enumObj);
     }
 }
 

@@ -20,7 +20,7 @@ package org.openrewrite.javascript.internal.tsc.generated;
 // See `js/README.md` for instructions to regenerate this file.
 //
 
-public enum TypeFlags {
+public enum TSCTypeFlags {
     Any(1),
     Unknown(2),
     String(4),
@@ -92,138 +92,138 @@ public enum TypeFlags {
 
     public final int code;
 
-    TypeFlags(int code) {
+    TSCTypeFlags(int code) {
         this.code = code;
     }
 
-    public static TypeFlags fromCode(int code) {
+    public static TSCTypeFlags fromCode(int code) {
         switch (code) {
             case 1:
-                return TypeFlags.Any;
+                return TSCTypeFlags.Any;
             case 2:
-                return TypeFlags.Unknown;
+                return TSCTypeFlags.Unknown;
             case 4:
-                return TypeFlags.String;
+                return TSCTypeFlags.String;
             case 8:
-                return TypeFlags.Number;
+                return TSCTypeFlags.Number;
             case 16:
-                return TypeFlags.Boolean;
+                return TSCTypeFlags.Boolean;
             case 32:
-                return TypeFlags.Enum;
+                return TSCTypeFlags.Enum;
             case 64:
-                return TypeFlags.BigInt;
+                return TSCTypeFlags.BigInt;
             case 128:
-                return TypeFlags.StringLiteral;
+                return TSCTypeFlags.StringLiteral;
             case 256:
-                return TypeFlags.NumberLiteral;
+                return TSCTypeFlags.NumberLiteral;
             case 512:
-                return TypeFlags.BooleanLiteral;
+                return TSCTypeFlags.BooleanLiteral;
             case 1024:
-                return TypeFlags.EnumLiteral;
+                return TSCTypeFlags.EnumLiteral;
             case 2048:
-                return TypeFlags.BigIntLiteral;
+                return TSCTypeFlags.BigIntLiteral;
             case 4096:
-                return TypeFlags.ESSymbol;
+                return TSCTypeFlags.ESSymbol;
             case 8192:
-                return TypeFlags.UniqueESSymbol;
+                return TSCTypeFlags.UniqueESSymbol;
             case 16384:
-                return TypeFlags.Void;
+                return TSCTypeFlags.Void;
             case 32768:
-                return TypeFlags.Undefined;
+                return TSCTypeFlags.Undefined;
             case 65536:
-                return TypeFlags.Null;
+                return TSCTypeFlags.Null;
             case 131072:
-                return TypeFlags.Never;
+                return TSCTypeFlags.Never;
             case 262144:
-                return TypeFlags.TypeParameter;
+                return TSCTypeFlags.TypeParameter;
             case 524288:
-                return TypeFlags.Object;
+                return TSCTypeFlags.Object;
             case 1048576:
-                return TypeFlags.Union;
+                return TSCTypeFlags.Union;
             case 2097152:
-                return TypeFlags.Intersection;
+                return TSCTypeFlags.Intersection;
             case 4194304:
-                return TypeFlags.Index;
+                return TSCTypeFlags.Index;
             case 8388608:
-                return TypeFlags.IndexedAccess;
+                return TSCTypeFlags.IndexedAccess;
             case 16777216:
-                return TypeFlags.Conditional;
+                return TSCTypeFlags.Conditional;
             case 33554432:
-                return TypeFlags.Substitution;
+                return TSCTypeFlags.Substitution;
             case 67108864:
-                return TypeFlags.NonPrimitive;
+                return TSCTypeFlags.NonPrimitive;
             case 134217728:
-                return TypeFlags.TemplateLiteral;
+                return TSCTypeFlags.TemplateLiteral;
             case 268435456:
-                return TypeFlags.StringMapping;
+                return TSCTypeFlags.StringMapping;
             case 3:
-                return TypeFlags.AnyOrUnknown;
+                return TSCTypeFlags.AnyOrUnknown;
             case 98304:
-                return TypeFlags.Nullable;
+                return TSCTypeFlags.Nullable;
             case 2944:
-                return TypeFlags.Literal;
+                return TSCTypeFlags.Literal;
             case 109472:
-                return TypeFlags.Unit;
+                return TSCTypeFlags.Unit;
             case 2976:
-                return TypeFlags.Freshable;
+                return TSCTypeFlags.Freshable;
             case 384:
-                return TypeFlags.StringOrNumberLiteral;
+                return TSCTypeFlags.StringOrNumberLiteral;
             case 8576:
-                return TypeFlags.StringOrNumberLiteralOrUnique;
+                return TSCTypeFlags.StringOrNumberLiteralOrUnique;
             case 117632:
-                return TypeFlags.DefinitelyFalsy;
+                return TSCTypeFlags.DefinitelyFalsy;
             case 117724:
-                return TypeFlags.PossiblyFalsy;
+                return TSCTypeFlags.PossiblyFalsy;
             case 67359327:
-                return TypeFlags.Intrinsic;
+                return TSCTypeFlags.Intrinsic;
             case 134348796:
-                return TypeFlags.Primitive;
+                return TSCTypeFlags.Primitive;
             case 402653316:
-                return TypeFlags.StringLike;
+                return TSCTypeFlags.StringLike;
             case 296:
-                return TypeFlags.NumberLike;
+                return TSCTypeFlags.NumberLike;
             case 2112:
-                return TypeFlags.BigIntLike;
+                return TSCTypeFlags.BigIntLike;
             case 528:
-                return TypeFlags.BooleanLike;
+                return TSCTypeFlags.BooleanLike;
             case 1056:
-                return TypeFlags.EnumLike;
+                return TSCTypeFlags.EnumLike;
             case 12288:
-                return TypeFlags.ESSymbolLike;
+                return TSCTypeFlags.ESSymbolLike;
             case 49152:
-                return TypeFlags.VoidLike;
+                return TSCTypeFlags.VoidLike;
             case 470302716:
-                return TypeFlags.DefinitelyNonNullable;
+                return TSCTypeFlags.DefinitelyNonNullable;
             case 469892092:
-                return TypeFlags.DisjointDomains;
+                return TSCTypeFlags.DisjointDomains;
             case 3145728:
-                return TypeFlags.UnionOrIntersection;
+                return TSCTypeFlags.UnionOrIntersection;
             case 3670016:
-                return TypeFlags.StructuredType;
+                return TSCTypeFlags.StructuredType;
             case 8650752:
-                return TypeFlags.TypeVariable;
+                return TSCTypeFlags.TypeVariable;
             case 58982400:
-                return TypeFlags.InstantiableNonPrimitive;
+                return TSCTypeFlags.InstantiableNonPrimitive;
             case 406847488:
-                return TypeFlags.InstantiablePrimitive;
+                return TSCTypeFlags.InstantiablePrimitive;
             case 465829888:
-                return TypeFlags.Instantiable;
+                return TSCTypeFlags.Instantiable;
             case 469499904:
-                return TypeFlags.StructuredOrInstantiable;
+                return TSCTypeFlags.StructuredOrInstantiable;
             case 3899393:
-                return TypeFlags.ObjectFlagsType;
+                return TSCTypeFlags.ObjectFlagsType;
             case 25165824:
-                return TypeFlags.Simplifiable;
+                return TSCTypeFlags.Simplifiable;
             case 67358815:
-                return TypeFlags.Singleton;
+                return TSCTypeFlags.Singleton;
             case 536624127:
-                return TypeFlags.Narrowable;
+                return TSCTypeFlags.Narrowable;
             case 205258751:
-                return TypeFlags.IncludesMask;
+                return TSCTypeFlags.IncludesMask;
             case 36323363:
-                return TypeFlags.NotPrimitiveUnion;
+                return TSCTypeFlags.NotPrimitiveUnion;
             default:
-                throw new IllegalArgumentException("unknown TypeFlags code: " + code);
+                throw new IllegalArgumentException("unknown TSCTypeFlags code: " + code);
         }
     }
     public boolean matches(int bitfield) {

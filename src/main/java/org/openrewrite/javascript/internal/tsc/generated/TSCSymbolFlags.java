@@ -20,7 +20,7 @@ package org.openrewrite.javascript.internal.tsc.generated;
 // See `js/README.md` for instructions to regenerate this file.
 //
 
-public enum SymbolFlags {
+public enum TSCSymbolFlags {
     /** Also includes PropertyExcludes, NamespaceModuleExcludes */
     None(0),
     FunctionScopedVariable(1),
@@ -88,132 +88,132 @@ public enum SymbolFlags {
 
     public final int code;
 
-    SymbolFlags(int code) {
+    TSCSymbolFlags(int code) {
         this.code = code;
     }
 
-    public static SymbolFlags fromCode(int code) {
+    public static TSCSymbolFlags fromCode(int code) {
         switch (code) {
             case 0:
-                return SymbolFlags.None;
+                return TSCSymbolFlags.None;
             case 1:
-                return SymbolFlags.FunctionScopedVariable;
+                return TSCSymbolFlags.FunctionScopedVariable;
             case 2:
-                return SymbolFlags.BlockScopedVariable;
+                return TSCSymbolFlags.BlockScopedVariable;
             case 4:
-                return SymbolFlags.Property;
+                return TSCSymbolFlags.Property;
             case 8:
-                return SymbolFlags.EnumMember;
+                return TSCSymbolFlags.EnumMember;
             case 16:
-                return SymbolFlags.Function;
+                return TSCSymbolFlags.Function;
             case 32:
-                return SymbolFlags.Class;
+                return TSCSymbolFlags.Class;
             case 64:
-                return SymbolFlags.Interface;
+                return TSCSymbolFlags.Interface;
             case 128:
-                return SymbolFlags.ConstEnum;
+                return TSCSymbolFlags.ConstEnum;
             case 256:
-                return SymbolFlags.RegularEnum;
+                return TSCSymbolFlags.RegularEnum;
             case 512:
-                return SymbolFlags.ValueModule;
+                return TSCSymbolFlags.ValueModule;
             case 1024:
-                return SymbolFlags.NamespaceModule;
+                return TSCSymbolFlags.NamespaceModule;
             case 2048:
-                return SymbolFlags.TypeLiteral;
+                return TSCSymbolFlags.TypeLiteral;
             case 4096:
-                return SymbolFlags.ObjectLiteral;
+                return TSCSymbolFlags.ObjectLiteral;
             case 8192:
-                return SymbolFlags.Method;
+                return TSCSymbolFlags.Method;
             case 16384:
-                return SymbolFlags.Constructor;
+                return TSCSymbolFlags.Constructor;
             case 32768:
-                return SymbolFlags.GetAccessor;
+                return TSCSymbolFlags.GetAccessor;
             case 65536:
-                return SymbolFlags.SetAccessor;
+                return TSCSymbolFlags.SetAccessor;
             case 131072:
-                return SymbolFlags.Signature;
+                return TSCSymbolFlags.Signature;
             case 262144:
-                return SymbolFlags.TypeParameter;
+                return TSCSymbolFlags.TypeParameter;
             case 524288:
-                return SymbolFlags.TypeAlias;
+                return TSCSymbolFlags.TypeAlias;
             case 1048576:
-                return SymbolFlags.ExportValue;
+                return TSCSymbolFlags.ExportValue;
             case 2097152:
-                return SymbolFlags.Alias;
+                return TSCSymbolFlags.Alias;
             case 4194304:
-                return SymbolFlags.Prototype;
+                return TSCSymbolFlags.Prototype;
             case 8388608:
-                return SymbolFlags.ExportStar;
+                return TSCSymbolFlags.ExportStar;
             case 16777216:
-                return SymbolFlags.Optional;
+                return TSCSymbolFlags.Optional;
             case 33554432:
-                return SymbolFlags.Transient;
+                return TSCSymbolFlags.Transient;
             case 67108864:
-                return SymbolFlags.Assignment;
+                return TSCSymbolFlags.Assignment;
             case 134217728:
-                return SymbolFlags.ModuleExports;
+                return TSCSymbolFlags.ModuleExports;
             case 67108863:
-                return SymbolFlags.All;
+                return TSCSymbolFlags.All;
             case 384:
-                return SymbolFlags.Enum;
+                return TSCSymbolFlags.Enum;
             case 3:
-                return SymbolFlags.Variable;
+                return TSCSymbolFlags.Variable;
             case 111551:
-                return SymbolFlags.Value;
+                return TSCSymbolFlags.Value;
             case 788968:
-                return SymbolFlags.Type;
+                return TSCSymbolFlags.Type;
             case 1920:
-                return SymbolFlags.Namespace;
+                return TSCSymbolFlags.Namespace;
             case 1536:
-                return SymbolFlags.Module;
+                return TSCSymbolFlags.Module;
             case 98304:
-                return SymbolFlags.Accessor;
+                return TSCSymbolFlags.Accessor;
             case 111550:
-                return SymbolFlags.FunctionScopedVariableExcludes;
+                return TSCSymbolFlags.FunctionScopedVariableExcludes;
             case 900095:
-                return SymbolFlags.EnumMemberExcludes;
+                return TSCSymbolFlags.EnumMemberExcludes;
             case 110991:
-                return SymbolFlags.FunctionExcludes;
+                return TSCSymbolFlags.FunctionExcludes;
             case 899503:
-                return SymbolFlags.ClassExcludes;
+                return TSCSymbolFlags.ClassExcludes;
             case 788872:
-                return SymbolFlags.InterfaceExcludes;
+                return TSCSymbolFlags.InterfaceExcludes;
             case 899327:
-                return SymbolFlags.RegularEnumExcludes;
+                return TSCSymbolFlags.RegularEnumExcludes;
             case 899967:
-                return SymbolFlags.ConstEnumExcludes;
+                return TSCSymbolFlags.ConstEnumExcludes;
             case 110735:
-                return SymbolFlags.ValueModuleExcludes;
+                return TSCSymbolFlags.ValueModuleExcludes;
             case 103359:
-                return SymbolFlags.MethodExcludes;
+                return TSCSymbolFlags.MethodExcludes;
             case 46015:
-                return SymbolFlags.GetAccessorExcludes;
+                return TSCSymbolFlags.GetAccessorExcludes;
             case 78783:
-                return SymbolFlags.SetAccessorExcludes;
+                return TSCSymbolFlags.SetAccessorExcludes;
             case 13247:
-                return SymbolFlags.AccessorExcludes;
+                return TSCSymbolFlags.AccessorExcludes;
             case 526824:
-                return SymbolFlags.TypeParameterExcludes;
+                return TSCSymbolFlags.TypeParameterExcludes;
             case 2623475:
-                return SymbolFlags.ModuleMember;
+                return TSCSymbolFlags.ModuleMember;
             case 944:
-                return SymbolFlags.ExportHasLocal;
+                return TSCSymbolFlags.ExportHasLocal;
             case 418:
-                return SymbolFlags.BlockScoped;
+                return TSCSymbolFlags.BlockScoped;
             case 98308:
-                return SymbolFlags.PropertyOrAccessor;
+                return TSCSymbolFlags.PropertyOrAccessor;
             case 106500:
-                return SymbolFlags.ClassMember;
+                return TSCSymbolFlags.ClassMember;
             case 112:
-                return SymbolFlags.ExportSupportsDefaultModifier;
+                return TSCSymbolFlags.ExportSupportsDefaultModifier;
             case -113:
-                return SymbolFlags.ExportDoesNotSupportDefaultModifier;
+                return TSCSymbolFlags.ExportDoesNotSupportDefaultModifier;
             case 2885600:
-                return SymbolFlags.Classifiable;
+                return TSCSymbolFlags.Classifiable;
             case 6256:
-                return SymbolFlags.LateBindingContainer;
+                return TSCSymbolFlags.LateBindingContainer;
             default:
-                throw new IllegalArgumentException("unknown SymbolFlags code: " + code);
+                throw new IllegalArgumentException("unknown TSCSymbolFlags code: " + code);
         }
     }
     public boolean matches(int bitfield) {

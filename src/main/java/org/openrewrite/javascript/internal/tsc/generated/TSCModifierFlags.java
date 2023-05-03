@@ -20,7 +20,7 @@ package org.openrewrite.javascript.internal.tsc.generated;
 // See `js/README.md` for instructions to regenerate this file.
 //
 
-public enum ModifierFlags {
+public enum TSCModifierFlags {
     None(0),
     Export(1),
     Ambient(2),
@@ -52,68 +52,68 @@ public enum ModifierFlags {
 
     public final int code;
 
-    ModifierFlags(int code) {
+    TSCModifierFlags(int code) {
         this.code = code;
     }
 
-    public static ModifierFlags fromCode(int code) {
+    public static TSCModifierFlags fromCode(int code) {
         switch (code) {
             case 0:
-                return ModifierFlags.None;
+                return TSCModifierFlags.None;
             case 1:
-                return ModifierFlags.Export;
+                return TSCModifierFlags.Export;
             case 2:
-                return ModifierFlags.Ambient;
+                return TSCModifierFlags.Ambient;
             case 4:
-                return ModifierFlags.Public;
+                return TSCModifierFlags.Public;
             case 8:
-                return ModifierFlags.Private;
+                return TSCModifierFlags.Private;
             case 16:
-                return ModifierFlags.Protected;
+                return TSCModifierFlags.Protected;
             case 32:
-                return ModifierFlags.Static;
+                return TSCModifierFlags.Static;
             case 64:
-                return ModifierFlags.Readonly;
+                return TSCModifierFlags.Readonly;
             case 128:
-                return ModifierFlags.Accessor;
+                return TSCModifierFlags.Accessor;
             case 256:
-                return ModifierFlags.Abstract;
+                return TSCModifierFlags.Abstract;
             case 512:
-                return ModifierFlags.Async;
+                return TSCModifierFlags.Async;
             case 1024:
-                return ModifierFlags.Default;
+                return TSCModifierFlags.Default;
             case 2048:
-                return ModifierFlags.Const;
+                return TSCModifierFlags.Const;
             case 4096:
-                return ModifierFlags.HasComputedJSDocModifiers;
+                return TSCModifierFlags.HasComputedJSDocModifiers;
             case 8192:
-                return ModifierFlags.Deprecated;
+                return TSCModifierFlags.Deprecated;
             case 16384:
-                return ModifierFlags.Override;
+                return TSCModifierFlags.Override;
             case 32768:
-                return ModifierFlags.In;
+                return TSCModifierFlags.In;
             case 65536:
-                return ModifierFlags.Out;
+                return TSCModifierFlags.Out;
             case 131072:
-                return ModifierFlags.Decorator;
+                return TSCModifierFlags.Decorator;
             case 536870912:
-                return ModifierFlags.HasComputedFlags;
+                return TSCModifierFlags.HasComputedFlags;
             case 28:
-                return ModifierFlags.AccessibilityModifier;
+                return TSCModifierFlags.AccessibilityModifier;
             case 16476:
-                return ModifierFlags.ParameterPropertyModifier;
+                return TSCModifierFlags.ParameterPropertyModifier;
             case 24:
-                return ModifierFlags.NonPublicAccessibilityModifier;
+                return TSCModifierFlags.NonPublicAccessibilityModifier;
             case 117086:
-                return ModifierFlags.TypeScriptModifier;
+                return TSCModifierFlags.TypeScriptModifier;
             case 1025:
-                return ModifierFlags.ExportDefault;
+                return TSCModifierFlags.ExportDefault;
             case 258047:
-                return ModifierFlags.All;
+                return TSCModifierFlags.All;
             case 126975:
-                return ModifierFlags.Modifier;
+                return TSCModifierFlags.Modifier;
             default:
-                throw new IllegalArgumentException("unknown ModifierFlags code: " + code);
+                throw new IllegalArgumentException("unknown TSCModifierFlags code: " + code);
         }
     }
     public boolean matches(int bitfield) {
