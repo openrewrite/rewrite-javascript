@@ -13,34 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript;
+package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.javascript.ParserAssertions.javascript;
-
-@SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable"})
-public class MethodDeclarationTest implements RewriteTest {
+public class AssignmentOperationTest extends ParserTest {
 
     @Test
-    void methodDeclaration() {
+    void minusEqual() {
         rewriteRun(
           javascript(
             """
-              function foo ( ) { }
-              """
+            var n = 0
+            n -= 5
+            """
           )
         );
     }
 
     @Test
-    void methodParameters() {
+    void plusEqual() {
         rewriteRun(
           javascript(
             """
-              function foo ( x : number , y : number ) { }
-              """
+            var n = 0
+            n += 5
+            """
+          )
+        );
+    }
+
+    @Test
+    void timesEqual() {
+        rewriteRun(
+          javascript(
+            """
+            var n = 0
+            n *= 5
+            """
+          )
+        );
+    }
+
+    @Test
+    void divideEqual() {
+        rewriteRun(
+          javascript(
+            """
+            var n = 0
+            n /= 5
+            """
           )
         );
     }

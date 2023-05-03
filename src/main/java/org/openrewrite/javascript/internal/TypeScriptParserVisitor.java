@@ -401,6 +401,46 @@ public class TypeScriptParserVisitor {
         return null;
     }
 
+    private J.MethodInvocation mapCallExpression(TSCNode node) {
+        Space prefix = whitespace();
+        implementMe(node, "questionDotToken");
+        implementMe(node, "typeArguments");
+
+        JRightPadded<Expression> select = null;
+        JContainer<Expression> typeParameters = null;
+        TSCNode expression = node.getChildNode("expression");
+
+        if (expression.hasProperty("expression")) {
+            // Adjust padding.
+            implementMe(expression, "questionDotToken");
+
+            select = padRight(mapNameExpression(expression.getChildNodeRequired("expression")), sourceBefore(TSCSyntaxKind.DotToken));
+        }
+
+        J.Identifier name = mapIdentifier(expression.getChildNodeRequired("name"));
+        JContainer<Expression> arguments = null;
+        if (node.hasProperty("arguments")) {
+            arguments = mapContainer(
+                    TSCSyntaxKind.OpenParenToken,
+                    node.getChildNodes("arguments"),
+                    TSCSyntaxKind.CommaToken,
+                    TSCSyntaxKind.CloseParenToken,
+                    t -> (Expression) mapNode(t)
+            );
+        }
+
+        return new J.MethodInvocation(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                select,
+                typeParameters,
+                name,
+                arguments,
+                typeMapping.methodInvocationType(node)
+        );
+    }
+
     private Statement mapEmptyStatement(TSCNode ignored) {
         return new J.Empty(randomId(), EMPTY, Markers.EMPTY);
     }
@@ -629,6 +669,38 @@ public class TypeScriptParserVisitor {
         return padRight(statement, EMPTY);
     }
 
+    private Expression mapNameExpression(TSCNode expression) {
+        Space prefix = whitespace();
+        if (expression.hasProperty("expression")) {
+            Expression select = mapNameExpression(expression.getChildNodeRequired("expression"));
+
+            // Adjust left padding from sourceBefore.
+            implementMe(expression, "questionDotToken");
+
+            JLeftPadded<J.Identifier> name = padLeft(sourceBefore(TSCSyntaxKind.DotToken), mapIdentifier(expression.getChildNodeRequired("name")));
+
+            return new J.FieldAccess(
+                    randomId(),
+                    prefix,
+                    Markers.EMPTY,
+                    select,
+                    name,
+                    typeMapping.type(expression)
+            );
+        } else {
+            Expression identifier = null;
+            if (expression.hasProperty("name")) {
+                identifier = mapIdentifier(expression.getChildNodeRequired("name"));
+            } else if (expression.hasProperty("escapedText")) {
+                identifier = mapIdentifier(expression);
+            } else {
+                // FIXME: unknown name.
+                implementMe(expression);
+            }
+            return identifier;
+        }
+    }
+
     private List<J.Modifier> mapModifiers(List<TSCNode> nodes) {
         List<J.Modifier> modifiers = new ArrayList<>(nodes.size());
         for (TSCNode node : nodes) {
@@ -672,6 +744,9 @@ public class TypeScriptParserVisitor {
                 break;
             case BinaryExpression:
                 j = mapBinaryExpression(node);
+                break;
+            case CallExpression:
+                j = mapCallExpression(node);
                 break;
             case EmptyStatement:
                 j = mapEmptyStatement(node);
@@ -777,31 +852,38 @@ public class TypeScriptParserVisitor {
         return String.format("[start=%d, end=%d, text=`%s`]", this.cursorContext.scannerTokenStart(), this.cursorContext.scannerTokenEnd(), this.cursorContext.scannerTokenText().replace("\n", "⏎"));
     }
 
-    private <T> JContainer<T> mapContainer(TSCSyntaxKind open, List<TSCNode> nodes, @Nullable TSCSyntaxKind delimiter, TSCSyntaxKind close, Function<TSCNode, T> mapFn) {
-        Space containerPrefix = whitespace();
-        consumeToken(open);
-        List<JRightPadded<T>> rightPaddeds;
+    private <T extends J> JContainer<T> mapContainer(TSCSyntaxKind open, List<TSCNode> nodes, TSCSyntaxKind delimiter, TSCSyntaxKind close, Function<TSCNode, T> mapFn) {
+        Space containerPrefix = sourceBefore(open);
+        List<JRightPadded<T>> elements;
         if (nodes.isEmpty()) {
             Space withinContainerSpace = whitespace();
             //noinspection unchecked
-            rightPaddeds = Collections.singletonList(
-                    JRightPadded.build((T) new J.Empty(UUID.randomUUID(), withinContainerSpace, Markers.EMPTY))
+            elements = Collections.singletonList(
+                    JRightPadded.build((T) new J.Empty(randomId(), withinContainerSpace, Markers.EMPTY))
             );
         } else {
-            rightPaddeds = new ArrayList<>(nodes.size());
+            elements = new ArrayList<>(nodes.size());
             for (int i = 0; i < nodes.size(); i++) {
                 TSCNode node = nodes.get(i);
                 T mapped = mapFn.apply(node);
-                Space after = whitespace();
-                rightPaddeds.add(JRightPadded.build(mapped).withAfter(after));
-                // FIXME: check on trailing commas. Trailing comma property may not be available here. pass in bool val?
-                if (i < nodes.size() - 1 && delimiter != null) {
-                    consumeToken(delimiter);
+                Markers markers = Markers.EMPTY;
+                Space after;
+                if (i < nodes.size() - 1) {
+                    after = sourceBefore(delimiter);
+                } else if (delimiter == TSCSyntaxKind.CommaToken) {
+                    after = whitespace();
+                    if (source.getText().charAt(getCursorPosition()) == ',') {
+                        consumeToken(delimiter);
+                        markers = markers.addIfAbsent(new TrailingComma(randomId(), whitespace()));
+                    }
+                } else {
+                    after = EMPTY;
                 }
+                elements.add(JRightPadded.build(mapped).withAfter(after).withMarkers(markers));
             }
         }
         consumeToken(close);
-        return JContainer.build(containerPrefix, rightPaddeds, Markers.EMPTY);
+        return JContainer.build(containerPrefix, elements, Markers.EMPTY);
     }
 
     private Space sourceBefore(String text) {

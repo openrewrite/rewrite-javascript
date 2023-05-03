@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript;
-
+package org.openrewrite.javascript.tree;
 
 import org.intellij.lang.annotations.Language;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.Space;
-import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.javascript.JavaScriptParser;
+import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.SourceSpec;
 import org.openrewrite.test.SourceSpecs;
 
@@ -28,9 +28,7 @@ import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public final class ParserAssertions {
-    private ParserAssertions() {
-    }
+public class ParserTest implements RewriteTest {
 
     public static SourceSpecs javascript(@Language("js") @Nullable String before) {
         return javascript(before, s -> {
@@ -49,7 +47,7 @@ public final class ParserAssertions {
     }
 
     public static SourceSpecs javascript(@Language("js") @Nullable String before, @Language("js") String after,
-                                     Consumer<SourceSpec<JS.CompilationUnit>> spec) {
+                                         Consumer<SourceSpec<JS.CompilationUnit>> spec) {
         SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, s -> after);
         acceptSpec(spec, js);
         return js;

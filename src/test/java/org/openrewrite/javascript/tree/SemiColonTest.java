@@ -13,60 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript;
+package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.javascript.ParserAssertions.javascript;
-
-@SuppressWarnings("JSUnresolvedVariable")
-public class AssignmentOperationTest implements RewriteTest {
+@SuppressWarnings({"JSUnusedLocalSymbols", "TrailingWhitespacesInTextBlock", "JSUnnecessarySemicolon"})
+public class SemiColonTest extends ParserTest {
 
     @Test
-    void minusEqual() {
+    void semiColon() {
         rewriteRun(
           javascript(
             """
-            var n = 0
-            n -= 5
-            """
+              let hello = "World" ;
+              """
           )
         );
     }
 
     @Test
-    void plusEqual() {
+    void noSemiColon() {
         rewriteRun(
           javascript(
             """
-            var n = 0
-            n += 5
-            """
+              let hello = "World" 
+              """
           )
         );
     }
 
     @Test
-    void timesEqual() {
+    void multiSemiColon() {
         rewriteRun(
           javascript(
             """
-            var n = 0
-            n *= 5
-            """
-          )
-        );
-    }
-
-    @Test
-    void divideEqual() {
-        rewriteRun(
-          javascript(
-            """
-            var n = 0
-            n /= 5
-            """
+              let hello = "World" ; ;
+              """
           )
         );
     }

@@ -13,46 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript;
+package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.javascript.ParserAssertions.javascript;
-
-@SuppressWarnings({"JSUnusedLocalSymbols", "TrailingWhitespacesInTextBlock"})
-public class SemiColonTest implements RewriteTest {
+@SuppressWarnings("JSUnusedLocalSymbols")
+public class EnumTest extends ParserTest {
 
     @Test
-    void semiColon() {
+    void enumDeclaration() {
         rewriteRun(
           javascript(
             """
-              let hello = "World" ;
+              enum Foo {
+                Bar , Buz
+              }
               """
           )
         );
     }
 
     @Test
-    void noSemiColon() {
+    void hasTrailingComma() {
         rewriteRun(
-          javascript(
-            """
-              let hello = "World" 
+            javascript(
               """
-          )
-        );
-    }
-
-    @Test
-    void multiSemiColon() {
-        rewriteRun(
-          javascript(
-            """
-              let hello = "World" ; ;
-              """
-          )
+                enum Foo {
+                  Bar , Buz ,
+                }
+                """
+            )
         );
     }
 }

@@ -13,37 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript;
+package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.javascript.ParserAssertions.javascript;
-
-@SuppressWarnings("JSUnusedLocalSymbols")
-public class EnumTest implements RewriteTest {
+public class AssignmentTest extends ParserTest {
 
     @Test
-    void enumDeclaration() {
-        rewriteRun(
-          javascript(
-            """
-              enum Foo {
-                Bar , Buz
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void hasTrailingComma() {
+    void assignment() {
         rewriteRun(
             javascript(
               """
-                enum Foo {
-                  Bar , Buz ,
-                }
+                var b = 1
+                b = 2
                 """
             )
         );

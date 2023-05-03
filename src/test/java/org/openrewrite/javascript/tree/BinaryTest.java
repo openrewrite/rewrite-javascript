@@ -13,17 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript;
+package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.javascript.ParserAssertions.javascript;
-
-@SuppressWarnings({"JSUnresolvedVariable", "JSUnusedLocalSymbols"})
-public class BinaryTest implements RewriteTest {
+public class BinaryTest extends ParserTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
