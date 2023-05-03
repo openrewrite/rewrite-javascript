@@ -41,4 +41,27 @@ public class ArrayTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void multiline() {
+        rewriteRun(
+          javascript(
+            """
+              var multi : number [ ] [ ] =
+              [
+                    [
+                        1 ,
+                        2 ,
+                        3
+                    ] ,
+                    [
+                        23 ,
+                        24 ,
+                        25
+                    ]
+              ]
+              """
+          )
+        );
+    }
 }

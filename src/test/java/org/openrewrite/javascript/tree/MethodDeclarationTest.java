@@ -41,4 +41,21 @@ public class MethodDeclarationTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void decorator() {
+        rewriteRun(
+          javascript(
+            """
+              function enumerable(value: boolean) {
+                return function ( target : any,
+                        propertyKey : string,
+                        descriptor : PropertyDescriptor ) {
+                    descriptor.enumerable = value;
+                };
+              }
+              """
+          )
+        );
+    }
 }

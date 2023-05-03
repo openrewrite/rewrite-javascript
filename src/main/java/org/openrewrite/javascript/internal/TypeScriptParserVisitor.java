@@ -516,11 +516,17 @@ public class TypeScriptParserVisitor {
         return (Expression) mapNode(node.getChildNodeRequired("expression"));
     }
 
-    // FIXME
     private J.MethodDeclaration mapFunctionDeclaration(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.FunctionKeyword);
 
-        J.Identifier name = mapIdentifier(node.getChildNodeRequired("name"));
+        J.Identifier name;
+        if (node.hasProperty("name")) {
+            name = mapIdentifier(node.getChildNodeRequired("name"));
+        } else {
+            // FIXME: get input, we can add an anonymous name and prevent printing with a marker.
+            // Function expressions do not require a name `function (..)`
+            name = new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "", null, null);
+        }
 
         JContainer<Statement> parameters = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
@@ -657,6 +663,39 @@ public class TypeScriptParserVisitor {
                 node.getText(),
                 null, // TODO
                 typeMapping.primitive(node)
+        );
+    }
+
+    private J mapPropertyAccessExpression(TSCNode node) {
+        Space prefix = whitespace();
+        implementMe(node, "questionDotToken");
+
+        Expression nameExpression = mapNameExpression(node.getChildNodeRequired("expression"));
+        return new J.FieldAccess(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                nameExpression,
+                padLeft(sourceBefore(TSCSyntaxKind.DotToken), mapIdentifier(node.getChildNodeRequired("name"))),
+                typeMapping.type(node)
+        );
+    }
+
+    private J.Return mapReturnStatement(TSCNode node) {
+        Space prefix = sourceBefore(TSCSyntaxKind.ReturnKeyword);
+        Expression expression = null;
+        J j = !node.hasProperty("expression") ? null : mapNode(node.getChildNodeRequired("expression"));
+        if (j != null) {
+            expression = j instanceof Expression ? (Expression) j : new JS.StatementExpression(
+                    randomId(),
+                    (Statement) j
+            );
+        }
+        return new J.Return(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                expression
         );
     }
 
@@ -883,6 +922,7 @@ public class TypeScriptParserVisitor {
             case InterfaceDeclaration:
                 j = mapClassDeclaration(node);
                 break;
+            case AnyKeyword:
             case BooleanKeyword:
             case FalseKeyword:
             case NumberKeyword:
@@ -915,6 +955,7 @@ public class TypeScriptParserVisitor {
                 j = mapExpressionStatement(node);
                 break;
             case FunctionDeclaration:
+            case FunctionExpression:
                 j = mapFunctionDeclaration(node);
                 break;
             case Identifier:
@@ -929,6 +970,12 @@ public class TypeScriptParserVisitor {
             case PostfixUnaryExpression:
             case PrefixUnaryExpression:
                 j = mapUnaryExpression(node);
+                break;
+            case PropertyAccessExpression:
+                j = mapPropertyAccessExpression(node);
+                break;
+            case ReturnStatement:
+                j = mapReturnStatement(node);
                 break;
             case StringLiteral:
                 j = mapStringLiteral(node);
