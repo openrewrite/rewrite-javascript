@@ -17,9 +17,6 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.V8Value;
-import com.caoccao.javet.values.primitive.V8ValueBoolean;
-import com.caoccao.javet.values.primitive.V8ValueString;
-import com.caoccao.javet.values.primitive.V8ValueUndefined;
 import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.internal.lang.Nullable;
@@ -27,6 +24,7 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -40,6 +38,16 @@ public class TSCNode implements TSCV8Backed {
         this.nodeV8 = nodeV8;
     }
 
+    @Override
+    public TSCProgramContext getProgramContext() {
+        return programContext;
+    }
+
+    @Override
+    public String debugDescription() {
+        return "Node(" + syntaxKind() + ")";
+    }
+
     public int syntaxKindCode() {
         try {
             return nodeV8.getInteger("kind");
@@ -47,6 +55,7 @@ public class TSCNode implements TSCV8Backed {
             throw new RuntimeException(e);
         }
     }
+
     public TSCSyntaxKind syntaxKind() {
         return TSCSyntaxKind.fromCode(this.syntaxKindCode());
     }
@@ -65,6 +74,50 @@ public class TSCNode implements TSCV8Backed {
         }
     }
 
+    /**
+     * Only intended for debugging and tests.
+     */
+    public @Nullable TSCNode findFirstNodeWithText(String text) {
+        if (text.equals(this.getText())) {
+            return this;
+        }
+        for (TSCNode child : this.getAllChildNodes()) {
+            TSCNode found = child.findFirstNodeWithText(text);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Only intended for debugging and tests.
+     */
+    public @Nullable TSCNode findNodeAtPosition(int position) {
+        if (!containsPosition(position)) {
+            throw new IllegalArgumentException(String.format(
+                    "Attempt to find node at position %d, but this %s node only covers [%d, %d).",
+                    position,
+                    this.syntaxKind(),
+                    this.getStart(),
+                    this.getEnd()
+            ));
+        }
+        if (getStart() == position) {
+            return this;
+        }
+        for (TSCNode child : this.getAllChildNodes()) {
+            if (child.containsPosition(position)) {
+                return child.findNodeAtPosition(position);
+            }
+        }
+        return null;
+    }
+
+    public boolean containsPosition(int position) {
+        return position >= this.getStart() && position < this.getEnd();
+    }
+
     @Nullable
     public TSCSymbol getSymbolForNode() {
         try {
@@ -79,9 +132,17 @@ public class TSCNode implements TSCV8Backed {
         }
     }
 
-    public int getStart() {
+    public int getStartWithLeadingSpace() {
         try {
             return this.nodeV8.getPropertyInteger("pos");
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getStart() {
+        try {
+            return this.nodeV8.invokeInteger("getStart");
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
@@ -137,49 +198,6 @@ public class TSCNode implements TSCV8Backed {
         }
     }
 
-    public boolean getBooleanPropertyValue(String propertyName) {
-        V8Value val;
-        try {
-            val = this.nodeV8.getProperty(propertyName);
-        } catch (JavetException ignored) {
-            throw new IllegalStateException(String.format("Property <%s> does not exist on syntaxKind %s", propertyName, this.syntaxKind()));
-        }
-
-        boolean propertyValue;
-        if (val instanceof V8ValueBoolean) {
-            propertyValue = ((V8ValueBoolean) val).getValue();
-        } else {
-            throw new IllegalStateException(String.format("Property <%s> is not a boolean type.", propertyName));
-        }
-        return propertyValue;
-    }
-
-    public String getStringPropertyValue(String propertyName) {
-        V8Value val;
-        try {
-            val = this.nodeV8.getProperty(propertyName);
-        } catch (JavetException ignored) {
-            throw new IllegalStateException(String.format("Property <%s> does not exist on syntaxKind %s", propertyName, this.syntaxKind()));
-        }
-
-        String propertyValue = "";
-        if (val instanceof V8ValueString) {
-            propertyValue = ((V8ValueString) val).getValue();
-        } else {
-            throw new IllegalStateException(String.format("Property <%s> is not a boolean type.", propertyName));
-        }
-        return propertyValue;
-    }
-
-    public boolean hasProperty(String propertyName) {
-        boolean isFound = false;
-        try {
-            isFound = !(this.nodeV8.getProperty(propertyName) instanceof V8ValueUndefined);
-        } catch (JavetException ignored) {
-        }
-        return isFound;
-    }
-
     public String getText() {
         try {
             return this.nodeV8.invokeString("getText");
@@ -211,6 +229,24 @@ public class TSCNode implements TSCV8Backed {
         Consumer<V8Value> v8Callback = v8Value -> callback.accept(programContext.tscNode((V8ValueObject) v8Value));
         try (V8Value v8Function = programContext.asJSFunction(v8Callback)) {
             this.nodeV8.invoke("forEachChild", v8Function);
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<TSCNode> getAllChildNodes() {
+        try (V8Value v8Value = this.nodeV8.invoke("getChildren")) {
+            if (v8Value.isNullOrUndefined()) {
+                return Collections.emptyList();
+            }
+            V8ValueArray v8Array = (V8ValueArray) v8Value;
+
+            final int count = v8Array.getLength();
+            List<TSCNode> result = new ArrayList<>(count);
+            for (int i = 0; i < count; i++) {
+                result.add(programContext.tscNode(v8Array.get(i)));
+            }
+            return result;
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }

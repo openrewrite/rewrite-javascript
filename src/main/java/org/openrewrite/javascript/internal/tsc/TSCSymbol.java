@@ -19,6 +19,9 @@ import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSymbolFlag;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TSCSymbol implements TSCV8Backed {
     private final TSCProgramContext programContext;
     public final V8ValueObject symbolV8;
@@ -26,6 +29,16 @@ public class TSCSymbol implements TSCV8Backed {
     public TSCSymbol(TSCProgramContext programContext, V8ValueObject symbolV8) {
         this.programContext = programContext;
         this.symbolV8 = symbolV8;
+    }
+
+    @Override
+    public TSCProgramContext getProgramContext() {
+        return programContext;
+    }
+
+    @Override
+    public String debugDescription() {
+        return "Symbol(" + listMatchingSymbolFlags() + ")";
     }
 
     public int getSymbolFlags() {
@@ -38,6 +51,18 @@ public class TSCSymbol implements TSCV8Backed {
 
     public boolean hasSymbolFlag(TSCSymbolFlag flag) {
         return flag.matches(this.getSymbolFlags());
+    }
+
+    /** Only intended for debugging; this is slow. */
+    public List<TSCSymbolFlag> listMatchingSymbolFlags() {
+        final int symbolFlags = this.getSymbolFlags();
+        List<TSCSymbolFlag> result = new ArrayList<>();
+        for (TSCSymbolFlag flag : TSCSymbolFlag.values()) {
+            if (flag.matches(symbolFlags)) {
+                result.add(flag);
+            }
+        }
+        return result;
     }
 
     public String getEscapedName() {

@@ -23,6 +23,7 @@ import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueMap;
 import com.caoccao.javet.values.reference.V8ValueObject;
+import org.intellij.lang.annotations.Language;
 import org.openrewrite.IOUtils;
 import org.openrewrite.internal.lang.Nullable;
 
@@ -30,6 +31,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -78,6 +80,13 @@ public class TSCRuntime implements Closeable {
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /** Only intended for testing and debugging. */
+    public void parseSingleSource(@Language("typescript") String sourceText, BiConsumer<TSCNode, TSCSourceFileContext> callback) {
+        Map<String, String> sources = new HashMap<>();
+        sources.put("example.ts", sourceText);
+        parseSourceTexts(sources, callback);
     }
 
     public void parseSourceTexts(Map<String, String> sourceTexts, BiConsumer<TSCNode, TSCSourceFileContext> callback) {

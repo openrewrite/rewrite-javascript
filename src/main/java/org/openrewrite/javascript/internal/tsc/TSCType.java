@@ -20,6 +20,9 @@ import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TSCType implements TSCV8Backed {
     private final TSCProgramContext programContext;
     public final V8ValueObject typeV8;
@@ -27,6 +30,16 @@ public class TSCType implements TSCV8Backed {
     public TSCType(TSCProgramContext programContext, V8ValueObject typeV8) {
         this.programContext = programContext;
         this.typeV8 = typeV8;
+    }
+
+    @Override
+    public TSCProgramContext getProgramContext() {
+        return programContext;
+    }
+
+    @Override
+    public String debugDescription() {
+        return "Type(" + listMatchingTypeFlags() + ")";
     }
 
     public long getTypeId() {
@@ -50,6 +63,27 @@ public class TSCType implements TSCV8Backed {
         return flag.matches(this.getTypeFlags());
     }
 
+    public boolean hasExactTypeFlag(TSCTypeFlag flag) {
+        return flag.code == this.getTypeFlags();
+    }
+
+    /** This is not what you usually want. Type flags are a bit field. */
+    public TSCTypeFlag getExactTypeFlag() {
+        return TSCTypeFlag.fromCode(this.getTypeFlags());
+    }
+
+    /** Only intended for debugging; this is slow. */
+    public List<TSCTypeFlag> listMatchingTypeFlags() {
+        final int typeFlags = this.getTypeFlags();
+        List<TSCTypeFlag> result = new ArrayList<>();
+        for (TSCTypeFlag flag : TSCTypeFlag.values()) {
+            if (flag.matches(typeFlags)) {
+                result.add(flag);
+            }
+        }
+        return result;
+    }
+
     public int getObjectFlags() {
         if (!this.hasTypeFlag(TSCTypeFlag.ObjectFlagsType)) {
             return 0;
@@ -65,6 +99,19 @@ public class TSCType implements TSCV8Backed {
     public boolean hasObjectFlag(TSCObjectFlag flag) {
         return flag.matches(this.getObjectFlags());
     }
+
+    /** Only intended for debugging; this is slow. */
+    public List<TSCObjectFlag> listMatchingObjectFlags() {
+        final int objectFlags = this.getObjectFlags();
+        List<TSCObjectFlag> result = new ArrayList<>();
+        for (TSCObjectFlag flag : TSCObjectFlag.values()) {
+            if (flag.matches(objectFlags)) {
+                result.add(flag);
+            }
+        }
+        return result;
+    }
+
 
     @Override
     public V8ValueObject getBackingV8Object() {
