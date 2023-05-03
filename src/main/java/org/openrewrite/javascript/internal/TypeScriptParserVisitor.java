@@ -712,6 +712,24 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J mapTypeReference(TSCNode node) {
+        return new J.ParameterizedType(
+                randomId(),
+                whitespace(),
+                Markers.EMPTY,
+                (NameTree) mapNode(node.getChildNodeRequired("typeName")),
+                !node.hasProperty("typeArguments") ? null :
+                        mapContainer(
+                                TSCSyntaxKind.LessThanToken,
+                                node.getChildNodes("typeArguments"),
+                                TSCSyntaxKind.CommaToken,
+                                TSCSyntaxKind.GreaterThanToken,
+                                t -> (Expression) mapNode(t)
+                        ),
+                typeMapping.type(node)
+        );
+    }
+
     private JS.JSVariableDeclaration mapVariableStatement(TSCNode node) {
         Space prefix = whitespace();
 
@@ -914,6 +932,9 @@ public class TypeScriptParserVisitor {
                 break;
             case StringLiteral:
                 j = mapStringLiteral(node);
+                break;
+            case TypeReference:
+                j = mapTypeReference(node);
                 break;
             case VariableStatement:
                 j = mapVariableStatement(node);

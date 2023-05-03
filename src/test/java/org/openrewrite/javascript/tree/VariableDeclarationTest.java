@@ -65,4 +65,15 @@ public class VariableDeclarationTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void generic() {
+        rewriteRun(
+          javascript(
+            """
+              var v : Array < string > = [ 'foo' , 'bar', 'buz' ] ;
+              """
+          )
+        );
+    }
 }
