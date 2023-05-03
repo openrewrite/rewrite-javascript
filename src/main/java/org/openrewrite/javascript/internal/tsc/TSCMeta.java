@@ -6,7 +6,6 @@ import com.caoccao.javet.values.primitive.V8ValueInteger;
 import com.caoccao.javet.values.primitive.V8ValueString;
 import com.caoccao.javet.values.reference.V8ValueMap;
 import com.caoccao.javet.values.reference.V8ValueObject;
-import org.openrewrite.javascript.internal.TSC;
 
 import java.util.HashMap;
 import java.util.Map;

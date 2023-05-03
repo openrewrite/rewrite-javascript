@@ -10,7 +10,6 @@ import com.caoccao.javet.values.reference.V8ValueMap;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.IOUtils;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.javascript.internal.TSC;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -44,7 +43,7 @@ public class TSCRuntime implements Closeable {
     }
 
     private static String getJSEntryProgramText() {
-        try (InputStream is = TSC.class.getClassLoader().getResourceAsStream("index.js")) {
+        try (InputStream is = TSCRuntime.class.getClassLoader().getResourceAsStream("index.js")) {
             if (is == null) throw new IllegalStateException("entry JS resource does not exist");
             return IOUtils.readFully(is, StandardCharsets.UTF_8);
         } catch (IOException e) {
