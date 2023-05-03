@@ -1,16 +1,31 @@
 import path from "path";
 import * as fs from "fs";
-import {NodeFlags, ObjectFlags, SymbolFlags, SyntaxKind, TypeFlags} from "typescript";
+import {
+    FlowFlags, IndexKind,
+    ModifierFlags,
+    NodeFlags,
+    ObjectFlags, SignatureKind,
+    SymbolFlags,
+    SyntaxKind,
+    TokenFlags,
+    TypeFlags, TypePredicateKind
+} from "typescript";
 
 const baseDir = path.resolve(__dirname, '../../src/main/java/org/openrewrite/javascript/internal/tsc/generated');
 const basePkg = 'org.openrewrite.javascript.internal.tsc.generated';
 
 const Mappings = {
+    FlowFlags,
+    IndexKind,
+    ModifierFlags,
+    NodeFlags,
     ObjectFlags,
-    TypeFlags,
+    SignatureKind,
     SymbolFlags,
     SyntaxKind,
-    NodeFlags,
+    TokenFlags,
+    TypeFlags,
+    TypePredicateKind,
 };
 
 async function main() {
@@ -24,7 +39,7 @@ async function main() {
     }
 }
 
-async function exportEnum(enumName: string, enumObj: {readonly [k: string]: number | string}) {
+async function exportEnum(enumName: string, enumObj: { readonly [k: string]: number | string }) {
     const byValue = new Map<number, string[]>();
     for (const [key, value] of Object.entries(enumObj)) {
         if (('' + parseInt(key, 10)) === key || typeof value === 'string') {
