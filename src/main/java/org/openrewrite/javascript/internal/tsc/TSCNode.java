@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * https://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
@@ -16,7 +31,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class TSCNode {
+public class TSCNode implements TSCV8Backed {
     private final TSCProgramContext programContext;
     public final V8ValueObject nodeV8;
 
@@ -37,13 +52,27 @@ public class TSCNode {
     }
 
     @Nullable
-    public TSCType getTypeAtNodeLocation() {
+    public TSCType getTypeForNode() {
         try {
-            V8ValueObject type = this.programContext.getTypeChecker().invoke("getTypeAtLocation");
-            if (type == null) {
+            V8Value type = this.programContext.getTypeChecker().invoke("getTypeAtLocation", this.nodeV8);
+            if (type.isNullOrUndefined()) {
                 return null;
             } else {
-                return this.programContext.tscType(type);
+                return this.programContext.tscType((V8ValueObject) type);
+            }
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Nullable
+    public TSCSymbol getSymbolForNode() {
+        try {
+            V8Value type = this.programContext.getTypeChecker().invoke("getSymbolAtLocation", this.nodeV8);
+            if (type.isNullOrUndefined()) {
+                return null;
+            } else {
+                return this.programContext.tscSymbol((V8ValueObject) type);
             }
         } catch (JavetException e) {
             throw new RuntimeException(e);
@@ -77,11 +106,11 @@ public class TSCNode {
     @Nullable
     public TSCNode getChildNode(String name) {
         try {
-            V8ValueObject child = this.nodeV8.getProperty(name);
-            if (child == null) {
+            V8Value child = this.nodeV8.getProperty(name);
+            if (child.isNullOrUndefined()) {
                 return null;
             }
-            return programContext.tscNode(child);
+            return programContext.tscNode((V8ValueObject) child);
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
@@ -231,5 +260,10 @@ public class TSCNode {
             child.printTree(ps, childIndent);
         });
 
+    }
+
+    @Override
+    public V8ValueObject getBackingV8Object() {
+        return this.nodeV8;
     }
 }

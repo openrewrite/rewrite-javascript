@@ -17,7 +17,7 @@ import * as ts from 'typescript';
 import * as tsvfs from '@typescript/vfs';
 import {createScanner, ScriptTarget} from 'typescript';
 
-const SYMBOL_NODE_ID = Symbol("NodeId");
+const OPEN_REWRITE_ID = Symbol("OpenRewriteId");
 
 // (entry point from Java code)
 // noinspection JSUnusedGlobalSymbols
@@ -34,13 +34,13 @@ export default function parse(inputs: Map<string, string>) {
         });
 
         let nextNodeId = BigInt(1);
-        const getNodeId = (node: any) => {
-            let nodeId = node[SYMBOL_NODE_ID];
-            if (nodeId === undefined) {
-                nodeId = nextNodeId++;
-                node[SYMBOL_NODE_ID] = nodeId;
+        const getOpenRewriteId = (obj: any) => {
+            let objId = obj[OPEN_REWRITE_ID];
+            if (objId === undefined) {
+                objId = nextNodeId++;
+                obj[OPEN_REWRITE_ID] = objId;
             }
-            return nodeId;
+            return objId;
         };
 
         return {
@@ -48,7 +48,7 @@ export default function parse(inputs: Map<string, string>) {
                 syntaxKinds: new Map(Object.entries(ts.SyntaxKind))
             },
             program,
-            getNodeId,
+            getOpenRewriteId,
             typeChecker: program.getTypeChecker(),
             sourceFiles: program.getSourceFiles(),
             createScanner: () => createScanner(ScriptTarget.ESNext, false, undefined),

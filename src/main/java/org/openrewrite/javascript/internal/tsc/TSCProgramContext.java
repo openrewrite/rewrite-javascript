@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * https://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
@@ -9,8 +24,6 @@ import com.caoccao.javet.values.reference.V8ValueObject;
 
 import java.io.Closeable;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -25,23 +38,57 @@ public class TSCProgramContext implements Closeable {
         }
     }
 
-
     private final V8Runtime runtime;
     private final TSCMeta metadata;
     private final V8ValueObject program;
     private final V8ValueObject typeChecker;
     private final V8ValueFunction createScanner;
-    private final V8ValueFunction getNodeId;
-    private final Map<Long, TSCNode> nodeCache = new HashMap<>();
-    private final Map<Long, TSCType> typeCache = new HashMap<>();
+    private final V8ValueFunction getOpenRewriteId;
 
-    public TSCProgramContext(V8Runtime runtime, TSCMeta metadata, V8ValueObject program, V8ValueObject typeChecker, V8ValueFunction createScanner, V8ValueFunction getNodeId) {
+    private final TSCObjectCache<Long, TSCNode> nodeCache = new TSCObjectCache<Long, TSCNode>() {
+        @Override
+        protected Long getKey(V8ValueObject objectV8) throws JavetException {
+            return getOpenRewriteId.callLong(null, objectV8);
+        }
+
+        @Override
+        protected TSCNode makeInstance(TSCProgramContext programContext, V8ValueObject objectV8) {
+            return new TSCNode(programContext, objectV8);
+        }
+    };
+
+    private final TSCObjectCache<Long, TSCType> typeCache = new TSCObjectCache<Long, TSCType>() {
+        @Override
+        protected Long getKey(V8ValueObject objectV8) throws JavetException {
+            Number tmp = objectV8.getPrimitive("id");
+            return tmp.longValue();
+        }
+
+        @Override
+        protected TSCType makeInstance(TSCProgramContext programContext, V8ValueObject objectV8) {
+            return new TSCType(programContext, objectV8);
+        }
+    };
+
+    private final TSCObjectCache<Long, TSCSymbol> symbolCache = new TSCObjectCache<Long, TSCSymbol>() {
+        @Override
+        protected Long getKey(V8ValueObject objectV8) throws JavetException {
+            return getOpenRewriteId.callLong(null, objectV8);
+        }
+
+        @Override
+        protected TSCSymbol makeInstance(TSCProgramContext programContext, V8ValueObject objectV8) {
+            return new TSCSymbol(programContext, objectV8);
+        }
+    };
+
+    public TSCProgramContext(V8Runtime runtime, TSCMeta metadata, V8ValueObject program, V8ValueObject typeChecker, V8ValueFunction createScanner, V8ValueFunction getOpenRewriteId) {
         this.runtime = runtime;
         this.metadata = metadata;
         this.program = program;
         this.typeChecker = typeChecker;
         this.createScanner = createScanner;
-        this.getNodeId = getNodeId;
+        this.getOpenRewriteId = getOpenRewriteId;
     }
 
     public static TSCProgramContext fromJS(V8ValueObject contextV8) {
@@ -51,9 +98,9 @@ public class TSCProgramContext implements Closeable {
             V8ValueObject program = contextV8.get("program");
             V8ValueObject typeChecker = contextV8.get("typeChecker");
             V8ValueFunction createScanner = contextV8.get("createScanner");
-            V8ValueFunction getNodeId = contextV8.get("getNodeId");
+            V8ValueFunction getOpenRewriteId = contextV8.get("getOpenRewriteId");
 
-            return new TSCProgramContext(contextV8.getV8Runtime(), metadata, program, typeChecker, createScanner, getNodeId);
+            return new TSCProgramContext(contextV8.getV8Runtime(), metadata, program, typeChecker, createScanner, getOpenRewriteId);
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
@@ -68,41 +115,15 @@ public class TSCProgramContext implements Closeable {
     }
 
     public TSCType tscType(V8ValueObject v8Value) {
-        final long typeId;
-        try {
-            Number tmp = v8Value.getPrimitive("id");
-            typeId = tmp.longValue();
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
-
-        TSCType type = this.typeCache.computeIfAbsent(typeId, (_handle) -> new TSCType(this, v8Value));
-        if (type.typeV8 != v8Value) {
-            try {
-                v8Value.setWeak();
-            } catch (JavetException e) {
-            }
-        }
-
-        return type;
+        return this.typeCache.getOrCreate(this, v8Value);
     }
 
     public TSCNode tscNode(V8ValueObject v8Value) {
-        final long nodeId;
-        try {
-            nodeId = this.getNodeId.callLong(null, v8Value);
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return this.nodeCache.getOrCreate(this, v8Value);
+    }
 
-        TSCNode node = this.nodeCache.computeIfAbsent(nodeId, (_handle) -> new TSCNode(this, v8Value));
-        if (node.nodeV8 != v8Value) {
-            try {
-                v8Value.setWeak();
-            } catch (JavetException e) {
-            }
-        }
-        return node;
+    public TSCSymbol tscSymbol(V8ValueObject v8Value) {
+        return this.symbolCache.getOrCreate(this, v8Value);
     }
 
     public V8ValueFunction asJSFunction(TSCContextCallback func) {
@@ -142,21 +163,12 @@ public class TSCProgramContext implements Closeable {
         } catch (JavetException e) {
         }
         try {
-            getNodeId.close();
+            getOpenRewriteId.close();
         } catch (JavetException e) {
         }
 
-        this.nodeCache.values().forEach(node -> {
-            try {
-                node.nodeV8.close();
-            } catch (JavetException e) {
-            }
-        });
-        this.typeCache.values().forEach(type -> {
-            try {
-                type.typeV8.close();
-            } catch (JavetException e) {
-            }
-        });
+        this.nodeCache.close();
+        this.typeCache.close();
+        this.symbolCache.close();
     }
 }

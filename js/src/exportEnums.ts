@@ -35,7 +35,12 @@ async function main() {
     console.info('    Done.');
 
     for (const [name, enumObj] of Object.entries(Mappings)) {
-        await exportEnum('TSC' + name, enumObj);
+        let enumName = 'TSC' + name;
+        if (enumName.endsWith('Kinds') || enumName.endsWith('Flags')) {
+            // de-pluralize
+            enumName = enumName.slice(0, enumName.length - 1);
+        }
+        await exportEnum(enumName, enumObj);
     }
 }
 
@@ -104,7 +109,7 @@ async function exportEnum(enumName: string, enumObj: { readonly [k: string]: num
     output += `    }\n`;
 
     // method for checking a bitfield
-    if (enumName.endsWith("Flags")) {
+    if (enumName.endsWith("Flag")) {
         output += `    public boolean matches(int bitfield) {\n`;
         output += `        return (bitfield & this.code) != 0;\n`;
         output += `    }\n`;
