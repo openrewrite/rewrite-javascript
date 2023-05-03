@@ -137,6 +137,73 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 }
             }
         }
+
+        protected void visitStatement(@Nullable JRightPadded<Statement> paddedStat, JRightPadded.Location location, PrintOutputCapture<P> p) {
+            if (paddedStat == null) {
+                return;
+            }
+
+            visit(paddedStat.getElement(), p);
+            visitSpace(paddedStat.getAfter(), location.getAfterLocation(), p);
+
+            Statement s = paddedStat.getElement();
+            boolean printSemiColon = paddedStat.getMarkers().findFirst(Semicolon.class).isPresent();
+            while (true) {
+                if (s instanceof J.Assert ||
+                        s instanceof J.Assignment ||
+                        s instanceof J.AssignmentOperation ||
+                        s instanceof J.Break ||
+                        s instanceof J.Continue ||
+                        s instanceof J.DoWhileLoop ||
+                        s instanceof J.Empty ||
+                        s instanceof J.MethodInvocation ||
+                        s instanceof J.NewClass ||
+                        s instanceof J.Return ||
+                        s instanceof J.Throw ||
+                        s instanceof J.Unary ||
+                        s instanceof J.VariableDeclarations ||
+                        s instanceof J.Yield) {
+                    if (printSemiColon) {
+                        p.append(';');
+                    }
+                    return;
+                }
+
+                if (s instanceof J.MethodDeclaration && ((J.MethodDeclaration) s).getBody() == null) {
+                    if (printSemiColon) {
+                        p.append(';');
+                    }
+                    return;
+                }
+
+                if (s instanceof J.Label) {
+                    s = ((J.Label) s).getStatement();
+                    continue;
+                }
+
+                if (getCursor().getValue() instanceof J.Case) {
+                    Object aSwitch =
+                            getCursor()
+                                    .dropParentUntil(
+                                            c -> c instanceof J.Switch ||
+                                                    c instanceof J.SwitchExpression ||
+                                                    c == Cursor.ROOT_VALUE
+                                    )
+                                    .getValue();
+                    if (aSwitch instanceof J.SwitchExpression) {
+                        J.Case aCase = getCursor().getValue();
+                        if (!(aCase.getBody() instanceof J.Block)) {
+                            if (printSemiColon) {
+                                p.append(';');
+                            }
+                        }
+                        return;
+                    }
+                }
+
+                return;
+            }
+        }
     }
 
     protected void beforeSyntax(J j, JsSpace.Location loc, PrintOutputCapture<P> p) {

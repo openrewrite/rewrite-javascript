@@ -311,6 +311,12 @@ public class TypeScriptParserVisitor {
                 op = padLeft(sourceBefore(TSCSyntaxKind.LessThanLessThanToken), J.Binary.Type.LeftShift);
                 break;
             // Logical ops
+            case AmpersandAmpersandToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.AmpersandAmpersandToken), J.Binary.Type.And);
+                break;
+            case BarBarToken:
+                op = padLeft(sourceBefore(TSCSyntaxKind.BarBarToken), J.Binary.Type.Or);
+                break;
             case EqualsEqualsToken:
                 op = padLeft(sourceBefore(TSCSyntaxKind.EqualsEqualsToken), J.Binary.Type.Equal);
                 break;
@@ -377,8 +383,10 @@ public class TypeScriptParserVisitor {
             case SlashEqualsToken:
                 return mapAssignmentOperation(node);
             case AmpersandToken:
+            case AmpersandAmpersandToken:
             case AsteriskToken:
             case BarToken:
+            case BarBarToken:
             case CaretToken:
             case EqualsEqualsToken:
             case ExclamationEqualsToken:
@@ -559,6 +567,41 @@ public class TypeScriptParserVisitor {
         return mapIdentifier(node);
     }
 
+
+    private J mapIfStatement(TSCNode node) {
+        Space prefix = whitespace();
+
+        consumeToken(TSCSyntaxKind.IfKeyword);
+
+        J.ControlParentheses<Expression> controlParentheses = new J.ControlParentheses<>(
+                randomId(),
+                sourceBefore(TSCSyntaxKind.OpenParenToken),
+                Markers.EMPTY,
+                padRight((Expression) mapNode(node.getChildNodeRequired("expression")), sourceBefore(TSCSyntaxKind.CloseParenToken))
+        );
+        JRightPadded<Statement> thenPart = mapStatement(node.getChildNodeRequired("thenStatement"));
+
+        J.If.Else elsePart = null;
+        if (node.hasProperty("elseStatement")) {
+            Space elsePartPrefix = whitespace();
+            consumeToken(TSCSyntaxKind.ElseKeyword);
+            elsePart = new J.If.Else(
+                    randomId(),
+                    elsePartPrefix,
+                    Markers.EMPTY,
+                    mapStatement(node.getChildNodeRequired("elseStatement"))
+            );
+        }
+        return new J.If(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                controlParentheses,
+                thenPart,
+                elsePart
+        );
+    }
+
     private J mapNumericLiteral(TSCNode node) {
         return new J.Literal(
                 randomId(),
@@ -582,6 +625,44 @@ public class TypeScriptParserVisitor {
                 node.getText(),
                 null, // TODO
                 JavaType.Primitive.String
+        );
+    }
+
+    private J mapUnaryExpression(TSCNode node) {
+        Space prefix = whitespace();
+
+        JLeftPadded<J.Unary.Type> op = null;
+        TSCSyntaxKind opKind = TSCSyntaxKind.fromCode(node.getIntegerPropertyValue("operator"));
+        Expression expression;
+        if (node.syntaxKind() == TSCSyntaxKind.PrefixUnaryExpression) {
+            if (opKind == TSCSyntaxKind.ExclamationToken) {
+                op = padLeft(sourceBefore(TSCSyntaxKind.ExclamationToken), J.Unary.Type.Not);
+            } else if (opKind == TSCSyntaxKind.MinusMinusToken) {
+                op = padLeft(sourceBefore(TSCSyntaxKind.MinusMinusToken), J.Unary.Type.PreDecrement);
+            } else if (opKind == TSCSyntaxKind.PlusPlusToken) {
+                op = padLeft(sourceBefore(TSCSyntaxKind.PlusPlusToken), J.Unary.Type.PreIncrement);
+            } else {
+                implementMe(node);
+            }
+            expression = (Expression) mapNode(node.getChildNodeRequired("operand"));
+        } else {
+            expression = (Expression) mapNode(node.getChildNodeRequired("operand"));
+            if (opKind == TSCSyntaxKind.MinusMinusToken) {
+                op = padLeft(sourceBefore(TSCSyntaxKind.MinusMinusToken), J.Unary.Type.PostDecrement);
+            } else if (opKind == TSCSyntaxKind.PlusPlusToken) {
+                op = padLeft(sourceBefore(TSCSyntaxKind.PlusPlusToken), J.Unary.Type.PostIncrement);
+            } else {
+                implementMe(node);
+            }
+        }
+
+        return new J.Unary(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                op,
+                expression,
+                typeMapping.type(node)
         );
     }
 
@@ -666,7 +747,7 @@ public class TypeScriptParserVisitor {
         Statement statement = (Statement) mapNode(node);
 
         assert statement != null;
-        return padRight(statement, EMPTY);
+        return maybeSemicolon(statement);
     }
 
     private Expression mapNameExpression(TSCNode expression) {
@@ -738,12 +819,18 @@ public class TypeScriptParserVisitor {
             case InterfaceDeclaration:
                 j = mapClassDeclaration(node);
                 break;
+            case BooleanKeyword:
+            case FalseKeyword:
             case NumberKeyword:
             case StringKeyword:
+            case TrueKeyword:
                 j = mapKeyword(node);
                 break;
             case BinaryExpression:
                 j = mapBinaryExpression(node);
+                break;
+            case Block:
+                j = mapBlock(node);
                 break;
             case CallExpression:
                 j = mapCallExpression(node);
@@ -763,8 +850,15 @@ public class TypeScriptParserVisitor {
             case Identifier:
                 j = mapIdentifier(node);
                 break;
+            case IfStatement:
+                j = mapIfStatement(node);
+                break;
             case NumericLiteral:
                 j = mapNumericLiteral(node);
+                break;
+            case PostfixUnaryExpression:
+            case PrefixUnaryExpression:
+                j = mapUnaryExpression(node);
                 break;
             case StringLiteral:
                 j = mapStringLiteral(node);

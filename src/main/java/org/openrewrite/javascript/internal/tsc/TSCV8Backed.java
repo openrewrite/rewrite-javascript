@@ -18,6 +18,7 @@ package org.openrewrite.javascript.internal.tsc;
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.primitive.V8ValueBoolean;
+import com.caoccao.javet.values.primitive.V8ValueInteger;
 import com.caoccao.javet.values.primitive.V8ValueString;
 import com.caoccao.javet.values.primitive.V8ValueUndefined;
 import com.caoccao.javet.values.reference.V8ValueObject;
@@ -38,6 +39,23 @@ public interface TSCV8Backed {
         boolean propertyValue;
         if (val instanceof V8ValueBoolean) {
             propertyValue = ((V8ValueBoolean) val).getValue();
+        } else {
+            throw new IllegalStateException(String.format("Property <%s> is not a boolean type.", propertyName));
+        }
+        return propertyValue;
+    }
+
+    default int getIntegerPropertyValue(String propertyName) {
+        V8Value val;
+        try {
+            val = this.getBackingV8Object().getProperty(propertyName);
+        } catch (JavetException ignored) {
+            throw new IllegalStateException(String.format("Property <%s> does not exist on syntaxKind %s", propertyName, this.debugDescription()));
+        }
+
+        int propertyValue;
+        if (val instanceof V8ValueInteger) {
+            propertyValue = ((V8ValueInteger) val).getValue();
         } else {
             throw new IllegalStateException(String.format("Property <%s> is not a boolean type.", propertyName));
         }

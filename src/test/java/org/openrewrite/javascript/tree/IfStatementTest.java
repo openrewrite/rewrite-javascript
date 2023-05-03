@@ -17,37 +17,32 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({"JSUnusedLocalSymbols", "TrailingWhitespacesInTextBlock", "JSUnnecessarySemicolon"})
-public class SemiColonTest extends ParserTest {
+@SuppressWarnings({"JSUnusedLocalSymbols", "PointlessBooleanExpressionJS", "JSUnresolvedVariable"})
+public class IfStatementTest extends ParserTest {
 
     @Test
-    void semiColon() {
+    void ifStatement() {
         rewriteRun(
           javascript(
             """
-              let hello = "World" ;
+              if ( true ) {
+              }
               """
           )
         );
     }
 
     @Test
-    void noSemiColon() {
+    void ifElse() {
         rewriteRun(
           javascript(
             """
-              let hello = "World" 
-              """
-          )
-        );
-    }
-
-    @Test
-    void multiSemiColon() {
-        rewriteRun(
-          javascript(
-            """
-              let hello = "World" ; ;
+              function foo( a : number ) {
+                  if ( a <= 0 ) {
+                  } else if ( a > 0 && a <= 10 ) {
+                  } else {
+                  }
+              }
               """
           )
         );
@@ -60,11 +55,11 @@ public class SemiColonTest extends ParserTest {
             """
               function foo( a : number ) {
                   if ( a <= 0 )
-                      console . log ( "a <= 0" ) ;
+                      console . log ( "a <= 0" )
                   else if ( a > 0 && a <= 10 )
-                      console . log ( "a > 0 && a <= 10" ) ;
+                      console . log ( "a > 0 && a <= 10" )
                   else
-                      console . log ( "other" ) ;
+                      console . log ( "other" )
               }
               """
           )

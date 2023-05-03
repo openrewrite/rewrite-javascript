@@ -16,8 +16,10 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 public class BinaryTest extends ParserTest {
 
@@ -28,17 +30,48 @@ public class BinaryTest extends ParserTest {
       "*",
       "/",
       "%",
+    })
+    void arithmeticOps(String arg) {
+        rewriteRun(
+          javascript(
+            """
+              let n = 0 %s 1
+              """.formatted(arg)
+          )
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
       "<",
       "<=",
       ">",
       "==",
       "!=",
     })
-    void binaryOperations(String arg) {
+    void comparisonOps(String arg) {
         rewriteRun(
           javascript(
             """
               let n = 0 %s 1
+              """.formatted(arg)
+          )
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+      "&&",
+      "||",
+    })
+    void logicalOps(String arg) {
+        rewriteRun(
+          javascript(
+            """
+              function foo( left : boolean , right : boolean ) {
+                  if ( left %s right ) {
+                  }
+              }
               """.formatted(arg)
           )
         );
@@ -51,7 +84,7 @@ public class BinaryTest extends ParserTest {
       "^",
       "<<",
     })
-    void bitwiseOperations(String arg) {
+    void bitwiseOps(String arg) {
         rewriteRun(
           javascript(
             """
@@ -74,6 +107,19 @@ public class BinaryTest extends ParserTest {
             """
               let n = 0 %s 1
               """.formatted(arg)
+          )
+        );
+    }
+
+    @ExpectedToFail
+    @Test
+    void identityEquals() {
+        rewriteRun(
+          javascript(
+            """
+              if (1 === 2) {
+              }
+              """
           )
         );
     }
