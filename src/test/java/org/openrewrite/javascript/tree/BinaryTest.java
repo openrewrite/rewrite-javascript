@@ -111,15 +111,18 @@ public class BinaryTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
-    @Test
-    void identityEquals() {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "===",
+            "!==",
+    })
+    void identityEquals(String arg) {
         rewriteRun(
           javascript(
             """
-              if ( 1 === 2 ) {
+              if ( 1 %s 2 ) {
               }
-              """
+              """.formatted(arg)
           )
         );
     }

@@ -57,6 +57,23 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return cu;
     }
 
+    public J visitJsBinary(JS.JsBinary binary, P p) {
+        JS.JsBinary b = binary;
+        b = b.withPrefix(visitSpace(b.getPrefix(), JsSpace.Location.BINARY_PREFIX, p));
+        b = b.withMarkers(visitMarkers(b.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(b, p);
+        if (!(temp instanceof JS.JsBinary)) {
+            return temp;
+        } else {
+            b = (JS.JsBinary) temp;
+        }
+        b = b.withLeft(visitAndCast(b.getLeft(), p));
+        b = b.getPadding().withOperator(visitLeftPadded(b.getPadding().getOperator(), JsLeftPadded.Location.BINARY_OPERATOR, p));
+        b = b.withRight(visitAndCast(b.getRight(), p));
+        b = b.withType(visitType(b.getType(), p));
+        return b;
+    }
+
     public Space visitSpace(Space space, JsSpace.Location loc, P p) {
         return visitSpace(space, Space.Location.LANGUAGE_EXTENSION, p);
     }

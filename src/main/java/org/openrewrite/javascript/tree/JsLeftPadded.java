@@ -17,7 +17,8 @@ package org.openrewrite.javascript.tree;
 
 public class JsLeftPadded {
     public enum Location {
-        TODO(JsSpace.Location.TODO);
+        TODO(JsSpace.Location.TODO),
+        BINARY_OPERATOR(JsSpace.Location.BINARY_PREFIX);
 
         private final JsSpace.Location beforeLocation;
 

@@ -25,8 +25,6 @@ import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.tree.JS;
-import org.openrewrite.javascript.tree.JsContainer;
-import org.openrewrite.javascript.tree.JsRightPadded;
 import org.openrewrite.javascript.tree.JsSpace;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
@@ -59,6 +57,30 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitJsBinary(JS.JsBinary binary, PrintOutputCapture<P> p) {
+        beforeSyntax(binary, JsSpace.Location.BINARY_PREFIX, p);
+
+        visit(binary.getLeft(), p);
+        String keyword = "";
+        switch (binary.getOperator()) {
+            case IdentityEquals:
+                keyword = "===";
+                break;
+            case IdentityNotEquals:
+                keyword = "!==";
+                break;
+        }
+
+        visitSpace(binary.getPadding().getOperator().getBefore(), JsSpace.Location.BINARY_PREFIX, p);
+        p.append(keyword);
+
+        visit(binary.getRight(), p);
+        afterSyntax(binary, p);
+
+        return binary;
+    }
+
+    @Override
     public J visitJSVariableDeclaration(JS.JSVariableDeclaration jsVariableDeclaration, PrintOutputCapture<P> p) {
         beforeSyntax(jsVariableDeclaration, JsSpace.Location.VARIABLE_DECLARATION_PREFIX, p);
         p.append(jsVariableDeclaration.getModifier().getKeyword());
@@ -68,6 +90,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
+
+        @Override
+        public J visit(@Nullable Tree tree, PrintOutputCapture<P> p) {
+            if (tree instanceof JS) {
+                // re-route printing back up to javascript
+                return JavaScriptPrinter.this.visit(tree, p);
+            } else {
+                return super.visit(tree, p);
+            }
+        }
 
         @Override
         public J visitMethodDeclaration(J.MethodDeclaration method, PrintOutputCapture<P> p) {
@@ -147,92 +179,23 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             return variable;
         }
 
-        @Override
-        protected void visitRightPadded(List<? extends JRightPadded<? extends J>> nodes, JRightPadded.Location location, String suffixBetween, PrintOutputCapture<P> p) {
-            for (int i = 0; i < nodes.size(); i++) {
-                JRightPadded<? extends J> node = nodes.get(i);
-                visit(node.getElement(), p);
-                visitSpace(node.getAfter(), location.getAfterLocation(), p);
-                visitMarkers(node.getMarkers(), p);
-                if (i < nodes.size() - 1) {
-                    p.append(suffixBetween);
-                }
-                for (Marker marker : node.getMarkers().getMarkers()) {
-                    if (marker instanceof TrailingComma) {
-                        p.append(suffixBetween);
-                        visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
-                    } else if (marker instanceof Semicolon) {
-                        p.append(";");
-                    }
-                }
+        protected void visitStatement(@Nullable JRightPadded<Statement> paddedStat, JRightPadded.Location location, PrintOutputCapture<P> p) {
+            if (paddedStat != null) {
+                visit(paddedStat.getElement(), p);
+                visitSpace(paddedStat.getAfter(), location.getAfterLocation(), p);
+                visitMarkers(paddedStat.getMarkers(), p);
             }
         }
 
-        protected void visitStatement(@Nullable JRightPadded<Statement> paddedStat, JRightPadded.Location location, PrintOutputCapture<P> p) {
-            if (paddedStat == null) {
-                return;
+        @Override
+        public <M extends Marker> M visitMarker(Marker marker, PrintOutputCapture<P> p) {
+            if (marker instanceof TrailingComma) {
+                p.append(",");
+                visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
+            } else if (marker instanceof Semicolon) {
+                p.append(';');
             }
-
-            visit(paddedStat.getElement(), p);
-            visitSpace(paddedStat.getAfter(), location.getAfterLocation(), p);
-
-            Statement s = paddedStat.getElement();
-            boolean printSemiColon = paddedStat.getMarkers().findFirst(Semicolon.class).isPresent();
-            while (true) {
-                if (s instanceof J.Assert ||
-                        s instanceof J.Assignment ||
-                        s instanceof J.AssignmentOperation ||
-                        s instanceof J.Break ||
-                        s instanceof J.Continue ||
-                        s instanceof J.DoWhileLoop ||
-                        s instanceof J.Empty ||
-                        s instanceof J.MethodInvocation ||
-                        s instanceof J.NewClass ||
-                        s instanceof J.Return ||
-                        s instanceof J.Throw ||
-                        s instanceof J.Unary ||
-                        s instanceof J.VariableDeclarations ||
-                        s instanceof J.Yield) {
-                    if (printSemiColon) {
-                        p.append(';');
-                    }
-                    return;
-                }
-
-                if (s instanceof J.MethodDeclaration && ((J.MethodDeclaration) s).getBody() == null) {
-                    if (printSemiColon) {
-                        p.append(';');
-                    }
-                    return;
-                }
-
-                if (s instanceof J.Label) {
-                    s = ((J.Label) s).getStatement();
-                    continue;
-                }
-
-                if (getCursor().getValue() instanceof J.Case) {
-                    Object aSwitch =
-                            getCursor()
-                                    .dropParentUntil(
-                                            c -> c instanceof J.Switch ||
-                                                    c instanceof J.SwitchExpression ||
-                                                    c == Cursor.ROOT_VALUE
-                                    )
-                                    .getValue();
-                    if (aSwitch instanceof J.SwitchExpression) {
-                        J.Case aCase = getCursor().getValue();
-                        if (!(aCase.getBody() instanceof J.Block)) {
-                            if (printSemiColon) {
-                                p.append(';');
-                            }
-                        }
-                        return;
-                    }
-                }
-
-                return;
-            }
+            return super.visitMarker(marker, p);
         }
     }
 
@@ -300,68 +263,21 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             if (i < nodes.size() - 1) {
                 p.append(suffixBetween);
             }
-            for (Marker marker : node.getMarkers().getMarkers()) {
-                if (marker instanceof TrailingComma) {
-                    p.append(suffixBetween);
-                    visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
-                } else if (marker instanceof Semicolon) {
-                    p.append(";");
-                }
-            }
-        }
-    }
-
-    protected void visitContainer(String before, @Nullable JContainer<? extends J> container, JContainer.Location location,
-                                  String suffixBetween, @Nullable String after, PrintOutputCapture<P> p) {
-        if (container == null) {
-            return;
-        }
-        beforeSyntax(container.getBefore(), container.getMarkers(), location.getBeforeLocation(), p);
-        p.append(before);
-        visitRightPadded(container.getPadding().getElements(), location.getElementLocation(), suffixBetween, p);
-        afterSyntax(container.getMarkers(), p);
-        p.append(after == null ? "" : after);
-    }
-
-    protected void visitContainer(String before, @Nullable JContainer<? extends J> container, JsContainer.Location location,
-                                  String suffixBetween, @Nullable String after, PrintOutputCapture<P> p) {
-        if (container == null) {
-            return;
-        }
-        visitSpace(container.getBefore(), location.getBeforeLocation(), p);
-        p.append(before);
-        visitRightPadded(container.getPadding().getElements(), location.getElementLocation(), suffixBetween, p);
-        p.append(after == null ? "" : after);
-    }
-
-    protected void visitRightPadded(List<? extends JRightPadded<? extends J>> nodes, JsRightPadded.Location location, String suffixBetween, PrintOutputCapture<P> p) {
-        for (int i = 0; i < nodes.size(); i++) {
-            JRightPadded<? extends J> node = nodes.get(i);
-            visit(node.getElement(), p);
-            visitSpace(node.getAfter(), location.getAfterLocation(), p);
-            if (i < nodes.size() - 1) {
-                p.append(suffixBetween);
-            }
-            for (Marker marker : node.getMarkers().getMarkers()) {
-                if (marker instanceof TrailingComma) {
-                    p.append(suffixBetween);
-                    visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
-                } else if (marker instanceof Semicolon) {
-                    p.append(";");
-                }
-            }
         }
     }
 
     @Override
-    public Space visitSpace(Space space, Space.Location loc, PrintOutputCapture<P> p) {
-        p.append(space.getWhitespace());
+    public Space visitSpace(Space space, JsSpace.Location loc, PrintOutputCapture<P> p) {
+        return delegate.visitSpace(space, Space.Location.LANGUAGE_EXTENSION, p);
+    }
 
-        for (Comment comment : space.getComments()) {
-            visitMarkers(comment.getMarkers(), p);
-            comment.printComment(getCursor(), p);
-            p.append(comment.getSuffix());
-        }
-        return space;
+    @Override
+    public Space visitSpace(Space space, Space.Location loc, PrintOutputCapture<P> p) {
+        return delegate.visitSpace(space, loc, p);
+    }
+
+    @Override
+    public Markers visitMarkers(Markers markers, PrintOutputCapture<P> pPrintOutputCapture) {
+        return delegate.visitMarkers(markers, pPrintOutputCapture);
     }
 }

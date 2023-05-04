@@ -450,6 +450,9 @@ public class TypeScriptParserVisitor {
             case PlusToken:
             case SlashToken:
                 return mapBinary(node);
+            case EqualsEqualsEqualsToken:
+            case ExclamationEqualsEqualsToken:
+                return mapJsBinary(node);
             default:
                 implementMe(node.getChildNodeRequired("operatorToken"));
         }
@@ -675,6 +678,32 @@ public class TypeScriptParserVisitor {
                 controlParentheses,
                 thenPart,
                 elsePart
+        );
+    }
+
+    private J mapJsBinary(TSCNode node) {
+        Space prefix = whitespace();
+        Expression left = (Expression) mapNode(node.getChildNodeRequired("left"));
+
+        JLeftPadded<JS.JsBinary.Type> op;
+        TSCSyntaxKind opKind = node.getChildNodeRequired("operatorToken").syntaxKind();
+        if (opKind == TSCSyntaxKind.EqualsEqualsEqualsToken) {
+            op = padLeft(sourceBefore(TSCSyntaxKind.EqualsEqualsEqualsToken), JS.JsBinary.Type.IdentityEquals);
+        } else if (opKind == TSCSyntaxKind.ExclamationEqualsEqualsToken) {
+            op = padLeft(sourceBefore(TSCSyntaxKind.ExclamationEqualsEqualsToken), JS.JsBinary.Type.IdentityNotEquals);
+        } else {
+            throw new IllegalArgumentException(String.format("Binary operator kind <%s> is not supported.", opKind));
+        }
+
+        Expression right = (Expression) mapNode(node.getChildNodeRequired("right"));
+        return new JS.JsBinary(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                left,
+                op,
+                right,
+                typeMapping.type(node)
         );
     }
 
