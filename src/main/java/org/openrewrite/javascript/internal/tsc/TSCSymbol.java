@@ -53,7 +53,9 @@ public class TSCSymbol implements TSCV8Backed {
         return flag.matches(this.getSymbolFlags());
     }
 
-    /** Only intended for debugging; this is slow. */
+    /**
+     * Only intended for debugging; this is slow.
+     */
     public List<TSCSymbolFlag> listMatchingSymbolFlags() {
         final int symbolFlags = this.getSymbolFlags();
         List<TSCSymbolFlag> result = new ArrayList<>();
@@ -66,11 +68,7 @@ public class TSCSymbol implements TSCV8Backed {
     }
 
     public String getEscapedName() {
-        try {
-            return this.symbolV8.getString("escapedName");
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getStringProperty("escapedName");
     }
 
     @Override

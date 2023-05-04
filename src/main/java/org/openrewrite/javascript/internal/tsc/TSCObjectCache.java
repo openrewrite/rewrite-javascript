@@ -16,6 +16,8 @@
 package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
+import com.caoccao.javet.interop.V8Scope;
+import com.caoccao.javet.utils.JavetResourceUtils;
 import com.caoccao.javet.values.reference.V8ValueObject;
 
 import java.io.Closeable;
@@ -24,16 +26,28 @@ import java.util.Map;
 
 public abstract class TSCObjectCache<TKey, T extends TSCV8Backed> implements Closeable {
 
+    private final V8Scope scope = new V8Scope().setEscapable();
     private final Map<TKey, T> cache = new HashMap<>();
 
     public T getOrCreate(TSCProgramContext programContext, V8ValueObject objectV8) {
         try {
             TKey key = getKey(objectV8);
-            T result = this.cache.computeIfAbsent(key, (_key) -> makeInstance(programContext, objectV8));
-            if (objectV8 != result.getBackingV8Object()) {
-                objectV8.setWeak();
-            }
-            return result;
+            return this.cache.computeIfAbsent(key, (_key) -> {
+                V8ValueObject clone;
+                try {
+                    // NOTE that this does not copy the JS object, i.e.
+                    //   const clone = {...objectV8}; // <-- NOT THIS
+                    // Instead, this is just copying the *reference*, i.e.
+                    //   const clone = objectV8;
+                    // We assume that `objectV8` will be closed by its caller.
+                    // So we clone it and associate it with this cache's V8Scope.
+                    clone = objectV8.toClone();
+                    scope.add(clone);
+                } catch (JavetException e) {
+                    throw new RuntimeException(e);
+                }
+                return makeInstance(programContext, clone);
+            });
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
@@ -45,11 +59,6 @@ public abstract class TSCObjectCache<TKey, T extends TSCV8Backed> implements Clo
 
     @Override
     public void close() {
-        this.cache.values().forEach(node -> {
-            try {
-                node.getBackingV8Object().close();
-            } catch (JavetException e) {
-            }
-        });
+        JavetResourceUtils.safeClose(scope);
     }
 }

@@ -49,11 +49,7 @@ public class TSCNode implements TSCV8Backed {
     }
 
     public int syntaxKindCode() {
-        try {
-            return nodeV8.getInteger("kind");
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getIntProperty("kind");
     }
 
     public TSCSyntaxKind syntaxKind() {
@@ -62,8 +58,7 @@ public class TSCNode implements TSCV8Backed {
 
     @Nullable
     public TSCType getTypeForNode() {
-        try {
-            V8Value type = this.programContext.getTypeChecker().invoke("getTypeAtLocation", this.nodeV8);
+        try(V8Value type = this.programContext.getTypeChecker().invoke("getTypeAtLocation", this.nodeV8)) {
             if (type.isNullOrUndefined()) {
                 return null;
             } else {
@@ -120,8 +115,7 @@ public class TSCNode implements TSCV8Backed {
 
     @Nullable
     public TSCSymbol getSymbolForNode() {
-        try {
-            V8Value type = this.programContext.getTypeChecker().invoke("getSymbolAtLocation", this.nodeV8);
+        try(V8Value type = this.programContext.getTypeChecker().invoke("getSymbolAtLocation", this.nodeV8)) {
             if (type.isNullOrUndefined()) {
                 return null;
             } else {
@@ -133,79 +127,42 @@ public class TSCNode implements TSCV8Backed {
     }
 
     public int getStartWithLeadingSpace() {
-        try {
-            return this.nodeV8.getPropertyInteger("pos");
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getIntProperty("pos");
     }
 
     public int getStart() {
-        try {
-            return this.nodeV8.invokeInteger("getStart");
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getIntProperty("getStart()");
     }
 
     public int getEnd() {
-        try {
-            return this.nodeV8.getPropertyInteger("end");
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getIntProperty("end");
     }
 
     public int getChildCount() {
-        try {
-            return this.nodeV8.invokeInteger("getChildCount");
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getIntProperty("getChildCount");
     }
 
+    @Deprecated
     @Nullable
     public TSCNode getChildNode(String name) {
-        try {
-            V8Value child = this.nodeV8.getProperty(name);
-            if (child.isNullOrUndefined()) {
-                return null;
-            }
-            return programContext.tscNode((V8ValueObject) child);
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getOptionalNodeProperty(name);
     }
 
+    @Deprecated
     public TSCNode getChildNodeRequired(String name) {
-        TSCNode child = this.getChildNode(name);
-        if (child == null) {
-            throw new IllegalArgumentException("property " + name + " is not required");
-        }
-        return child;
+        return getNodeProperty(name);
     }
 
+    @Deprecated
     public List<TSCNode> getChildNodes(String name) {
-        try (V8ValueArray children = this.nodeV8.getProperty(name)) {
-            final int childCount = children.getLength();
-            List<TSCNode> result = new ArrayList<>(childCount);
-            for (int i = 0; i < childCount; i++) {
-                result.add(programContext.tscNode(children.get(i)));
-            }
-            return result;
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getNodeListProperty(name);
     }
 
     public String getText() {
-        try {
-            return this.nodeV8.invokeString("getText");
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return this.getStringProperty("getText()");
     }
 
+    @Deprecated
     public <T> List<T> collectChildNodes(String name, Function<TSCNode, @Nullable T> fn) {
         List<T> results = new ArrayList<>();
         for (TSCNode child : this.getChildNodes(name)) {
@@ -217,6 +174,7 @@ public class TSCNode implements TSCV8Backed {
         return results;
     }
 
+    @Deprecated
     public <T> List<T> mapChildNodes(String name, Function<TSCNode, @Nullable T> fn) {
         List<T> results = new ArrayList<>();
         for (TSCNode child : this.getChildNodes(name)) {
@@ -225,15 +183,17 @@ public class TSCNode implements TSCV8Backed {
         return results;
     }
 
+    @Deprecated
     public void forEachChild(Consumer<TSCNode> callback) {
         Consumer<V8Value> v8Callback = v8Value -> callback.accept(programContext.tscNode((V8ValueObject) v8Value));
         try (V8Value v8Function = programContext.asJSFunction(v8Callback)) {
-            this.nodeV8.invoke("forEachChild", v8Function);
+            this.nodeV8.invokeVoid("forEachChild", v8Function);
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
     }
 
+    @Deprecated
     public List<TSCNode> getAllChildNodes() {
         try (V8Value v8Value = this.nodeV8.invoke("getChildren")) {
             if (v8Value.isNullOrUndefined()) {

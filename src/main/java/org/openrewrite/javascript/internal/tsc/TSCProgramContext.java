@@ -18,6 +18,7 @@ package org.openrewrite.javascript.internal.tsc;
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.interop.V8Runtime;
 import com.caoccao.javet.interop.callback.JavetCallbackContext;
+import com.caoccao.javet.utils.JavetResourceUtils;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
@@ -82,6 +83,18 @@ public class TSCProgramContext implements Closeable {
         }
     };
 
+    private final TSCObjectCache<Long, TSCSignature> signatureCache = new TSCObjectCache<Long, TSCSignature>() {
+        @Override
+        protected Long getKey(V8ValueObject objectV8) throws JavetException {
+            return getOpenRewriteId.callLong(null, objectV8);
+        }
+
+        @Override
+        protected TSCSignature makeInstance(TSCProgramContext programContext, V8ValueObject objectV8) {
+            return new TSCSignature(programContext, objectV8);
+        }
+    };
+
     public TSCProgramContext(V8Runtime runtime, TSCMeta metadata, V8ValueObject program, V8ValueObject typeChecker, V8ValueFunction createScanner, V8ValueFunction getOpenRewriteId) {
         this.runtime = runtime;
         this.metadata = metadata;
@@ -92,15 +105,22 @@ public class TSCProgramContext implements Closeable {
     }
 
     public static TSCProgramContext fromJS(V8ValueObject contextV8) {
-        try (V8ValueObject metaV8Object = contextV8.get("meta")) {
+        try (
+                V8ValueObject metaV8Object = contextV8.get("meta");
+                V8ValueObject program = contextV8.get("program");
+                V8ValueObject typeChecker = contextV8.get("typeChecker");
+                V8ValueFunction createScanner = contextV8.get("createScanner");
+                V8ValueFunction getOpenRewriteId = contextV8.get("getOpenRewriteId");
+        ) {
             TSCMeta metadata = TSCMeta.fromJS(metaV8Object);
-
-            V8ValueObject program = contextV8.get("program");
-            V8ValueObject typeChecker = contextV8.get("typeChecker");
-            V8ValueFunction createScanner = contextV8.get("createScanner");
-            V8ValueFunction getOpenRewriteId = contextV8.get("getOpenRewriteId");
-
-            return new TSCProgramContext(contextV8.getV8Runtime(), metadata, program, typeChecker, createScanner, getOpenRewriteId);
+            return new TSCProgramContext(
+                    contextV8.getV8Runtime(),
+                    metadata,
+                    program.toClone(),
+                    typeChecker.toClone(),
+                    createScanner.toClone(),
+                    getOpenRewriteId.toClone()
+            );
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
@@ -124,6 +144,10 @@ public class TSCProgramContext implements Closeable {
 
     public TSCSymbol tscSymbol(V8ValueObject v8Value) {
         return this.symbolCache.getOrCreate(this, v8Value);
+    }
+
+    public TSCSignature tscSignature(V8ValueObject v8Value) {
+        return this.signatureCache.getOrCreate(this, v8Value);
     }
 
     public V8ValueFunction asJSFunction(TSCContextCallback func) {
@@ -150,25 +174,14 @@ public class TSCProgramContext implements Closeable {
 
     @Override
     public void close() {
-        try {
-            program.close();
-        } catch (JavetException e) {
-        }
-        try {
-            typeChecker.close();
-        } catch (JavetException e) {
-        }
-        try {
-            createScanner.close();
-        } catch (JavetException e) {
-        }
-        try {
-            getOpenRewriteId.close();
-        } catch (JavetException e) {
-        }
+        JavetResourceUtils.safeClose(program);
+        JavetResourceUtils.safeClose(typeChecker);
+        JavetResourceUtils.safeClose(createScanner);
+        JavetResourceUtils.safeClose(getOpenRewriteId);
 
         this.nodeCache.close();
         this.typeCache.close();
         this.symbolCache.close();
+        this.signatureCache.close();
     }
 }

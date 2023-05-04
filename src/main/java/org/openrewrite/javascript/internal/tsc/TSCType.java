@@ -20,10 +20,72 @@ import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TSCType implements TSCV8Backed {
+
+    interface AccessorsBase {
+        TSCType wrapped();
+    }
+
+    public interface ObjectType extends AccessorsBase {
+        // TODO unmapped properties: `members`
+
+        default @Nullable List<TSCSymbol> getProperties() {
+            return wrapped().getOptionalSymbolListProperty("properties");
+        }
+
+        default @Nullable List<TSCSignature> getCallSignatures() {
+            return wrapped().getOptionalSignatureListProperty("callSignatures");
+        }
+
+        default @Nullable List<TSCSignature> getConstructSignatures() {
+            return wrapped().getOptionalSignatureListProperty("constructSignatures");
+        }
+
+        default @Nullable List<TSCIndexInfo> getIndexInfos() {
+            return wrapped().getOptionalIndexInfoListProperty("indexInfos");
+        }
+
+        default @Nullable ObjectType getObjectTypeWithoutAbstractConstructSignatures() {
+            TSCType resultType = wrapped().getOptionalTypeProperty("objectTypeWithoutAbstractConstructSignatures");
+            return resultType == null ? null : resultType.asObjectType();
+        }
+    }
+
+    public interface InterfaceType extends AccessorsBase, ObjectType {
+        default @Nullable List<TSCType> getTypeParameters() {
+            return wrapped().getOptionalTypeListProperty("typeParameters");
+        }
+
+        default @Nullable List<TSCType> getOuterTypeParameters() {
+            return wrapped().getOptionalTypeListProperty("outerTypeParameters");
+        }
+
+        default @Nullable List<TSCType> getLocalTypeParameters() {
+            return wrapped().getOptionalTypeListProperty("localTypeParameters");
+        }
+
+        default @Nullable TSCType getThisType() {
+            return wrapped().getOptionalTypeProperty("thisType");
+        }
+
+        default @Nullable TSCType getResolvedBaseConstructorType() {
+            return wrapped().getOptionalTypeProperty("resolvedBaseConstructorType");
+        }
+
+        default List<TSCType> getResolvedBaseTypes() {
+            return wrapped().getTypeListProperty("resolvedBaseTypes");
+        }
+
+        default boolean getBaseTypesResolved() {
+            return wrapped().getBooleanProperty("baseTypesResolved");
+        }
+    }
+
+
     private final TSCProgramContext programContext;
     public final V8ValueObject typeV8;
 
@@ -43,20 +105,11 @@ public class TSCType implements TSCV8Backed {
     }
 
     public long getTypeId() {
-        try {
-            Number typeId = this.typeV8.getPrimitive("id");
-            return typeId.longValue();
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getLongProperty("id");
     }
 
     public int getTypeFlags() {
-        try {
-            return this.typeV8.getInteger("flags");
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getIntProperty("flags");
     }
 
     public boolean hasTypeFlag(TSCTypeFlag flag) {
@@ -67,12 +120,16 @@ public class TSCType implements TSCV8Backed {
         return flag.code == this.getTypeFlags();
     }
 
-    /** This is not what you usually want. Type flags are a bit field. */
+    /**
+     * This is not what you usually want. Type flags are a bit field.
+     */
     public TSCTypeFlag getExactTypeFlag() {
         return TSCTypeFlag.fromCode(this.getTypeFlags());
     }
 
-    /** Only intended for debugging; this is slow. */
+    /**
+     * Only intended for debugging; this is slow.
+     */
     public List<TSCTypeFlag> listMatchingTypeFlags() {
         final int typeFlags = this.getTypeFlags();
         List<TSCTypeFlag> result = new ArrayList<>();
@@ -88,11 +145,7 @@ public class TSCType implements TSCV8Backed {
         if (!this.hasTypeFlag(TSCTypeFlag.ObjectFlagsType)) {
             return 0;
         } else {
-            try {
-                return this.typeV8.getInteger("objectFlags");
-            } catch (JavetException e) {
-                throw new RuntimeException(e);
-            }
+            return getIntProperty("objectFlags");
         }
     }
 
@@ -100,7 +153,9 @@ public class TSCType implements TSCV8Backed {
         return flag.matches(this.getObjectFlags());
     }
 
-    /** Only intended for debugging; this is slow. */
+    /**
+     * Only intended for debugging; this is slow.
+     */
     public List<TSCObjectFlag> listMatchingObjectFlags() {
         final int objectFlags = this.getObjectFlags();
         List<TSCObjectFlag> result = new ArrayList<>();
@@ -112,6 +167,23 @@ public class TSCType implements TSCV8Backed {
         return result;
     }
 
+    public List<TSCSymbol> getTypeProperties() {
+        return this.getSymbolListProperty("getProperties()");
+    }
+
+    public @Nullable InterfaceType asInterfaceType() {
+        if (hasObjectFlag(TSCObjectFlag.Interface) || hasObjectFlag(TSCObjectFlag.Class)) {
+            return () -> TSCType.this;
+        }
+        return null;
+    }
+
+    public @Nullable ObjectType asObjectType() {
+        if (hasTypeFlag(TSCTypeFlag.Object)) {
+            return () -> TSCType.this;
+        }
+        return null;
+    }
 
     @Override
     public V8ValueObject getBackingV8Object() {

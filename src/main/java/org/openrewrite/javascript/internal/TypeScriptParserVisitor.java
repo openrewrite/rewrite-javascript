@@ -179,7 +179,7 @@ public class TypeScriptParserVisitor {
                     TSCNode enumValue = nodes.get(i);
                     J.EnumValue value = (J.EnumValue) mapNode(enumValue);
                     if (value != null) {
-                        boolean hasTrailingComma = i == nodes.size() - 1 && membersNode.getBooleanPropertyValue("hasTrailingComma");
+                        boolean hasTrailingComma = i == nodes.size() - 1 && membersNode.getBooleanProperty("hasTrailingComma");
                         Space after = i < nodes.size() - 1 ? sourceBefore(TSCSyntaxKind.CommaToken) :
                                 hasTrailingComma ? sourceBefore(TSCSyntaxKind.CommaToken) : EMPTY;
                         JRightPadded<J.EnumValue> ev = padRight(value, after);
@@ -767,7 +767,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 sourceBefore(TSCSyntaxKind.NumericLiteral),
                 Markers.EMPTY,
-                node.getStringPropertyValue("text"),
+                node.getStringProperty("text"),
                 node.getText(),
                 null, // TODO
                 typeMapping.primitive(node)
@@ -814,7 +814,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 sourceBefore(TSCSyntaxKind.StringLiteral),
                 Markers.EMPTY,
-                node.getStringPropertyValue("text"),
+                node.getStringProperty("text"),
                 node.getText(),
                 null, // TODO
                 JavaType.Primitive.String
@@ -825,7 +825,7 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
 
         JLeftPadded<J.Unary.Type> op = null;
-        TSCSyntaxKind opKind = TSCSyntaxKind.fromCode(node.getIntegerPropertyValue("operator"));
+        TSCSyntaxKind opKind = TSCSyntaxKind.fromCode(node.getIntProperty("operator"));
         Expression expression;
         if (node.syntaxKind() == TSCSyntaxKind.PrefixUnaryExpression) {
             if (opKind == TSCSyntaxKind.ExclamationToken) {
