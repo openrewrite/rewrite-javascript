@@ -30,6 +30,7 @@ import org.openrewrite.javascript.tree.JsRightPadded;
 import org.openrewrite.javascript.tree.JsSpace;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.markers.FunctionDeclaration;
 
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -74,7 +75,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
             visit(method.getLeadingAnnotations(), p);
             // FIXME extra spacing
-            p.append("function");
+            if (method.getMarkers().findFirst(FunctionDeclaration.class).isPresent()) {
+                p.append("function");
+            }
 //        for (J.Modifier m : method.getModifiers()) {
 //            visitModifier(m, p);
 //        }

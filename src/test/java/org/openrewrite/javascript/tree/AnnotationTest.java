@@ -17,30 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("JSUnusedLocalSymbols")
-public class MethodDeclarationTest extends ParserTest {
-
-    @Test
-    void functionDeclaration() {
-        rewriteRun(
-          javascript(
-            """
-              function foo ( ) { }
-              """
-          )
-        );
-    }
-
-    @Test
-    void functionParameters() {
-        rewriteRun(
-          javascript(
-            """
-              function foo ( x : number , y : number ) { }
-              """
-          )
-        );
-    }
+public class AnnotationTest extends ParserTest {
 
     @Test
     void decorator() {
@@ -48,27 +25,23 @@ public class MethodDeclarationTest extends ParserTest {
           javascript(
             """
               function enumerable ( value : boolean ) {
-                  return function ( target : any ,
-                          propertyKey : string ,
+                  return function ( target : any,
+                          propertyKey : string,
                           descriptor : PropertyDescriptor ) {
                       descriptor . enumerable = value ;
-                  };
+                  } ;
               }
               """
-          )
-        );
-    }
-
-    @Test
-    void methodDeclaration() {
-        rewriteRun(
+          ),
           javascript(
             """
-              class Foo {
-                  foo ( ) {
-                  }
-              }
-              """
+            class Foo {
+                @enumerable ( false )
+                foo ( ) {
+                    return "hello"
+                }
+            }
+            """
           )
         );
     }

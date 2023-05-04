@@ -28,10 +28,12 @@ import org.openrewrite.javascript.internal.tsc.TSCSourceFileContext;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.markers.FunctionDeclaration;
 
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static org.openrewrite.Tree.randomId;
@@ -495,6 +497,28 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J mapDecorator(TSCNode node) {
+        Space prefix = sourceBefore(TSCSyntaxKind.AtToken);
+        implementMe(node, "questionDotToken");
+        implementMe(node, "typeArguments");
+        TSCNode callExpression = node.getChildNodeRequired("expression");
+        NameTree name = (NameTree) mapNameExpression(callExpression.getChildNodeRequired("expression"));
+        JContainer<Expression> arguments = callExpression.hasProperty("arguments") ? mapContainer(
+                TSCSyntaxKind.OpenParenToken,
+                callExpression.getChildNodes("arguments"),
+                TSCSyntaxKind.CommaToken,
+                TSCSyntaxKind.CloseParenToken,
+                t -> (Expression) mapNode(t)
+        ) : null;
+        return new J.Annotation(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                name,
+                arguments
+        );
+    }
+
     private Statement mapEmptyStatement(TSCNode ignored) {
         return new J.Empty(randomId(), EMPTY, Markers.EMPTY);
     }
@@ -541,7 +565,7 @@ public class TypeScriptParserVisitor {
         return new J.MethodDeclaration(
                 randomId(),
                 prefix,
-                Markers.EMPTY,
+                Markers.EMPTY.addIfAbsent(new FunctionDeclaration(randomId())),
                 Collections.emptyList(),
                 Collections.emptyList(),
                 null,
@@ -651,6 +675,61 @@ public class TypeScriptParserVisitor {
                 controlParentheses,
                 thenPart,
                 elsePart
+        );
+    }
+
+    private J.MethodDeclaration mapMethodDeclaration(TSCNode node) {
+        Space prefix = whitespace();
+        List<J.Annotation> annotations = emptyList();
+        if (node.hasProperty("modifiers")) {
+            annotations = node.getChildNodes("modifiers").stream()
+                    .map(it -> (J.Annotation) mapNode(it))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
+        List<J.Modifier> modifiers = emptyList();
+
+        implementMe(node, "typeParameters");
+        J.TypeParameters typeParameters = null;
+
+        TypeTree returnTypeExpression = null;
+
+        implementMe(node, "asteriskToken");
+        implementMe(node, "questionToken");
+        implementMe(node, "exclamationToken");
+        implementMe(node, "nextContainer");
+        implementMe(node, "typeArguments");
+
+        J.Identifier name = mapIdentifier(node.getChildNodeRequired("name"));
+
+        JContainer<Statement> parameters = mapContainer(
+                TSCSyntaxKind.OpenParenToken,
+                node.getChildNodes("parameters"),
+                TSCSyntaxKind.CommaToken,
+                TSCSyntaxKind.CloseParenToken,
+                t -> (Statement) mapNode(t)
+        );
+
+        JContainer<NameTree> throwz = null;
+
+        J.Block body = mapBlock(node.getChildNodeRequired("body"));
+        JLeftPadded<Expression> defaultValue = null;
+        implementMe(node, "type");
+
+        return new J.MethodDeclaration(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                annotations,
+                modifiers,
+                typeParameters,
+                returnTypeExpression,
+                new J.MethodDeclaration.IdentifierWithAnnotations(name, emptyList()),
+                parameters,
+                throwz,
+                body,
+                defaultValue,
+                typeMapping.methodDeclarationType(node)
         );
     }
 
@@ -945,6 +1024,9 @@ public class TypeScriptParserVisitor {
             case CallExpression:
                 j = mapCallExpression(node);
                 break;
+            case Decorator:
+                j = mapDecorator(node);
+                break;
             case EmptyStatement:
                 j = mapEmptyStatement(node);
                 break;
@@ -963,6 +1045,9 @@ public class TypeScriptParserVisitor {
                 break;
             case IfStatement:
                 j = mapIfStatement(node);
+                break;
+            case MethodDeclaration:
+                j = mapMethodDeclaration(node);
                 break;
             case NumericLiteral:
                 j = mapNumericLiteral(node);
