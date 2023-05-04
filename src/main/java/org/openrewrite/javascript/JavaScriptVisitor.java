@@ -43,14 +43,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         throw new UnsupportedOperationException("JS has a different structure for its compilation unit. See JS.CompilationUnit.");
     }
 
-    public J visitJSVariableDeclaration(JS.JSVariableDeclaration jsVariableDeclaration, P p) {
-        JS.JSVariableDeclaration vd = jsVariableDeclaration;
-        vd = vd.withPrefix(visitSpace(vd.getPrefix(), JsSpace.Location.VARIABLE_DECLARATION_PREFIX, p));
-        vd = vd.withMarkers(visitMarkers(vd.getMarkers(), p));
-        vd = vd.withVariableDeclarations((J.VariableDeclarations) visit(vd.getVariableDeclarations(), p));
-        return vd;
-    }
-
     public J visitCompilationUnit(JS.CompilationUnit cu, P p) {
         // FIXME Implement
         visit(cu.getStatements(), p);

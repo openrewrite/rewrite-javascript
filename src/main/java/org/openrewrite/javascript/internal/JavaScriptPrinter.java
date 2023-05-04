@@ -28,10 +28,14 @@ import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.javascript.tree.JsSpace;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.markers.ForLoopType;
 import org.openrewrite.markers.FunctionDeclaration;
+import org.openrewrite.markers.VariableModifier;
 
 import java.util.List;
 import java.util.function.UnaryOperator;
+
+import static org.openrewrite.markers.VariableModifier.Keyword.*;
 
 public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P>> {
 
@@ -80,15 +84,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return binary;
     }
 
-    @Override
-    public J visitJSVariableDeclaration(JS.JSVariableDeclaration jsVariableDeclaration, PrintOutputCapture<P> p) {
-        beforeSyntax(jsVariableDeclaration, JsSpace.Location.VARIABLE_DECLARATION_PREFIX, p);
-        p.append(jsVariableDeclaration.getModifier().getKeyword());
-        visit(jsVariableDeclaration.getVariableDeclarations(), p);
-        afterSyntax(jsVariableDeclaration, p);
-        return jsVariableDeclaration;
-    }
-
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
         @Override
@@ -99,6 +94,23 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             } else {
                 return super.visit(tree, p);
             }
+        }
+
+        @Override
+        public J visitForEachLoop(J.ForEachLoop forEachLoop, PrintOutputCapture<P> p) {
+            beforeSyntax(forEachLoop, Space.Location.FOR_EACH_LOOP_PREFIX, p);
+            p.append("for");
+            J.ForEachLoop.Control ctrl = forEachLoop.getControl();
+            visitSpace(ctrl.getPrefix(), Space.Location.FOR_EACH_CONTROL_PREFIX, p);
+            p.append('(');
+            ForLoopType forLoopType = forEachLoop.getMarkers().findFirst(ForLoopType.class).orElse(null);
+            String suffix = forLoopType == null ? ":" : forLoopType.getKeyword().getWord();
+            visitRightPadded(ctrl.getPadding().getVariable(), JRightPadded.Location.FOREACH_VARIABLE, suffix, p);
+            visitRightPadded(ctrl.getPadding().getIterable(), JRightPadded.Location.FOREACH_ITERABLE, "", p);
+            p.append(')');
+            visitStatement(forEachLoop.getPadding().getBody(), JRightPadded.Location.FOR_BODY, p);
+            afterSyntax(forEachLoop, p);
+            return forEachLoop;
         }
 
         @Override
@@ -153,6 +165,20 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 visitModifier(m, p);
             }
 
+            VariableModifier variableModifier = multiVariable.getMarkers().findFirst(VariableModifier.class).orElse(null);
+            if (variableModifier != null) {
+                switch (variableModifier.getKeyword()) {
+                    case CONST:
+                        p.append(CONST.getWord());
+                        break;
+                    case LET:
+                        p.append(LET.getWord());
+                        break;
+                    case VAR:
+                        p.append(VAR.getWord());
+                        break;
+                }
+            }
             List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = multiVariable.getPadding().getVariables();
             for (JRightPadded<J.VariableDeclarations.NamedVariable> variable : variables) {
                 visitRightPadded(variable, JRightPadded.Location.NAMED_VARIABLE, p);

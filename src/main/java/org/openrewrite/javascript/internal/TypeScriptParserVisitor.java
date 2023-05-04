@@ -28,7 +28,9 @@ import org.openrewrite.javascript.internal.tsc.TSCSourceFileContext;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.markers.ForLoopType;
 import org.openrewrite.markers.FunctionDeclaration;
+import org.openrewrite.markers.VariableModifier;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -36,6 +38,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.tree.Space.EMPTY;
 
@@ -707,6 +710,94 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J.ForLoop mapForStatement(TSCNode node) {
+        System.out.println();
+        Space prefix = sourceBefore(TSCSyntaxKind.ForKeyword);
+
+        Space beforeControl = sourceBefore(TSCSyntaxKind.OpenParenToken);
+        TSCNode initializer = node.getChildNodeRequired("initializer");
+        List<JRightPadded<Statement>> initStatements = null;
+        if (initializer.syntaxKind() == TSCSyntaxKind.VariableDeclarationList) {
+            List<TSCNode> declarations = initializer.getChildNodes("declarations");
+            initStatements = new ArrayList<>(declarations.size());
+            for (int i = 0; i < declarations.size(); i++) {
+                TSCNode declaration = declarations.get(i);
+                J j = mapNode(declaration);
+                Space after = i < declarations.size() - 1 ? sourceBefore(TSCSyntaxKind.CommaToken) : sourceBefore(TSCSyntaxKind.SemicolonToken);
+                if (j instanceof Statement) {
+                    initStatements.add(padRight((Statement) j, after));
+                } else {
+                    implementMe(declaration);
+                }
+            }
+        } else {
+            implementMe(initializer);
+        }
+
+        J.ForLoop.Control control = new J.ForLoop.Control(
+                randomId(),
+                beforeControl,
+                Markers.EMPTY,
+                initStatements,
+                padRight((Expression) mapNode(node.getChildNodeRequired("condition")), sourceBefore(TSCSyntaxKind.SemicolonToken)),
+                singletonList(padRight((Statement) mapNode(node.getChildNodeRequired("incrementor")), sourceBefore(TSCSyntaxKind.CloseParenToken)))
+        );
+
+        return new J.ForLoop(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                control,
+                maybeSemicolon((Statement) mapNode(node.getChildNodeRequired("statement")))
+        );
+    }
+
+    private J.ForEachLoop mapForEachStatement(TSCNode node) {
+        Space prefix = sourceBefore(TSCSyntaxKind.ForKeyword);
+        Markers markers = Markers.EMPTY;
+        implementMe(node, "awaitModifier");
+
+        Space beforeControl = sourceBefore(TSCSyntaxKind.OpenParenToken);
+        TSCNode initializer = node.getChildNodeRequired("initializer");
+        JRightPadded<J.VariableDeclarations> variable = null;
+        if (initializer.syntaxKind() == TSCSyntaxKind.VariableDeclarationList) {
+            List<TSCNode> declarations = initializer.getChildNodes("declarations");
+            if (declarations.size() != 1) {
+                // `J.ForEachLoop` expects a J.VariableDeclaration, but the initializer returns a List of items.
+                implementMe(initializer);
+            }
+
+            variable = padRight((J.VariableDeclarations) mapNode(declarations.get(0)), whitespace());
+        } else {
+            implementMe(initializer);
+        }
+
+        TSCSyntaxKind forEachKind = scan();
+        if (forEachKind == TSCSyntaxKind.OfKeyword) {
+            markers = markers.addIfAbsent(new ForLoopType(randomId(), ForLoopType.Keyword.OF));
+        } else if (forEachKind == TSCSyntaxKind.InKeyword) {
+            markers = markers.addIfAbsent(new ForLoopType(randomId(), ForLoopType.Keyword.IN));
+        }
+
+        JRightPadded<Expression> iterable = padRight((Expression) mapNode(node.getChildNodeRequired("expression")), sourceBefore(TSCSyntaxKind.CloseParenToken));
+        J.ForEachLoop.Control control = new J.ForEachLoop.Control(
+                randomId(),
+                beforeControl,
+                Markers.EMPTY,
+                variable,
+                iterable
+        );
+
+        JRightPadded<Statement> statement = maybeSemicolon((Statement) mapNode(node.getChildNodeRequired("statement")));
+        return new J.ForEachLoop(
+                randomId(),
+                prefix,
+                markers,
+                control,
+                statement
+        );
+    }
+
     private J.MethodDeclaration mapMethodDeclaration(TSCNode node) {
         Space prefix = whitespace();
         List<J.Annotation> annotations = emptyList();
@@ -877,25 +968,94 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private JS.JSVariableDeclaration mapVariableStatement(TSCNode node) {
+
+    private J.VariableDeclarations mapVariableDeclaration(TSCNode node) {
         Space prefix = whitespace();
+        Markers markers = Markers.EMPTY;
 
         List<J.Annotation> annotations = emptyList();
         List<J.Modifier> modifiers = emptyList();
         implementMe(node, "modifiers");
+        implementMe(node, "exclamationToken");
 
-        JS.JSVariableDeclaration.VariableModifier modifier = null;
         TSCSyntaxKind keyword = scan();
+        VariableModifier.Keyword variableModifier = null;
         if (keyword == TSCSyntaxKind.ConstKeyword) {
-            modifier = JS.JSVariableDeclaration.VariableModifier.CONST;
+            variableModifier = VariableModifier.Keyword.CONST;
         } else if (keyword == TSCSyntaxKind.LetKeyword) {
-            modifier = JS.JSVariableDeclaration.VariableModifier.LET;
+            variableModifier = VariableModifier.Keyword.LET;
         } else if (keyword == TSCSyntaxKind.VarKeyword) {
-            modifier = JS.JSVariableDeclaration.VariableModifier.VAR;
+            variableModifier = VariableModifier.Keyword.VAR;
         } else {
             // Unclear if the modifier should be `@Nullable` in the `JSVariableDeclaration`.
             implementMe(node);
         }
+
+        markers = markers.addIfAbsent(new VariableModifier(randomId(), variableModifier));
+
+        List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = new ArrayList<>(1);
+        TypeTree typeTree = null;
+
+        Space variablePrefix = whitespace();
+        J.Identifier name = mapIdentifier(node.getChildNodeRequired("name"));
+        Space afterName = EMPTY;
+        if (node.hasProperty("type")) {
+            // FIXME: method(x: { suit: string; card: number }[])
+            afterName = sourceBefore(TSCSyntaxKind.ColonToken);
+            TSCNode type = node.getChildNode("type");
+            assert type != null;
+            typeTree = (TypeTree) mapNode(type);
+        }
+        J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
+                randomId(),
+                variablePrefix,
+                Markers.EMPTY,
+                name,
+                emptyList(),
+                node.hasProperty("initializer") ?
+                        padLeft(sourceBefore(TSCSyntaxKind.EqualsToken),
+                                (Expression) Objects.requireNonNull(mapNode(node.getChildNodeRequired("initializer")))) : null,
+                typeMapping.variableType(node)
+        );
+
+        namedVariables.add(padRight(variable, afterName));
+
+        return new J.VariableDeclarations(
+                randomId(),
+                prefix,
+                markers,
+                annotations,
+                modifiers,
+                typeTree,
+                null,
+                emptyList(),
+                namedVariables
+        );
+    }
+
+    private J.VariableDeclarations mapVariableStatement(TSCNode node) {
+        Space prefix = whitespace();
+        Markers markers = Markers.EMPTY;
+
+        List<J.Annotation> annotations = emptyList();
+        List<J.Modifier> modifiers = emptyList();
+        implementMe(node, "modifiers");
+        implementMe(node, "exclamationToken");
+
+        TSCSyntaxKind keyword = scan();
+        VariableModifier.Keyword variableModifier = null;
+        if (keyword == TSCSyntaxKind.ConstKeyword) {
+            variableModifier = VariableModifier.Keyword.CONST;
+        } else if (keyword == TSCSyntaxKind.LetKeyword) {
+            variableModifier = VariableModifier.Keyword.LET;
+        } else if (keyword == TSCSyntaxKind.VarKeyword) {
+            variableModifier = VariableModifier.Keyword.VAR;
+        } else {
+            // Unclear if the modifier should be `@Nullable` in the `JSVariableDeclaration`.
+            implementMe(node);
+        }
+
+        markers = markers.addIfAbsent(new VariableModifier(randomId(), variableModifier));
 
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = emptyList();
         TypeTree typeTree = null;
@@ -934,22 +1094,16 @@ public class TypeScriptParserVisitor {
             }
         }
 
-        return new JS.JSVariableDeclaration(
+        return new J.VariableDeclarations(
                 randomId(),
                 prefix,
-                Markers.EMPTY,
-                modifier,
-                new J.VariableDeclarations(
-                        randomId(),
-                        prefix,
-                        Markers.EMPTY,
-                        annotations,
-                        modifiers,
-                        typeTree,
-                        null,
-                        emptyList(),
-                        namedVariables
-                )
+                markers,
+                annotations,
+                modifiers,
+                typeTree,
+                null,
+                emptyList(),
+                namedVariables
         );
     }
 
@@ -1075,6 +1229,13 @@ public class TypeScriptParserVisitor {
             case IfStatement:
                 j = mapIfStatement(node);
                 break;
+            case ForStatement:
+                j = mapForStatement(node);
+                break;
+            case ForOfStatement:
+            case ForInStatement:
+                j = mapForEachStatement(node);
+                break;
             case MethodDeclaration:
                 j = mapMethodDeclaration(node);
                 break;
@@ -1096,6 +1257,9 @@ public class TypeScriptParserVisitor {
                 break;
             case TypeReference:
                 j = mapTypeReference(node);
+                break;
+            case VariableDeclaration:
+                j = mapVariableDeclaration(node);
                 break;
             case VariableStatement:
                 j = mapVariableStatement(node);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2023 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.openrewrite.markers;
 import lombok.Value;
 import lombok.With;
 import org.openrewrite.Incubating;
-import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Marker;
 
 import java.util.UUID;
@@ -26,7 +25,22 @@ import java.util.UUID;
 @Incubating(since = "0.0")
 @Value
 @With
-public class TypeReferencePrefix implements Marker {
+public class ForLoopType implements Marker {
+
     UUID id;
-    Space prefix;
+    ForLoopType.Keyword keyword;
+
+    public enum Keyword {
+        OF("of"), IN("in");
+
+        final String word;
+
+        Keyword(String word) {
+            this.word = word;
+        }
+
+        public String getWord() {
+            return word;
+        }
+    }
 }

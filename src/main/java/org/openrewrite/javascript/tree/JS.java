@@ -415,62 +415,6 @@ public interface JS extends J {
         }
     }
 
-    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
-    @Data
-    final class JSVariableDeclaration implements JS, Statement {
-
-        @With
-        @EqualsAndHashCode.Include
-        UUID id;
-
-        @With
-        Space prefix;
-
-        @With
-        Markers markers;
-
-        @With
-        VariableModifier modifier;
-
-        @With
-        J.VariableDeclarations variableDeclarations;
-
-        public enum VariableModifier {
-            VAR("var"), LET("let"), CONST("const");
-
-            final String keyword;
-            VariableModifier(String keyword) {
-                this.keyword = keyword;
-            }
-
-            public String getKeyword() {
-                return keyword;
-            }
-        }
-
-        @Override
-        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
-            return v.visitJSVariableDeclaration(this, p);
-        }
-
-        @Override
-        @Transient
-        public CoordinateBuilder.Statement getCoordinates() {
-            return new CoordinateBuilder.Statement(this);
-        }
-
-        @Override
-        public String toString() {
-            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
-        }
-
-        @Override
-        public String print(Cursor cursor) {
-            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
-        }
-    }
-
     @SuppressWarnings("unchecked")
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)

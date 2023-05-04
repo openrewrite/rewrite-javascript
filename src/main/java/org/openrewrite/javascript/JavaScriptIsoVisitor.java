@@ -26,11 +26,6 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
         return (JS.CompilationUnit) super.visitCompilationUnit(cu, p);
     }
 
-    @Override
-    public JS.JSVariableDeclaration visitJSVariableDeclaration(JS.JSVariableDeclaration jsVariableDeclaration, P p) {
-        return (JS.JSVariableDeclaration) super.visitJSVariableDeclaration(jsVariableDeclaration, p);
-    }
-
     // J overrides.
     @Override
     public Expression visitExpression(Expression expression, P p) {
