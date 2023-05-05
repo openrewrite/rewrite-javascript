@@ -16,11 +16,9 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 class DoWhileTest extends ParserTest {
 
-    @ExpectedToFail
     @Test
     void doWhileLoop() {
         rewriteRun(
@@ -28,6 +26,18 @@ class DoWhileTest extends ParserTest {
             """
               var i = 0
               do { i++ } while ( i < 10 )
+              """
+          )
+        );
+    }
+
+    @Test
+    void noBlock() {
+        rewriteRun(
+          javascript(
+            """
+              var i = 0
+              do i++ ; while ( i < 10 )
               """
           )
         );

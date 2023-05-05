@@ -16,12 +16,10 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings("ExceptionCaughtLocallyJS")
 class TryCatchTest extends ParserTest {
 
-    @ExpectedToFail
     @Test
     void tryCatch() {
         rewriteRun(
@@ -33,6 +31,21 @@ class TryCatchTest extends ParserTest {
               }
               """
           )
+        );
+    }
+
+    @Test
+    void tryCatchFinally() {
+        rewriteRun(
+            javascript(
+              """
+                try {
+                  throw new Error ( 'err' ) ;
+                } catch ( e ) {
+                } finally {
+                }
+                """
+            )
         );
     }
 }

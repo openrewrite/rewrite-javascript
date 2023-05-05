@@ -16,12 +16,10 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings("InfiniteLoopJS")
 class WhileLoopTest extends ParserTest {
 
-    @ExpectedToFail
     @Test
     void whileLoop() {
         rewriteRun(

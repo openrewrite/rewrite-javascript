@@ -72,7 +72,7 @@ public class ArrayTest extends ParserTest {
         rewriteRun(
           javascript(
             """
-              const arr = [ 1, 2 ]
+              const arr = [ 1 , 2 ]
               const a = arr [ 0 ]
               """
           )

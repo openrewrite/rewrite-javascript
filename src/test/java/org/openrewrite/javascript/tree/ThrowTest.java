@@ -16,12 +16,10 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
 class ThrowTest extends ParserTest {
 
-    @ExpectedToFail
     @Test
     void throwError() {
         rewriteRun(

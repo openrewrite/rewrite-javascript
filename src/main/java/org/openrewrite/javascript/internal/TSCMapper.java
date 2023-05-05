@@ -53,7 +53,7 @@ public abstract class TSCMapper implements Closeable {
                 (node, context) -> {
                     // TODO: sort out type caching
                     TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(node, context, input.getPath(), relativeTo, new JavaTypeCache(), is.getCharset().toString(), is.isCharsetBomMarked());
-                    this.compilationUnits.add(fileMapper.mapSourceFile());
+                    this.compilationUnits.add(fileMapper.visitSourceFile());
                 }
         );
     }

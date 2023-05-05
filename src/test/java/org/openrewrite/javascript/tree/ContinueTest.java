@@ -16,12 +16,10 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings("UnnecessaryContinueJS")
 class ContinueTest extends ParserTest {
 
-    @ExpectedToFail
     @Test
     void continueStatement() {
         rewriteRun(
