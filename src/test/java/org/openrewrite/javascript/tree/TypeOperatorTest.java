@@ -60,7 +60,6 @@ public class TypeOperatorTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void instanceofOp() {
         rewriteRun(
