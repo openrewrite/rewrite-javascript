@@ -98,6 +98,19 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
+        public J visitTypeCast(J.TypeCast typeCast, PrintOutputCapture<P> p) {
+            beforeSyntax(typeCast, Space.Location.TYPE_CAST_PREFIX, p);
+
+            visit(typeCast.getExpression(), p);
+            visitSpace(typeCast.getClazz().getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+            p.append("as");
+            visitRightPadded(typeCast.getClazz().getPadding().getTree(), JRightPadded.Location.NAMED_VARIABLE, p);
+
+            afterSyntax(typeCast, p);
+            return typeCast;
+        }
+
+        @Override
         public J visitForEachLoop(J.ForEachLoop forEachLoop, PrintOutputCapture<P> p) {
             beforeSyntax(forEachLoop, Space.Location.FOR_EACH_LOOP_PREFIX, p);
             p.append("for");

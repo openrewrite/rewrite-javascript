@@ -16,7 +16,6 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable"})
 public class ArrayTest extends ParserTest {
@@ -66,7 +65,6 @@ public class ArrayTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void arrayAccess() {
         rewriteRun(

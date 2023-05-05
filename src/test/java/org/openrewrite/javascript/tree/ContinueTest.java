@@ -17,7 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("UnnecessaryContinueJS")
+@SuppressWarnings({"UnnecessaryContinueJS", "JSUnusedLocalSymbols"})
 class ContinueTest extends ParserTest {
 
     @Test
@@ -28,6 +28,25 @@ class ContinueTest extends ParserTest {
               for (let i = 0; i < 10; i++) {
                   if (i % 2)
                       continue ;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void labeled() {
+        rewriteRun(
+          javascript(
+            """
+              function test ( ) {
+                  outer : for ( var i = 0 ; i < 3 ; i++ ) {
+                      for ( var j = 0 ; j < 3 ; j++ ) {
+                          if ( j === i ) {
+                              continue outer ;
+                          }
+                      }
+                  }
               }
               """
           )

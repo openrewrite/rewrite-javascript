@@ -32,4 +32,23 @@ class BreakTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void labeled() {
+        rewriteRun(
+          javascript(
+            """
+              function test ( ) {
+                  outer : for ( var i = 0 ; i < 3 ; i++ ) {
+                      for ( var j = 0 ; j < 3 ; j++ ) {
+                          if ( j === i ) {
+                              break outer ;
+                          }
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }
