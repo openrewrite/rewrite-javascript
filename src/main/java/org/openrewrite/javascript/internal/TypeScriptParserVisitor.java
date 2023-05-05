@@ -68,21 +68,19 @@ public class TypeScriptParserVisitor {
     }
 
     public JS.CompilationUnit visitSourceFile() {
-        Space prefix = whitespace();
-
         List<JRightPadded<Statement>> statements = source.collectChildNodes("statements",
                 child -> {
-                    @Nullable J visitped;
+                    @Nullable J visited;
                     try {
-                        visitped = visitNode(child);
+                        visited = visitNode(child);
                     } catch (Exception e) {
                         throw new JavaScriptParsingException("Failed to parse statement", e);
                     }
-                    if (visitped != null) {
-                        if (!(visitped instanceof Statement) && visitped instanceof Expression) {
-                            visitped = new JS.ExpressionStatement(randomId(), (Expression) visitped);
+                    if (visited != null) {
+                        if (!(visited instanceof Statement) && visited instanceof Expression) {
+                            visited = new JS.ExpressionStatement(randomId(), (Expression) visited);
                         }
-                        return maybeSemicolon((Statement) visitped);
+                        return maybeSemicolon((Statement) visited);
                     } else {
                         return null;
                     }
@@ -90,7 +88,7 @@ public class TypeScriptParserVisitor {
         );
         return new JS.CompilationUnit(
                 randomId(),
-                prefix,
+                EMPTY,
                 Markers.EMPTY,
                 relativeTo == null ? null : relativeTo.relativize(sourcePath),
                 FileAttributes.fromPath(sourcePath),
@@ -718,7 +716,6 @@ public class TypeScriptParserVisitor {
 
 
     private J.ForLoop visitForStatement(TSCNode node) {
-        System.out.println();
         Space prefix = sourceBefore(TSCSyntaxKind.ForKeyword);
 
         Space beforeControl = sourceBefore(TSCSyntaxKind.OpenParenToken);
@@ -1878,9 +1875,11 @@ public class TypeScriptParserVisitor {
                     break;
                 case SingleLineCommentTrivia:
                 case MultiLineCommentTrivia:
+                    String commentText = lastToken();
+                    commentText = commentText.substring(2, kind == TSCSyntaxKind.SingleLineCommentTrivia ? commentText.length() : commentText.length() - 2);
                     Comment comment = new TextComment(
                             kind == TSCSyntaxKind.MultiLineCommentTrivia,
-                            lastToken(),
+                            commentText,
                             "",
                             Markers.EMPTY
                     );
@@ -1896,6 +1895,7 @@ public class TypeScriptParserVisitor {
                     break;
             }
         } while (!done);
+        // TODO: check if suffixes are set correctly.
         return Space.build(initialSpace, comments);
     }
 }

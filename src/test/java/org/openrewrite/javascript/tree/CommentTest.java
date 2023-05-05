@@ -16,30 +16,23 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
+@SuppressWarnings("JSUnusedLocalSymbols")
 class CommentTest extends ParserTest {
 
-    @ExpectedToFail
     @Test
-    void backToBackMultilineComments() {
+    void singleLineComment() {
         rewriteRun(
           javascript(
             """
               class Test {
-                  /*
-                   * C1
-                   */
-                  /*
-                   * C2
-                   */
+                  // C1
               }
               """
           )
         );
     }
 
-    @ExpectedToFail
     @Test
     void multilineNestedInsideSingleLine() {
         rewriteRun(
@@ -52,4 +45,36 @@ class CommentTest extends ParserTest {
         );
     }
 
+    @Test
+    void multilineComment() {
+        rewriteRun(
+          javascript(
+            """
+              class Test {
+                  /*
+                    C1
+                   */
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javaScriptDoc() {
+        rewriteRun(
+          javascript(
+            """
+              var s ;
+              
+              /**
+               * @param {string} p1
+               * @param {string} p2
+               */
+              function f ( p1, p2 ) {
+              }
+              """
+          )
+        );
+    }
 }
