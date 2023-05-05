@@ -16,64 +16,58 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
-public class LiteralTest extends ParserTest {
+public class TypeOperatorTest extends ParserTest {
 
+    @ExpectedToFail
     @Test
-    void stringLiteral() {
+    void in() {
         rewriteRun(
           javascript(
             """
-              let hello = 'World' ;
+              let foo = { bar : 'v1' , buz : 'v2' }
+              v = 'bar' in foo
               """
           )
         );
     }
 
+    @ExpectedToFail
     @Test
-    void numericLiteral() {
+    void delete() {
         rewriteRun(
           javascript(
             """
-              let n = 0 ;
+              let foo = { bar : 'v1' , buz : 'v2' }
+              delete foo . buz
               """
           )
         );
     }
 
+    @ExpectedToFail
     @Test
-    void intentionallyBadUnicodeCharacter() {
+    void typeof() {
         rewriteRun(
           javascript(
             """
-              let s1 = "\\\\u{U1}"
-              let s2 = "\\\\u1234"
-              let s3 = "\\\\u{00AUF}"
+              let foo = 'hello'
+              let t = typeof foo
               """
           )
         );
     }
 
+    @ExpectedToFail
     @Test
-    void unmatchedSurrogatePair() {
+    void instanceofOp() {
         rewriteRun(
           javascript(
             """
-              let c1 : Character = '\uD800'
-              let c2 : Character = '\uDfFf'
-              """
-          )
-        );
-    }
-
-    @Test
-    void unmatchedSurrogatePairInString() {
-        rewriteRun(
-          javascript(
-            """
-              let s1 : String = "\uD800"
-              let s2 : String = "\uDfFf"
+              let arr = [ 1, 2 ]
+              let t = arr instanceof Array
               """
           )
         );

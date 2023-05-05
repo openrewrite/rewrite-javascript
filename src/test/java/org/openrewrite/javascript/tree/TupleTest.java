@@ -18,7 +18,20 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
+@SuppressWarnings({"JSUnresolvedVariable", "JSUnusedLocalSymbols"})
 public class TupleTest extends ParserTest {
+
+    @ExpectedToFail
+    @Test
+    void emptyTuple() {
+        rewriteRun(
+          javascript(
+            """
+              let tuple : [ ]
+              """
+          )
+        );
+    }
 
     @ExpectedToFail
     @Test
@@ -26,7 +39,19 @@ public class TupleTest extends ParserTest {
         rewriteRun(
           javascript(
             """
-              let arr : [ ]
+              let tuple : [ number , boolean , ] = [ 1, true ]
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail
+    @Test
+    void typed() {
+        rewriteRun(
+          javascript(
+            """
+              let input : [ x : number , y : number ] = [ 1 , 2 ]
               """
           )
         );

@@ -16,7 +16,9 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
+@SuppressWarnings({"RedundantConditionalExpressionJS", "EqualityComparisonWithCoercionJS"})
 public class AssignmentOperationTest extends ParserTest {
 
     @Test
@@ -24,9 +26,9 @@ public class AssignmentOperationTest extends ParserTest {
         rewriteRun(
           javascript(
             """
-            var n = 0
-            n -= 5
-            """
+              var n = 0
+              n -= 5
+              """
           )
         );
     }
@@ -36,9 +38,9 @@ public class AssignmentOperationTest extends ParserTest {
         rewriteRun(
           javascript(
             """
-            var n = 0
-            n += 5
-            """
+              var n = 0
+              n += 5
+              """
           )
         );
     }
@@ -48,9 +50,9 @@ public class AssignmentOperationTest extends ParserTest {
         rewriteRun(
           javascript(
             """
-            var n = 0
-            n *= 5
-            """
+              var n = 0
+              n *= 5
+              """
           )
         );
     }
@@ -60,9 +62,35 @@ public class AssignmentOperationTest extends ParserTest {
         rewriteRun(
           javascript(
             """
-            var n = 0
-            n /= 5
+              var n = 0
+              n /= 5
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail
+    @Test
+    void moduloEqual() {
+        rewriteRun(
+          javascript(
             """
+              var n = 0
+              n = n %= 5
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail
+    @Test
+    void ternary() {
+        rewriteRun(
+          javascript(
+            """
+              let n = 0
+              let r = ( n == 0 ) ? true : false
+              """
           )
         );
     }

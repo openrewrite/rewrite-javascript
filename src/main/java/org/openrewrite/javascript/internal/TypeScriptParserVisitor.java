@@ -72,7 +72,12 @@ public class TypeScriptParserVisitor {
 
         List<JRightPadded<Statement>> statements = source.collectChildNodes("statements",
                 child -> {
-                    @Nullable J mapped = mapNode(child);
+                    @Nullable J mapped;
+                    try {
+                        mapped = mapNode(child);
+                    } catch (Exception e) {
+                        throw new JavaScriptParsingException("Failed to parse statement", e);
+                    }
                     if (mapped != null) {
                         if (!(mapped instanceof Statement) && mapped instanceof Expression) {
                             mapped = new JS.ExpressionStatement(randomId(), (Expression) mapped);

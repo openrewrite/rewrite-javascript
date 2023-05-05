@@ -18,42 +18,21 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
-@SuppressWarnings({"JSLastCommaInArrayLiteral", "JSUnresolvedVariable", "JSUnusedLocalSymbols"})
-public class TrailingCommaTest extends ParserTest {
-
-    @Test
-    void onMethodParameter() {
-        rewriteRun(
-          javascript(
-            """
-              console . log ( "hello world" , )
-              """
-          )
-        );
-    }
+@SuppressWarnings("UnnecessaryContinueJS")
+class ContinueTest extends ParserTest {
 
     @ExpectedToFail
     @Test
-    void onTuple() {
+    void continueStatement() {
         rewriteRun(
           javascript(
             """
-              let tuple : [ number , boolean , ] = [ 1, true , ]
+              for (let i = 0; i < 10; i++) {
+                  if (i % 2)
+                      continue ;
+              }
               """
           )
-        );
-    }
-
-    @Test
-    void onEnum() {
-        rewriteRun(
-            javascript(
-              """
-                enum Foo {
-                  Bar , Buz ,
-                }
-                """
-            )
         );
     }
 }

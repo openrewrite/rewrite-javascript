@@ -18,55 +18,19 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
-@SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable"})
-public class MethodDeclarationTest extends ParserTest {
+@SuppressWarnings({"JSUnresolvedVariable", "JSUnusedLocalSymbols"})
+class FieldAccessTest extends ParserTest {
 
+    @ExpectedToFail
     @Test
-    void functionDeclaration() {
+    void thisAccess() {
         rewriteRun(
           javascript(
             """
-              function foo ( ) { }
-              """
-          )
-        );
-    }
-
-    @Test
-    void functionParameters() {
-        rewriteRun(
-          javascript(
-            """
-              function foo ( x : number , y : number ) { }
-              """
-          )
-        );
-    }
-
-    @Test
-    void decorator() {
-        rewriteRun(
-          javascript(
-            """
-              function enumerable ( value : boolean ) {
-                  return function ( target : any ,
-                          propertyKey : string ,
-                          descriptor : PropertyDescriptor ) {
-                      descriptor . enumerable = value ;
-                  };
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void methodDeclaration() {
-        rewriteRun(
-          javascript(
-            """
-              class Foo {
-                  foo ( ) {
+              class Test {
+                  private id : String = "" ;
+                  setId ( id : String ) {
+                      this . id = id
                   }
               }
               """
@@ -76,13 +40,43 @@ public class MethodDeclarationTest extends ParserTest {
 
     @ExpectedToFail
     @Test
-    void arrowDeclaration() {
+    void superAccess() {
         rewriteRun(
           javascript(
             """
-              let sum = ( a : number , b : number ) : number => {
-                  return a + b ;
+              class Super {
+                  id : String = "" ;
+                  constructor ( theId : string ) {
+                      this . id = theId ;
+                  }
               }
+              
+              class Test extends Super {
+                  constructor ( name : string ) {
+                      super ( name ) ;
+                  }
+              
+                  getId ( ) : String {
+                      return super . id
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail
+    @Test
+    void nullSafeDereference() {
+        rewriteRun(
+          javascript(
+            """
+              class Test {
+                  property : number = 42
+              }
+              
+              const t = new Test ( )
+              const p = t ?. property
               """
           )
         );

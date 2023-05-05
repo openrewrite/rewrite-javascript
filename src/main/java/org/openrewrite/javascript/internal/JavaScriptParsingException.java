@@ -13,23 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript.tree;
+package org.openrewrite.javascript.internal;
 
-import org.junit.jupiter.api.Test;
-
-@SuppressWarnings("JSUnusedLocalSymbols")
-public class EnumTest extends ParserTest {
-
-    @Test
-    void enumDeclaration() {
-        rewriteRun(
-          javascript(
-            """
-              enum Foo {
-                Bar , Buz
-              }
-              """
-          )
-        );
+public class JavaScriptParsingException extends RuntimeException {
+    public JavaScriptParsingException(String message, Throwable t) {
+        super(message, t);
     }
 }

@@ -17,7 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("JSUnusedLocalSymbols")
+@SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable"})
 public class ClassDeclarationTest extends ParserTest {
 
     @Test

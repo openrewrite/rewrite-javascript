@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2022 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,22 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
-@SuppressWarnings({"JSLastCommaInArrayLiteral", "JSUnresolvedVariable", "JSUnusedLocalSymbols"})
-public class TrailingCommaTest extends ParserTest {
+class CommentTest extends ParserTest {
 
+    @ExpectedToFail
     @Test
-    void onMethodParameter() {
+    void backToBackMultilineComments() {
         rewriteRun(
           javascript(
             """
-              console . log ( "hello world" , )
+              class Test {
+                  /*
+                   * C1
+                   */
+                  /*
+                   * C2
+                   */
+              }
               """
           )
         );
@@ -34,26 +41,15 @@ public class TrailingCommaTest extends ParserTest {
 
     @ExpectedToFail
     @Test
-    void onTuple() {
+    void multilineNestedInsideSingleLine() {
         rewriteRun(
           javascript(
             """
-              let tuple : [ number , boolean , ] = [ 1, true , ]
+              class Test { // /*
+              }
               """
           )
         );
     }
 
-    @Test
-    void onEnum() {
-        rewriteRun(
-            javascript(
-              """
-                enum Foo {
-                  Bar , Buz ,
-                }
-                """
-            )
-        );
-    }
 }
