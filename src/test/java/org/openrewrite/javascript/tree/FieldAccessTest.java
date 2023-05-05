@@ -21,7 +21,6 @@ import org.junitpioneer.jupiter.ExpectedToFail;
 @SuppressWarnings({"JSUnresolvedVariable", "JSUnusedLocalSymbols"})
 class FieldAccessTest extends ParserTest {
 
-    @ExpectedToFail
     @Test
     void thisAccess() {
         rewriteRun(
@@ -38,14 +37,13 @@ class FieldAccessTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void superAccess() {
         rewriteRun(
           javascript(
             """
               class Super {
-                  id : String = "" ;
+                  id : string = "" ;
                   constructor ( theId : string ) {
                       this . id = theId ;
                   }
@@ -56,7 +54,7 @@ class FieldAccessTest extends ParserTest {
                       super ( name ) ;
                   }
               
-                  getId ( ) : String {
+                  getId ( ) : string {
                       return super . id
                   }
               }

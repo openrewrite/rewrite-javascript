@@ -132,31 +132,22 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             beforeSyntax(method, Space.Location.METHOD_DECLARATION_PREFIX, p);
             visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
             visit(method.getLeadingAnnotations(), p);
-            // FIXME extra spacing
             if (method.getMarkers().findFirst(FunctionDeclaration.class).isPresent()) {
                 p.append("function");
             }
-//        for (J.Modifier m : method.getModifiers()) {
-//            visitModifier(m, p);
-//        }
-//        J.TypeParameters typeParameters = method.getAnnotations().getTypeParameters();
-//        if (typeParameters != null) {
-//            visit(typeParameters.getAnnotations(), p);
-//            visitSpace(typeParameters.getPrefix(), Space.Location.TYPE_PARAMETERS, p);
-//            visitMarkers(typeParameters.getMarkers(), p);
-//            p.append("<");
-//            visitRightPadded(typeParameters.getPadding().getTypeParameters(), JRightPadded.Location.TYPE_PARAMETER, ",", p);
-//            p.append(">");
-//        }
-//        visit(method.getReturnTypeExpression(), p);
-//        visit(method.getAnnotations().getName().getAnnotations(), p);
+
             visit(method.getName(), p);
-//        if (!method.getMarkers().findFirst(CompactConstructor.class).isPresent()) {
             visitContainer("(", method.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, ",", ")", p);
-//        }
-//        visitContainer("throws", method.getPadding().getThrows(), JContainer.Location.THROWS, ",", null, p);
+            if (method.getReturnTypeExpression() != null) {
+                TypeReferencePrefix typeReferencePrefix = method.getReturnTypeExpression().getMarkers().findFirst(TypeReferencePrefix.class).orElse(null);
+                if (typeReferencePrefix != null) {
+                    visitSpace(typeReferencePrefix.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+                    p.append(":");
+                }
+                visit(method.getReturnTypeExpression(), p);
+            }
+
             visit(method.getBody(), p);
-//        visitLeftPadded("default", method.getPadding().getDefaultValue(), JLeftPadded.Location.METHOD_DECLARATION_DEFAULT_VALUE, p);
             afterSyntax(method, p);
             return method;
         }
@@ -213,6 +204,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 afterSyntax(variable.getElement(), p);
                 if (i < variables.size() - 1) {
                     p.append(",");
+                } else if (variable.getMarkers().findFirst(Semicolon.class).isPresent()) {
+                    p.append(";");
                 }
             }
 

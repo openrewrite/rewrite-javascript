@@ -394,8 +394,22 @@ public class TypeScriptParserVisitor {
             select = padRight(visitNameExpression(expression.getNodeProperty("expression")), sourceBefore(TSCSyntaxKind.DotToken));
         }
 
-        J.Identifier name = visitIdentifier(expression.getNodeProperty("name"));
-        JContainer<Expression> arguments = null;
+        J.Identifier name = null;
+        if (expression.hasProperty("name")) {
+            name = visitIdentifier(expression.getNodeProperty("name"));
+        } else if (expression.syntaxKind() == TSCSyntaxKind.SuperKeyword) {
+            name = new J.Identifier(
+                    randomId(),
+                    sourceBefore(TSCSyntaxKind.SuperKeyword),
+                    Markers.EMPTY,
+                    "super",
+                    typeMapping.type(expression),
+                    null
+            );
+        } else {
+            implementMe(expression);
+        }
+            JContainer<Expression> arguments = null;
         if (node.hasProperty("arguments")) {
             arguments = visitContainer(
                     TSCSyntaxKind.OpenParenToken,
@@ -458,6 +472,20 @@ public class TypeScriptParserVisitor {
             throw new UnsupportedOperationException("Class has no name ... add support");
         }
 
+        JLeftPadded<TypeTree> extendings = null;
+        JContainer<TypeTree> implementings = null;
+        if (node.hasProperty("heritageClauses")) {
+            for (TSCNode tscNode : node.getNodeListProperty("heritageClauses")) {
+                if (TSCSyntaxKind.fromCode(tscNode.getIntProperty("token")) == TSCSyntaxKind.ExtendsKeyword) {
+                    List<TSCNode> types = tscNode.getNodeListProperty("types");
+                    assert types.size() == 1;
+                    extendings = padLeft(sourceBefore(TSCSyntaxKind.ExtendsKeyword), (TypeTree) visitNode(types.get(0)));
+                } else {
+                    implementMe(tscNode);
+                }
+            }
+        }
+
         JContainer<J.TypeParameter> typeParams = null;
 
         J.Block body;
@@ -489,15 +517,14 @@ public class TypeScriptParserVisitor {
                     }
                 }
 
-                JRightPadded<Statement> enumSet = padRight(
+                JRightPadded<Statement> enumSet = maybeSemicolon(
                         new J.EnumValueSet(
                                 randomId(),
                                 enumPrefix,
                                 Markers.EMPTY,
                                 enumValues,
                                 false
-                        ),
-                        EMPTY
+                        )
                 );
                 members.add(enumSet);
             } else {
@@ -515,10 +542,6 @@ public class TypeScriptParserVisitor {
         }
 
         JContainer<Statement> primaryConstructor = null;
-
-        // // FIXME: extendings and implementings work differently in TS @Gary.
-        JLeftPadded<TypeTree> extendings = null;
-        JContainer<TypeTree> implementings = null;
 
         return new J.ClassDeclaration(
                 randomId(),
@@ -738,6 +761,16 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J visitExpressionWithTypeArguments(TSCNode node) {
+        NameTree nameTree = (NameTree) visitNode(node.getNodeProperty("expression"));
+        if (node.hasProperty("typeArguments")) {
+            implementMe(node, "typeArguments");
+            // .. return J.ParameterizedType
+        }
+
+        return nameTree;
+    }
+
     private J.MethodDeclaration visitFunctionDeclaration(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.FunctionKeyword);
 
@@ -913,8 +946,6 @@ public class TypeScriptParserVisitor {
         implementMe(node, "typeParameters");
         J.TypeParameters typeParameters = null;
 
-        TypeTree returnTypeExpression = null;
-
         implementMe(node, "asteriskToken");
         implementMe(node, "questionToken");
         implementMe(node, "exclamationToken");
@@ -933,9 +964,14 @@ public class TypeScriptParserVisitor {
 
         JContainer<NameTree> throwz = null;
 
+        TypeTree returnTypeExpression = null;
+        if (node.hasProperty("type")) {
+            Markers markers = Markers.EMPTY.addIfAbsent(new TypeReferencePrefix(randomId(), sourceBefore(TSCSyntaxKind.ColonToken)));
+            returnTypeExpression = visitNode(node.getNodeProperty("type")).withMarkers(markers);
+        }
+
         J.Block body = visitBlock(node.getNodeProperty("body"));
         JLeftPadded<Expression> defaultValue = null;
-        implementMe(node, "type");
 
         return new J.MethodDeclaration(
                 randomId(),
@@ -1103,17 +1139,6 @@ public class TypeScriptParserVisitor {
             implementMe(node);
         }
 
-        List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = new ArrayList<>(1);
-        variables.add(padRight(new J.VariableDeclarations.NamedVariable(
-                randomId(),
-                variablePrefix,
-                Markers.EMPTY,
-                name,
-                emptyList(),
-                null,
-                typeMapping.variableType(node)
-        ), EMPTY));
-
         TypeTree typeTree = null;
         if (node.hasProperty("type")) {
             // FIXME: method(x: { suit: string; card: number }[])
@@ -1124,6 +1149,19 @@ public class TypeScriptParserVisitor {
             TSCNode type = node.getNodeProperty("type");
             typeTree = (TypeTree) visitNode(type);
         }
+
+        List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = new ArrayList<>(1);
+        variables.add(maybeSemicolon(new J.VariableDeclarations.NamedVariable(
+                randomId(),
+                variablePrefix,
+                Markers.EMPTY,
+                name,
+                emptyList(),
+                node.hasProperty("initializer") ?
+                        padLeft(sourceBefore(TSCSyntaxKind.EqualsToken),
+                                (Expression) Objects.requireNonNull(visitNode(node.getNodeProperty("initializer")))) : null,
+                typeMapping.variableType(node)
+        )));
 
         List<JLeftPadded<Space>> dimensions = emptyList();
         return new J.VariableDeclarations(
@@ -1540,6 +1578,7 @@ public class TypeScriptParserVisitor {
             case FalseKeyword:
             case NumberKeyword:
             case StringKeyword:
+            case SuperKeyword:
             case ThisKeyword:
             case TrueKeyword:
                 j = visitKeyword(node);
@@ -1585,6 +1624,9 @@ public class TypeScriptParserVisitor {
                 break;
             case ExpressionStatement:
                 j = visitExpressionStatement(node);
+                break;
+            case ExpressionWithTypeArguments:
+                j = visitExpressionWithTypeArguments(node);
                 break;
             case FunctionDeclaration:
             case FunctionExpression:
@@ -1678,7 +1720,6 @@ public class TypeScriptParserVisitor {
      * Set the cursor position to the specified index.
      */
     private void cursor(int cursor) {
-        System.err.println("[scanner] reset to pos=" + cursor + " (from pos=" + this.getCursor() + ")");
         this.cursorContext.resetScanner(cursor);
     }
 
