@@ -46,4 +46,20 @@ public class ClassDeclarationTest extends ParserTest {
             )
         );
     }
+
+    @Test
+    void withConstructor() {
+        rewriteRun(
+           javascript(
+             """
+               class Foo {
+                   private name : string ;
+                   constructor ( theName : string ) {
+                       this . name = theName ;
+                   }
+               }
+               """
+           )
+        );
+    }
 }

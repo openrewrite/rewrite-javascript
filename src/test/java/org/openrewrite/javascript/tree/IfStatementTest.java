@@ -53,7 +53,7 @@ public class IfStatementTest extends ParserTest {
         rewriteRun(
           javascript(
             """
-              function foo( a : number ) {
+              function foo ( a : number ) {
                   if ( a <= 0 )
                       console . log ( "a <= 0" )
                   else if ( a > 0 && a <= 10 )

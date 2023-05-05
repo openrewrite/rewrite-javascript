@@ -180,6 +180,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                         break;
                 }
             }
+
             List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = multiVariable.getPadding().getVariables();
             for (int i = 0; i < variables.size(); i++) {
                 JRightPadded<J.VariableDeclarations.NamedVariable> variable = variables.get(i);

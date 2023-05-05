@@ -17,49 +17,33 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable"})
-public class AssertTest extends ParserTest {
+@SuppressWarnings("ALL")
+public class NewClassTest extends ParserTest {
 
     @Test
-    void array() {
+    void newClass() {
         rewriteRun(
           javascript(
             """
-              let arr : string [ ] = [ 'a' , 'b' , 'c' ]
+              class Foo { }
+              const foo = new Foo ( ) ;
               """
           )
         );
     }
 
     @Test
-    void multiDimensional() {
+    void withParams() {
         rewriteRun(
           javascript(
             """
-              var multi : number [ ] [ ] = [ [ 1 , 2 , 3 ] , [ 23 , 24 , 25 ] ]
-              """
-          )
-        );
-    }
-
-    @Test
-    void multiline() {
-        rewriteRun(
-          javascript(
-            """
-              var multi : number [ ] [ ] =
-              [
-                    [
-                        1 ,
-                        2 ,
-                        3
-                    ] ,
-                    [
-                        23 ,
-                        24 ,
-                        25
-                    ]
-              ]
+              class Foo {
+                  private name : string ;
+                  constructor( theName : string ) {
+                      this . name = theName ;
+                  }
+              }
+              const foo = new Foo( "foooooo" );
               """
           )
         );

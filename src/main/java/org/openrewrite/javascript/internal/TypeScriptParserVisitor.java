@@ -504,6 +504,47 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J mapConstructor(TSCNode node) {
+        Space prefix = whitespace();
+        implementMe(node, "modifiers");
+        consumeToken(TSCSyntaxKind.ConstructorKeyword);
+        J.Identifier name = new J.Identifier(
+                randomId(),
+                EMPTY,
+                Markers.EMPTY,
+                "constructor",
+                typeMapping.type(node),
+                null
+        );
+
+        JContainer<Statement> params = mapContainer(
+                TSCSyntaxKind.OpenParenToken,
+                node.getNodeListProperty("parameters"),
+                null,
+                TSCSyntaxKind.CloseParenToken,
+                t -> (Statement) mapNode(t));
+
+        J.Block body = (J.Block) mapNode(node.getNodeProperty("body"));
+        implementMe(node, "typeParameters");
+        implementMe(node, "type");
+        implementMe(node, "typeArguments");
+        return new J.MethodDeclaration(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                emptyList(),
+                emptyList(),
+                null,
+                null,
+                new J.MethodDeclaration.IdentifierWithAnnotations(name, Collections.emptyList()),
+                params,
+                null,
+                body,
+                null,
+                typeMapping.methodDeclarationType(node)
+        );
+    }
+
     private J mapDecorator(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.AtToken);
         implementMe(node, "questionDotToken");
@@ -857,6 +898,33 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J mapNewExpression(TSCNode node) {
+        Space prefix = sourceBefore(TSCSyntaxKind.NewKeyword);
+        TypeTree typeTree = null;
+        if (node.hasProperty("expression")) {
+            typeTree = (TypeTree) mapNameExpression(node.getNodeProperty("expression"));
+        }
+        implementMe(node, "typeArguments");
+        JContainer<Expression> arguments = mapContainer(
+                TSCSyntaxKind.OpenParenToken,
+                node.getNodeListProperty("arguments"),
+                TSCSyntaxKind.CommaToken,
+                TSCSyntaxKind.CloseParenToken,
+                t -> (Expression) mapNode(t)
+        );
+        return new J.NewClass(
+                randomId(),
+                EMPTY,
+                Markers.EMPTY,
+                null,
+                prefix,
+                typeTree,
+                arguments,
+                null,
+                typeMapping.methodInvocationType(node)
+        );
+    }
+
     private J mapNumericLiteral(TSCNode node) {
         return new J.Literal(
                 randomId(),
@@ -881,6 +949,65 @@ public class TypeScriptParserVisitor {
                 nameExpression,
                 padLeft(sourceBefore(TSCSyntaxKind.DotToken), mapIdentifier(node.getNodeProperty("name"))),
                 typeMapping.type(node)
+        );
+    }
+
+    private J mapPropertyDeclaration(TSCNode node) {
+        Space prefix = whitespace();
+        Markers markers = Markers.EMPTY;
+
+        implementMe(node, "questionToken");
+        implementMe(node, "exclamationToken");
+
+        List<J.Modifier> modifiers;
+        if (node.hasProperty("modifiers")) {
+            modifiers = mapModifiers(node.getNodeListProperty("modifiers"));
+        } else {
+            modifiers = emptyList();
+        }
+
+        Space variablePrefix = whitespace();
+        J j = mapNode(node.getNodeProperty("name"));
+        J.Identifier name = null;
+        if (j instanceof J.Identifier) {
+            name = (J.Identifier) j;
+        } else {
+            implementMe(node);
+        }
+
+        List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = new ArrayList<>(1);
+        variables.add(padRight(new J.VariableDeclarations.NamedVariable(
+                randomId(),
+                variablePrefix,
+                Markers.EMPTY,
+                name,
+                emptyList(),
+                null,
+                typeMapping.variableType(node)
+        ), EMPTY));
+
+        TypeTree typeTree = null;
+        if (node.hasProperty("type")) {
+            // FIXME: method(x: { suit: string; card: number }[])
+            Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
+            if (beforeColon != EMPTY) {
+                markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
+            }
+            TSCNode type = node.getNodeProperty("type");
+            typeTree = (TypeTree) mapNode(type);
+        }
+
+        List<JLeftPadded<Space>> dimensions = emptyList();
+        return new J.VariableDeclarations(
+                randomId(),
+                prefix,
+                markers,
+                emptyList(),
+                modifiers,
+                typeTree,
+                null,
+                dimensions,
+                variables
         );
     }
 
@@ -1156,8 +1283,8 @@ public class TypeScriptParserVisitor {
     }
 
     private Expression mapNameExpression(TSCNode expression) {
-        Space prefix = whitespace();
         if (expression.hasProperty("expression")) {
+            Space prefix = whitespace();
             Expression select = mapNameExpression(expression.getNodeProperty("expression"));
 
             // Adjust left padding from sourceBefore.
@@ -1176,11 +1303,10 @@ public class TypeScriptParserVisitor {
         } else {
             Expression identifier = null;
             if (expression.hasProperty("name")) {
-                identifier = mapIdentifier(expression.getNodeProperty("name"));
-            } else if (expression.hasProperty("escapedText")) {
-                identifier = mapIdentifier(expression);
+                identifier = (Expression) mapNode(expression.getNodeProperty("name"));
+            } else if (expression.hasProperty("escapedText") || expression.syntaxKind() == TSCSyntaxKind.ThisKeyword) {
+                identifier = (Expression) mapNode(expression);
             } else {
-                // FIXME: unknown name.
                 implementMe(expression);
             }
             return identifier;
@@ -1191,11 +1317,15 @@ public class TypeScriptParserVisitor {
         List<J.Modifier> modifiers = new ArrayList<>(nodes.size());
         for (TSCNode node : nodes) {
             List<J.Annotation> annotations = emptyList(); // FIXME: maybe add annotations.
+            Space prefix = whitespace();
             switch (node.syntaxKind()) {
                 case AbstractKeyword:
-                    Space prefix = whitespace();
                     consumeToken(TSCSyntaxKind.AbstractKeyword);
                     modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Abstract, annotations));
+                    break;
+                case PrivateKeyword:
+                    consumeToken(TSCSyntaxKind.PrivateKeyword);
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Private, annotations));
                     break;
                 default:
                     implementMe(node);
@@ -1229,6 +1359,7 @@ public class TypeScriptParserVisitor {
             case FalseKeyword:
             case NumberKeyword:
             case StringKeyword:
+            case ThisKeyword:
             case TrueKeyword:
                 j = mapKeyword(node);
                 break;
@@ -1246,6 +1377,9 @@ public class TypeScriptParserVisitor {
                 break;
             case CallExpression:
                 j = mapCallExpression(node);
+                break;
+            case Constructor:
+                j = mapConstructor(node);
                 break;
             case Decorator:
                 j = mapDecorator(node);
@@ -1279,6 +1413,9 @@ public class TypeScriptParserVisitor {
             case MethodDeclaration:
                 j = mapMethodDeclaration(node);
                 break;
+            case NewExpression:
+                j = mapNewExpression(node);
+                break;
             case NumericLiteral:
                 j = mapNumericLiteral(node);
                 break;
@@ -1294,6 +1431,10 @@ public class TypeScriptParserVisitor {
                 break;
             case PropertyAccessExpression:
                 j = mapPropertyAccessExpression(node);
+                break;
+            case Parameter:
+            case PropertyDeclaration:
+                j = mapPropertyDeclaration(node);
                 break;
             case ReturnStatement:
                 j = mapReturnStatement(node);
@@ -1390,7 +1531,7 @@ public class TypeScriptParserVisitor {
         return String.format("[start=%d, end=%d, text=`%s`]", this.cursorContext.scannerTokenStart(), this.cursorContext.scannerTokenEnd(), this.cursorContext.scannerTokenText().replace("\n", "⏎"));
     }
 
-    private <T extends J> JContainer<T> mapContainer(TSCSyntaxKind open, List<TSCNode> nodes, TSCSyntaxKind delimiter, TSCSyntaxKind close, Function<TSCNode, T> mapFn) {
+    private <T extends J> JContainer<T> mapContainer(TSCSyntaxKind open, List<TSCNode> nodes, @Nullable TSCSyntaxKind delimiter, TSCSyntaxKind close, Function<TSCNode, T> mapFn) {
         Space containerPrefix = sourceBefore(open);
         List<JRightPadded<T>> elements;
         if (nodes.isEmpty()) {
@@ -1405,7 +1546,7 @@ public class TypeScriptParserVisitor {
                 TSCNode node = nodes.get(i);
                 T mapped = mapFn.apply(node);
                 Markers markers = Markers.EMPTY;
-                Space after;
+                Space after = EMPTY;
                 if (i < nodes.size() - 1) {
                     after = sourceBefore(delimiter);
                 } else if (delimiter == TSCSyntaxKind.CommaToken) {
@@ -1415,7 +1556,7 @@ public class TypeScriptParserVisitor {
                         markers = markers.addIfAbsent(new TrailingComma(randomId(), whitespace()));
                     }
                 } else {
-                    after = EMPTY;
+                    after = whitespace();
                 }
                 elements.add(JRightPadded.build(mapped).withAfter(after).withMarkers(markers));
             }
