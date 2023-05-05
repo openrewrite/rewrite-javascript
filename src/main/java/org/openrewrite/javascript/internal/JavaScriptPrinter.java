@@ -30,6 +30,7 @@ import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.markers.ForLoopType;
 import org.openrewrite.markers.FunctionDeclaration;
+import org.openrewrite.markers.TypeReferencePrefix;
 import org.openrewrite.markers.VariableModifier;
 
 import java.util.List;
@@ -180,9 +181,12 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 }
             }
             List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = multiVariable.getPadding().getVariables();
-            for (JRightPadded<J.VariableDeclarations.NamedVariable> variable : variables) {
-                visitRightPadded(variable, JRightPadded.Location.NAMED_VARIABLE, p);
+            for (int i = 0; i < variables.size(); i++) {
+                JRightPadded<J.VariableDeclarations.NamedVariable> variable = variables.get(i);
+                beforeSyntax(variable.getElement(), Space.Location.VARIABLE_PREFIX, p);
+                visit(variable.getElement().getName(), p);
                 if (multiVariable.getTypeExpression() != null) {
+                    multiVariable.getMarkers().findFirst(TypeReferencePrefix.class).ifPresent(typeReferencePrefix -> visitSpace(typeReferencePrefix.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p));
                     p.append(":");
                     visit(multiVariable.getTypeExpression(), p);
                 }
@@ -190,7 +194,12 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 if (variable.getElement().getInitializer() != null) {
                     JavaScriptPrinter.this.visitLeftPadded("=", variable.getElement().getPadding().getInitializer(), JLeftPadded.Location.VARIABLE_INITIALIZER, p);
                 }
+
+                visitSpace(variable.getAfter(), Space.Location.NAMED_VARIABLE_SUFFIX, p);
                 afterSyntax(variable.getElement(), p);
+                if (i < variables.size() - 1) {
+                    p.append(",");
+                }
             }
 
             afterSyntax(multiVariable, p);

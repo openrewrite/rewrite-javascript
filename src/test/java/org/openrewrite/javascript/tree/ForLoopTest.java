@@ -16,7 +16,9 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
+@SuppressWarnings("ALL")
 class ForLoopTest extends ParserTest {
 
     @Test
@@ -31,6 +33,17 @@ class ForLoopTest extends ParserTest {
         );
     }
 
+    @Test
+    void multiDeclarationForLoop() {
+        rewriteRun(
+          javascript(
+            """
+              for ( let i = 0 , j = 1 , k = 2 ; i < 10 ; i++ , j *= 2 , k += 2 ) {
+              }
+              """
+          )
+        );
+    }
     @Test
     void forOfLoop() {
         rewriteRun(
@@ -51,6 +64,19 @@ class ForLoopTest extends ParserTest {
             """
               let arr = [ 10 , 20 , 30 , 40 ] ;
               for ( var val in arr ) {
+              }
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail("The const declaration name returns an ObjectBindingPattern.")
+    @Test
+    void destruct() {
+        rewriteRun(
+          javascript(
+            """
+              for ( const { a , b } of [ { a : 1 , b : 2 } , { a : 3 , b : 4 } ] ) {
               }
               """
           )
