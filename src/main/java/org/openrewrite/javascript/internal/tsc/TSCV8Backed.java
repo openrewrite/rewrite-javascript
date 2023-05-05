@@ -521,12 +521,11 @@ public interface TSCV8Backed {
     //
 
     default boolean hasProperty(String propertyName) {
-        boolean isFound = false;
-        try {
-            isFound = !(this.getBackingV8Object().getProperty(propertyName) instanceof V8ValueUndefined);
+        try(V8Value value = getPropertyUnsafe(propertyName)) {
+            return !value.isUndefined();
         } catch (JavetException ignored) {
+            return false;
         }
-        return isFound;
     }
 
 }

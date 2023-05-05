@@ -17,8 +17,10 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.interception.logging.JavetStandardConsoleInterceptor;
+import com.caoccao.javet.interop.JavetBridge;
 import com.caoccao.javet.interop.V8Host;
 import com.caoccao.javet.interop.V8Runtime;
+import com.caoccao.javet.utils.JavetResourceUtils;
 import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueMap;
@@ -36,6 +38,14 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 public class TSCRuntime implements Closeable {
+    /**
+     * Manually enable this when tracking down reference-counting issues.
+     * <br/>
+     * It causes tests to fail if references are not recycled, and will
+     * attribute dangling references to the call site that created them.
+     */
+    private final static boolean USE_WRAPPED_V8_RUNTIME = false;
+
     public final V8Runtime v8Runtime;
 
     @Nullable
@@ -45,7 +55,7 @@ public class TSCRuntime implements Closeable {
 
     public static TSCRuntime init() {
         try {
-            V8Runtime v8Runtime = V8Host.getV8Instance().createV8Runtime();
+            V8Runtime v8Runtime = USE_WRAPPED_V8_RUNTIME ? JavetBridge.makeWrappedV8Runtime() : V8Host.getV8Instance().createV8Runtime();
             JavetStandardConsoleInterceptor javetStandardConsoleInterceptor = new JavetStandardConsoleInterceptor(v8Runtime);
             javetStandardConsoleInterceptor.register(v8Runtime.getGlobalObject());
             return new TSCRuntime(v8Runtime, javetStandardConsoleInterceptor);
@@ -116,12 +126,7 @@ public class TSCRuntime implements Closeable {
 
     @Override
     public void close() {
-        if (this.tsParse != null) {
-            try {
-                this.tsParse.close();
-            } catch (JavetException e) {
-            }
-        }
+        JavetResourceUtils.safeClose(this.tsParse);
 
         if (!v8Runtime.isClosed()) {
             v8Runtime.await();
@@ -134,6 +139,7 @@ public class TSCRuntime implements Closeable {
             v8Runtime.await();
             v8Runtime.lowMemoryNotification();
         }
+
         try {
             v8Runtime.close();
         } catch (JavetException e) {

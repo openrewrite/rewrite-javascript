@@ -26,7 +26,7 @@ import java.util.Map;
 
 public abstract class TSCObjectCache<TKey, T extends TSCV8Backed> implements Closeable {
 
-    private final V8Scope scope = new V8Scope().setEscapable();
+    private final V8Scope scope = new V8Scope();
     private final Map<TKey, T> cache = new HashMap<>();
 
     public T getOrCreate(TSCProgramContext programContext, V8ValueObject objectV8) {

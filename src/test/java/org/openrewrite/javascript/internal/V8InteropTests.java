@@ -18,12 +18,14 @@ package org.openrewrite.javascript.internal;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;
-import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,7 +37,7 @@ public class V8InteropTests {
             Map<String, String> sources = new HashMap<>();
             sources.put("example.ts", "function foo() {}");
             runtime.parseSourceTexts(sources, (root, ctx) -> {
-                root.forEachChild(child -> {
+                root.getAllChildNodes().forEach(child -> {
                     TSCType first = child.getTypeForNode();
                     TSCType second = child.getTypeForNode();
                     assertSame(first, second);
@@ -50,10 +52,8 @@ public class V8InteropTests {
             Map<String, String> sources = new HashMap<>();
             sources.put("example.ts", "function foo() {}");
             runtime.parseSourceTexts(sources, (root, ctx) -> {
-                List<TSCNode> first = new ArrayList<>();
-                List<TSCNode> second = new ArrayList<>();
-                root.forEachChild(first::add);
-                root.forEachChild(second::add);
+                List<TSCNode> first = root.getAllChildNodes();
+                List<TSCNode> second = root.getAllChildNodes();
                 for (int i = 0; i < first.size(); i++) {
                     assertSame(first.get(i), second.get(i));
                 }

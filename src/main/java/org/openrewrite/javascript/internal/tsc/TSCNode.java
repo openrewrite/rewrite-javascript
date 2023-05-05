@@ -162,38 +162,6 @@ public class TSCNode implements TSCV8Backed {
         return this.getStringProperty("getText()");
     }
 
-    @Deprecated
-    public <T> List<T> collectChildNodes(String name, Function<TSCNode, @Nullable T> fn) {
-        List<T> results = new ArrayList<>();
-        for (TSCNode child : this.getChildNodes(name)) {
-            @Nullable T result = fn.apply(child);
-            if (result != null) {
-                results.add(result);
-            }
-        }
-        return results;
-    }
-
-    @Deprecated
-    public <T> List<T> mapChildNodes(String name, Function<TSCNode, @Nullable T> fn) {
-        List<T> results = new ArrayList<>();
-        for (TSCNode child : this.getChildNodes(name)) {
-            results.add(fn.apply(child));
-        }
-        return results;
-    }
-
-    @Deprecated
-    public void forEachChild(Consumer<TSCNode> callback) {
-        Consumer<V8Value> v8Callback = v8Value -> callback.accept(programContext.tscNode((V8ValueObject) v8Value));
-        try (V8Value v8Function = programContext.asJSFunction(v8Callback)) {
-            this.nodeV8.invokeVoid("forEachChild", v8Function);
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Deprecated
     public List<TSCNode> getAllChildNodes() {
         try (V8Value v8Value = this.nodeV8.invoke("getChildren")) {
             if (v8Value.isNullOrUndefined()) {
@@ -204,7 +172,9 @@ public class TSCNode implements TSCV8Backed {
             final int count = v8Array.getLength();
             List<TSCNode> result = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
-                result.add(programContext.tscNode(v8Array.get(i)));
+                try (V8Value child = v8Array.get(i)) {
+                    result.add(programContext.tscNode((V8ValueObject) child));
+                }
             }
             return result;
         } catch (JavetException e) {
@@ -252,10 +222,9 @@ public class TSCNode implements TSCV8Backed {
         ps.println();
 
         String childIndent = indent + "  ";
-        forEachChild(child -> {
+        for (TSCNode child : getAllChildNodes()) {
             child.printTree(ps, childIndent);
-        });
-
+        }
     }
 
     @Override

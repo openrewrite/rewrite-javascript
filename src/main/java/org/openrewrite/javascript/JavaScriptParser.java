@@ -75,9 +75,6 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
 
             outputs = mapper.build();
         }
-        for (JS.CompilationUnit output : outputs) {
-            System.err.println("******** " + output.getSourcePath() + " -> " + output.getSourceText().getBytes().length + " bytes");
-        }
         return outputs;
     }
 
