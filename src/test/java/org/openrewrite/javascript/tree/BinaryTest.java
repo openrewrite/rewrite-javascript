@@ -15,7 +15,6 @@
  */
 package org.openrewrite.javascript.tree;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -98,7 +97,6 @@ public class BinaryTest extends ParserTest {
       ">>",
       ">>>",
     })
-    @Disabled("Something odd is happening with greater than tokens.")
     void greaterThanOps(String arg) {
         rewriteRun(
           javascript(

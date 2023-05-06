@@ -205,67 +205,68 @@ public class TypeScriptParserVisitor {
         Expression left = (Expression) visitNode(node.getNodeProperty("left"));
 
         JLeftPadded<J.Binary.Type> op = null;
-        TSCSyntaxKind opKind = node.getNodeProperty("operatorToken").syntaxKind();
+        TSCNode opNode = node.getNodeProperty("operatorToken");
+        TSCSyntaxKind opKind = opNode.syntaxKind();
         switch (opKind) {
             // Bitwise ops
             case AmpersandToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.AmpersandToken), J.Binary.Type.BitAnd);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.BitAnd);
                 break;
             case BarToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.BarToken), J.Binary.Type.BitOr);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.BitOr);
                 break;
             case CaretToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.CaretToken), J.Binary.Type.BitXor);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.BitXor);
                 break;
             case GreaterThanGreaterThanToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.GreaterThanGreaterThanToken), J.Binary.Type.RightShift);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.RightShift);
                 break;
             case LessThanLessThanToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.LessThanLessThanToken), J.Binary.Type.LeftShift);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.LeftShift);
                 break;
             // Logical ops
             case AmpersandAmpersandToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.AmpersandAmpersandToken), J.Binary.Type.And);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.And);
                 break;
             case BarBarToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.BarBarToken), J.Binary.Type.Or);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.Or);
                 break;
             case EqualsEqualsToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.EqualsEqualsToken), J.Binary.Type.Equal);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.Equal);
                 break;
             case ExclamationEqualsToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.ExclamationEqualsToken), J.Binary.Type.NotEqual);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.NotEqual);
                 break;
             case GreaterThanToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.GreaterThanToken), J.Binary.Type.GreaterThan);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.GreaterThan);
                 break;
             case GreaterThanEqualsToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.GreaterThanEqualsToken), J.Binary.Type.GreaterThanOrEqual);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.GreaterThanOrEqual);
                 break;
             case GreaterThanGreaterThanGreaterThanToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.GreaterThanGreaterThanGreaterThanToken), J.Binary.Type.UnsignedRightShift);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.UnsignedRightShift);
                 break;
             case LessThanToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.LessThanToken), J.Binary.Type.LessThan);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.LessThan);
                 break;
             case LessThanEqualsToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.LessThanEqualsToken), J.Binary.Type.LessThanOrEqual);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.LessThanOrEqual);
                 break;
             // Arithmetic ops
             case AsteriskToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.AsteriskToken), J.Binary.Type.Multiplication);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.Multiplication);
                 break;
             case MinusToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.MinusToken), J.Binary.Type.Subtraction);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.Subtraction);
                 break;
             case PercentToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.PercentToken), J.Binary.Type.Modulo);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.Modulo);
                 break;
             case PlusToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.PlusToken), J.Binary.Type.Addition);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.Addition);
                 break;
             case SlashToken:
-                op = padLeft(sourceBefore(TSCSyntaxKind.SlashToken), J.Binary.Type.Division);
+                op = padLeft(sourceBefore(opNode), J.Binary.Type.Division);
                 break;
             default:
                 implementMe(node);
@@ -1820,6 +1821,12 @@ public class TypeScriptParserVisitor {
     private Space sourceBefore(TSCSyntaxKind syntaxKind) {
         Space prefix = whitespace();
         consumeToken(syntaxKind);
+        return prefix;
+    }
+
+    private Space sourceBefore(TSCNode node) {
+        Space prefix = whitespace();
+        skip(node.getText());
         return prefix;
     }
 
