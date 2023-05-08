@@ -204,69 +204,93 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Expression left = (Expression) visitNode(node.getNodeProperty("left"));
 
+        Space opPrefix = whitespace();
         JLeftPadded<J.Binary.Type> op = null;
-        TSCNode opNode = node.getNodeProperty("operatorToken");
-        TSCSyntaxKind opKind = opNode.syntaxKind();
+        TSCSyntaxKind opKind = node.getNodeProperty("operatorToken").syntaxKind();
         switch (opKind) {
             // Bitwise ops
             case AmpersandToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.BitAnd);
+                consumeToken(TSCSyntaxKind.AmpersandToken);
+                op = padLeft(opPrefix, J.Binary.Type.BitAnd);
                 break;
             case BarToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.BitOr);
+                consumeToken(TSCSyntaxKind.BarToken);
+                op = padLeft(opPrefix, J.Binary.Type.BitOr);
                 break;
             case CaretToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.BitXor);
+                consumeToken(TSCSyntaxKind.CaretToken);
+                op = padLeft(opPrefix, J.Binary.Type.BitXor);
                 break;
             case GreaterThanGreaterThanToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.RightShift);
+                consumeToken(TSCSyntaxKind.GreaterThanToken);
+                consumeToken(TSCSyntaxKind.GreaterThanToken);
+                op = padLeft(opPrefix, J.Binary.Type.RightShift);
                 break;
             case LessThanLessThanToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.LeftShift);
+                consumeToken(TSCSyntaxKind.LessThanLessThanToken);
+                op = padLeft(opPrefix, J.Binary.Type.LeftShift);
                 break;
             // Logical ops
             case AmpersandAmpersandToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.And);
+                consumeToken(TSCSyntaxKind.AmpersandAmpersandToken);
+                op = padLeft(opPrefix, J.Binary.Type.And);
                 break;
             case BarBarToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.Or);
+                consumeToken(TSCSyntaxKind.BarBarToken);
+                op = padLeft(opPrefix, J.Binary.Type.Or);
                 break;
             case EqualsEqualsToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.Equal);
+                consumeToken(TSCSyntaxKind.EqualsEqualsToken);
+                op = padLeft(opPrefix, J.Binary.Type.Equal);
                 break;
             case ExclamationEqualsToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.NotEqual);
+                consumeToken(TSCSyntaxKind.ExclamationEqualsToken);
+                op = padLeft(opPrefix, J.Binary.Type.NotEqual);
                 break;
             case GreaterThanToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.GreaterThan);
+                consumeToken(TSCSyntaxKind.GreaterThanToken);
+                consumeToken(TSCSyntaxKind.EqualsToken);
+                op = padLeft(opPrefix, J.Binary.Type.GreaterThan);
                 break;
             case GreaterThanEqualsToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.GreaterThanOrEqual);
+                consumeToken(TSCSyntaxKind.GreaterThanToken);
+                consumeToken(TSCSyntaxKind.EqualsToken);
+                op = padLeft(opPrefix, J.Binary.Type.GreaterThanOrEqual);
                 break;
             case GreaterThanGreaterThanGreaterThanToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.UnsignedRightShift);
+                consumeToken(TSCSyntaxKind.GreaterThanToken);
+                consumeToken(TSCSyntaxKind.GreaterThanToken);
+                consumeToken(TSCSyntaxKind.GreaterThanToken);
+                op = padLeft(opPrefix, J.Binary.Type.UnsignedRightShift);
                 break;
             case LessThanToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.LessThan);
+                consumeToken(TSCSyntaxKind.LessThanToken);
+                op = padLeft(opPrefix, J.Binary.Type.LessThan);
                 break;
             case LessThanEqualsToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.LessThanOrEqual);
+                consumeToken(TSCSyntaxKind.LessThanEqualsToken);
+                op = padLeft(opPrefix, J.Binary.Type.LessThanOrEqual);
                 break;
             // Arithmetic ops
             case AsteriskToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.Multiplication);
+                consumeToken(TSCSyntaxKind.AsteriskToken);
+                op = padLeft(opPrefix, J.Binary.Type.Multiplication);
                 break;
             case MinusToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.Subtraction);
+                consumeToken(TSCSyntaxKind.MinusToken);
+                op = padLeft(opPrefix, J.Binary.Type.Subtraction);
                 break;
             case PercentToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.Modulo);
+                consumeToken(TSCSyntaxKind.PercentToken);
+                op = padLeft(opPrefix, J.Binary.Type.Modulo);
                 break;
             case PlusToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.Addition);
+                consumeToken(TSCSyntaxKind.PlusToken);
+                op = padLeft(opPrefix, J.Binary.Type.Addition);
                 break;
             case SlashToken:
-                op = padLeft(sourceBefore(opNode), J.Binary.Type.Division);
+                consumeToken(TSCSyntaxKind.SlashToken);
+                op = padLeft(opPrefix, J.Binary.Type.Division);
                 break;
             default:
                 implementMe(node);
@@ -623,16 +647,6 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private <J2 extends J> J.ControlParentheses<J2> mapControlParentheses(TSCNode node) {
-        //noinspection unchecked
-        return new J.ControlParentheses<>(
-                randomId(),
-                sourceBefore(TSCSyntaxKind.OpenParenToken),
-                Markers.EMPTY,
-                padRight((J2) visitNode(node), sourceBefore(TSCSyntaxKind.CloseParenToken))
-        );
-    }
-
     private J visitDecorator(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.AtToken);
         implementMe(node, "questionDotToken");
@@ -862,7 +876,8 @@ public class TypeScriptParserVisitor {
     }
 
     private J.Identifier visitIdentifier(TSCNode node) {
-        Space prefix = sourceBefore(node.getText());
+        Space prefix = whitespace();
+        this.cursorContext.resetScanner(getCursor() + node.getText().length());
         // TODO: check on escapedText property.
         return new J.Identifier(
                 randomId(),
@@ -870,7 +885,7 @@ public class TypeScriptParserVisitor {
                 Markers.EMPTY,
                 node.getText(),
                 typeMapping.type(node),
-                null // FIXME
+                null
         );
     }
 
@@ -1710,6 +1725,16 @@ public class TypeScriptParserVisitor {
         return j;
     }
 
+    private <J2 extends J> J.ControlParentheses<J2> mapControlParentheses(TSCNode node) {
+        //noinspection unchecked
+        return new J.ControlParentheses<>(
+                randomId(),
+                sourceBefore(TSCSyntaxKind.OpenParenToken),
+                Markers.EMPTY,
+                padRight((J2) visitNode(node), sourceBefore(TSCSyntaxKind.CloseParenToken))
+        );
+    }
+
     /**
      * Returns the current cursor position in the TSC.Context.
      */
@@ -1722,13 +1747,6 @@ public class TypeScriptParserVisitor {
      */
     private void cursor(int cursor) {
         this.cursorContext.resetScanner(cursor);
-    }
-
-    /**
-     * Increment the cursor position past the text.
-     */
-    private void skip(String text) {
-        this.cursorContext.resetScanner(getCursor() + text.length());
     }
 
     private <T> JLeftPadded<T> padLeft(Space left, T tree) {
@@ -1812,21 +1830,9 @@ public class TypeScriptParserVisitor {
         return JContainer.build(containerPrefix, elements, Markers.EMPTY);
     }
 
-    private Space sourceBefore(String text) {
-        Space prefix = whitespace();
-        skip(text);
-        return prefix;
-    }
-
     private Space sourceBefore(TSCSyntaxKind syntaxKind) {
         Space prefix = whitespace();
         consumeToken(syntaxKind);
-        return prefix;
-    }
-
-    private Space sourceBefore(TSCNode node) {
-        Space prefix = whitespace();
-        skip(node.getText());
         return prefix;
     }
 
