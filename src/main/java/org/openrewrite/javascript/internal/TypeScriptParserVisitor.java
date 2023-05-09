@@ -1850,7 +1850,7 @@ public class TypeScriptParserVisitor {
             kind = scan();
             switch (kind) {
                 case WhitespaceTrivia:
-                case NewLineTrivia:
+                case NewLineTrivia: {
                     if (comments.isEmpty()) {
                         initialSpace += lastToken();
                     } else {
@@ -1860,11 +1860,27 @@ public class TypeScriptParserVisitor {
                         );
                     }
                     break;
+                }
                 case SingleLineCommentTrivia:
-                case MultiLineCommentTrivia:
+                case MultiLineCommentTrivia: {
+                    int initialSkipCount = 2; // skip opening `//` or `/*`
+                    int endSkipCount;
+                    boolean isMultiline;
+
+                    if (kind == TSCSyntaxKind.MultiLineCommentTrivia) {
+                        endSkipCount = 2;
+                        isMultiline = true;
+                    } else {
+                        endSkipCount = 0;
+                        isMultiline = false;
+                    }
+
+                    String commentText = lastToken();
+                    commentText = commentText.substring(initialSkipCount, commentText.length() - endSkipCount);
+
                     Comment comment = new TextComment(
-                            kind == TSCSyntaxKind.MultiLineCommentTrivia,
-                            lastToken(),
+                            isMultiline,
+                            commentText,
                             "",
                             Markers.EMPTY
                     );
@@ -1874,6 +1890,7 @@ public class TypeScriptParserVisitor {
                         comments = ListUtils.concat(comments, comment);
                     }
                     break;
+                }
                 default:
                     cursor(cursorContext.scannerTokenStart());
                     done = true;
