@@ -117,13 +117,8 @@ public class TSCType implements TSCV8Backed {
     }
 
     @Override
-    public String debugDescription() {
-        String description = this.programContext.getTypeChecker().invokeMethodNonNull(
-                "typeToString",
-                TSCConversions.STRING,
-                this
-        );
-        return "Type(" + description  + ")";
+    public String toString() {
+        return "Type(" + getTypeChecker().typeToString(this) + ")";
     }
 
     public long getTypeId() {

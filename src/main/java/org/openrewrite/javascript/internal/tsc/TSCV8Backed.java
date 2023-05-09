@@ -53,9 +53,15 @@ public interface TSCV8Backed {
 
     TSCProgramContext getProgramContext();
 
+    default TSCTypeChecker getTypeChecker() {
+        return getProgramContext().getTypeChecker();
+    }
+
     V8ValueObject getBackingV8Object();
 
-    String debugDescription();
+    default String debugDescription() {
+        return this.toString();
+    }
 
     default V8Value getPropertyUnsafe(String name) {
         try {

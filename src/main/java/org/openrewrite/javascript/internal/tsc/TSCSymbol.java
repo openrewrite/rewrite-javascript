@@ -37,8 +37,8 @@ public class TSCSymbol implements TSCV8Backed {
     }
 
     @Override
-    public String debugDescription() {
-        return "Symbol(" + listMatchingSymbolFlags() + ")";
+    public String toString() {
+        return "Symbol(" + getTypeChecker().symbolToString(this) + ")";
     }
 
     public int getSymbolFlags() {

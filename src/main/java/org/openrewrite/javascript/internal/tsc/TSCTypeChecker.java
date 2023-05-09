@@ -217,6 +217,41 @@ public class TSCTypeChecker implements TSCV8Backed {
         );
     }
 
+    public String signatureToString(TSCSignature signature) {
+        // TODO leaves out optional parameters
+        return this.invokeMethodNonNull(
+                "signatureToString",
+                STRING,
+                signature
+        );
+    }
+
+    public String typeToString(TSCType type) {
+        // TODO leaves out optional parameters
+        return this.invokeMethodNonNull(
+                "typeToString",
+                STRING,
+                type
+        );
+    }
+
+    public String symbolToString(TSCSymbol symbol) {
+        // TODO leaves out optional parameters
+        return this.invokeMethodNonNull(
+                "symbolToString",
+                STRING,
+                symbol
+        );
+    }
+
+    public String getFullyQualifiedName(TSCSymbol symbol) {
+        return this.invokeMethodNonNull(
+                "getFullyQualifiedName",
+                STRING,
+                symbol
+        );
+    }
+
     public TSCType getAnyType() {
         return this.invokeMethodNonNull("getAnyType", TYPE);
     }

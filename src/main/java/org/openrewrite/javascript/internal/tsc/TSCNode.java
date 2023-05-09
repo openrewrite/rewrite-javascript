@@ -44,8 +44,14 @@ public class TSCNode implements TSCV8Backed {
     }
 
     @Override
-    public String debugDescription() {
-        return "Node(" + syntaxKind() + ")";
+    public String toString() {
+        return String.format(
+                "Node(%s@[%d,%d); «%s»)",
+                syntaxKind().name(),
+                getStart(),
+                getEnd(),
+                TSCUtils.preview(getText(), 15)
+        );
     }
 
     public int syntaxKindCode() {
