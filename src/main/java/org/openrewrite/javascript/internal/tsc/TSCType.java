@@ -15,7 +15,6 @@
  */
 package org.openrewrite.javascript.internal.tsc;
 
-import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
@@ -26,6 +25,9 @@ import java.util.List;
 
 public class TSCType implements TSCV8Backed {
 
+    /** Indicates that a type or method is marked `@internal` in the TSC source code. */
+    @interface TSCInternal {}
+
     interface AccessorsBase {
         TSCType wrapped();
     }
@@ -33,22 +35,27 @@ public class TSCType implements TSCV8Backed {
     public interface ObjectType extends AccessorsBase {
         // TODO unmapped properties: `members`
 
+        @TSCInternal
         default @Nullable List<TSCSymbol> getProperties() {
             return wrapped().getOptionalSymbolListProperty("properties");
         }
 
+        @TSCInternal
         default @Nullable List<TSCSignature> getCallSignatures() {
             return wrapped().getOptionalSignatureListProperty("callSignatures");
         }
 
+        @TSCInternal
         default @Nullable List<TSCSignature> getConstructSignatures() {
             return wrapped().getOptionalSignatureListProperty("constructSignatures");
         }
 
+        @TSCInternal
         default @Nullable List<TSCIndexInfo> getIndexInfos() {
             return wrapped().getOptionalIndexInfoListProperty("indexInfos");
         }
 
+        @TSCInternal
         default @Nullable ObjectType getObjectTypeWithoutAbstractConstructSignatures() {
             TSCType resultType = wrapped().getOptionalTypeProperty("objectTypeWithoutAbstractConstructSignatures");
             return resultType == null ? null : resultType.asObjectType();
@@ -72,16 +79,26 @@ public class TSCType implements TSCV8Backed {
             return wrapped().getOptionalTypeProperty("thisType");
         }
 
+        @TSCInternal
         default @Nullable TSCType getResolvedBaseConstructorType() {
             return wrapped().getOptionalTypeProperty("resolvedBaseConstructorType");
         }
 
+        @TSCInternal
         default List<TSCType> getResolvedBaseTypes() {
             return wrapped().getTypeListProperty("resolvedBaseTypes");
         }
 
+        @TSCInternal
         default boolean getBaseTypesResolved() {
             return wrapped().getBooleanProperty("baseTypesResolved");
+        }
+    }
+
+    public interface UnionOrIntersectionType extends AccessorsBase {
+        // TODO unmapped properties: all @internal properties
+        default List<TSCType> getTypes() {
+            return wrapped().getTypeListProperty("types");
         }
     }
 
@@ -101,7 +118,12 @@ public class TSCType implements TSCV8Backed {
 
     @Override
     public String debugDescription() {
-        return "Type(" + listMatchingTypeFlags() + ")";
+        String description = this.programContext.getTypeChecker().invokeMethodNonNull(
+                "typeToString",
+                TSCConversions.STRING,
+                this
+        );
+        return "Type(" + description  + ")";
     }
 
     public long getTypeId() {
@@ -124,7 +146,7 @@ public class TSCType implements TSCV8Backed {
      * This is not what you usually want. Type flags are a bit field.
      */
     public TSCTypeFlag getExactTypeFlag() {
-        return TSCTypeFlag.fromCode(this.getTypeFlags());
+        return TSCTypeFlag.fromMaskExact(this.getTypeFlags());
     }
 
     /**
@@ -173,6 +195,13 @@ public class TSCType implements TSCV8Backed {
 
     public @Nullable InterfaceType asInterfaceType() {
         if (hasObjectFlag(TSCObjectFlag.Interface) || hasObjectFlag(TSCObjectFlag.Class)) {
+            return () -> TSCType.this;
+        }
+        return null;
+    }
+
+    public @Nullable UnionOrIntersectionType asUnionOrIntersectionType() {
+        if (hasTypeFlag(TSCTypeFlag.UnionOrIntersection)) {
             return () -> TSCType.this;
         }
         return null;
