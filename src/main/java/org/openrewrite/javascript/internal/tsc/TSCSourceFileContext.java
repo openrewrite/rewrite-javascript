@@ -20,13 +20,16 @@ import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
 import java.io.Closeable;
+import java.nio.file.Path;
 
 public class TSCSourceFileContext implements Closeable {
     private final TSCProgramContext programContext;
     private final V8ValueObject scanner;
+    private final Path relativeSourcePath;
 
-    TSCSourceFileContext(TSCProgramContext programContext, String sourceText) {
+    TSCSourceFileContext(TSCProgramContext programContext, String sourceText, Path relativeSourcePath) {
         this.programContext = programContext;
+        this.relativeSourcePath = relativeSourcePath;
         try {
             this.scanner = programContext.getCreateScannerFunction().call(null);
             this.scanner.invokeVoid("setText", sourceText);
@@ -75,6 +78,10 @@ public class TSCSourceFileContext implements Closeable {
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Path getRelativeSourcePath() {
+        return relativeSourcePath;
     }
 
     @Override
