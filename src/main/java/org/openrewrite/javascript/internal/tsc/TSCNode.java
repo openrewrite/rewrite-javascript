@@ -181,7 +181,6 @@ public class TSCNode implements TSCV8Backed {
         return nodeV8;
     }
 
-
     // FIXME: Remove. Temporary method to view context
     public TSCProgramContext getContext() {
         return this.programContext;

@@ -44,6 +44,7 @@ class ForLoopTest extends ParserTest {
           )
         );
     }
+
     @Test
     void forOfLoop() {
         rewriteRun(

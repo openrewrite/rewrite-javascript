@@ -156,7 +156,7 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
 
         List<TSCNode> elements = node.getNodeListProperty("elements");
-        JContainer<Expression> expression = visitContainer(
+        JContainer<Expression> expression = mapContainer(
                 TSCSyntaxKind.OpenBracketToken,
                 elements,
                 TSCSyntaxKind.CommaToken,
@@ -174,7 +174,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitArrayType(TSCNode node) {
+    private J.ArrayType visitArrayType(TSCNode node) {
         Space prefix = whitespace();
         TypeTree typeTree = visitIdentifier(node.getNodeProperty("elementType"));
 
@@ -394,7 +394,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitBreakStatement(TSCNode node) {
+    private J.Break visitBreakStatement(TSCNode node) {
         return new J.Break(
                 randomId(),
                 sourceBefore(TSCSyntaxKind.BreakKeyword),
@@ -436,7 +436,7 @@ public class TypeScriptParserVisitor {
         }
             JContainer<Expression> arguments = null;
         if (node.hasProperty("arguments")) {
-            arguments = visitContainer(
+            arguments = mapContainer(
                     TSCSyntaxKind.OpenParenToken,
                     node.getNodeListProperty("arguments"),
                     TSCSyntaxKind.CommaToken,
@@ -511,7 +511,13 @@ public class TypeScriptParserVisitor {
             }
         }
 
-        JContainer<J.TypeParameter> typeParams = null;
+        JContainer<J.TypeParameter> typeParams = !node.hasProperty("typeParameters") ? null : mapContainer(
+                TSCSyntaxKind.LessThanToken,
+                node.getNodeListProperty("typeParameters"),
+                TSCSyntaxKind.CommaToken,
+                TSCSyntaxKind.GreaterThanToken,
+                t -> (J.TypeParameter) visitNode(t)
+        );
 
         J.Block body;
         List<JRightPadded<Statement>> members;
@@ -585,7 +591,7 @@ public class TypeScriptParserVisitor {
                 (JavaType.FullyQualified) typeMapping.type(node));
     }
 
-    private J visitConditionalExpression(TSCNode node) {
+    private J.Ternary visitConditionalExpression(TSCNode node) {
         return new J.Ternary(
                 randomId(),
                 whitespace(),
@@ -619,7 +625,7 @@ public class TypeScriptParserVisitor {
                 null
         );
 
-        JContainer<Statement> params = visitContainer(
+        JContainer<Statement> params = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
                 node.getNodeListProperty("parameters"),
                 null,
@@ -647,13 +653,13 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitDecorator(TSCNode node) {
+    private J.Annotation visitDecorator(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.AtToken);
         implementMe(node, "questionDotToken");
         implementMe(node, "typeArguments");
         TSCNode callExpression = node.getNodeProperty("expression");
         NameTree name = (NameTree) visitNameExpression(callExpression.getNodeProperty("expression"));
-        JContainer<Expression> arguments = callExpression.hasProperty("arguments") ? visitContainer(
+        JContainer<Expression> arguments = callExpression.hasProperty("arguments") ? mapContainer(
                 TSCSyntaxKind.OpenParenToken,
                 callExpression.getNodeListProperty("arguments"),
                 TSCSyntaxKind.CommaToken,
@@ -669,7 +675,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitDoStatement(TSCNode node) {
+    private J.DoWhileLoop visitDoStatement(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.DoKeyword);
         JRightPadded<Statement> body = maybeSemicolon((Statement) visitNode(node.getNodeProperty("statement")));
 
@@ -798,7 +804,7 @@ public class TypeScriptParserVisitor {
             name = new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "", null, null);
         }
 
-        JContainer<Statement> parameters = visitContainer(
+        JContainer<Statement> parameters = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
                 node.getNodeListProperty("parameters"),
                 TSCSyntaxKind.CommaToken,
@@ -889,7 +895,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitIfStatement(TSCNode node) {
+    private J.If visitIfStatement(TSCNode node) {
         Space prefix = whitespace();
 
         consumeToken(TSCSyntaxKind.IfKeyword);
@@ -918,7 +924,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitJsBinary(TSCNode node) {
+    private JS.JsBinary visitJsBinary(TSCNode node) {
         Space prefix = whitespace();
         Expression left = (Expression) visitNode(node.getNodeProperty("left"));
 
@@ -970,7 +976,7 @@ public class TypeScriptParserVisitor {
 
         J.Identifier name = visitIdentifier(node.getNodeProperty("name"));
 
-        JContainer<Statement> parameters = visitContainer(
+        JContainer<Statement> parameters = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
                 node.getNodeListProperty("parameters"),
                 TSCSyntaxKind.CommaToken,
@@ -1066,7 +1072,7 @@ public class TypeScriptParserVisitor {
             typeTree = (TypeTree) visitNameExpression(node.getNodeProperty("expression"));
         }
         implementMe(node, "typeArguments");
-        JContainer<Expression> arguments = visitContainer(
+        JContainer<Expression> arguments = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
                 node.getNodeListProperty("arguments"),
                 TSCSyntaxKind.CommaToken,
@@ -1086,7 +1092,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitNumericLiteral(TSCNode node) {
+    private J.Literal visitNumericLiteral(TSCNode node) {
         return new J.Literal(
                 randomId(),
                 sourceBefore(TSCSyntaxKind.NumericLiteral),
@@ -1108,16 +1114,17 @@ public class TypeScriptParserVisitor {
         return null;
     }
 
-    private J visitParenthesizedExpression(TSCNode node) {
+    private <J2 extends J> J.Parentheses<J2> visitParenthesizedExpression(TSCNode node) {
+        //noinspection unchecked
         return new J.Parentheses<>(
                 randomId(),
                 sourceBefore(TSCSyntaxKind.OpenParenToken),
                 Markers.EMPTY,
-                padRight(visitNode(node.getNodeProperty("expression")), sourceBefore(TSCSyntaxKind.CloseParenToken))
+                padRight((J2) visitNode(node.getNodeProperty("expression")), sourceBefore(TSCSyntaxKind.CloseParenToken))
         );
     }
 
-    private J visitPropertyAccessExpression(TSCNode node) {
+    private J.FieldAccess visitPropertyAccessExpression(TSCNode node) {
         Space prefix = whitespace();
         implementMe(node, "questionDotToken");
 
@@ -1132,7 +1139,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitPropertyDeclaration(TSCNode node) {
+    private J.VariableDeclarations visitPropertyDeclaration(TSCNode node) {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
@@ -1233,7 +1240,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitThrowStatement(TSCNode node) {
+    private J.Throw visitThrowStatement(TSCNode node) {
         return new J.Throw(
                 randomId(),
                 sourceBefore(TSCSyntaxKind.ThrowKeyword),
@@ -1242,7 +1249,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitTryStatement(TSCNode node) {
+    private J.Try visitTryStatement(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.TryKeyword);
         J.Block tryBlock = (J.Block) visitNode(node.getNodeProperty("tryBlock"));
 
@@ -1271,14 +1278,14 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitTypeReference(TSCNode node) {
+    private J.ParameterizedType visitTypeReference(TSCNode node) {
         return new J.ParameterizedType(
                 randomId(),
                 whitespace(),
                 Markers.EMPTY,
                 (NameTree) visitNode(node.getNodeProperty("typeName")),
                 !node.hasProperty("typeArguments") ? null :
-                        visitContainer(
+                        mapContainer(
                                 TSCSyntaxKind.LessThanToken,
                                 node.getNodeListProperty("typeArguments"),
                                 TSCSyntaxKind.CommaToken,
@@ -1289,7 +1296,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitUnaryExpression(TSCNode node) {
+    private J.Unary visitUnaryExpression(TSCNode node) {
         Space prefix = whitespace();
 
         JLeftPadded<J.Unary.Type> op = null;
@@ -1327,7 +1334,24 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitWhileStatement(TSCNode node) {
+    private J.TypeParameter visitTypeParameter(TSCNode node) {
+        Space prefix = whitespace();
+        implementMe(node, "modifiers");
+        implementMe(node, "expression");
+        implementMe(node, "default");
+        implementMe(node, "constraint");
+        JContainer<TypeTree> bounds = null;
+        return new J.TypeParameter(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                emptyList(), // FIXME
+                (Expression) visitNode(node.getNodeProperty("name")),
+                bounds
+        );
+    }
+
+    private J.WhileLoop visitWhileStatement(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.WhileKeyword);
         J.ControlParentheses<Expression> control = mapControlParentheses(node.getNodeProperty("expression"));
         return new J.WhileLoop(
@@ -1339,7 +1363,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitVariableDeclaration(TSCNode node) {
+    private J.VariableDeclarations visitVariableDeclaration(TSCNode node) {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
@@ -1705,6 +1729,9 @@ public class TypeScriptParserVisitor {
             case TypeReference:
                 j = visitTypeReference(node);
                 break;
+            case TypeParameter:
+                j = visitTypeParameter(node);
+                break;
             case WhileStatement:
                 j = visitWhileStatement(node);
                 break;
@@ -1796,7 +1823,7 @@ public class TypeScriptParserVisitor {
         return String.format("[start=%d, end=%d, text=`%s`]", this.cursorContext.scannerTokenStart(), this.cursorContext.scannerTokenEnd(), this.cursorContext.scannerTokenText().replace("\n", "⏎"));
     }
 
-    private <T extends J> JContainer<T> visitContainer(TSCSyntaxKind open, List<TSCNode> nodes, @Nullable TSCSyntaxKind delimiter, TSCSyntaxKind close, Function<TSCNode, T> visitFn) {
+    private <T extends J> JContainer<T> mapContainer(TSCSyntaxKind open, List<TSCNode> nodes, @Nullable TSCSyntaxKind delimiter, TSCSyntaxKind close, Function<TSCNode, T> visitFn) {
         Space containerPrefix = sourceBefore(open);
         List<JRightPadded<T>> elements;
         if (nodes.isEmpty()) {
