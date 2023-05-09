@@ -146,4 +146,19 @@ public class V8InteropTests {
         }
     }
 
+    @Test
+    public void nodeReturnsSourceFile() {
+        try (TSCRuntime runtime = TSCRuntime.init()) {
+            AtomicBoolean ran = new AtomicBoolean();
+            runtime.parseSingleSource("const x = 3;", "file.js", (root, ctx) -> {
+                ran.set(true);
+                TSCNode ident = Objects.requireNonNull(root.findFirstNodeWithText("x"));
+                TSCNode.SourceFile sourceFile = ident.getSourceFile();
+                assertEquals(sourceFile.getFileName(), "file.js");
+                assertEquals(sourceFile.getPath(), "/file.js");
+            });
+            assertTrue(ran.get());
+        }
+    }
+
 }

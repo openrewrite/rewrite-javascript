@@ -125,6 +125,10 @@ public class TSCType implements TSCV8Backed {
         return getLongProperty("id");
     }
 
+    public TSCSymbol getSymbolForType() {
+        return getSymbolProperty("symbol");
+    }
+
     public int getTypeFlags() {
         return getIntProperty("flags");
     }

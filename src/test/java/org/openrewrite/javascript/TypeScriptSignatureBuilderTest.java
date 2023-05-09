@@ -24,6 +24,7 @@ import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
+import java.nio.file.Paths;
 import java.util.Collections;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -46,7 +47,7 @@ public class TypeScriptSignatureBuilderTest {
     @Test
     void test() {
         runtime.parseSourceTexts(
-                Collections.singletonMap("goat.ts", goat),
+                Collections.singletonMap(Paths.get("goat.ts"), goat),
                 (node, context) -> assertThat(firstMethodParameterSignature(node, "clazz")).isEqualTo("")
         );
     }

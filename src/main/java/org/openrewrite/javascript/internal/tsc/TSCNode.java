@@ -26,10 +26,36 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.Objects;
 
 public class TSCNode implements TSCV8Backed {
+
+    interface AccessorsBase {
+        TSCNode wrapped();
+    }
+
+    public interface SourceFile extends AccessorsBase {
+        default String getFileName() {
+            return wrapped().getStringProperty("fileName");
+        }
+
+        default String getPath() {
+            return wrapped().getStringProperty("path");
+        }
+
+        default String getResolvedPath() {
+            return wrapped().getStringProperty("resolvedPath");
+        }
+
+        default String getOriginalFileName() {
+            return wrapped().getStringProperty("originalFileName");
+        }
+
+        default String getModuleName() {
+            return wrapped().getStringProperty("moduleName");
+        }
+    }
+
     private final TSCProgramContext programContext;
     public final V8ValueObject nodeV8;
 
@@ -146,6 +172,17 @@ public class TSCNode implements TSCV8Backed {
     @Deprecated
     public List<TSCNode> getChildNodes(String name) {
         return getNodeListProperty(name);
+    }
+
+    public SourceFile getSourceFile() {
+        return Objects.requireNonNull(this.getNodeProperty("getSourceFile()").asSourceFile());
+    }
+
+    public @Nullable TSCNode.SourceFile asSourceFile() {
+        if (syntaxKind() == TSCSyntaxKind.SourceFile) {
+            return () -> TSCNode.this;
+        }
+        return null;
     }
 
     public String getText() {

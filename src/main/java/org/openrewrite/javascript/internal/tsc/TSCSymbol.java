@@ -19,6 +19,7 @@ import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSymbolFlag;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +40,14 @@ public class TSCSymbol implements TSCV8Backed {
     @Override
     public String toString() {
         return "Symbol(" + getTypeChecker().symbolToString(this) + ")";
+    }
+
+    public @Nullable TSCNode getValueDeclaration() {
+        return getOptionalNodeProperty("valueDeclaration");
+    }
+
+    public @Nullable List<TSCNode> getDeclarations() {
+        return getOptionalNodeListProperty("declarations");
     }
 
     public int getSymbolFlags() {
