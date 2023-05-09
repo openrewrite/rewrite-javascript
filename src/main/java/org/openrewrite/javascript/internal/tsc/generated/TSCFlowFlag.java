@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.openrewrite.javascript.internal.tsc.generated;
 
 //
@@ -44,7 +45,7 @@ public enum TSCFlowFlag {
         this.code = code;
     }
 
-    public static TSCFlowFlag fromCode(int code) {
+    public static TSCFlowFlag fromMaskExact(int code) {
         switch (code) {
             case 1:
                 return TSCFlowFlag.Unreachable;
@@ -80,7 +81,16 @@ public enum TSCFlowFlag {
                 throw new IllegalArgumentException("unknown TSCFlowFlag code: " + code);
         }
     }
+
     public boolean matches(int bitfield) {
         return (bitfield & this.code) != 0;
+    }
+
+    public static int union(TSCFlowFlag... args) {
+        int result = 0;
+        for (TSCFlowFlag arg : args) {
+            result = result | arg.code;
+        }
+        return result;
     }
 }

@@ -21,68 +21,27 @@ import com.caoccao.javet.utils.JavetResourceUtils;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
 
+import javax.annotation.Nullable;
 import java.io.Closeable;
 
 public class TSCProgramContext implements Closeable {
     private final V8Runtime runtime;
     private final V8ValueObject program;
-    private final V8ValueObject typeChecker;
+    private final V8ValueObject typeCheckerV8;
     private final V8ValueFunction createScanner;
     private final V8ValueFunction getOpenRewriteId;
 
-    private final TSCObjectCache<Long, TSCNode> nodeCache = new TSCObjectCache<Long, TSCNode>() {
-        @Override
-        protected Long getKey(V8ValueObject objectV8) throws JavetException {
-            return getOpenRewriteId.callLong(null, objectV8);
-        }
+    private @Nullable TSCTypeChecker typeChecker;
 
-        @Override
-        protected TSCNode makeInstance(TSCProgramContext programContext, V8ValueObject objectV8) {
-            return new TSCNode(programContext, objectV8);
-        }
-    };
-
-    private final TSCObjectCache<Long, TSCType> typeCache = new TSCObjectCache<Long, TSCType>() {
-        @Override
-        protected Long getKey(V8ValueObject objectV8) throws JavetException {
-            Number tmp = objectV8.getPrimitive("id");
-            return tmp.longValue();
-        }
-
-        @Override
-        protected TSCType makeInstance(TSCProgramContext programContext, V8ValueObject objectV8) {
-            return new TSCType(programContext, objectV8);
-        }
-    };
-
-    private final TSCObjectCache<Long, TSCSymbol> symbolCache = new TSCObjectCache<Long, TSCSymbol>() {
-        @Override
-        protected Long getKey(V8ValueObject objectV8) throws JavetException {
-            return getOpenRewriteId.callLong(null, objectV8);
-        }
-
-        @Override
-        protected TSCSymbol makeInstance(TSCProgramContext programContext, V8ValueObject objectV8) {
-            return new TSCSymbol(programContext, objectV8);
-        }
-    };
-
-    private final TSCObjectCache<Long, TSCSignature> signatureCache = new TSCObjectCache<Long, TSCSignature>() {
-        @Override
-        protected Long getKey(V8ValueObject objectV8) throws JavetException {
-            return getOpenRewriteId.callLong(null, objectV8);
-        }
-
-        @Override
-        protected TSCSignature makeInstance(TSCProgramContext programContext, V8ValueObject objectV8) {
-            return new TSCSignature(programContext, objectV8);
-        }
-    };
+    final TSCObjectCache<TSCNode> nodeCache = TSCObjectCache.usingInternalKey(TSCNode::new);
+    final TSCObjectCache<TSCType> typeCache = TSCObjectCache.usingPropertyAsKey("id", TSCType::new);
+    final TSCObjectCache<TSCSymbol> symbolCache = TSCObjectCache.usingInternalKey(TSCSymbol::new);
+    final TSCObjectCache<TSCSignature> signatureCache = TSCObjectCache.usingInternalKey(TSCSignature::new);
 
     public TSCProgramContext(V8Runtime runtime, V8ValueObject program, V8ValueObject typeChecker, V8ValueFunction createScanner, V8ValueFunction getOpenRewriteId) {
         this.runtime = runtime;
         this.program = program;
-        this.typeChecker = typeChecker;
+        this.typeCheckerV8 = typeChecker;
         this.createScanner = createScanner;
         this.getOpenRewriteId = getOpenRewriteId;
     }
@@ -106,7 +65,19 @@ public class TSCProgramContext implements Closeable {
         }
     }
 
-    public V8ValueObject getTypeChecker() {
+    public long getInternalObjectId(V8ValueObject objectV8) {
+        try {
+            return getOpenRewriteId.callLong(null, objectV8);
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public TSCTypeChecker getTypeChecker() {
+        if (this.typeChecker == null) {
+            this.typeChecker = TSCTypeChecker.wrap(this, this.typeCheckerV8);
+        }
         return this.typeChecker;
     }
 
@@ -132,10 +103,11 @@ public class TSCProgramContext implements Closeable {
 
     @Override
     public void close() {
-        JavetResourceUtils.safeClose(program, typeChecker, createScanner, getOpenRewriteId);
+        JavetResourceUtils.safeClose(program, typeCheckerV8, createScanner, getOpenRewriteId);
         this.nodeCache.close();
         this.typeCache.close();
         this.symbolCache.close();
         this.signatureCache.close();
+        this.typeChecker = null;
     }
 }

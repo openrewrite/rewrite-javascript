@@ -17,7 +17,6 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.V8Value;
-import com.caoccao.javet.values.primitive.*;
 import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
@@ -25,6 +24,8 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.openrewrite.javascript.internal.tsc.TSCConversions.*;
 
 public interface TSCV8Backed {
 
@@ -68,173 +69,93 @@ public interface TSCV8Backed {
         }
     }
 
+    default V8Value invokeMethodUnsafe(String name, Object... args) {
+        Object[] converted = null;
+        for (int i = 0; i < args.length; i++) {
+            if (args[i] instanceof TSCV8Backed) {
+                if (converted == null) {
+                    converted = args.clone();
+                }
+                converted[i] = ((TSCV8Backed) args[i]).getBackingV8Object();
+            }
+        }
+        if (converted == null) {
+            converted = args;
+        }
+        try {
+            return this.getBackingV8Object().invoke(name, converted);
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default <T> @Nullable T invokeMethodNullable(String name, TSCConversion<T> conversion, Object... args) {
+        try (V8Value valueV8 = invokeMethodUnsafe(name, args)) {
+            return conversion.convertNullable(getProgramContext(), valueV8);
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default <T> T invokeMethodNonNull(String name, TSCConversion<T> conversion, Object... args) {
+        try (V8Value valueV8 = invokeMethodUnsafe(name, args)) {
+            return conversion.convertNonNull(getProgramContext(), valueV8);
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default <T> T getPropertyNullable(String name, TSCConversion<T> conversion) {
+        try (V8Value value = getPropertyUnsafe(name)) {
+            return conversion.convertNullable(getProgramContext(), value);
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default <T> T getPropertyNonNull(String name, TSCConversion<T> conversion) {
+        try (V8Value value = getPropertyUnsafe(name)) {
+            return conversion.convertNonNull(getProgramContext(), value);
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     //
     //  primitive properties
     //
 
     default boolean getBooleanProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value instanceof V8ValueBoolean) {
-                return ((V8ValueBoolean) v8Value).getValue();
-            } else {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "%s does not have a boolean property called '%s'; found: %s",
-                                debugDescription(),
-                                name,
-                                v8Value.getClass().getSimpleName()
-                        )
-                );
-            }
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, BOOLEAN);
     }
 
     default Boolean getOptionalBooleanProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            } else if (v8Value instanceof V8ValueBoolean) {
-                return ((V8ValueBoolean) v8Value).getValue();
-            } else {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "%s does not have a boolean property called '%s'; found: %s",
-                                debugDescription(),
-                                name,
-                                v8Value.getClass().getSimpleName()
-                        )
-                );
-            }
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, BOOLEAN);
     }
 
     default int getIntProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value instanceof V8ValueInteger) {
-                return ((V8ValueInteger) v8Value).getValue();
-            } else {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "%s does not have a int property called '%s'; found: %s",
-                                debugDescription(),
-                                name,
-                                v8Value.getClass().getSimpleName()
-                        )
-                );
-            }
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, INTEGER);
     }
 
     default @Nullable Integer getOptionalIntProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            } else if (v8Value instanceof V8ValueInteger) {
-                return ((V8ValueInteger) v8Value).getValue();
-            } else {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "%s does not have a int property called '%s'; found: %s",
-                                debugDescription(),
-                                name,
-                                v8Value.getClass().getSimpleName()
-                        )
-                );
-            }
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, INTEGER);
     }
 
     default long getLongProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value instanceof V8ValueInteger) {
-                return ((V8ValueInteger) v8Value).getValue();
-            } else if (v8Value instanceof V8ValueLong) {
-                return ((V8ValueLong) v8Value).getValue();
-            } else {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "%s does not have a long property called '%s'; found: %s",
-                                debugDescription(),
-                                name,
-                                v8Value.getClass().getSimpleName()
-                        )
-                );
-            }
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, LONG);
     }
 
     default @Nullable Long getOptionalLongProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            } else if (v8Value instanceof V8ValueInteger) {
-                return ((V8ValueInteger) v8Value).getValue().longValue();
-            } else if (v8Value instanceof V8ValueLong) {
-                return ((V8ValueLong) v8Value).getValue();
-            } else {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "%s does not have a long property called '%s'; found: %s",
-                                debugDescription(),
-                                name,
-                                v8Value.getClass().getSimpleName()
-                        )
-                );
-            }
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, LONG);
     }
 
 
     default String getStringProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value instanceof V8ValueString) {
-                return ((V8ValueString) v8Value).getValue();
-            } else {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "%s does not have a string property called '%s'; found: %s",
-                                debugDescription(),
-                                name,
-                                v8Value.getClass().getSimpleName()
-                        )
-                );
-            }
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, STRING);
     }
 
     default @Nullable String getOptionalStringProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            } else if (v8Value instanceof V8ValueString) {
-                return ((V8ValueString) v8Value).getValue();
-            } else {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "%s does not have a string property called '%s'; found: %s",
-                                debugDescription(),
-                                name,
-                                v8Value.getClass().getSimpleName()
-                        )
-                );
-            }
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, STRING);
     }
 
     //
@@ -242,16 +163,11 @@ public interface TSCV8Backed {
     //
 
     default TSCSyntaxKind getSyntaxKindProperty(String name) {
-        final int code = getIntProperty(name);
-        return TSCSyntaxKind.fromCode(code);
+        return getPropertyNonNull(name, SYNTAX_KIND);
     }
 
     default @Nullable TSCSyntaxKind getOptionalSyntaxKindProperty(String name) {
-        final Integer code = getOptionalIntProperty(name);
-        if (code == null) {
-            return null;
-        }
-        return TSCSyntaxKind.fromCode(code);
+        return getPropertyNullable(name, SYNTAX_KIND);
     }
 
     //
@@ -259,51 +175,19 @@ public interface TSCV8Backed {
     //
 
     default TSCNode getNodeProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            return getProgramContext().tscNode((V8ValueObject) v8Value);
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, NODE);
     }
 
     default @Nullable TSCNode getOptionalNodeProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            }
-            return getProgramContext().tscNode((V8ValueObject) v8Value);
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, NODE);
     }
 
     default List<TSCNode> getNodeListProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            V8ValueArray v8Array = (V8ValueArray) v8Value;
-            List<TSCNode> result = new ArrayList<>(v8Array.getLength());
-            ((V8ValueArray) v8Value).forEach(childV8Value -> {
-                result.add(getProgramContext().tscNode((V8ValueObject) childV8Value));
-            });
-            return result;
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, NODE_LIST);
     }
 
     default @Nullable List<TSCNode> getOptionalNodeListProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            }
-            V8ValueArray v8Array = (V8ValueArray) v8Value;
-            List<TSCNode> result = new ArrayList<>(v8Array.getLength());
-            ((V8ValueArray) v8Value).forEach(childV8Value -> {
-                result.add(getProgramContext().tscNode((V8ValueObject) childV8Value));
-            });
-            return result;
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, NODE_LIST);
     }
 
     //
@@ -311,51 +195,19 @@ public interface TSCV8Backed {
     //
 
     default TSCType getTypeProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            return getProgramContext().tscType((V8ValueObject) v8Value);
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, TYPE);
     }
 
     default @Nullable TSCType getOptionalTypeProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            }
-            return getProgramContext().tscType((V8ValueObject) v8Value);
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, TYPE);
     }
 
     default List<TSCType> getTypeListProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            V8ValueArray v8Array = (V8ValueArray) v8Value;
-            List<TSCType> result = new ArrayList<>(v8Array.getLength());
-            ((V8ValueArray) v8Value).forEach(childV8Value -> {
-                result.add(getProgramContext().tscType((V8ValueObject) childV8Value));
-            });
-            return result;
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, TYPE_LIST);
     }
 
     default @Nullable List<TSCType> getOptionalTypeListProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            }
-            V8ValueArray v8Array = (V8ValueArray) v8Value;
-            List<TSCType> result = new ArrayList<>(v8Array.getLength());
-            ((V8ValueArray) v8Value).forEach(childV8Value -> {
-                result.add(getProgramContext().tscType((V8ValueObject) childV8Value));
-            });
-            return result;
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, TYPE_LIST);
     }
 
     //
@@ -363,51 +215,19 @@ public interface TSCV8Backed {
     //
 
     default TSCSymbol getSymbolProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            return getProgramContext().tscSymbol((V8ValueObject) v8Value);
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, SYMBOL);
     }
 
     default @Nullable TSCSymbol getOptionalSymbolProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            }
-            return getProgramContext().tscSymbol((V8ValueObject) v8Value);
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, SYMBOL);
     }
 
     default List<TSCSymbol> getSymbolListProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            V8ValueArray v8Array = (V8ValueArray) v8Value;
-            List<TSCSymbol> result = new ArrayList<>(v8Array.getLength());
-            ((V8ValueArray) v8Value).forEach(childV8Value -> {
-                result.add(getProgramContext().tscSymbol((V8ValueObject) childV8Value));
-            });
-            return result;
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, SYMBOL_LIST);
     }
 
     default @Nullable List<TSCSymbol> getOptionalSymbolListProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            }
-            V8ValueArray v8Array = (V8ValueArray) v8Value;
-            List<TSCSymbol> result = new ArrayList<>(v8Array.getLength());
-            ((V8ValueArray) v8Value).forEach(childV8Value -> {
-                result.add(getProgramContext().tscSymbol((V8ValueObject) childV8Value));
-            });
-            return result;
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, SYMBOL_LIST);
     }
 
     //
@@ -415,52 +235,20 @@ public interface TSCV8Backed {
     //
 
     default TSCSignature getSignatureProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            return getProgramContext().tscSignature((V8ValueObject) v8Value);
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, SIGNATURE);
     }
 
     default @Nullable TSCSignature getOptionalSignatureProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            }
-            return getProgramContext().tscSignature((V8ValueObject) v8Value);
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, SIGNATURE);
     }
 
 
     default List<TSCSignature> getSignatureListProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            V8ValueArray v8Array = (V8ValueArray) v8Value;
-            List<TSCSignature> result = new ArrayList<>(v8Array.getLength());
-            ((V8ValueArray) v8Value).forEach(childV8Value -> {
-                result.add(getProgramContext().tscSignature((V8ValueObject) childV8Value));
-            });
-            return result;
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNonNull(name, SIGNATURE_LIST);
     }
 
     default @Nullable List<TSCSignature> getOptionalSignatureListProperty(String name) {
-        try (V8Value v8Value = getPropertyUnsafe(name)) {
-            if (v8Value.isNullOrUndefined()) {
-                return null;
-            }
-            V8ValueArray v8Array = (V8ValueArray) v8Value;
-            List<TSCSignature> result = new ArrayList<>(v8Array.getLength());
-            ((V8ValueArray) v8Value).forEach(childV8Value -> {
-                result.add(getProgramContext().tscSignature((V8ValueObject) childV8Value));
-            });
-            return result;
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return getPropertyNullable(name, SIGNATURE_LIST);
     }
 
     //
@@ -521,7 +309,7 @@ public interface TSCV8Backed {
     //
 
     default boolean hasProperty(String propertyName) {
-        try(V8Value value = getPropertyUnsafe(propertyName)) {
+        try (V8Value value = getPropertyUnsafe(propertyName)) {
             return !value.isUndefined();
         } catch (JavetException ignored) {
             return false;

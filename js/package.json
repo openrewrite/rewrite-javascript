@@ -1,6 +1,6 @@
 {
   "name": "rewrite-javascript-bootstrap",
-  "source": "src/index.ts",
+  "source": "src/runtime/index.ts",
   "main": "dist/index.js",
   "targets": {
     "main": {
@@ -13,12 +13,15 @@
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
-    "build": "parcel build",
-    "generate": "ts-node src/exportEnums.ts"
+    "buildRuntime": "parcel build && cat src/codegen/generatedLicenseHeader.txt dist/index.js > ../src/main/resources/index.js",
+    "generate": "ts-node src/codegen/exportEnums.ts",
+    "update": "yarn generate && yarn buildRuntime",
+    "format": "prettier --write ./src"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
     "parcel": "^2.8.3",
+    "prettier": "^2.8.8",
     "process": "^0.11.10",
     "ts-node": "^10.9.1"
   },

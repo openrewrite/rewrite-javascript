@@ -58,15 +58,7 @@ public class TSCNode implements TSCV8Backed {
 
     @Nullable
     public TSCType getTypeForNode() {
-        try(V8Value type = this.programContext.getTypeChecker().invoke("getTypeAtLocation", this.nodeV8)) {
-            if (type.isNullOrUndefined()) {
-                return null;
-            } else {
-                return this.programContext.tscType((V8ValueObject) type);
-            }
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return this.programContext.getTypeChecker().getTypeAtLocation(this);
     }
 
     /**
@@ -115,15 +107,7 @@ public class TSCNode implements TSCV8Backed {
 
     @Nullable
     public TSCSymbol getSymbolForNode() {
-        try(V8Value type = this.programContext.getTypeChecker().invoke("getSymbolAtLocation", this.nodeV8)) {
-            if (type.isNullOrUndefined()) {
-                return null;
-            } else {
-                return this.programContext.tscSymbol((V8ValueObject) type);
-            }
-        } catch (JavetException e) {
-            throw new RuntimeException(e);
-        }
+        return this.programContext.getTypeChecker().getSymbolAtLocation(this);
     }
 
     public int getStartWithLeadingSpace() {
