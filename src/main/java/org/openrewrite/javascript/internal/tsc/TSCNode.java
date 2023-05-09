@@ -158,6 +158,10 @@ public class TSCNode implements TSCV8Backed {
         return getIntProperty("getChildCount");
     }
 
+    public @Nullable TSCNode getParent() {
+        return getOptionalNodeProperty("parent");
+    }
+
     @Deprecated
     @Nullable
     public TSCNode getChildNode(String name) {

@@ -161,4 +161,18 @@ public class V8InteropTests {
         }
     }
 
+    @Test
+    public void nodeHasParent() {
+        try (TSCRuntime runtime = TSCRuntime.init()) {
+            AtomicBoolean ran = new AtomicBoolean();
+            runtime.parseSingleSource("const x = 3;", "file.js", (root, ctx) -> {
+                ran.set(true);
+                TSCNode ident = Objects.requireNonNull(root.findFirstNodeWithText("x"));
+                TSCNode parent = ident.getParent().getParent().getParent().getParent();
+                assertSame(parent, root);
+            });
+            assertTrue(ran.get());
+        }
+    }
+
 }
