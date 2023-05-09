@@ -33,7 +33,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -92,19 +94,23 @@ public class TSCRuntime implements Closeable {
         }
     }
 
-    /** Only intended for testing and debugging. */
+    /**
+     * Only intended for testing and debugging.
+     */
     public void parseSingleSource(@Language("typescript") String sourceText, BiConsumer<TSCNode, TSCSourceFileContext> callback) {
-        Map<String, String> sources = new HashMap<>();
-        sources.put("example.ts", sourceText);
-        parseSourceTexts(sources, callback);
+        parseSingleSource(sourceText, "file.ts", callback);
     }
 
-    public void parseSourceTexts(Map<String, String> sourceTexts, BiConsumer<TSCNode, TSCSourceFileContext> callback) {
+    public void parseSingleSource(@Language("typescript") String sourceText, String filename, BiConsumer<TSCNode, TSCSourceFileContext> callback) {
+        parseSourceTexts(Collections.singletonMap(Paths.get(filename), sourceText), callback);
+    }
+
+    public void parseSourceTexts(Map<Path, String> sourceTexts, BiConsumer<TSCNode, TSCSourceFileContext> callback) {
         importTS();
         assert tsParse != null;
         try (V8ValueMap sourceTextsV8 = v8Runtime.createV8ValueMap()) {
-            for (Map.Entry<String, String> entry : sourceTexts.entrySet()) {
-                sourceTextsV8.set(entry.getKey(), entry.getValue());
+            for (Map.Entry<Path, String> entry : sourceTexts.entrySet()) {
+                sourceTextsV8.set(entry.getKey().toString(), entry.getValue());
             }
             try (
                     V8ValueObject parseResultV8 = tsParse.call(null, sourceTextsV8);
@@ -113,7 +119,11 @@ public class TSCRuntime implements Closeable {
             ) {
                 sourceFilesV8.forEach((sourceFileV8) -> {
                     String sourceText = ((V8ValueObject) sourceFileV8).invokeString("getText");
-                    try (TSCSourceFileContext sourceFileContext = new TSCSourceFileContext(programContext, sourceText)) {
+                    Path relativeSourcePath = Paths.get(((V8ValueObject) sourceFileV8).getString("path"));
+                    if (relativeSourcePath.isAbsolute()) {
+                        relativeSourcePath = Paths.get("/").relativize(relativeSourcePath);
+                    }
+                    try (TSCSourceFileContext sourceFileContext = new TSCSourceFileContext(programContext, sourceText, relativeSourcePath)) {
                         TSCNode node = programContext.tscNode((V8ValueObject) sourceFileV8);
                         callback.accept(node, sourceFileContext);
                     }

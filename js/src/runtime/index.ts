@@ -23,14 +23,22 @@ const OPEN_REWRITE_ID = Symbol("OpenRewriteId");
 // noinspection JSUnusedGlobalSymbols
 export default function parse(inputs: Map<string, string>) {
     try {
+        const compilerOptions: ts.CompilerOptions = {
+            allowJs: true,
+            checkJs: true,
+            noLib: true,
+            noEmit: true,
+        };
+        const createProgramOptions: Omit<ts.CreateProgramOptions, "host"> = {
+            options: compilerOptions,
+            rootNames: [...inputs.keys()],
+        };
+
         const system = tsvfs.createSystem(inputs);
-        const host = tsvfs.createVirtualCompilerHost(system, {}, ts).compilerHost;
+        const host = tsvfs.createVirtualCompilerHost(system, compilerOptions, ts).compilerHost;
         const program = ts.createProgram({
             host,
-            options: {
-                noLib: true,
-            },
-            rootNames: [...inputs.keys()],
+            ...createProgramOptions,
         });
 
         let nextNodeId = BigInt(1);

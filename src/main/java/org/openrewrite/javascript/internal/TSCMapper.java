@@ -15,6 +15,7 @@
  */
 package org.openrewrite.javascript.internal;
 
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.internal.EncodingDetectingInputStream;
@@ -23,45 +24,79 @@ import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.tree.JS;
 
-import java.io.Closeable;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public abstract class TSCMapper implements Closeable {
+public abstract class TSCMapper implements AutoCloseable {
+
+    @Value
+    private static class SourceWrapper {
+        Path path;
+        Path relativePath;
+        Charset charset;
+        boolean isCharsetBomMarked;
+        String sourceText;
+    }
+
     private final TSCRuntime runtime;
 
     @Nullable
     private final Path relativeTo;
 
-    private final List<JS.CompilationUnit> compilationUnits = new ArrayList<>();
+    private final Map<Path, SourceWrapper> sourcesByRelativePath = new HashMap<>();
 
     public TSCMapper(@Nullable Path relativeTo) {
         this.runtime = TSCRuntime.init();
         this.relativeTo = relativeTo;
     }
 
-    // TODO: add method that parses all inputs.
-
-    // Temporary method to parse files.
     public void add(Parser.Input input, ExecutionContext ctx) {
-        EncodingDetectingInputStream is = input.getSource(ctx);
-        String inputSourceText = is.readFully();
-        this.runtime.parseSourceTexts(
-                Collections.singletonMap("example.ts", inputSourceText),
-                (node, context) -> {
-                    // TODO: sort out type caching
-                    TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(node, context, input.getPath(), relativeTo, new JavaTypeCache(), is.getCharset().toString(), is.isCharsetBomMarked());
-                    this.compilationUnits.add(fileMapper.visitSourceFile());
-                }
+        final EncodingDetectingInputStream is = input.getSource(ctx);
+        final String inputSourceText = is.readFully();
+        final Path relativePath = input.getRelativePath(relativeTo);
+
+        final SourceWrapper source = new SourceWrapper(
+                input.getPath(),
+                input.getRelativePath(relativeTo),
+                is.getCharset(),
+                is.isCharsetBomMarked(),
+                inputSourceText
         );
+        sourcesByRelativePath.put(relativePath, source);
     }
 
     protected abstract void onParseFailure(Parser.Input input, Throwable error);
 
     public List<JS.CompilationUnit> build() {
-        return this.compilationUnits;
+        List<JS.CompilationUnit> compilationUnits = new ArrayList<>(sourcesByRelativePath.size());
+
+        Map<Path, String> sourceTextsForTSC = new HashMap<>();
+        this.sourcesByRelativePath.forEach((relativePath, sourceText) -> {
+            sourceTextsForTSC.put(relativePath, sourceText.sourceText);
+        });
+
+        this.runtime.parseSourceTexts(
+                sourceTextsForTSC,
+                (node, context) -> {
+                    final SourceWrapper source = this.sourcesByRelativePath.get(context.getRelativeSourcePath());
+                    // TODO: sort out type caching
+                    final TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
+                            node,
+                            context,
+                            source.getPath(),
+                            relativeTo,
+                            new JavaTypeCache(),
+                            source.getCharset().toString(),
+                            source.isCharsetBomMarked()
+                    );
+                    compilationUnits.add(fileMapper.visitSourceFile());
+                }
+        );
+        return compilationUnits;
     }
 
     @Override

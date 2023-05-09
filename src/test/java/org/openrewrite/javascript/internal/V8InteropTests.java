@@ -22,10 +22,15 @@ import org.openrewrite.javascript.internal.tsc.TSCType;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,9 +39,7 @@ public class V8InteropTests {
     @Test
     public void testTypeIdentity() {
         try (TSCRuntime runtime = TSCRuntime.init()) {
-            Map<String, String> sources = new HashMap<>();
-            sources.put("example.ts", "function foo() {}");
-            runtime.parseSourceTexts(sources, (root, ctx) -> {
+            runtime.parseSingleSource("function foo() {}", (root, ctx) -> {
                 root.getAllChildNodes().forEach(child -> {
                     TSCType first = child.getTypeForNode();
                     TSCType second = child.getTypeForNode();
@@ -49,15 +52,49 @@ public class V8InteropTests {
     @Test
     public void testNodeIdentity() {
         try (TSCRuntime runtime = TSCRuntime.init()) {
-            Map<String, String> sources = new HashMap<>();
-            sources.put("example.ts", "function foo() {}");
-            runtime.parseSourceTexts(sources, (root, ctx) -> {
+            runtime.parseSingleSource("function foo() {}", (root, ctx) -> {
                 List<TSCNode> first = root.getAllChildNodes();
                 List<TSCNode> second = root.getAllChildNodes();
                 for (int i = 0; i < first.size(); i++) {
                     assertSame(first.get(i), second.get(i));
                 }
             });
+        }
+    }
+
+    @Test
+    public void testTypeIdentityInDifferentLocations() {
+        try (TSCRuntime runtime = TSCRuntime.init()) {
+            runtime.parseSingleSource("class Foo{} const x = new Foo(); const y = new Foo();", (root, ctx) -> {
+                TSCType xType = Objects.requireNonNull(root.findFirstNodeWithText("x")).getTypeForNode();
+                TSCType yType = Objects.requireNonNull(root.findFirstNodeWithText("y")).getTypeForNode();
+                assertSame(xType, yType);
+            });
+        }
+    }
+
+    @Test
+    public void testTypeIdentityInDifferentFiles() {
+        try (TSCRuntime runtime = TSCRuntime.init()) {
+            Map<Path, String> sources = new HashMap<>();
+            sources.put(Paths.get("a.ts"), "export class Foo {}");
+            sources.put(Paths.get("b.ts"), "import {Foo} from './a'; const x = new Foo();");
+            sources.put(Paths.get("c.ts"), "import {Foo} from './a'; const x = new Foo();");
+            AtomicReference<TSCType> inOtherFile = new AtomicReference<>();
+            AtomicBoolean checked = new AtomicBoolean();
+            runtime.parseSourceTexts(sources, (root, ctx) -> {
+                if (ctx.getRelativeSourcePath().toString().equals("a.ts")) {
+                    return;
+                }
+                TSCType type = Objects.requireNonNull(root.findFirstNodeWithText("x")).getTypeForNode();
+                if (inOtherFile.get() == null) {
+                    inOtherFile.set(type);
+                } else {
+                    checked.set(true);
+                    assertSame(type, inOtherFile.get());
+                }
+            });
+            assertTrue(checked.get());
         }
     }
 
@@ -95,6 +132,17 @@ public class V8InteropTests {
                 TSCType.InterfaceType wrapper = Objects.requireNonNull(type.asInterfaceType());
                 assertNotNull(wrapper.getThisType());
             });
+        }
+    }
+
+    @Test
+    public void compilerOptionsHandleJsExtension() {
+        try (TSCRuntime runtime = TSCRuntime.init()) {
+            AtomicInteger count = new AtomicInteger();
+            runtime.parseSingleSource("const x = 3;", "file.js", (root, ctx) -> {
+                count.incrementAndGet();
+            });
+            assertEquals(count.get(), 1);
         }
     }
 
