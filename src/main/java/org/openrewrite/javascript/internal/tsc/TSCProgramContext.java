@@ -27,10 +27,12 @@ import java.io.Closeable;
 public class TSCProgramContext implements Closeable {
     private final V8Runtime runtime;
     private final V8ValueObject program;
+    private V8ValueObject typescriptV8;
     private final V8ValueObject typeCheckerV8;
     private final V8ValueFunction createScanner;
     private final V8ValueFunction getOpenRewriteId;
 
+    private @Nullable TSCGlobals typescriptGlobals;
     private @Nullable TSCTypeChecker typeChecker;
 
     final TSCObjectCache<TSCNode> nodeCache = TSCObjectCache.usingInternalKey(TSCNode::new);
@@ -38,9 +40,10 @@ public class TSCProgramContext implements Closeable {
     final TSCObjectCache<TSCSymbol> symbolCache = TSCObjectCache.usingInternalKey(TSCSymbol::new);
     final TSCObjectCache<TSCSignature> signatureCache = TSCObjectCache.usingInternalKey(TSCSignature::new);
 
-    public TSCProgramContext(V8Runtime runtime, V8ValueObject program, V8ValueObject typeChecker, V8ValueFunction createScanner, V8ValueFunction getOpenRewriteId) {
+    public TSCProgramContext(V8Runtime runtime, V8ValueObject program, V8ValueObject typescriptV8, V8ValueObject typeChecker, V8ValueFunction createScanner, V8ValueFunction getOpenRewriteId) {
         this.runtime = runtime;
         this.program = program;
+        this.typescriptV8 = typescriptV8;
         this.typeCheckerV8 = typeChecker;
         this.createScanner = createScanner;
         this.getOpenRewriteId = getOpenRewriteId;
@@ -49,6 +52,7 @@ public class TSCProgramContext implements Closeable {
     public static TSCProgramContext fromJS(V8ValueObject contextV8) {
         try (
                 V8ValueObject program = contextV8.get("program");
+                V8ValueObject typescript = contextV8.get("ts");
                 V8ValueObject typeChecker = contextV8.get("typeChecker");
                 V8ValueFunction createScanner = contextV8.get("createScanner");
                 V8ValueFunction getOpenRewriteId = contextV8.get("getOpenRewriteId");
@@ -56,6 +60,7 @@ public class TSCProgramContext implements Closeable {
             return new TSCProgramContext(
                     contextV8.getV8Runtime(),
                     program.toClone(),
+                    typescript.toClone(),
                     typeChecker.toClone(),
                     createScanner.toClone(),
                     getOpenRewriteId.toClone()
@@ -81,6 +86,13 @@ public class TSCProgramContext implements Closeable {
         return this.typeChecker;
     }
 
+    public TSCGlobals getTypeScriptGlobals() {
+        if (this.typescriptGlobals == null) {
+            this.typescriptGlobals = TSCGlobals.wrap(this, this.typescriptV8);
+        }
+        return this.typescriptGlobals;
+    }
+
     public V8ValueFunction getCreateScannerFunction() {
         return this.createScanner;
     }
@@ -103,7 +115,7 @@ public class TSCProgramContext implements Closeable {
 
     @Override
     public void close() {
-        JavetResourceUtils.safeClose(program, typeCheckerV8, createScanner, getOpenRewriteId);
+        JavetResourceUtils.safeClose(program, typescriptV8, typeCheckerV8, createScanner, getOpenRewriteId);
         this.nodeCache.close();
         this.typeCache.close();
         this.symbolCache.close();

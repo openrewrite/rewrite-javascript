@@ -15,7 +15,6 @@
  */
 import * as ts from "typescript";
 import * as tsvfs from "@typescript/vfs";
-import { createScanner, ScriptTarget } from "typescript";
 
 const OPEN_REWRITE_ID = Symbol("OpenRewriteId");
 
@@ -59,7 +58,8 @@ export default function parse(inputs: Map<string, string>) {
             getOpenRewriteId,
             typeChecker: program.getTypeChecker(),
             sourceFiles: program.getSourceFiles(),
-            createScanner: () => createScanner(ScriptTarget.ESNext, false, undefined),
+            createScanner: () => ts.createScanner(ts.ScriptTarget.ESNext, false, undefined),
+            ts,
         };
     } catch (err) {
         console.error(err);

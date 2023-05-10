@@ -97,14 +97,14 @@ public class TSCNode implements TSCV8Backed {
      * Only intended for debugging and tests.
      */
     public @Nullable TSCNode findFirstNodeWithText(String text) {
-        if (text.equals(this.getText())) {
-            return this;
-        }
         for (TSCNode child : this.getAllChildNodes()) {
             TSCNode found = child.findFirstNodeWithText(text);
             if (found != null) {
                 return found;
             }
+        }
+        if (text.equals(this.getText())) {
+            return this;
         }
         return null;
     }

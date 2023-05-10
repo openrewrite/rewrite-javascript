@@ -175,4 +175,19 @@ public class V8InteropTests {
         }
     }
 
+    @Test
+    public void testGlobalFunctions() {
+        try (TSCRuntime runtime = TSCRuntime.init()) {
+            AtomicBoolean ran = new AtomicBoolean();
+            runtime.parseSingleSource("class A {private foo: string;}", (root, ctx) -> {
+                ran.set(true);
+                TSCNode stmt = Objects.requireNonNull(root.findFirstNodeWithText("private foo: string;"));
+                List<TSCNode> modifiers = stmt.getProgramContext().getTypeScriptGlobals().getModifiers(stmt);
+                assertNotNull(modifiers);
+                assertEquals(modifiers.size(), 1);
+            });
+            assertTrue(ran.get());
+        }
+    }
+
 }
