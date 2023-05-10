@@ -16,14 +16,23 @@
 package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.values.reference.V8ValueObject;
+import lombok.Value;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class TSCType implements TSCV8Backed {
+
+    @Value
+    static class DebugInfo {
+        List<TSCTypeFlag> typeFlags;
+        List<TSCObjectFlag> objectFlags;
+        Map<String, Object> properties;
+    }
 
     /** Indicates that a type or method is marked `@internal` in the TSC source code. */
     @interface TSCInternal {}
@@ -119,6 +128,11 @@ public class TSCType implements TSCV8Backed {
     @Override
     public String toString() {
         return "Type(" + getTypeChecker().typeToString(this) + ")";
+    }
+
+    @Override
+    public DebugInfo getDebugInfo() {
+        return new DebugInfo(listMatchingTypeFlags(), listMatchingObjectFlags(), getAllPropertiesForDebugging());
     }
 
     public long getTypeId() {

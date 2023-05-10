@@ -20,11 +20,13 @@ import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
+import org.openrewrite.DebugOnly;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.openrewrite.javascript.internal.tsc.TSCConversions.*;
 
@@ -44,11 +46,6 @@ public interface TSCV8Backed {
             public V8ValueObject getBackingV8Object() {
                 return objectV8;
             }
-
-            @Override
-            public String debugDescription() {
-                return "(temporary)";
-            }
         };
     }
 
@@ -64,8 +61,9 @@ public interface TSCV8Backed {
 
     V8ValueObject getBackingV8Object();
 
-    default String debugDescription() {
-        return this.toString();
+    @DebugOnly
+    default Object getDebugInfo() {
+        return getAllPropertiesForDebugging();
     }
 
     default V8Value getPropertyUnsafe(String name) {
@@ -360,6 +358,12 @@ public interface TSCV8Backed {
             throw new RuntimeException(e);
         }
     }
+
+    @DebugOnly
+    default Map<String, Object> getAllPropertiesForDebugging() {
+        return this.as(objectMap(AUTO));
+    }
+
 
     default <T> T as(TSCConversion<T> conversion) {
         return conversion.convertNonNull(this.getProgramContext(), this.getBackingV8Object());

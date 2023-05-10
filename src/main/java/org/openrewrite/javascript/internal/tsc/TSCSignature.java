@@ -36,12 +36,4 @@ public class TSCSignature implements TSCV8Backed {
     public V8ValueObject getBackingV8Object() {
         return signatureV8;
     }
-
-    @Override
-    public String debugDescription() {
-        // TODO add more information
-        return "Signature()";
-    }
-
-
 }

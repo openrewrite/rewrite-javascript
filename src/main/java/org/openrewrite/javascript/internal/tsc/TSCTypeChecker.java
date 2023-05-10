@@ -325,9 +325,4 @@ public class TSCTypeChecker implements TSCV8Backed {
     public V8ValueObject getBackingV8Object() {
         return objectV8;
     }
-
-    @Override
-    public String debugDescription() {
-        return "(type checker)";
-    }
 }

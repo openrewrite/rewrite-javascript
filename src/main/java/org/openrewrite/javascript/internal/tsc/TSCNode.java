@@ -91,6 +91,10 @@ public class TSCNode implements TSCV8Backed {
         protected TypeNode(TSCProgramContext programContext, V8ValueObject nodeV8) {
             super(programContext, nodeV8);
         }
+
+        public TSCType getTypeFromTypeNode() {
+            return this.getTypeChecker().getTypeFromTypeNode(this);
+        }
     }
 
     private final TSCProgramContext programContext;
@@ -133,9 +137,16 @@ public class TSCNode implements TSCV8Backed {
     /**
      * Only intended for debugging and tests.
      */
-    public @Nullable TSCNode findFirstNodeWithText(String text) {
+    public TSCNode firstNodeWithText(String text) {
+        return Objects.requireNonNull(firstNodeWithTextOrNull(text));
+    }
+
+    /**
+     * Only intended for debugging and tests.
+     */
+    public @Nullable TSCNode firstNodeWithTextOrNull(String text) {
         for (TSCNode child : this.getAllChildNodes()) {
-            TSCNode found = child.findFirstNodeWithText(text);
+            TSCNode found = child.firstNodeWithTextOrNull(text);
             if (found != null) {
                 return found;
             }

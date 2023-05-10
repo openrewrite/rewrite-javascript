@@ -15,11 +15,9 @@
  */
 package org.openrewrite.javascript.internal;
 
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
-import org.openrewrite.javascript.internal.tsc.TSCInstanceOfChecks;
-import org.openrewrite.javascript.internal.tsc.TSCNode;
-import org.openrewrite.javascript.internal.tsc.TSCRuntime;
-import org.openrewrite.javascript.internal.tsc.TSCType;
+import org.openrewrite.javascript.internal.tsc.*;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
@@ -30,48 +28,59 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class V8InteropTests {
 
-    @Test
-    public void testTypeIdentity() {
+    private void parseSingleSource(@Language("typescript") String source, BiConsumer<TSCNode, TSCSourceFileContext> callback) {
+        parseSingleSource(source, "test.ts", callback);
+    }
+
+    private void parseSingleSource(@Language("typescript") String source, String filename, BiConsumer<TSCNode, TSCSourceFileContext> callback) {
+        AtomicBoolean ran = new AtomicBoolean();
         try (TSCRuntime runtime = TSCRuntime.init()) {
-            runtime.parseSingleSource("function foo() {}", (root, ctx) -> {
-                root.getAllChildNodes().forEach(child -> {
-                    TSCType first = child.getTypeForNode();
-                    TSCType second = child.getTypeForNode();
-                    assertSame(first, second);
-                });
+            runtime.parseSingleSource(source, filename, (root, ctx) -> {
+                callback.accept(root, ctx);
+                ran.set(true);
             });
         }
+        if (!ran.get()) {
+            fail("Single-source parsing did not complete normally during the test.");
+        }
+    }
+
+    @Test
+    public void testTypeIdentity() {
+        parseSingleSource("function foo() {}", (root, ctx) -> {
+            root.getAllChildNodes().forEach(child -> {
+                TSCType first = child.getTypeForNode();
+                TSCType second = child.getTypeForNode();
+                assertSame(first, second);
+            });
+        });
     }
 
     @Test
     public void testNodeIdentity() {
-        try (TSCRuntime runtime = TSCRuntime.init()) {
-            runtime.parseSingleSource("function foo() {}", (root, ctx) -> {
-                List<TSCNode> first = root.getAllChildNodes();
-                List<TSCNode> second = root.getAllChildNodes();
-                for (int i = 0; i < first.size(); i++) {
-                    assertSame(first.get(i), second.get(i));
-                }
-            });
-        }
+        parseSingleSource("function foo() {}", (root, ctx) -> {
+            List<TSCNode> first = root.getAllChildNodes();
+            List<TSCNode> second = root.getAllChildNodes();
+            for (int i = 0; i < first.size(); i++) {
+                assertSame(first.get(i), second.get(i));
+            }
+        });
     }
 
     @Test
     public void testTypeIdentityInDifferentLocations() {
-        try (TSCRuntime runtime = TSCRuntime.init()) {
-            runtime.parseSingleSource("class Foo{} const x = new Foo(); const y = new Foo();", (root, ctx) -> {
-                TSCType xType = Objects.requireNonNull(root.findFirstNodeWithText("x")).getTypeForNode();
-                TSCType yType = Objects.requireNonNull(root.findFirstNodeWithText("y")).getTypeForNode();
-                assertSame(xType, yType);
-            });
-        }
+        parseSingleSource("class Foo{} const x = new Foo(); const y = new Foo();", (root, ctx) -> {
+            TSCType xType = root.firstNodeWithText("x").getTypeForNode();
+            TSCType yType = root.firstNodeWithText("y").getTypeForNode();
+            assertSame(xType, yType);
+        });
     }
 
     @Test
@@ -87,7 +96,7 @@ public class V8InteropTests {
                 if (ctx.getRelativeSourcePath().toString().equals("a.ts")) {
                     return;
                 }
-                TSCType type = Objects.requireNonNull(root.findFirstNodeWithText("x")).getTypeForNode();
+                TSCType type = root.firstNodeWithText("x").getTypeForNode();
                 if (inOtherFile.get() == null) {
                     inOtherFile.set(type);
                 } else {
@@ -101,137 +110,122 @@ public class V8InteropTests {
 
     @Test
     public void testNumberFlags() {
-        try (TSCRuntime runtime = TSCRuntime.init()) {
-            runtime.parseSingleSource("const x: number = 2;", (root, ctx) -> {
-                TSCNode name = Objects.requireNonNull(root.findFirstNodeWithText("x"));
-                TSCType type = Objects.requireNonNull(name.getTypeForNode());
-                assertNotNull(type);
-                assertTrue(type.hasExactTypeFlag(TSCTypeFlag.Number));
-            });
-        }
+        parseSingleSource("const x: number = 2;", (root, ctx) -> {
+            TSCNode name = root.firstNodeWithText("x");
+            TSCType type = Objects.requireNonNull(name.getTypeForNode());
+            assertNotNull(type);
+            assertTrue(type.hasExactTypeFlag(TSCTypeFlag.Number));
+        });
     }
 
     @Test
     public void testClassTypeFlags() {
-        try (TSCRuntime runtime = TSCRuntime.init()) {
-            runtime.parseSingleSource("class Cls{} const x: Cls = new Cls();", (root, ctx) -> {
-                TSCNode name = Objects.requireNonNull(root.findFirstNodeWithText("x"));
-                TSCType type = Objects.requireNonNull(name.getTypeForNode());
-                assertTrue(type.hasExactTypeFlag(TSCTypeFlag.Object));
-                assertTrue(type.hasObjectFlag(TSCObjectFlag.Class));
-            });
-        }
+        parseSingleSource("class Cls{} const x: Cls = new Cls();", (root, ctx) -> {
+            TSCNode name = root.firstNodeWithText("x");
+            TSCType type = Objects.requireNonNull(name.getTypeForNode());
+            assertTrue(type.hasExactTypeFlag(TSCTypeFlag.Object));
+            assertTrue(type.hasObjectFlag(TSCObjectFlag.Class));
+        });
     }
 
     @Test
     public void testInterfaceTypeWrapper() {
-        try (TSCRuntime runtime = TSCRuntime.init()) {
-            runtime.parseSingleSource("class Cls{y: string} const x: Cls = new Cls();", (root, ctx) -> {
-                TSCNode name = Objects.requireNonNull(root.findFirstNodeWithText("x"));
-                TSCType type = Objects.requireNonNull(name.getTypeForNode());
+        parseSingleSource("class Cls{y: string} const x: Cls = new Cls();", (root, ctx) -> {
+            TSCNode name = root.firstNodeWithText("x");
+            TSCType type = Objects.requireNonNull(name.getTypeForNode());
 
-                TSCType.InterfaceType wrapper = Objects.requireNonNull(type.asInterfaceType());
-                assertNotNull(wrapper.getThisType());
-            });
-        }
+            TSCType.InterfaceType wrapper = Objects.requireNonNull(type.asInterfaceType());
+            assertNotNull(wrapper.getThisType());
+        });
     }
 
     @Test
     public void compilerOptionsHandleJsExtension() {
-        try (TSCRuntime runtime = TSCRuntime.init()) {
-            AtomicInteger count = new AtomicInteger();
-            runtime.parseSingleSource("const x = 3;", "file.js", (root, ctx) -> {
-                count.incrementAndGet();
-            });
-            assertEquals(1, count.get());
-        }
+        parseSingleSource("const x = 3;", "file.js", (root, ctx) -> {
+        });
     }
 
     @Test
     public void nodeReturnsSourceFile() {
-        try (TSCRuntime runtime = TSCRuntime.init()) {
-            AtomicBoolean ran = new AtomicBoolean();
-            runtime.parseSingleSource("const x = 3;", "file.js", (root, ctx) -> {
-                ran.set(true);
-                TSCNode ident = Objects.requireNonNull(root.findFirstNodeWithText("x"));
-                TSCNode.SourceFile sourceFile = ident.getSourceFile();
-                assertEquals(sourceFile.getFileName(), "file.js");
-                assertEquals(sourceFile.getPath(), "/file.js");
-            });
-            assertTrue(ran.get());
-        }
+        parseSingleSource("const x = 3;", "file.js", (root, ctx) -> {
+            TSCNode ident = root.firstNodeWithText("x");
+            TSCNode.SourceFile sourceFile = ident.getSourceFile();
+            assertEquals(sourceFile.getFileName(), "file.js");
+            assertEquals(sourceFile.getPath(), "/file.js");
+        });
     }
 
     @Test
     public void nodeHasParent() {
-        try (TSCRuntime runtime = TSCRuntime.init()) {
-            AtomicBoolean ran = new AtomicBoolean();
-            runtime.parseSingleSource("const x = 3;", "file.js", (root, ctx) -> {
-                ran.set(true);
-                TSCNode ident = Objects.requireNonNull(root.findFirstNodeWithText("x"));
-                TSCNode parent = ident.getParent().getParent().getParent().getParent();
-                assertSame(root, parent);
-            });
-            assertTrue(ran.get());
-        }
+        parseSingleSource("const x = 3;", "file.js", (root, ctx) -> {
+            TSCNode ident = root.firstNodeWithText("x");
+            TSCNode parent = ident.getParent().getParent().getParent().getParent();
+            assertSame(root, parent);
+        });
     }
 
     @Test
     public void testGlobalFunctions() {
-        try (TSCRuntime runtime = TSCRuntime.init()) {
-            AtomicBoolean ran = new AtomicBoolean();
-            runtime.parseSingleSource("class A {private foo: string;}", (root, ctx) -> {
-                TSCNode stmt = Objects.requireNonNull(root.findFirstNodeWithText("private foo: string;"));
-                List<TSCNode> modifiers = stmt.getProgramContext().getTypeScriptGlobals().getModifiers(stmt);
-                assertNotNull(modifiers);
-                assertEquals(1, modifiers.size());
-                ran.set(true);
-            });
-            assertTrue(ran.get());
-        }
+        parseSingleSource("class A {private foo: string;}", (root, ctx) -> {
+            TSCNode stmt = root.firstNodeWithText("private foo: string;");
+            List<TSCNode> modifiers = stmt.getProgramContext().getTypeScriptGlobals().getModifiers(stmt);
+            assertNotNull(modifiers);
+            assertEquals(1, modifiers.size());
+        });
     }
 
     @Test
     public void testNodeConstructorName() {
-        try (TSCRuntime runtime = TSCRuntime.init()) {
-            AtomicBoolean ran = new AtomicBoolean();
-            runtime.parseSingleSource("const x = 3;", (root, ctx) -> {
-                TSCNode ident = Objects.requireNonNull(root.findFirstNodeWithText("x"));
-                assertEquals("IdentifierObject", ident.getConstructorName());
-                ran.set(true);
-            });
-            assertTrue(ran.get());
-        }
+        parseSingleSource("const x = 3;", (root, ctx) -> {
+            TSCNode ident = root.firstNodeWithText("x");
+            assertEquals("IdentifierObject", ident.getConstructorName());
+        });
     }
 
     @Test
     public void testNodeConstructorKind() {
-        try (TSCRuntime runtime = TSCRuntime.init()) {
-            AtomicBoolean ran = new AtomicBoolean();
-            runtime.parseSingleSource("const x = 3;", (root, ctx) -> {
-                TSCInstanceOfChecks instanceOfChecks = ctx.getProgramContext().getInstanceOfChecks();
+        parseSingleSource("const x = 3;", (root, ctx) -> {
+            TSCInstanceOfChecks instanceOfChecks = ctx.getProgramContext().getInstanceOfChecks();
 
-                assertEquals(
-                        TSCInstanceOfChecks.ConstructorKind.SourceFile,
-                        instanceOfChecks.identifyConstructorKind(root.getBackingV8Object())
-                );
+            assertEquals(
+                    TSCInstanceOfChecks.ConstructorKind.SourceFile,
+                    instanceOfChecks.identifyConstructorKind(root.getBackingV8Object())
+            );
 
-                TSCNode ident = Objects.requireNonNull(root.findFirstNodeWithText("x"));
-                assertEquals(
-                        TSCInstanceOfChecks.ConstructorKind.Identifier,
-                        instanceOfChecks.identifyConstructorKind(ident.getBackingV8Object())
-                );
+            TSCNode ident = root.firstNodeWithText("x");
+            assertEquals(
+                    TSCInstanceOfChecks.ConstructorKind.Identifier,
+                    instanceOfChecks.identifyConstructorKind(ident.getBackingV8Object())
+            );
 
-                TSCNode stmt = Objects.requireNonNull(root.findFirstNodeWithText("const x = 3;"));
-                assertEquals(
-                        TSCInstanceOfChecks.ConstructorKind.Node,
-                        instanceOfChecks.identifyConstructorKind(stmt.getBackingV8Object())
-                );
+            TSCNode stmt = root.firstNodeWithText("const x = 3;");
+            assertEquals(
+                    TSCInstanceOfChecks.ConstructorKind.Node,
+                    instanceOfChecks.identifyConstructorKind(stmt.getBackingV8Object())
+            );
+        });
+    }
 
-                ran.set(true);
-            });
-            assertTrue(ran.get());
-        }
+    @Test
+    public void testTypeNodeType() {
+        parseSingleSource(
+                """
+                class Foo {}
+                                
+                function test(x: Foo) {
+                }
+                """,
+                (root, ctx) -> {
+                    TSCNode Foo = root.firstNodeWithText("class Foo {}");
+                    TSCType FooType = Foo.getTypeForNode();
+
+                    TSCNode x = root.firstNodeWithText("x: Foo");
+                    TSCNode.TypeNode xTypeNode = x.getTypeNodeProperty("type");
+                    TSCType xType = xTypeNode.getTypeFromTypeNode();
+
+                    assertSame(FooType, xType);
+                }
+        );
     }
 
 }

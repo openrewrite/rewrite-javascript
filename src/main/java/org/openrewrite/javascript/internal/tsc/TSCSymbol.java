@@ -17,13 +17,22 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.reference.V8ValueObject;
+import lombok.Value;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSymbolFlag;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class TSCSymbol implements TSCV8Backed {
+
+    @Value
+    static class DebugInfo {
+        List<TSCSymbolFlag> symbolFlags;
+        Map<String, Object> properties;
+    }
+
     private final TSCProgramContext programContext;
     public final V8ValueObject symbolV8;
 
@@ -78,6 +87,11 @@ public class TSCSymbol implements TSCV8Backed {
 
     public String getEscapedName() {
         return getStringProperty("escapedName");
+    }
+
+    @Override
+    public DebugInfo getDebugInfo() {
+        return new DebugInfo(listMatchingSymbolFlags(), getAllPropertiesForDebugging());
     }
 
     @Override

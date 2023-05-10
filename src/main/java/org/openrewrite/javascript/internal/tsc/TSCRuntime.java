@@ -56,14 +56,22 @@ public class TSCRuntime implements Closeable {
     private final JavetStandardConsoleInterceptor javetStandardConsoleInterceptor;
 
     public static TSCRuntime init() {
+        return init(false);
+    }
+
+    public static TSCRuntime init(boolean forceWrappedV8Runtime) {
         try {
-            V8Runtime v8Runtime = USE_WRAPPED_V8_RUNTIME ? JavetBridge.makeWrappedV8Runtime() : V8Host.getV8Instance().createV8Runtime();
+            V8Runtime v8Runtime = (forceWrappedV8Runtime || USE_WRAPPED_V8_RUNTIME)
+                    ? JavetBridge.makeWrappedV8Runtime()
+                    : V8Host.getV8Instance().createV8Runtime();
             JavetStandardConsoleInterceptor javetStandardConsoleInterceptor = new JavetStandardConsoleInterceptor(v8Runtime);
             javetStandardConsoleInterceptor.register(v8Runtime.getGlobalObject());
             return new TSCRuntime(v8Runtime, javetStandardConsoleInterceptor);
-        } catch (JavetException e) {
+        } catch (
+                JavetException e) {
             throw new RuntimeException(e);
         }
+
     }
 
     public TSCRuntime(V8Runtime v8Runtime, JavetStandardConsoleInterceptor javetStandardConsoleInterceptor) {

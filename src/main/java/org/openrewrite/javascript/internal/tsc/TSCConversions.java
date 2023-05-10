@@ -1,16 +1,16 @@
 package org.openrewrite.javascript.internal.tsc;
 
-import com.caoccao.javet.values.primitive.V8ValueBoolean;
-import com.caoccao.javet.values.primitive.V8ValueInteger;
-import com.caoccao.javet.values.primitive.V8ValueLong;
-import com.caoccao.javet.values.primitive.V8ValueString;
+import com.caoccao.javet.exceptions.JavetException;
+import com.caoccao.javet.values.V8Value;
+import com.caoccao.javet.values.primitive.*;
+import com.caoccao.javet.values.reference.IV8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueArray;
+import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSignatureKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -20,10 +20,10 @@ public final class TSCConversions {
     }
 
     public static final TSCConversion<String> STRING = (context, value) -> {
-      if (!(value instanceof V8ValueString)) {
-          throw new IllegalArgumentException("expected V8 string");
-      }
-      return ((V8ValueString) value).getValue();
+        if (!(value instanceof V8ValueString)) {
+            throw new IllegalArgumentException("expected V8 string");
+        }
+        return ((V8ValueString) value).getValue();
     };
 
     public static final TSCConversion<Boolean> BOOLEAN = (context, value) -> {
@@ -74,6 +74,62 @@ public final class TSCConversions {
     public static final TSCConversion<TSCSignature> SIGNATURE = cached(context -> context.signatureCache);
     public static final TSCConversion<List<TSCSignature>> SIGNATURE_LIST = list(SIGNATURE);
 
+    public static final TSCConversion<Object> AUTO = TSCConversions::autoConvert;
+
+    private static final ThreadLocal<Integer> autoConversionDepth = ThreadLocal.withInitial(() -> 0);
+    private static final int MAX_AUTO_CONVERSION_DEPTH = 10;
+
+    private static Object autoConvert(TSCProgramContext context, V8Value value) throws JavetException {
+        final int initialDepth = autoConversionDepth.get();
+        if (initialDepth > MAX_AUTO_CONVERSION_DEPTH) {
+            return value.getV8Runtime().getConverter().toObject(value, true);
+        }
+        autoConversionDepth.set(initialDepth + 1);
+        try {
+            if (value instanceof V8ValuePrimitive) {
+                return ((V8ValuePrimitive<?>) value).getValue();
+            }
+
+            if (value instanceof V8ValueObject) {
+                TSCInstanceOfChecks.InterfaceKind interfaceKind = context.getInstanceOfChecks().identifyInterfaceKind(value);
+                if (interfaceKind != null) {
+                    switch (interfaceKind) {
+                        case Node:
+                            return NODE.convertUnsafe(context, value);
+                        case Type:
+                            return TYPE.convertUnsafe(context, value);
+                        case Symbol:
+                            return SYMBOL.convertUnsafe(context, value);
+                        case Signature:
+                            return SIGNATURE.convertUnsafe(context, value);
+                        case SourceMapSource:
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            if (value instanceof V8ValueArray) {
+                return list(AUTO).convertUnsafe(context, value);
+            }
+
+            if (value instanceof V8ValueFunction) {
+                V8ValueFunction copy = value.toClone();
+                copy.setWeak();
+                return copy;
+            }
+
+            if (value instanceof V8ValueObject) {
+                return objectMap(AUTO).convertUnsafe(context, value);
+            }
+
+            // TODO better auto-conversion?
+            return value.getV8Runtime().getConverter().toObject(value, true);
+        } finally {
+            autoConversionDepth.set(initialDepth);
+        }
+    }
+
     public static <T> TSCConversion<List<T>> list(TSCConversion<T> of) {
         return (context, value) -> {
             if (!(value instanceof V8ValueArray)) {
@@ -85,6 +141,38 @@ public final class TSCConversions {
                 result.add(of.convertNonNull(context, element));
             });
             return result;
+        };
+    }
+
+    public static <T> TSCConversion<Map<String, T>> objectMap(TSCConversion<T> ofValue) {
+        return (context, value) -> {
+            if (!(value instanceof V8ValueObject)) {
+                throw new IllegalArgumentException("expected a V8 object");
+            }
+            Map<String, T> primitives = new LinkedHashMap<>();
+            Map<String, T> objects = new LinkedHashMap<>();
+            Map<String, T> collections = new LinkedHashMap<>();
+
+            V8ValueObject object = (V8ValueObject) value;
+            IV8ValueArray propNames = object.getPropertyNames();
+            for (int i = 0; i < propNames.getLength(); i++) {
+                String propName = propNames.getString(i);
+                T propValue = ofValue.convertNullable(context, object.get(propName));
+                if (propValue == null || propValue instanceof Number || propValue instanceof String || propValue instanceof Enum) {
+                    primitives.put(propName, propValue);
+                } else if (propValue instanceof Collection) {
+                    collections.put(propName, propValue);
+                } else {
+                    objects.put(propName, propValue);
+                }
+            }
+
+            Map<String, T> converted = new LinkedHashMap<>();
+            converted.putAll(primitives);
+            converted.putAll(objects);
+            converted.putAll(collections);
+
+            return converted;
         };
     }
 
