@@ -58,6 +58,10 @@ public interface TSCV8Backed {
         return getProgramContext().getTypeChecker();
     }
 
+    default TSCGlobals getTS() {
+        return getProgramContext().getTypeScriptGlobals();
+    }
+
     V8ValueObject getBackingV8Object();
 
     default String debugDescription() {
@@ -110,6 +114,10 @@ public interface TSCV8Backed {
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    default boolean invokeMethodBoolean(String name, Object... args) {
+        return invokeMethodNonNull(name, BOOLEAN, args);
     }
 
     default <T> T getPropertyNullable(String name, TSCConversion<T> conversion) {
@@ -189,12 +197,20 @@ public interface TSCV8Backed {
         return getPropertyNullable(name, NODE);
     }
 
-    default TSCNodeList getNodeListProperty(String name) {
+    default TSCNodeList<TSCNode> getNodeListProperty(String name) {
         return getPropertyNonNull(name, NODE_LIST);
     }
 
-    default @Nullable TSCNodeList getOptionalNodeListProperty(String name) {
+    default @Nullable TSCNodeList<TSCNode> getOptionalNodeListProperty(String name) {
         return getPropertyNullable(name, NODE_LIST);
+    }
+
+    default TSCNode.TypeNode getTypeNodeProperty(String name) {
+        return getPropertyNonNull(name, TYPE_NODE);
+    }
+
+    default TSCNode.TypeNode getOptionalTypeNodeProperty(String name) {
+        return getPropertyNullable(name, TYPE_NODE);
     }
 
     default TSCSyntaxListNode getSyntaxListProperty(String name) {

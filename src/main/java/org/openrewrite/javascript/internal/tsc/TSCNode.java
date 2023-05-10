@@ -50,34 +50,46 @@ public class TSCNode implements TSCV8Backed {
         switch (syntaxKind) {
             case SyntaxList:
                 return new TSCSyntaxListNode(programContext, objectV8);
+            case SourceFile:
+                return new TSCNode.SourceFile(programContext, objectV8);
             default:
+                TSCGlobals ts = programContext.getTypeScriptGlobals();
+                if (ts.invokeMethodBoolean("isTypeNode", objectV8)) {
+                    return new TSCNode.TypeNode(programContext, objectV8);
+                }
                 return new TSCNode(programContext, objectV8);
         }
     }
 
-    interface AccessorsBase {
-        TSCNode wrapped();
+    public static class SourceFile extends TSCNode {
+        protected SourceFile(TSCProgramContext programContext, V8ValueObject nodeV8) {
+            super(programContext, nodeV8);
+        }
+
+        public String getFileName() {
+            return getStringProperty("fileName");
+        }
+
+        public String getPath() {
+            return getStringProperty("path");
+        }
+
+        public String getResolvedPath() {
+            return getStringProperty("resolvedPath");
+        }
+
+        public String getOriginalFileName() {
+            return getStringProperty("originalFileName");
+        }
+
+        public String getModuleName() {
+            return getStringProperty("moduleName");
+        }
     }
 
-    public interface SourceFile extends AccessorsBase {
-        default String getFileName() {
-            return wrapped().getStringProperty("fileName");
-        }
-
-        default String getPath() {
-            return wrapped().getStringProperty("path");
-        }
-
-        default String getResolvedPath() {
-            return wrapped().getStringProperty("resolvedPath");
-        }
-
-        default String getOriginalFileName() {
-            return wrapped().getStringProperty("originalFileName");
-        }
-
-        default String getModuleName() {
-            return wrapped().getStringProperty("moduleName");
+    public static class TypeNode extends TSCNode {
+        protected TypeNode(TSCProgramContext programContext, V8ValueObject nodeV8) {
+            super(programContext, nodeV8);
         }
     }
 
@@ -204,14 +216,15 @@ public class TSCNode implements TSCV8Backed {
     }
 
     public SourceFile getSourceFile() {
-        return Objects.requireNonNull(this.getNodeProperty("getSourceFile()").asSourceFile());
+        return Objects.requireNonNull(this.getNodeProperty("getSourceFile()").assertSourceFile());
     }
 
-    public @Nullable TSCNode.SourceFile asSourceFile() {
-        if (syntaxKind() == TSCSyntaxKind.SourceFile) {
-            return () -> TSCNode.this;
+    public TSCNode.SourceFile assertSourceFile() {
+        if (this instanceof TSCNode.SourceFile) {
+            return (SourceFile) this;
+        } else {
+            throw new IllegalStateException("not a source file: " + syntaxKind());
         }
-        return null;
     }
 
     public String getText() {
