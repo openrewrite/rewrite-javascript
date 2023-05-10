@@ -25,6 +25,7 @@ import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.TypeScriptTypeMapping;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
+import org.openrewrite.javascript.internal.tsc.TSCNodeList;
 import org.openrewrite.javascript.internal.tsc.TSCSourceFileContext;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import org.openrewrite.javascript.tree.JS;
@@ -525,22 +526,21 @@ public class TypeScriptParserVisitor {
         if (node.hasProperty("members")) {
             Space bodyPrefix = sourceBefore(TSCSyntaxKind.OpenBraceToken);
 
-            TSCNode membersNode = node.getNodeProperty("members");
-            List<TSCNode> nodes = node.getNodeListProperty("members");
+            TSCNodeList memberNodes = node.getNodeListProperty("members");
             if (kind.getType() == J.ClassDeclaration.Kind.Type.Enum) {
                 Space enumPrefix = whitespace();
 
                 members = new ArrayList<>(1);
-                List<JRightPadded<J.EnumValue>> enumValues = new ArrayList<>(nodes.size());
-                for (int i = 0; i < nodes.size(); i++) {
-                    TSCNode enumValue = nodes.get(i);
+                List<JRightPadded<J.EnumValue>> enumValues = new ArrayList<>(memberNodes.size());
+                for (int i = 0; i < memberNodes.size(); i++) {
+                    TSCNode enumValue = memberNodes.get(i);
                     J.EnumValue value = (J.EnumValue) visitNode(enumValue);
                     if (value != null) {
-                        boolean hasTrailingComma = i == nodes.size() - 1 && membersNode.getBooleanProperty("hasTrailingComma");
-                        Space after = i < nodes.size() - 1 ? sourceBefore(TSCSyntaxKind.CommaToken) :
+                        boolean hasTrailingComma = i == memberNodes.size() - 1 && memberNodes.getBooleanProperty("hasTrailingComma");
+                        Space after = i < memberNodes.size() - 1 ? sourceBefore(TSCSyntaxKind.CommaToken) :
                                 hasTrailingComma ? sourceBefore(TSCSyntaxKind.CommaToken) : EMPTY;
                         JRightPadded<J.EnumValue> ev = padRight(value, after);
-                        if (i == nodes.size() - 1) {
+                        if (i == memberNodes.size() - 1) {
                             if (hasTrailingComma) {
                                 ev = ev.withMarkers(ev.getMarkers().addIfAbsent(new TrailingComma(randomId(), EMPTY)));
                             }
@@ -560,8 +560,8 @@ public class TypeScriptParserVisitor {
                 );
                 members.add(enumSet);
             } else {
-                members = new ArrayList<>(nodes.size());
-                for (TSCNode statement : nodes) {
+                members = new ArrayList<>(memberNodes.size());
+                for (TSCNode statement : memberNodes) {
                     members.add(visitStatement(statement));
                 }
             }

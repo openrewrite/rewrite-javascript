@@ -30,6 +30,31 @@ import java.util.Objects;
 
 public class TSCNode implements TSCV8Backed {
 
+    static boolean isValidBackingObject(TSCProgramContext programContext, V8ValueObject objectV8) {
+        TSCInstanceOfChecks.InterfaceKind interfaceKind = programContext.identifyInterfaceKind(objectV8);
+        return interfaceKind == TSCInstanceOfChecks.InterfaceKind.Node;
+    }
+
+    static TSCNode wrap(TSCProgramContext programContext, V8ValueObject objectV8) {
+        if (!isValidBackingObject(programContext, objectV8)) {
+            throw new IllegalArgumentException("object provided is not actually a TSC node");
+        }
+
+        TSCSyntaxKind syntaxKind;
+        try {
+            syntaxKind = TSCSyntaxKind.fromCode(objectV8.getInteger("kind"));
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+
+        switch (syntaxKind) {
+            case SyntaxList:
+                return new TSCSyntaxListNode(programContext, objectV8);
+            default:
+                return new TSCNode(programContext, objectV8);
+        }
+    }
+
     interface AccessorsBase {
         TSCNode wrapped();
     }
@@ -59,7 +84,7 @@ public class TSCNode implements TSCV8Backed {
     private final TSCProgramContext programContext;
     public final V8ValueObject nodeV8;
 
-    public TSCNode(TSCProgramContext programContext, V8ValueObject nodeV8) {
+    protected TSCNode(TSCProgramContext programContext, V8ValueObject nodeV8) {
         this.programContext = programContext;
         this.nodeV8 = nodeV8;
     }

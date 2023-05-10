@@ -59,7 +59,24 @@ public final class TSCConversions {
     public static final TSCConversion<List<TSCType>> TYPE_LIST = list(TYPE);
 
     public static final TSCConversion<TSCNode> NODE = cached(context -> context.nodeCache);
-    public static final TSCConversion<List<TSCNode>> NODE_LIST = list(NODE);
+    static final TSCConversion<TSCNodeList> NODE_LIST = (context, valueV8) -> {
+        if (!(valueV8 instanceof V8ValueArray)) {
+            throw new IllegalStateException("expected a V8 array");
+        }
+
+        V8ValueArray arrayV8 = valueV8.toClone();
+        arrayV8.setWeak();
+
+        return TSCNodeList.wrap(context, arrayV8);
+    };
+
+    public static final TSCConversion<TSCSyntaxListNode> SYNTAX_LIST_NODE = (context, value) -> {
+        TSCNode node = NODE.convertUnsafe(context, value);
+        if (!(node instanceof TSCSyntaxListNode)) {
+            throw new IllegalStateException("expected a SyntaxList node, but it's just an ordinary node");
+        }
+        return (TSCSyntaxListNode) node;
+    };
 
     public static final TSCConversion<TSCSymbol> SYMBOL = cached(context -> context.symbolCache);
     public static final TSCConversion<List<TSCSymbol>> SYMBOL_LIST = list(SYMBOL);

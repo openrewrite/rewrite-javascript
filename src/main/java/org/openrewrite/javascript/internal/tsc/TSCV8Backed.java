@@ -18,6 +18,7 @@ package org.openrewrite.javascript.internal.tsc;
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.reference.V8ValueArray;
+import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
@@ -68,7 +69,7 @@ public interface TSCV8Backed {
             if (name.endsWith("()")) {
                 return this.getBackingV8Object().invoke(name.substring(0, name.length() - 2));
             } else {
-                return this.getBackingV8Object().getProperty(name);
+                return this.getBackingV8Object().get(name);
             }
         } catch (JavetException e) {
             throw new RuntimeException(e);
@@ -188,12 +189,20 @@ public interface TSCV8Backed {
         return getPropertyNullable(name, NODE);
     }
 
-    default List<TSCNode> getNodeListProperty(String name) {
+    default TSCNodeList getNodeListProperty(String name) {
         return getPropertyNonNull(name, NODE_LIST);
     }
 
-    default @Nullable List<TSCNode> getOptionalNodeListProperty(String name) {
+    default @Nullable TSCNodeList getOptionalNodeListProperty(String name) {
         return getPropertyNullable(name, NODE_LIST);
+    }
+
+    default TSCSyntaxListNode getSyntaxListProperty(String name) {
+        return getPropertyNonNull(name, SYNTAX_LIST_NODE);
+    }
+
+    default @Nullable TSCSyntaxListNode getOptionalSyntaxListProperty(String name) {
+        return getPropertyNullable(name, SYNTAX_LIST_NODE);
     }
 
     //
@@ -320,6 +329,24 @@ public interface TSCV8Backed {
         } catch (JavetException ignored) {
             return false;
         }
+    }
+
+    default @Nullable String getConstructorName() {
+        try (V8Value constructor = this.getPropertyUnsafe("constructor")) {
+            if (constructor.isNullOrUndefined()) {
+                return null;
+            }
+            if (!(constructor instanceof V8ValueFunction)) {
+                return null;
+            }
+            return ((V8ValueFunction) constructor).getPropertyString("name");
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default <T> T as(TSCConversion<T> conversion) {
+        return conversion.convertNonNull(this.getProgramContext(), this.getBackingV8Object());
     }
 
 }

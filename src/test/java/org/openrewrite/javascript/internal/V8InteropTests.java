@@ -16,6 +16,7 @@
 package org.openrewrite.javascript.internal;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.javascript.internal.tsc.TSCInstanceOfChecks;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.internal.tsc.TSCType;
@@ -91,7 +92,7 @@ public class V8InteropTests {
                     inOtherFile.set(type);
                 } else {
                     checked.set(true);
-                    assertSame(type, inOtherFile.get());
+                    assertSame(inOtherFile.get(), type);
                 }
             });
             assertTrue(checked.get());
@@ -142,7 +143,7 @@ public class V8InteropTests {
             runtime.parseSingleSource("const x = 3;", "file.js", (root, ctx) -> {
                 count.incrementAndGet();
             });
-            assertEquals(count.get(), 1);
+            assertEquals(1, count.get());
         }
     }
 
@@ -169,7 +170,7 @@ public class V8InteropTests {
                 ran.set(true);
                 TSCNode ident = Objects.requireNonNull(root.findFirstNodeWithText("x"));
                 TSCNode parent = ident.getParent().getParent().getParent().getParent();
-                assertSame(parent, root);
+                assertSame(root, parent);
             });
             assertTrue(ran.get());
         }
@@ -180,11 +181,54 @@ public class V8InteropTests {
         try (TSCRuntime runtime = TSCRuntime.init()) {
             AtomicBoolean ran = new AtomicBoolean();
             runtime.parseSingleSource("class A {private foo: string;}", (root, ctx) -> {
-                ran.set(true);
                 TSCNode stmt = Objects.requireNonNull(root.findFirstNodeWithText("private foo: string;"));
                 List<TSCNode> modifiers = stmt.getProgramContext().getTypeScriptGlobals().getModifiers(stmt);
                 assertNotNull(modifiers);
-                assertEquals(modifiers.size(), 1);
+                assertEquals(1, modifiers.size());
+                ran.set(true);
+            });
+            assertTrue(ran.get());
+        }
+    }
+
+    @Test
+    public void testNodeConstructorName() {
+        try (TSCRuntime runtime = TSCRuntime.init()) {
+            AtomicBoolean ran = new AtomicBoolean();
+            runtime.parseSingleSource("const x = 3;", (root, ctx) -> {
+                TSCNode ident = Objects.requireNonNull(root.findFirstNodeWithText("x"));
+                assertEquals("IdentifierObject", ident.getConstructorName());
+                ran.set(true);
+            });
+            assertTrue(ran.get());
+        }
+    }
+
+    @Test
+    public void testNodeConstructorKind() {
+        try (TSCRuntime runtime = TSCRuntime.init()) {
+            AtomicBoolean ran = new AtomicBoolean();
+            runtime.parseSingleSource("const x = 3;", (root, ctx) -> {
+                TSCInstanceOfChecks instanceOfChecks = ctx.getProgramContext().getInstanceOfChecks();
+
+                assertEquals(
+                        TSCInstanceOfChecks.ConstructorKind.SourceFile,
+                        instanceOfChecks.identifyConstructorKind(root.getBackingV8Object())
+                );
+
+                TSCNode ident = Objects.requireNonNull(root.findFirstNodeWithText("x"));
+                assertEquals(
+                        TSCInstanceOfChecks.ConstructorKind.Identifier,
+                        instanceOfChecks.identifyConstructorKind(ident.getBackingV8Object())
+                );
+
+                TSCNode stmt = Objects.requireNonNull(root.findFirstNodeWithText("const x = 3;"));
+                assertEquals(
+                        TSCInstanceOfChecks.ConstructorKind.Node,
+                        instanceOfChecks.identifyConstructorKind(stmt.getBackingV8Object())
+                );
+
+                ran.set(true);
             });
             assertTrue(ran.get());
         }

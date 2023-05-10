@@ -17,7 +17,9 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.interop.V8Runtime;
+import com.caoccao.javet.interop.V8Scope;
 import com.caoccao.javet.utils.JavetResourceUtils;
+import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
 
@@ -25,6 +27,7 @@ import javax.annotation.Nullable;
 import java.io.Closeable;
 
 public class TSCProgramContext implements Closeable {
+    private final V8Scope contextScope = new V8Scope();
     private final V8Runtime runtime;
     private final V8ValueObject program;
     private V8ValueObject typescriptV8;
@@ -34,19 +37,20 @@ public class TSCProgramContext implements Closeable {
 
     private @Nullable TSCGlobals typescriptGlobals;
     private @Nullable TSCTypeChecker typeChecker;
+    private @Nullable TSCInstanceOfChecks instanceOfChecks;
 
-    final TSCObjectCache<TSCNode> nodeCache = TSCObjectCache.usingInternalKey(TSCNode::new);
+    final TSCObjectCache<TSCNode> nodeCache = TSCObjectCache.usingInternalKey(TSCNode::wrap);
     final TSCObjectCache<TSCType> typeCache = TSCObjectCache.usingPropertyAsKey("id", TSCType::new);
     final TSCObjectCache<TSCSymbol> symbolCache = TSCObjectCache.usingInternalKey(TSCSymbol::new);
     final TSCObjectCache<TSCSignature> signatureCache = TSCObjectCache.usingInternalKey(TSCSignature::new);
 
     public TSCProgramContext(V8Runtime runtime, V8ValueObject program, V8ValueObject typescriptV8, V8ValueObject typeChecker, V8ValueFunction createScanner, V8ValueFunction getOpenRewriteId) {
         this.runtime = runtime;
-        this.program = program;
-        this.typescriptV8 = typescriptV8;
-        this.typeCheckerV8 = typeChecker;
-        this.createScanner = createScanner;
-        this.getOpenRewriteId = getOpenRewriteId;
+        this.program = contextScope.add(program);
+        this.typescriptV8 = contextScope.add(typescriptV8);
+        this.typeCheckerV8 = contextScope.add(typeChecker);
+        this.createScanner = contextScope.add(createScanner);
+        this.getOpenRewriteId = contextScope.add(getOpenRewriteId);
     }
 
     public static TSCProgramContext fromJS(V8ValueObject contextV8) {
@@ -93,6 +97,21 @@ public class TSCProgramContext implements Closeable {
         return this.typescriptGlobals;
     }
 
+    public TSCInstanceOfChecks getInstanceOfChecks() {
+        if (this.instanceOfChecks == null) {
+            this.instanceOfChecks = TSCInstanceOfChecks.wrap(contextScope, getTypeScriptGlobals());
+        }
+        return this.instanceOfChecks;
+    }
+
+    public @Nullable TSCInstanceOfChecks.InterfaceKind identifyInterfaceKind(V8Value valueV8) {
+        return this.getInstanceOfChecks().identifyInterfaceKind(valueV8);
+    }
+
+    public @Nullable TSCInstanceOfChecks.ConstructorKind identifyConstructorKind(V8Value valueV8) {
+        return this.getInstanceOfChecks().identifyConstructorKind(valueV8);
+    }
+
     public V8ValueFunction getCreateScannerFunction() {
         return this.createScanner;
     }
@@ -115,7 +134,7 @@ public class TSCProgramContext implements Closeable {
 
     @Override
     public void close() {
-        JavetResourceUtils.safeClose(program, typescriptV8, typeCheckerV8, createScanner, getOpenRewriteId);
+        JavetResourceUtils.safeClose(contextScope);
         this.nodeCache.close();
         this.typeCache.close();
         this.symbolCache.close();

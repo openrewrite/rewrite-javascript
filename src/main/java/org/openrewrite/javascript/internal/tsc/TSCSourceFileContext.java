@@ -39,6 +39,10 @@ public class TSCSourceFileContext implements Closeable {
         resetScanner(0);
     }
 
+    public TSCProgramContext getProgramContext() {
+        return programContext;
+    }
+
     public Integer scannerTokenStart() {
         try {
             return this.scanner.invokeInteger("getTokenPos");
