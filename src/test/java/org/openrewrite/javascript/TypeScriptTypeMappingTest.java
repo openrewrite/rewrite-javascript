@@ -15,6 +15,7 @@
  */
 package org.openrewrite.javascript;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.internal.StringUtils;
@@ -41,7 +42,22 @@ public class TypeScriptTypeMappingTest {
     // Add methods to access types as types are added.
 
     @Test
-    void base() {
-        System.out.println();
+    void className() {
+        JavaType.FullyQualified clazz = TypeUtils.asFullyQualified(this.firstMethodParameter("clazzA"));
+        Assertions.assertThat(clazz).isNotNull();
+        Assertions.assertThat(clazz.getFullyQualifiedName()).endsWith(".file.js.A");
+    }
+
+    public JavaType.Method methodType(String methodName) {
+        JavaType.Method type = goatType.getMethods().stream()
+                .filter(m -> m.getName().equals(methodName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Expected to find matching method named " + methodName));
+        Assertions.assertThat(type.getDeclaringType().toString()).endsWith(".file.js.TypeScriptTypeGoat");
+        return type;
+    }
+
+    public JavaType firstMethodParameter(String methodName) {
+        return methodType(methodName).getParameterTypes().get(0);
     }
 }

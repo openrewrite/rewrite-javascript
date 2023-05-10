@@ -20,22 +20,23 @@ import org.openrewrite.TypeScriptSignatureBuilder;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeMapping;
 import org.openrewrite.java.internal.JavaTypeCache;
-import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
+
+import static org.openrewrite.TypeScriptSignatureBuilder.mapFqn;
+import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.INVARIANT;
 
 @Incubating(since = "0.0")
 public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
     private final TypeScriptSignatureBuilder signatureBuilder;
-    private final IdentityHashMap<TSCType, JavaType> identityCache = new IdentityHashMap<>();
     private final JavaTypeCache typeCache;
 
     public TypeScriptTypeMapping(JavaTypeCache typeCache) {
@@ -55,29 +56,43 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             return null;
         }
 
-        JavaType existing = identityCache.get(node.getTypeForNode());
-        //        JavaType existing = typeCache.get(getTypeSIg ... TODO);
+        String signature = signatureBuilder.signature(node);
+        JavaType existing = typeCache.get(signature);
         if (existing != null) {
             return existing;
         }
 
-        TSCSymbol symbol = type.getSymbolProperty("symbol");
-        TSCNode valueDeclaration = symbol.getOptionalNodeProperty("valueDeclaration");
-        if (valueDeclaration != null) {
-            // TODO: complete the declaration kinds.
-            if (valueDeclaration.syntaxKind() == TSCSyntaxKind.ClassDeclaration ||
-                    valueDeclaration.syntaxKind() == TSCSyntaxKind.EnumDeclaration ||
-                    valueDeclaration.syntaxKind() == TSCSyntaxKind.InterfaceDeclaration) {
-                return classType(valueDeclaration);
-            } else if (valueDeclaration.syntaxKind() == TSCSyntaxKind.MethodDeclaration) {
-                return methodDeclarationType(valueDeclaration);
-            } else {
-                throw new IllegalStateException("Unable to find value declaration for symbol " + symbol);
-            }
-        } else {
-            // use node.syntaxKind()
-            return null;
+        switch (node.syntaxKind()) {
+            case VoidKeyword:
+                return JavaType.Primitive.Void;
+            case TrueKeyword:
+            case FalseKeyword:
+                return JavaType.Primitive.Boolean;
+            case ClassDeclaration:
+            case EnumDeclaration:
+            case InterfaceDeclaration:
+                return classType(node);
+            case MethodDeclaration:
+                return methodDeclarationType(node);
         }
+
+        TSCSymbol symbol = type.getOptionalSymbolProperty("symbol");
+        if (symbol != null) {
+            TSCNode valueDeclaration = symbol.getOptionalNodeProperty("valueDeclaration");
+            if (valueDeclaration != null) {
+                if (valueDeclaration.syntaxKind() == TSCSyntaxKind.ClassDeclaration ||
+                        valueDeclaration.syntaxKind() == TSCSyntaxKind.EnumDeclaration ||
+                        valueDeclaration.syntaxKind() == TSCSyntaxKind.InterfaceDeclaration) {
+                    return classType(valueDeclaration);
+                } else if (valueDeclaration.syntaxKind() == TSCSyntaxKind.MethodDeclaration) {
+                    return methodDeclarationType(valueDeclaration);
+                } else {
+                    throw new IllegalStateException("Unable to find value declaration for symbol " + symbol);
+                }
+            }
+        }
+
+        return mapNode(node);
     }
 
     @Nullable
@@ -86,12 +101,18 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             return null;
         }
 
-        TSCType type = node.getTypeForNode();
-        // FIXME: POC: Gary will expose the string ID that is unique for the ref.
-        // FIXME: The Type identity does now work for parameterized types.
-        JavaType fq = identityCache.get(type);
+        String signature = signatureBuilder.classSignature(node);
+        JavaType fq = typeCache.get(signature);
         JavaType.Class clazz = (JavaType.Class) (fq instanceof JavaType.Parameterized ? ((JavaType.Parameterized) fq).getType() : fq);
         if (clazz == null) {
+            /* Note: TS does not have the same concept as packages in java, and classes may be declared as returns in method declarations so FQNs work differently.
+             * V1 intentionally sets types that may be ambiguous to null to prevent incorrect results from recipes caused by bad type attribution.
+             */
+            if (isNotValidClassDeclaration(node)) {
+                typeCache.put(signature, null);
+                return null;
+            }
+
             TSCSyntaxKind syntaxKind = node.syntaxKind();
             JavaType.FullyQualified.Kind kind;
             switch (syntaxKind) {
@@ -108,35 +129,64 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             clazz = new JavaType.Class(
                     null,
                     mapFlags(), // FIXME
-                    mapFqn(node), // FIXME
+                    mapFqn(node), // FIXME: using `getSourceFile` only works for simple case.
                     kind,
                     null, null, null, null, null, null, null
             );
 
-            identityCache.put(type, clazz);
+            typeCache.put(signature, clazz);
 
             JavaType.FullyQualified owner = null;
 
             JavaType.FullyQualified supertype = null;
             List<JavaType.FullyQualified> interfaces = null;
 
-            List<JavaType.Variable> fields = null;
-            List<JavaType.Method> methods = null;
+            List<TSCNode> propertyNodes = null;
+            List<TSCNode> methodNodes = null;
+            if (node.hasProperty("members")) {
+                for (TSCNode member : node.getNodeListProperty("members")) {
+                    if (member.syntaxKind() == TSCSyntaxKind.MethodDeclaration) {
+                        if (methodNodes == null) {
+                            methodNodes = new ArrayList<>(1);
+                        }
+                        methodNodes.add(member);
+                    } else if (member.syntaxKind() == TSCSyntaxKind.PropertyDeclaration) {
+                        if (propertyNodes == null) {
+                            propertyNodes = new ArrayList<>(1);
+                        }
+                        propertyNodes.add(member);
+                    } else {
+                        throw new IllegalStateException("Unable to find value declaration for symbol " + member);
+                    }
+                }
+            }
 
-            // FIXME: detect field or method and add to the appropriate list.
-            for (TSCSymbol property : type.getTypeProperties()) {
+            List<JavaType.Variable> members = null;
+            if (propertyNodes != null) {
+                members = new ArrayList<>(propertyNodes.size());
+                for (TSCNode propertyNode : propertyNodes) {
+                    members.add(variableType(propertyNode, clazz));
+                }
+            }
+
+            List<JavaType.Method> methods = null;
+            if (methodNodes != null) {
+                methods = new ArrayList<>(methodNodes.size());
+                for (TSCNode methodNode : methodNodes) {
+                    methods.add(methodDeclarationType(methodNode, clazz));
+                }
             }
 
             List<JavaType.FullyQualified> annotations = Collections.emptyList();
-            clazz.unsafeSet(null, supertype, owner, annotations, interfaces, fields, methods);
+            clazz.unsafeSet(null, supertype, owner, annotations, interfaces, members, methods);
         }
 
         if (node.hasProperty("typeParameters")) {
-            // FIXME: POC
-            JavaType jt = identityCache.get(type);
+            String ptSignature = signatureBuilder.parameterizedSignature(node);
+            JavaType jt = typeCache.get(ptSignature);
             if (jt == null) {
                 JavaType.Parameterized pt = new JavaType.Parameterized(null, null, null);
-                identityCache.put(type, pt);
+                typeCache.put(ptSignature, pt);
 
                 List<JavaType> typeParams = null; // FIXME
                 // ADD type params.
@@ -148,14 +198,109 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return clazz;
     }
 
+    public JavaType.GenericTypeVariable generic(TSCNode node) {
+        String signature = signatureBuilder.genericSignature(node);
+        JavaType.GenericTypeVariable existing = typeCache.get(signature);
+        if (existing != null) {
+            return existing;
+        }
+
+        String name = node.getText();
+        JavaType.GenericTypeVariable generic = new JavaType.GenericTypeVariable(null, name, INVARIANT, null);
+        typeCache.put(signature, generic);
+        return generic;
+
+    }
+
     @Nullable
     public JavaType.Method methodDeclarationType(TSCNode node) {
-        return null;
+        TSCNode parent = node.getParent();
+        assert parent != null;
+
+        if (!(parent.syntaxKind() == TSCSyntaxKind.ClassDeclaration ||
+                parent.syntaxKind() == TSCSyntaxKind.InterfaceDeclaration ||
+                parent.syntaxKind() == TSCSyntaxKind.EnumDeclaration)) {
+            throw new IllegalStateException("implement me.");
+        }
+
+        return methodDeclarationType(node, classType(parent));
+    }
+
+    @Nullable
+    public JavaType.Method methodDeclarationType(TSCNode node, @Nullable JavaType.FullyQualified declaringType) {
+
+        String signature = signatureBuilder.methodSignature(node);
+        JavaType.Method existing = typeCache.get(signature);
+        if (existing != null) {
+            return existing;
+        }
+
+        List<String> paramNames = null;
+        List<String> defaultValues = null;
+
+        boolean isConstructor = false; //FIXME: detect constructor.
+        JavaType.Method method = new JavaType.Method(
+                null,
+                mapFlags(),// FIXME.
+                null,
+                isConstructor ? "<constructor>" : node.getNodeProperty("name").getText(),
+                null,
+                paramNames,
+                null, null, null,
+                defaultValues
+        );
+        typeCache.put(signature, method);
+
+        List<JavaType.FullyQualified> exceptionTypes = null;
+
+        JavaType.FullyQualified resolvedDeclaringType = declaringType;
+        if (declaringType == null) {
+            throw new IllegalStateException("implement me.");
+        }
+
+        if (resolvedDeclaringType == null) {
+            return null;
+        }
+
+        JavaType returnType = null; // FIXME.
+
+        List<JavaType> parameterTypes = null;
+        List<TSCNode> paramNodes = node.getOptionalNodeListProperty("parameters");
+        if (paramNodes != null && !paramNodes.isEmpty()) {
+            parameterTypes = new ArrayList<>(paramNodes.size());
+            for (TSCNode paramNode : paramNodes) {
+                TSCNode typeNode = paramNode.getOptionalNodeProperty("type");
+                if (typeNode == null) {
+                    throw new IllegalStateException("Find the type");
+                } else {
+                    if (typeNode.syntaxKind() == TSCSyntaxKind.TypeReference) {
+                        parameterTypes.add(type(typeNode));
+                    } else {
+                        throw new IllegalStateException("implement me.");
+                    }
+                }
+            }
+        }
+
+        method.unsafeSet(resolvedDeclaringType,
+                isConstructor ? resolvedDeclaringType : returnType,
+                parameterTypes, exceptionTypes, Collections.emptyList()); // FIXME: add annotations if necessary.
+        return method;
     }
 
     @Nullable
     public JavaType.Method methodInvocationType(TSCNode node) {
-        return null;
+        // FIXME
+        return new JavaType.Method(
+                null,
+                mapFlags(),// FIXME.
+                null,
+                mapNameExpression(node.getNodeProperty("expression")),
+                null,
+                null,
+                null, null, null,
+                null
+        );
     }
 
     public JavaType.Primitive primitive(TSCNode node) {
@@ -167,20 +312,41 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return null;
     }
 
-    // TEMP ...
-    private String mapFqn(TSCNode node) {
-        String dirty = node.getSourceFile().getPath().replace("/", ".");
-        String clean = dirty.startsWith(".") ? dirty.substring(1) : dirty;
-        return clean + "." + (node.hasProperty("name") ? node.getNodeProperty("name").getText() : "");
+    @Nullable
+    public JavaType.Variable variableType(TSCNode node, @Nullable JavaType.FullyQualified declaringType) {
+        return null;
     }
 
-    // FIME: POC -- resolve parents to SF, create cleaned FQN.
-    private void mapFqn(TSCNode node, StringBuilder sb) {
-        boolean detectParent = false; // stop at sourceFile
-        String dirty = node.getSourceFile().getPath().replace("/", ".");
-        String clean = dirty.startsWith(".") ? dirty.substring(1) : dirty;
-        if (detectParent) {
-//            sb.append(mapFqn(obj ...));
+    // FIXME:  traverse up to SourceFile. Return true if parents are all valid.
+    private boolean isNotValidClassDeclaration(TSCNode node) {
+        return false;
+    }
+
+    private String mapNameExpression(TSCNode node) {
+        return "fix me";
+    }
+
+    @Nullable
+    private JavaType mapNode(TSCNode node) {
+        switch (node.syntaxKind()) {
+            case Identifier:
+            case TypeReference: {
+                TSCType type = node.getTypeChecker().getTypeFromTypeNode(node);
+                TSCSymbol symbol = type.getTypeChecker().getTypeFromTypeNode(node).getOptionalSymbolProperty("symbol");
+                if (symbol == null) {
+                    return null;
+                }
+
+                if (symbol.getDeclarations() != null && symbol.getDeclarations().size() == 1) {
+                    return type(symbol.getDeclarations().get(0));
+                } else {
+                    return JavaType.ShallowClass.build("analysis.MergedTypesAreNotSupported");
+                }
+            }
+            case TypeParameter:
+                return generic(node);
+            default:
+                throw new IllegalStateException("implement me: " + node.syntaxKind());
         }
     }
 
