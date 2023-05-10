@@ -20,8 +20,10 @@ import org.openrewrite.TypeScriptSignatureBuilder;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeMapping;
 import org.openrewrite.java.internal.JavaTypeCache;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
+import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
@@ -32,8 +34,6 @@ import java.util.List;
 @Incubating(since = "0.0")
 public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
-    // FIXME: we need to pass in the owner (source file) if it is not accessible from the Node.
-
     private final TypeScriptSignatureBuilder signatureBuilder;
     private final IdentityHashMap<TSCType, JavaType> identityCache = new IdentityHashMap<>();
     private final JavaTypeCache typeCache;
@@ -43,35 +43,41 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         this.typeCache = typeCache;
     }
 
-    @Override
-    public JavaType type(@Nullable TSCNode node) {
-        // FIXME: we need to pass in the owner (source file) if it is not accessible from the Node.
-        return type(node, node);
-    }
-
     // TODO: change TSCType to TSCType.
     @SuppressWarnings("DataFlowIssue")
-    public JavaType type(@Nullable TSCNode node, TSCNode owner) {
+    public JavaType type(@Nullable TSCNode node) {
         if (node == null) {
             return null;
         }
 
         TSCType type = node.getTypeForNode();
+        if (type == null) {
+            return null;
+        }
 
-        // May require identity hashmap.
-        String signature = signatureBuilder.signature(type);
-
-        JavaType existing = signature == null ? null : typeCache.get(signature);
-//        JavaType existing = typeCache.get(signature);
+        JavaType existing = identityCache.get(node.getTypeForNode());
+        //        JavaType existing = typeCache.get(getTypeSIg ... TODO);
         if (existing != null) {
             return existing;
         }
 
-        if (node.syntaxKind() == TSCSyntaxKind.ClassDeclaration) {
-            return classType(node);
+        TSCSymbol symbol = type.getSymbolProperty("symbol");
+        TSCNode valueDeclaration = symbol.getOptionalNodeProperty("valueDeclaration");
+        if (valueDeclaration != null) {
+            // TODO: complete the declaration kinds.
+            if (valueDeclaration.syntaxKind() == TSCSyntaxKind.ClassDeclaration ||
+                    valueDeclaration.syntaxKind() == TSCSyntaxKind.EnumDeclaration ||
+                    valueDeclaration.syntaxKind() == TSCSyntaxKind.InterfaceDeclaration) {
+                return classType(valueDeclaration);
+            } else if (valueDeclaration.syntaxKind() == TSCSyntaxKind.MethodDeclaration) {
+                return methodDeclarationType(valueDeclaration);
+            } else {
+                throw new IllegalStateException("Unable to find value declaration for symbol " + symbol);
+            }
+        } else {
+            // use node.syntaxKind()
+            return null;
         }
-
-        return null;
     }
 
     @Nullable
@@ -81,15 +87,29 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         }
 
         TSCType type = node.getTypeForNode();
-        // FIXME: POC
+        // FIXME: POC: Gary will expose the string ID that is unique for the ref.
+        // FIXME: The Type identity does now work for parameterized types.
         JavaType fq = identityCache.get(type);
         JavaType.Class clazz = (JavaType.Class) (fq instanceof JavaType.Parameterized ? ((JavaType.Parameterized) fq).getType() : fq);
         if (clazz == null) {
+            TSCSyntaxKind syntaxKind = node.syntaxKind();
+            JavaType.FullyQualified.Kind kind;
+            switch (syntaxKind) {
+                case EnumDeclaration:
+                    kind = JavaType.FullyQualified.Kind.Enum;
+                    break;
+                case InterfaceDeclaration:
+                    kind = JavaType.FullyQualified.Kind.Interface;
+                    break;
+                default:
+                    kind = JavaType.FullyQualified.Kind.Class;
+            }
+
             clazz = new JavaType.Class(
                     null,
                     mapFlags(), // FIXME
-                    "getFQN", // FIXME
-                    mapClassKind(), // FIXME
+                    mapFqn(node), // FIXME
+                    kind,
                     null, null, null, null, null, null, null
             );
 
@@ -103,12 +123,15 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             List<JavaType.Variable> fields = null;
             List<JavaType.Method> methods = null;
 
+            // FIXME: detect field or method and add to the appropriate list.
+            for (TSCSymbol property : type.getTypeProperties()) {
+            }
+
             List<JavaType.FullyQualified> annotations = Collections.emptyList();
             clazz.unsafeSet(null, supertype, owner, annotations, interfaces, fields, methods);
         }
 
-        boolean hasTypeParameters = false; // FIXME replace condition with type parameters check.
-        if (hasTypeParameters) {
+        if (node.hasProperty("typeParameters")) {
             // FIXME: POC
             JavaType jt = identityCache.get(type);
             if (jt == null) {
@@ -119,7 +142,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 // ADD type params.
                 pt.unsafeSet(clazz, typeParams);
             } else if (!(jt instanceof JavaType.Parameterized)) {
-                throw new UnsupportedOperationException("this should not have happened.");
+//                throw new UnsupportedOperationException("this should not have happened.");
             }
         }
         return clazz;
@@ -142,6 +165,23 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
     @Nullable
     public JavaType.Variable variableType(TSCNode node) {
         return null;
+    }
+
+    // TEMP ...
+    private String mapFqn(TSCNode node) {
+        String dirty = node.getSourceFile().getPath().replace("/", ".");
+        String clean = dirty.startsWith(".") ? dirty.substring(1) : dirty;
+        return clean + "." + (node.hasProperty("name") ? node.getNodeProperty("name").getText() : "");
+    }
+
+    // FIME: POC -- resolve parents to SF, create cleaned FQN.
+    private void mapFqn(TSCNode node, StringBuilder sb) {
+        boolean detectParent = false; // stop at sourceFile
+        String dirty = node.getSourceFile().getPath().replace("/", ".");
+        String clean = dirty.startsWith(".") ? dirty.substring(1) : dirty;
+        if (detectParent) {
+//            sb.append(mapFqn(obj ...));
+        }
     }
 
     private long mapFlags() {

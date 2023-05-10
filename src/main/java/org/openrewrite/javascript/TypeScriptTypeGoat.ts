@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 // TODO: add generic params.
-abstract class TypeScriptTypeGoat {
+abstract class TypeScriptTypeGoat<T, S extends PT<S> & C> {
     clazz(n: C) {
     }
 }
 
-interface C{
+interface C {
 }
 
 interface PT<T> {

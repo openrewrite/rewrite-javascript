@@ -62,4 +62,20 @@ public class ClassDeclarationTest extends ParserTest {
            )
         );
     }
+
+    @Test
+    void parameterizedType() {
+        rewriteRun(
+          javascript(
+            """
+              class Foo<T, S extends PT<S> & C> {
+              }
+              interface C {
+              }
+              interface PT<T> {
+              }
+              """
+          )
+        );
+    }
 }

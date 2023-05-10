@@ -15,6 +15,7 @@
  */
 package org.openrewrite.javascript.internal;
 
+import org.openrewrite.ExecutionContext;
 import org.openrewrite.FileAttributes;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
@@ -1339,14 +1340,21 @@ public class TypeScriptParserVisitor {
         implementMe(node, "modifiers");
         implementMe(node, "expression");
         implementMe(node, "default");
-        implementMe(node, "constraint");
-        JContainer<TypeTree> bounds = null;
+        Expression name = (Expression) visitNode(node.getNodeProperty("name"));
+        JContainer<TypeTree> bounds = !node.hasProperty("constraint") ? null :
+                JContainer.build(
+                        sourceBefore(TSCSyntaxKind.ExtendsKeyword),
+                        convertAll(node.getNodeProperty("constraint").syntaxKind() == TSCSyntaxKind.IntersectionType ?
+                                node.getNodeProperty("constraint").getNodeListProperty("types") :
+                                singletonList(node.getNodeProperty("constraint")), t -> sourceBefore(TSCSyntaxKind.AmpersandToken), noDelim),
+                        Markers.EMPTY);
+
         return new J.TypeParameter(
                 randomId(),
                 prefix,
                 Markers.EMPTY,
                 emptyList(), // FIXME
-                (Expression) visitNode(node.getNodeProperty("name")),
+                name,
                 bounds
         );
     }
@@ -1762,6 +1770,9 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private final Function<TSCNode, Space> commaDelim = ignored -> sourceBefore(TSCSyntaxKind.CommaToken);
+    private final Function<TSCNode, Space> noDelim = ignored -> EMPTY;
+
     /**
      * Returns the current cursor position in the TSC.Context.
      */
@@ -1821,6 +1832,32 @@ public class TypeScriptParserVisitor {
 
     private String tokenStreamDebug() {
         return String.format("[start=%d, end=%d, text=`%s`]", this.cursorContext.scannerTokenStart(), this.cursorContext.scannerTokenEnd(), this.cursorContext.scannerTokenText().replace("\n", "⏎"));
+    }
+
+    private <J2 extends J> List<JRightPadded<J2>> convertAll(List<TSCNode> elements,
+                                                             Function<TSCNode, Space> innerSuffix,
+                                                             Function<TSCNode, Space> suffix) {
+        if (elements.isEmpty()) {
+            return emptyList();
+        }
+
+        List<JRightPadded<J2>> converted = new ArrayList<>(elements.size());
+        for (int i = 0; i < elements.size(); i++) {
+            TSCNode element = elements.get(i);
+            //noinspection unchecked
+            J2 j = (J2) visitNode(element);
+            Space after = i == elements.size() - 1 ? suffix.apply(element) : innerSuffix.apply(element);
+            if (j == null && i < elements.size() - 1) {
+                continue;
+            }
+            if (j == null) {
+                //noinspection unchecked
+                j = (J2) new J.Empty(randomId(), EMPTY, Markers.EMPTY);
+            }
+            JRightPadded<J2> rightPadded = padRight(j, after);
+            converted.add(rightPadded);
+        }
+        return converted.isEmpty() ? emptyList() : converted;
     }
 
     private <T extends J> JContainer<T> mapContainer(TSCSyntaxKind open, List<TSCNode> nodes, @Nullable TSCSyntaxKind delimiter, TSCSyntaxKind close, Function<TSCNode, T> visitFn) {
