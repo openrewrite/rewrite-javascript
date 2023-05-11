@@ -17,6 +17,7 @@ package org.openrewrite;
 
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeSignatureBuilder;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
@@ -41,34 +42,37 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
 
         assert object instanceof TSCNode;
         TSCNode node = (TSCNode) object;
-        switch (node.syntaxKind()) {
-            case ClassDeclaration:
-            case EnumDeclaration:
-            case InterfaceDeclaration:
-                return node.hasProperty("typeParameters") && !node.getNodeListProperty("typeParameters").isEmpty() ? parameterizedSignature(node) : classSignature(node);
-            case ConstructSignature:
-            case MethodDeclaration:
-            case MethodSignature:
-                return methodSignature(node);
-            case TypeParameter:
-                return genericSignature(node);
-            default:
-                return mapNode(node);
+        if (node.isClassDeclaration()) {
+            return node.hasProperty("typeParameters") && !node.getNodeListProperty("typeParameters").isEmpty() ? parameterizedSignature(node) : classSignature(node);
+        } else if (node.isPrimitive()) {
+            return primitiveSignature(node);
+        } else if (node.syntaxKind() == TSCSyntaxKind.ArrayType) {
+            return arraySignature(node);
+        } else if (node.syntaxKind() == TSCSyntaxKind.Constructor ||
+                node.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
+                node.syntaxKind() == TSCSyntaxKind.MethodDeclaration ||
+                node.syntaxKind() == TSCSyntaxKind.MethodSignature) {
+            return methodSignature(node);
+        } else if (node.syntaxKind() == TSCSyntaxKind.TypeParameter) {
+            return genericSignature(node);
+        } else {
+            return mapNode(node);
         }
     }
 
     @Override
     public String arraySignature(Object object) {
-        return null;
+        assert object instanceof TSCNode;
+        TSCNode node = (TSCNode) object;
+        TSCNode elementType = node.getNodeProperty("elementType");
+        return signature(elementType) + trimWhitespace(node.getText().substring(elementType.getText().length()));
     }
 
     @Override
     public String classSignature(Object object) {
         assert object instanceof TSCNode;
         TSCNode node = (TSCNode) object;
-        assert (node.syntaxKind() == TSCSyntaxKind.ClassDeclaration ||
-                node.syntaxKind() == TSCSyntaxKind.InterfaceDeclaration ||
-                node.syntaxKind() == TSCSyntaxKind.EnumDeclaration);
+        assert node.isClassDeclaration();
 
         StringBuilder signature = new StringBuilder();
         mapFqn(node, signature);
@@ -115,29 +119,33 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
     public String methodSignature(Object object) {
         assert object instanceof TSCNode;
         TSCNode node = (TSCNode) object;
-        assert (node.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
+        assert (node.syntaxKind() == TSCSyntaxKind.Constructor ||
+                node.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
                 node.syntaxKind() == TSCSyntaxKind.MethodDeclaration ||
                 node.syntaxKind() == TSCSyntaxKind.MethodSignature);
 
         StringBuilder signature = new StringBuilder();
-        boolean isConstructor = node.syntaxKind() == TSCSyntaxKind.ConstructSignature;
+        boolean isConstructor = node.syntaxKind() == TSCSyntaxKind.Constructor;
 
-        String name = isConstructor ? "TODO:" : classSignature(node.getNodeProperty("parent"));
-        signature.append(name);
+        String parent = classSignature(node.getNodeProperty("parent"));
+        signature.append(parent);
+        String name;
+        String returnSignature;
         if (isConstructor) {
-            throw new IllegalStateException("implement me.");
+            name = "<constructor>";
+            returnSignature = parent;
         } else {
-            String returnSignature;
+            name = node.getNodeProperty("name").getText();
             if (node.hasProperty("type")) {
                 returnSignature = signature(node.getNodeProperty("type"));
             } else {
                 returnSignature = "void";
             }
-            signature.append("{name=")
-                    .append(node.getNodeProperty("name").getText())
-                    .append(",return=")
-                    .append(returnSignature);
         }
+        signature.append("{name=")
+                .append(name)
+                .append(",return=")
+                .append(returnSignature);
         return signature.append(",parameters=")
                 .append(methodArgumentSignature(node))
                 .append("}").toString();
@@ -159,7 +167,23 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
 
     @Override
     public String primitiveSignature(Object object) {
-        return null;
+        assert object instanceof TSCNode;
+        TSCNode node = (TSCNode) object;
+        assert node.isPrimitive();
+        switch (node.syntaxKind()) {
+            case BooleanKeyword:
+            case TrueKeyword:
+            case FalseKeyword:
+                return JavaType.Primitive.Boolean.getKeyword();
+            case NumberKeyword:
+                return "number";
+            case StringKeyword:
+                return JavaType.Primitive.String.getKeyword();
+            case VoidKeyword:
+                return JavaType.Primitive.Void.getKeyword();
+            default:
+                throw new IllegalArgumentException("Unexpected primitive type " + object);
+        }
     }
 
     private String methodArgumentSignature(TSCNode node) {
@@ -203,6 +227,10 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         switch (node.syntaxKind()) {
             case Parameter:
                 TSCNode typeNode = node.getNodeProperty("type");
+                if (typeNode.getTypeChecker().getTypeFromTypeNode(typeNode).getOptionalSymbolProperty("symbol") == null) {
+                    return signature(typeNode);
+                }
+
                 TSCNode declaration = getDeclaration(typeNode.getTypeChecker().getTypeFromTypeNode(typeNode).getSymbolForType().getDeclarations());
                 if (declaration != null) {
                     return signature(declaration);
@@ -233,5 +261,9 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
             // FIXME: Add support for merged declarations.
             return null;
         }
+    }
+
+    private String trimWhitespace(String s) {
+        return s.replaceAll("\\s+", "");
     }
 }

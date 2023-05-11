@@ -319,4 +319,19 @@ public class TSCNode implements TSCV8Backed {
     public V8ValueObject getBackingV8Object() {
         return this.nodeV8;
     }
+
+    public boolean isClassDeclaration() {
+        return this.syntaxKind() == TSCSyntaxKind.ClassDeclaration ||
+                this.syntaxKind() == TSCSyntaxKind.InterfaceDeclaration ||
+                this.syntaxKind() == TSCSyntaxKind.EnumDeclaration;
+    }
+
+    public boolean isPrimitive() {
+        return this.syntaxKind() == TSCSyntaxKind.BooleanKeyword ||
+                this.syntaxKind() == TSCSyntaxKind.TrueKeyword ||
+                this.syntaxKind() == TSCSyntaxKind.FalseKeyword ||
+                this.syntaxKind() == TSCSyntaxKind.NumberKeyword ||
+                this.syntaxKind() == TSCSyntaxKind.StringKeyword ||
+                this.syntaxKind() == TSCSyntaxKind.VoidKeyword;
+    }
 }

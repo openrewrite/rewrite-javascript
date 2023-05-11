@@ -15,7 +15,6 @@
  */
 package org.openrewrite.javascript.internal;
 
-import org.openrewrite.ExecutionContext;
 import org.openrewrite.FileAttributes;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
@@ -458,7 +457,6 @@ public class TypeScriptParserVisitor {
                 type
         );
     }
-
 
     private J.ClassDeclaration visitClassDeclaration(TSCNode node) {
         Space prefix = whitespace();

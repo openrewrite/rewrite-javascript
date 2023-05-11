@@ -62,37 +62,38 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             return existing;
         }
 
-        switch (node.syntaxKind()) {
-            case VoidKeyword:
-                return JavaType.Primitive.Void;
-            case TrueKeyword:
-            case FalseKeyword:
-                return JavaType.Primitive.Boolean;
-            case ClassDeclaration:
-            case EnumDeclaration:
-            case InterfaceDeclaration:
-                return classType(node);
-            case MethodDeclaration:
-                return methodDeclarationType(node);
-        }
-
-        TSCSymbol symbol = type.getOptionalSymbolProperty("symbol");
-        if (symbol != null) {
-            TSCNode valueDeclaration = symbol.getOptionalNodeProperty("valueDeclaration");
-            if (valueDeclaration != null) {
-                if (valueDeclaration.syntaxKind() == TSCSyntaxKind.ClassDeclaration ||
-                        valueDeclaration.syntaxKind() == TSCSyntaxKind.EnumDeclaration ||
-                        valueDeclaration.syntaxKind() == TSCSyntaxKind.InterfaceDeclaration) {
-                    return classType(valueDeclaration);
-                } else if (valueDeclaration.syntaxKind() == TSCSyntaxKind.MethodDeclaration) {
-                    return methodDeclarationType(valueDeclaration);
-                } else {
-                    throw new IllegalStateException("Unable to find value declaration for symbol " + symbol);
+        if (node.isClassDeclaration()) {
+            return classType(node);
+        } else if (node.isPrimitive()) {
+            return primitive(node);
+        } else if (isMethodDeclaration(node)) {
+            return methodDeclarationType(node);
+        } else {
+            // Get the type attribution of identifiers.
+            TSCSymbol symbol = type.getOptionalSymbolProperty("symbol");
+            if (symbol != null) {
+                TSCNode valueDeclaration = symbol.getOptionalNodeProperty("valueDeclaration");
+                if (valueDeclaration != null) {
+                    if (valueDeclaration.isClassDeclaration()) {
+                        return classType(valueDeclaration);
+                    } else if (isMethodDeclaration(node)) {
+                        return methodDeclarationType(valueDeclaration);
+                    } else {
+                        throw new IllegalStateException("Unable to find value declaration for symbol " + symbol);
+                    }
                 }
             }
+            return mapNode(node);
         }
+    }
 
-        return mapNode(node);
+    private boolean isMethodDeclaration(TSCNode node) {
+        return node.syntaxKind() == TSCSyntaxKind.Constructor ||
+                node.syntaxKind() == TSCSyntaxKind.MethodDeclaration
+                // TODO: signatures require these, so it may be necessary for JavaType.Method. IFF needed on TypeMapping, this may be moved to TSCNode.
+//                node.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
+//                node.syntaxKind() == TSCSyntaxKind.MethodSignature
+                ;
     }
 
     @Nullable
@@ -145,7 +146,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             List<TSCNode> methodNodes = null;
             if (node.hasProperty("members")) {
                 for (TSCNode member : node.getNodeListProperty("members")) {
-                    if (member.syntaxKind() == TSCSyntaxKind.MethodDeclaration) {
+                    if (member.syntaxKind() == TSCSyntaxKind.MethodDeclaration || member.syntaxKind() == TSCSyntaxKind.Constructor) {
                         if (methodNodes == null) {
                             methodNodes = new ArrayList<>(1);
                         }
@@ -238,7 +239,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         List<String> paramNames = null;
         List<String> defaultValues = null;
 
-        boolean isConstructor = false; //FIXME: detect constructor.
+        boolean isConstructor = node.syntaxKind() == TSCSyntaxKind.Constructor;
         JavaType.Method method = new JavaType.Method(
                 null,
                 mapFlags(),// FIXME.
