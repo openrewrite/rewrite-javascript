@@ -228,4 +228,81 @@ public class V8InteropTests {
         );
     }
 
+    @Test
+    public void testGenericTypeBound() {
+        parseSingleSource(
+                """
+                class A<T extends string> {}
+                """,
+                (root, ctx) -> {
+                    TSCNode classDef = root.firstNodeContaining("class A");
+                    TSCType classType = classDef.getTypeForNode();
+                    assertNotNull(classType);
+
+                    TSCType.InterfaceType asInterfaceType = classType.assertInterfaceType();
+                    List<TSCType> typeParams = asInterfaceType.getTypeParameters();
+                    assertNotNull(typeParams);
+                    assertEquals(1, typeParams.size());
+
+                    TSCType typeParam = typeParams.get(0);
+                    assertNotNull(typeParam);
+
+                    TSCType typeParamConstraint = typeParam.getConstraint();
+                    assertNotNull(typeParamConstraint);
+
+                    TSCType globalStringType = ctx.getProgramContext().getTypeChecker().getStringType();
+                    assertSame(globalStringType, typeParamConstraint);
+                }
+        );
+    }
+
+    @Test
+    public void testGenericTypeBoundWithLocalReference() {
+        parseSingleSource(
+                """
+                class A<T1, T2 extends B<string, T1, number>> {}
+                interface B<U1, U2, U3> {
+                    foo(): [U1, U2, U3];
+                }
+                """,
+                (root, ctx) -> {
+                    TSCType classA = root.firstNodeContaining("class A").getTypeForNode();
+                    assertNotNull(classA);
+
+                    TSCType interfaceB = root.firstNodeContaining("interface B").getTypeForNode();
+                    assertNotNull(interfaceB);
+
+                    TSCType.InterfaceType asInterfaceType = classA.assertInterfaceType();
+                    List<TSCType> typeParams = asInterfaceType.getTypeParameters();
+                    assertNotNull(typeParams);
+                    assertEquals(2, typeParams.size());
+
+                    TSCType typeParam1 = typeParams.get(0);
+                    TSCType typeParam2 = typeParams.get(1);
+                    assertNotNull(typeParam1);
+                    assertNotNull(typeParam2);
+
+                    TSCType typeParam1Constraint = typeParam1.getConstraint();
+                    TSCType typeParam2Constraint = typeParam2.getConstraint();
+                    assertNull(typeParam1Constraint);
+                    assertNotNull(typeParam2Constraint);
+
+                    TSCType globalStringType = ctx.getProgramContext().getTypeChecker().getStringType();
+                    TSCType globalNumberType = ctx.getProgramContext().getTypeChecker().getNumberType();
+
+                    // The constraints type args are those passed to `B` in `T2 extends B<string, T1, number>`
+                    List<TSCType> constraintTypeArgs = typeParam2Constraint.assertTypeReference().getTypeArguments();
+                    // There are *four* args, even though `B` only has three params; unused local type variables are passed along.
+                    assertEquals(4, constraintTypeArgs.size());
+                    // Used type variables, i.e. `string, T1, number`
+                    assertSame(globalStringType, constraintTypeArgs.get(0));
+                    assertSame(typeParam1, constraintTypeArgs.get(1));
+                    assertSame(globalNumberType, constraintTypeArgs.get(2));
+                    // Remaining type variables, i.e. `T2`
+                    assertSame(typeParam2, constraintTypeArgs.get(3));
+                }
+        );
+    }
+
+
 }

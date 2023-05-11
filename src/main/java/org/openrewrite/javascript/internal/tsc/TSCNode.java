@@ -19,6 +19,7 @@ import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueObject;
+import org.openrewrite.DebugOnly;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
@@ -134,16 +135,34 @@ public class TSCNode implements TSCV8Backed {
         return this.programContext.getTypeChecker().getTypeAtLocation(this);
     }
 
-    /**
-     * Only intended for debugging and tests.
-     */
+    @DebugOnly
+    public TSCNode firstNodeContaining(String text) {
+        return firstNodeContaining(text, null);
+    }
+
+    @DebugOnly
+    public TSCNode firstNodeContaining(String text, @Nullable TSCSyntaxKind kind) {
+        for (TSCNode child : this.getAllChildNodes()) {
+            TSCNode found = child.firstNodeContaining(text, kind);
+            if (found != null) {
+                return found;
+            }
+        }
+        if (!this.getText().contains(text)) {
+            return null;
+        }
+        if (kind != null && this.syntaxKind() != kind) {
+            return null;
+        }
+        return this;
+    }
+
+    @DebugOnly
     public TSCNode firstNodeWithText(String text) {
         return Objects.requireNonNull(firstNodeWithTextOrNull(text));
     }
 
-    /**
-     * Only intended for debugging and tests.
-     */
+    @DebugOnly
     public @Nullable TSCNode firstNodeWithTextOrNull(String text) {
         for (TSCNode child : this.getAllChildNodes()) {
             TSCNode found = child.firstNodeWithTextOrNull(text);
@@ -210,6 +229,21 @@ public class TSCNode implements TSCV8Backed {
         return getOptionalNodeProperty("parent");
     }
 
+    @DebugOnly
+    public @Nullable TSCNode nearestContainingNamedDeclaration() {
+        return Objects.requireNonNull(nearestContainingNamedDeclarationOrNull());
+    }
+
+    @DebugOnly
+    public @Nullable TSCNode nearestContainingNamedDeclarationOrNull() {
+        for (TSCNode node = this.getParent(); node != null; node = node.getParent()) {
+            if (node.hasProperty("name")) {
+                return node;
+            }
+        }
+        return null;
+    }
+
     @Deprecated
     @Nullable
     public TSCNode getChildNode(String name) {
@@ -262,34 +296,9 @@ public class TSCNode implements TSCV8Backed {
         }
     }
 
+    @DebugOnly
     public void printTree(PrintStream ps) {
         printTree(ps, "");
-    }
-
-    // FIXME: Remove. Temporary method to view object
-    public V8ValueObject getObject() {
-        return nodeV8;
-    }
-
-    // FIXME: Remove. Temporary method to view context
-    public TSCProgramContext getContext() {
-        return this.programContext;
-    }
-
-    public List<String> getOwnPropertyNames() {
-        try {
-            return this.nodeV8.getOwnPropertyNames().getOwnPropertyNameStrings();
-        } catch (JavetException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    public List<String> getPropertyNames() {
-        try {
-            return this.nodeV8.getPropertyNames().getOwnPropertyNameStrings();
-        } catch (JavetException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     private void printTree(PrintStream ps, String indent) {

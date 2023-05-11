@@ -20,6 +20,7 @@ import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
+import lombok.Value;
 import org.openrewrite.DebugOnly;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
@@ -31,6 +32,23 @@ import java.util.Map;
 import static org.openrewrite.javascript.internal.tsc.TSCConversions.*;
 
 public interface TSCV8Backed {
+
+    interface Wrapper extends TSCV8Backed {
+        TSCV8Backed wrapped();
+
+        default TSCProgramContext getProgramContext() {
+            return wrapped().getProgramContext();
+        }
+
+        default V8ValueObject getBackingV8Object() {
+            return wrapped().getBackingV8Object();
+        }
+    }
+
+    @Value
+    class DebugInfo {
+        Map<String, Object> properties;
+    }
 
     /**
      * For mapping objects that don't have long-lived V8 wrappers.
@@ -63,7 +81,7 @@ public interface TSCV8Backed {
 
     @DebugOnly
     default Object getDebugInfo() {
-        return getAllPropertiesForDebugging();
+        return new DebugInfo(getAllPropertiesForDebugging());
     }
 
     default V8Value getPropertyUnsafe(String name) {
