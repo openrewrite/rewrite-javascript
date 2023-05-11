@@ -5,9 +5,9 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public interface TSCTypeAccessors extends TSCV8Backed {
 
@@ -22,7 +22,12 @@ public interface TSCTypeAccessors extends TSCV8Backed {
     }
 
     default TSCType.DebugInfo getDebugInfo() {
-        return new TSCType.DebugInfo(listMatchingTypeFlags(), listMatchingObjectFlags(), getAllPropertiesForDebugging());
+        return new TSCType.DebugInfo(
+                listMatchingTypeFlags(),
+                listMatchingObjectFlags(),
+                getAllPropertiesForDebugging(),
+                listMatchingTypeInterfaces()
+        );
     }
 
     default long getTypeId() {
@@ -45,7 +50,9 @@ public interface TSCTypeAccessors extends TSCV8Backed {
         return flag.code == this.getTypeFlags();
     }
 
-    /** This is not what you usually want. Type flags are a bit field. */
+    /**
+     * This is not what you usually want. Type flags are a bit field.
+     */
     default TSCTypeFlag getExactTypeFlag() {
         return TSCTypeFlag.fromMaskExact(this.getTypeFlags());
     }
@@ -100,7 +107,7 @@ public interface TSCTypeAccessors extends TSCV8Backed {
 
     default @Nullable InterfaceType asInterfaceType() {
         if (hasObjectFlag(TSCObjectFlag.Interface) || hasObjectFlag(TSCObjectFlag.Class)) {
-            return this::_typeInstanceInternal;
+            return new InterfaceType.Impl(_typeInstanceInternal());
         }
         return null;
     }
@@ -111,7 +118,7 @@ public interface TSCTypeAccessors extends TSCV8Backed {
 
     default @Nullable UnionOrIntersectionType asUnionOrIntersectionType() {
         if (hasTypeFlag(TSCTypeFlag.UnionOrIntersection)) {
-            return this::_typeInstanceInternal;
+            return new UnionOrIntersectionType.Impl(_typeInstanceInternal());
         }
         return null;
     }
@@ -122,7 +129,7 @@ public interface TSCTypeAccessors extends TSCV8Backed {
 
     default @Nullable ObjectType asObjectType() {
         if (hasTypeFlag(TSCTypeFlag.Object)) {
-            return this::_typeInstanceInternal;
+            return new ObjectType.Impl(this._typeInstanceInternal());
         }
         return null;
     }
@@ -133,7 +140,7 @@ public interface TSCTypeAccessors extends TSCV8Backed {
 
     default @Nullable TypeReference asTypeReference() {
         if (hasObjectFlag(TSCObjectFlag.Reference)) {
-            return this::_typeInstanceInternal;
+            return new TypeReference.Impl(_typeInstanceInternal());
         }
         return null;
     }
@@ -142,18 +149,60 @@ public interface TSCTypeAccessors extends TSCV8Backed {
         return Objects.requireNonNull(asTypeReference());
     }
 
+    @DebugOnly
+    default List<TSCTypeAccessors> listMatchingTypeInterfaces() {
+        TSCTypeAccessors[] allAccessors = {
+                asInterfaceType(),
+                assertTypeReference(),
+                asObjectType(),
+                asUnionOrIntersectionType()
+        };
+        return Stream.of(allAccessors)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
 
     //
     //  specialized accessors for each interface under `Type` in the TSC
     //
 
     interface TypeWrapper extends TSCV8Backed.Wrapper, TSCTypeAccessors {
+        abstract class Impl implements TypeWrapper {
+            private final TSCType wrapped;
+
+            public Impl(TSCType wrapped) {
+                this.wrapped = wrapped;
+            }
+
+            @Override
+            public TSCType _typeInstanceInternal() {
+                return wrapped;
+            }
+
+            @Override
+            public String toString() {
+                String interfaceName = "???";
+                Class<?> enclosing = this.getClass().getEnclosingClass();
+                if (enclosing != null) {
+                    interfaceName = enclosing.getSimpleName();
+                }
+                return "Type[as " + interfaceName  + "]#" + getTypeId() + "(" + typeToString() + ")";
+            }
+        }
+
         default TSCType wrapped() {
             return _typeInstanceInternal();
         }
     }
 
     interface ObjectType extends TypeWrapper {
+        class Impl extends TypeWrapper.Impl implements ObjectType {
+            public Impl(TSCType wrapped) {
+                super(wrapped);
+            }
+        }
+
         // TODO unmapped properties: `members`
 
         @TSCInternal
@@ -184,6 +233,12 @@ public interface TSCTypeAccessors extends TSCV8Backed {
     }
 
     interface InterfaceType extends TypeWrapper, ObjectType {
+        class Impl extends TypeWrapper.Impl implements InterfaceType {
+            public Impl(TSCType wrapped) {
+                super(wrapped);
+            }
+        }
+
         default @Nullable List<TSCType> getTypeParameters() {
             return wrapped().getOptionalTypeListProperty("typeParameters");
         }
@@ -217,6 +272,12 @@ public interface TSCTypeAccessors extends TSCV8Backed {
     }
 
     interface UnionOrIntersectionType extends TypeWrapper {
+        class Impl extends TypeWrapper.Impl implements UnionOrIntersectionType {
+            public Impl(TSCType wrapped) {
+                super(wrapped);
+            }
+        }
+
         // TODO unmapped properties: all @internal properties
         default List<TSCType> getTypes() {
             return wrapped().getTypeListProperty("types");
@@ -224,6 +285,12 @@ public interface TSCTypeAccessors extends TSCV8Backed {
     }
 
     interface TypeReference extends TypeWrapper, ObjectType {
+        class Impl extends TypeWrapper.Impl implements TypeReference {
+            public Impl(TSCType wrapped) {
+                super(wrapped);
+            }
+        }
+
         default TSCType getTarget() {
             return getTypeProperty("target");
         }

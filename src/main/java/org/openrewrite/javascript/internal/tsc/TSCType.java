@@ -17,6 +17,7 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.values.reference.V8ValueObject;
 import lombok.Value;
+import org.openrewrite.DebugOnly;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
@@ -29,6 +30,7 @@ public class TSCType implements TSCV8Backed, TSCTypeAccessors {
         List<TSCTypeFlag> typeFlags;
         List<TSCObjectFlag> objectFlags;
         Map<String, Object> properties;
+        List<TSCTypeAccessors> typedInterfaces;
     }
 
     private final TSCProgramContext programContext;
@@ -58,4 +60,15 @@ public class TSCType implements TSCV8Backed, TSCTypeAccessors {
     public V8ValueObject getBackingV8Object() {
         return typeV8;
     }
+
+//    @Override
+//    @DebugOnly
+//    public DebugInfo getDebugInfo() {
+//        return new DebugInfo(
+//                listMatchingTypeFlags(),
+//                listMatchingObjectFlags(),
+//                getAllPropertiesForDebugging(),
+//                listMatchingTypeInterfaces()
+//        );
+//    }
 }
