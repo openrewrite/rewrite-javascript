@@ -1342,6 +1342,28 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J visitTsOperator(TSCNode node) {
+        Space prefix = whitespace();
+        Expression left = null; // placeholder for 'bar' in foo. Remove left expression if it is unnecessary.
+        JLeftPadded<JS.JsOperator.Type> op = null;
+        Expression right = null;
+        if (node.syntaxKind() == TSCSyntaxKind.TypeOfExpression) {
+            op = padLeft(sourceBefore(TSCSyntaxKind.TypeOfKeyword), JS.JsOperator.Type.TypeOf);
+            right = (Expression) visitNode(node.getNodeProperty("expression"));
+        } else {
+            implementMe(node);
+        }
+        return new JS.JsOperator(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                left,
+                op,
+                right,
+                typeMapping.type(node)
+        );
+    }
+
     private J.TypeParameter visitTypeParameter(TSCNode node) {
         Space prefix = whitespace();
         implementMe(node, "modifiers");
@@ -1623,8 +1645,9 @@ public class TypeScriptParserVisitor {
     private J visitNode(TSCNode node) {
         J j;
         switch (node.syntaxKind()) {
-            case EnumDeclaration:
+            // Multi-case statements
             case ClassDeclaration:
+            case EnumDeclaration:
             case InterfaceDeclaration:
                 j = visitClassDeclaration(node);
                 break;
@@ -1639,6 +1662,27 @@ public class TypeScriptParserVisitor {
             case VoidKeyword:
                 j = visitKeyword(node);
                 break;
+            case ForOfStatement:
+            case ForInStatement:
+                j = visitForEachStatement(node);
+                break;
+            case FunctionDeclaration:
+            case FunctionExpression:
+                j = visitFunctionDeclaration(node);
+                break;
+            case MethodDeclaration:
+            case MethodSignature:
+                j = visitMethodDeclaration(node);
+                break;
+            case Parameter:
+            case PropertyDeclaration:
+                j = visitPropertyDeclaration(node);
+                break;
+            case PostfixUnaryExpression:
+            case PrefixUnaryExpression:
+                j = visitUnaryExpression(node);
+                break;
+            // Single case statements
             case ArrayLiteralExpression:
                 j = visitArrayLiteralExpression(node);
                 break;
@@ -1684,10 +1728,6 @@ public class TypeScriptParserVisitor {
             case ExpressionWithTypeArguments:
                 j = visitExpressionWithTypeArguments(node);
                 break;
-            case FunctionDeclaration:
-            case FunctionExpression:
-                j = visitFunctionDeclaration(node);
-                break;
             case Identifier:
                 j = visitIdentifier(node);
                 break;
@@ -1696,14 +1736,6 @@ public class TypeScriptParserVisitor {
                 break;
             case ForStatement:
                 j = visitForStatement(node);
-                break;
-            case ForOfStatement:
-            case ForInStatement:
-                j = visitForEachStatement(node);
-                break;
-            case MethodDeclaration:
-            case MethodSignature:
-                j = visitMethodDeclaration(node);
                 break;
             case NewExpression:
                 j = visitNewExpression(node);
@@ -1720,16 +1752,8 @@ public class TypeScriptParserVisitor {
             case ParenthesizedExpression:
                 j = visitParenthesizedExpression(node);
                 break;
-            case PostfixUnaryExpression:
-            case PrefixUnaryExpression:
-                j = visitUnaryExpression(node);
-                break;
             case PropertyAccessExpression:
                 j = visitPropertyAccessExpression(node);
-                break;
-            case Parameter:
-            case PropertyDeclaration:
-                j = visitPropertyDeclaration(node);
                 break;
             case ReturnStatement:
                 j = visitReturnStatement(node);
@@ -1745,6 +1769,9 @@ public class TypeScriptParserVisitor {
                 break;
             case TypeReference:
                 j = visitTypeReference(node);
+                break;
+            case TypeOfExpression:
+                j = visitTsOperator(node);
                 break;
             case TypeParameter:
                 j = visitTypeParameter(node);

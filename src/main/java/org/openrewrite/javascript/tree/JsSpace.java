@@ -21,6 +21,7 @@ public class JsSpace {
         ARRAY_LITERAL_PREFIX,
         ARRAY_LITERAL_ELEMENTS,
         BINARY_PREFIX,
+        OPERATOR_PREFIX,
         TOP_LEVEL_STATEMENT,
         VARIABLE_DECLARATION_PREFIX
     }

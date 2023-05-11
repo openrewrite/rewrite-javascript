@@ -47,14 +47,13 @@ public class TypeOperatorTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void typeof() {
         rewriteRun(
           javascript(
             """
-              let foo = 'hello'
-              let t = typeof foo
+              let s = "hello"
+              let t = typeof s
               """
           )
         );

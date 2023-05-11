@@ -344,6 +344,8 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                     return JavaType.ShallowClass.build("analysis.MergedTypesAreNotSupported");
                 }
             }
+            case TypeOfExpression:
+                return null;
             case TypeParameter:
                 return generic(node);
             default:

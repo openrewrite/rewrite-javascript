@@ -85,6 +85,33 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return binary;
     }
 
+    @Override
+    public J visitJsOperator(JS.JsOperator operator, PrintOutputCapture<P> p) {
+        beforeSyntax(operator, JsSpace.Location.BINARY_PREFIX, p);
+
+        visit(operator.getLeft(), p);
+        String keyword = "";
+        switch (operator.getOperator()) {
+            case Delete:
+                keyword = "delete";
+                break;
+            case In:
+                keyword = "in";
+                break;
+            case TypeOf:
+                keyword = "typeof";
+                break;
+        }
+
+        visitSpace(operator.getPadding().getOperator().getBefore(), JsSpace.Location.OPERATOR_PREFIX, p);
+        p.append(keyword);
+
+        visit(operator.getRight(), p);
+        afterSyntax(operator, p);
+
+        return operator;
+    }
+
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
         @Override

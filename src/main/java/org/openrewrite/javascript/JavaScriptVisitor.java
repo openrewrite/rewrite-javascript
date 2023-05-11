@@ -66,6 +66,23 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return b;
     }
 
+    public J visitJsOperator(JS.JsOperator operator, P p) {
+        JS.JsOperator o = operator;
+        o = o.withPrefix(visitSpace(o.getPrefix(), JsSpace.Location.OPERATOR_PREFIX, p));
+        o = o.withMarkers(visitMarkers(o.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(o, p);
+        if (!(temp instanceof JS.JsOperator)) {
+            return temp;
+        } else {
+            o = (JS.JsOperator) temp;
+        }
+        o = o.withLeft(visitAndCast(o.getLeft(), p));
+        o = o.getPadding().withOperator(visitLeftPadded(o.getPadding().getOperator(), JsLeftPadded.Location.OPERATOR, p));
+        o = o.withRight(visitAndCast(o.getRight(), p));
+        o = o.withType(visitType(o.getType(), p));
+        return o;
+    }
+
     public Space visitSpace(Space space, JsSpace.Location loc, P p) {
         return visitSpace(space, Space.Location.LANGUAGE_EXTENSION, p);
     }
