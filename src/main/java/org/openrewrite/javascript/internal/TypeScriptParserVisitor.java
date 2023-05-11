@@ -201,7 +201,6 @@ public class TypeScriptParserVisitor {
         );
     }
 
-
     private J.Binary visitBinary(TSCNode node) {
         Space prefix = whitespace();
         Expression left = (Expression) visitNode(node.getNodeProperty("left"));
@@ -370,10 +369,10 @@ public class TypeScriptParserVisitor {
         updates.add(padRight(r, after));
     }
 
+    @Nullable
     private J.Block visitBlock(@Nullable TSCNode node) {
         if (node == null) {
-            // Some bodies can return a null block.
-            throw new UnsupportedOperationException("FIXME");
+            return null;
         }
 
         Space prefix = sourceBefore(TSCSyntaxKind.OpenBraceToken);
@@ -421,16 +420,17 @@ public class TypeScriptParserVisitor {
             select = padRight(visitNameExpression(expression.getNodeProperty("expression")), sourceBefore(TSCSyntaxKind.DotToken));
         }
 
+        JavaType.Method type = typeMapping.methodInvocationType(node);
         J.Identifier name = null;
         if (expression.hasProperty("name")) {
-            name = visitIdentifier(expression.getNodeProperty("name"));
+            name = visitIdentifier(expression.getNodeProperty("name"), type);
         } else if (expression.syntaxKind() == TSCSyntaxKind.SuperKeyword) {
             name = new J.Identifier(
                     randomId(),
                     sourceBefore(TSCSyntaxKind.SuperKeyword),
                     Markers.EMPTY,
                     "super",
-                    typeMapping.type(expression),
+                    typeMapping.type(node),
                     null
             );
         } else {
@@ -455,7 +455,7 @@ public class TypeScriptParserVisitor {
                 typeParameters,
                 name,
                 arguments,
-                typeMapping.methodInvocationType(node)
+                type
         );
     }
 
@@ -813,7 +813,7 @@ public class TypeScriptParserVisitor {
                 this::visitFunctionParameter
         );
 
-        J.Block block = visitBlock(node.getNodeProperty("body"));
+        J.Block block = visitBlock(node.getOptionalNodeProperty("body"));
 
         return new J.MethodDeclaration(
                 randomId(),
@@ -883,6 +883,14 @@ public class TypeScriptParserVisitor {
     }
 
     private J.Identifier visitIdentifier(TSCNode node) {
+        return visitIdentifier(node, null, null);
+    }
+
+    private J.Identifier visitIdentifier(TSCNode node, @Nullable JavaType type) {
+        return visitIdentifier(node, type, null);
+    }
+
+    private J.Identifier visitIdentifier(TSCNode node, @Nullable JavaType type, @Nullable JavaType.Variable fieldType) {
         Space prefix = whitespace();
         this.cursorContext.resetScanner(getCursor() + node.getText().length());
         // TODO: check on escapedText property.
@@ -891,8 +899,8 @@ public class TypeScriptParserVisitor {
                 prefix,
                 Markers.EMPTY,
                 node.getText(),
-                typeMapping.type(node),
-                null
+                type == null ? typeMapping.type(node) : type,
+                fieldType
         );
     }
 
@@ -972,10 +980,10 @@ public class TypeScriptParserVisitor {
         implementMe(node, "asteriskToken");
         implementMe(node, "questionToken");
         implementMe(node, "exclamationToken");
-        implementMe(node, "nextContainer");
         implementMe(node, "typeArguments");
 
-        J.Identifier name = visitIdentifier(node.getNodeProperty("name"));
+        JavaType.Method methodType = typeMapping.methodDeclarationType(node);
+        J.Identifier name = visitIdentifier(node.getNodeProperty("name"), methodType);
 
         JContainer<Statement> parameters = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
@@ -993,7 +1001,7 @@ public class TypeScriptParserVisitor {
             returnTypeExpression = visitNode(node.getNodeProperty("type")).withMarkers(markers);
         }
 
-        J.Block body = visitBlock(node.getNodeProperty("body"));
+        J.Block body = visitBlock(node.getOptionalNodeProperty("body"));
         JLeftPadded<Expression> defaultValue = null;
 
         return new J.MethodDeclaration(
@@ -1009,7 +1017,7 @@ public class TypeScriptParserVisitor {
                 throwz,
                 body,
                 defaultValue,
-                typeMapping.methodDeclarationType(node)
+                methodType
         );
     }
 
@@ -1172,6 +1180,7 @@ public class TypeScriptParserVisitor {
             }
             TSCNode type = node.getNodeProperty("type");
             typeTree = (TypeTree) visitNode(type);
+            name = name.withType(typeMapping.type(type));
         }
 
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = new ArrayList<>(1);
@@ -1629,6 +1638,7 @@ public class TypeScriptParserVisitor {
             case SuperKeyword:
             case ThisKeyword:
             case TrueKeyword:
+            case VoidKeyword:
                 j = visitKeyword(node);
                 break;
             case ArrayLiteralExpression:
@@ -1694,6 +1704,7 @@ public class TypeScriptParserVisitor {
                 j = visitForEachStatement(node);
                 break;
             case MethodDeclaration:
+            case MethodSignature:
                 j = visitMethodDeclaration(node);
                 break;
             case NewExpression:
@@ -1873,7 +1884,7 @@ public class TypeScriptParserVisitor {
             elements = new ArrayList<>(nodes.size());
             for (int i = 0; i < nodes.size(); i++) {
                 TSCNode node = nodes.get(i);
-                T visitped = visitFn.apply(node);
+                T visited = visitFn.apply(node);
                 Markers markers = Markers.EMPTY;
                 Space after;
                 if (i < nodes.size() - 1) {
@@ -1887,7 +1898,7 @@ public class TypeScriptParserVisitor {
                 } else {
                     after = whitespace();
                 }
-                elements.add(JRightPadded.build(visitped).withAfter(after).withMarkers(markers));
+                elements.add(JRightPadded.build(visited).withAfter(after).withMarkers(markers));
             }
         }
         consumeToken(close);

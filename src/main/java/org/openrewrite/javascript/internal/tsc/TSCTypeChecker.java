@@ -217,7 +217,7 @@ public class TSCTypeChecker implements TSCV8Backed {
         );
     }
 
-    public TSCType getTypeFromTypeNode(TSCNode.TypeNode node) {
+    public TSCType getTypeFromTypeNode(TSCNode node) {
         return this.invokeMethodNonNull(
                 "getTypeFromTypeNode",
                 TYPE,
