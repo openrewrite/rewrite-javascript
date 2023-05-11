@@ -17,6 +17,7 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.V8Value;
+import com.caoccao.javet.values.reference.IV8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
@@ -382,6 +383,25 @@ public interface TSCV8Backed {
         return this.as(objectMap(AUTO));
     }
 
+    default List<String> getOwnPropertyNames() {
+        try {
+            return this.getBackingV8Object().getOwnPropertyNameStrings();
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default List<String> getAllPropertyNames() {
+        try(IV8ValueArray propertyNames = this.getBackingV8Object().getPropertyNames()) {
+            List<String> result = new ArrayList<>(propertyNames.getLength());
+            for (int i = 0; i < propertyNames.getLength(); i++) {
+                result.add(propertyNames.getString(i));
+            }
+            return result;
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     default <T> T as(TSCConversion<T> conversion) {
         return conversion.convertNonNull(this.getProgramContext(), this.getBackingV8Object());
