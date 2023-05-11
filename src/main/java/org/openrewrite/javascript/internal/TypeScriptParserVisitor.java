@@ -343,6 +343,8 @@ public class TypeScriptParserVisitor {
             case EqualsEqualsEqualsToken:
             case ExclamationEqualsEqualsToken:
                 return visitJsBinary(node);
+            case InstanceOfKeyword:
+                return visitInstanceOf(node);
             default:
                 implementMe(node.getNodeProperty("operatorToken"));
         }
@@ -928,6 +930,18 @@ public class TypeScriptParserVisitor {
                 control,
                 thenPart,
                 elsePart
+        );
+    }
+
+    private J visitInstanceOf(TSCNode node) {
+        return new J.InstanceOf(
+                randomId(),
+                whitespace(),
+                Markers.EMPTY,
+                padRight((Expression) visitNode(node.getNodeProperty("left")), sourceBefore(TSCSyntaxKind.InstanceOfKeyword)),
+                visitNode(node.getNodeProperty("right")),
+                null,
+                typeMapping.type(node)
         );
     }
 

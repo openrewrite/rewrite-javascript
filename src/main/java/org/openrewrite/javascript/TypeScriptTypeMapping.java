@@ -25,10 +25,9 @@ import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
+import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.openrewrite.TypeScriptSignatureBuilder.mapFqn;
 import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.INVARIANT;
@@ -344,7 +343,26 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                     return JavaType.ShallowClass.build("analysis.MergedTypesAreNotSupported");
                 }
             }
+            case ArrayLiteralExpression:
+                List<TSCNode> elements = node.getNodeListProperty("elements");
+                Set<JavaType> javaTypes = Collections.newSetFromMap(new IdentityHashMap<>());
+                for (TSCNode element : elements) {
+                    javaTypes.add(type(element));
+                }
+                if (javaTypes.size() == 1) {
+                    return (JavaType) javaTypes.toArray()[0];
+                } else {
+                    // FIXME: requires union types.
+                    return null;
+                }
+            case BinaryExpression:
+                return JavaType.Primitive.Boolean;
+            case NumericLiteral:
+                TSCTypeFlag flag = TSCTypeFlag.fromMaskExact(node.getTypeChecker().getNumberType().getTypeFlags());
+                // FIXME: TS.PrimitiveType ??
+                return null;
             case TypeOfExpression:
+                // FIXME
                 return null;
             case TypeParameter:
                 return generic(node);
