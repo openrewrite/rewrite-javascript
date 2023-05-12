@@ -153,7 +153,7 @@ public interface TSCTypeAccessors extends TSCV8Backed {
     default List<TSCTypeAccessors> listMatchingTypeInterfaces() {
         TSCTypeAccessors[] allAccessors = {
                 asInterfaceType(),
-                assertTypeReference(),
+                asTypeReference(),
                 asObjectType(),
                 asUnionOrIntersectionType()
         };

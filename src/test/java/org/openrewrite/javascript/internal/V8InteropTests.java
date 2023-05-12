@@ -23,25 +23,47 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class V8InteropTests {
 
-    private void parseSingleSource(@Language("typescript") String source, BiConsumer<TSCNode, TSCSourceFileContext> callback) {
-        parseSingleSource(source, "test.ts", callback);
+    private void parseSingleSource(
+            @Language("typescript") String source,
+            BiConsumer<TSCNode, TSCSourceFileContext> callback
+    ) {
+        parseSingleSource(source, "test.ts", runtime -> runtime, callback);
     }
 
-    private void parseSingleSource(@Language("typescript") String source, String filename, BiConsumer<TSCNode, TSCSourceFileContext> callback) {
+    private void parseSingleSource(
+            @Language("typescript") String source,
+            Function<TSCRuntime, TSCRuntime> configureRuntime,
+            BiConsumer<TSCNode, TSCSourceFileContext> callback
+    ) {
+        parseSingleSource(source, "test.ts", configureRuntime, callback);
+    }
+
+    private void parseSingleSource(
+            @Language("typescript") String source,
+            String filename,
+            BiConsumer<TSCNode, TSCSourceFileContext> callback
+    ) {
+        parseSingleSource(source, filename, runtime -> runtime, callback);
+    }
+
+    private void parseSingleSource(
+            @Language("typescript") String source,
+            String filename,
+            Function<TSCRuntime, TSCRuntime> configureRuntime,
+            BiConsumer<TSCNode, TSCSourceFileContext> callback
+    ) {
         AtomicBoolean ran = new AtomicBoolean();
-        try (TSCRuntime runtime = TSCRuntime.init()) {
+        try (TSCRuntime runtime = configureRuntime.apply(TSCRuntime.init())) {
             runtime.parseSingleSource(source, filename, (root, ctx) -> {
                 callback.accept(root, ctx);
                 ran.set(true);
@@ -150,8 +172,8 @@ public class V8InteropTests {
         parseSingleSource("const x = 3;", "file.js", (root, ctx) -> {
             TSCNode ident = root.firstNodeWithText("x");
             TSCNode.SourceFile sourceFile = ident.getSourceFile();
-            assertEquals(sourceFile.getFileName(), "file.js");
-            assertEquals(sourceFile.getPath(), "/file.js");
+            assertEquals("/app/file.js", sourceFile.getFileName());
+            assertEquals("/app/file.js", sourceFile.getPath());
         });
     }
 
@@ -300,6 +322,44 @@ public class V8InteropTests {
                     assertSame(globalNumberType, constraintTypeArgs.get(2));
                     // Remaining type variables, i.e. `T2`
                     assertSame(typeParam2, constraintTypeArgs.get(3));
+                }
+        );
+    }
+
+    @Test
+    public void testLibSupport() {
+        // Explicitly turn libs off --> `string` type should be empty
+        parseSingleSource(
+                "const x: string = '';",
+                runtime -> runtime.setCompilerOptionOverride("noLib", true),
+                (root, ctx) -> {
+                    TSCNode x = root.firstNodeContaining("x");
+                    TSCType xType = x.getTypeForNode();
+                    assertNotNull(xType);
+                    assertEquals(0, xType.getTypeProperties().size());
+                }
+        );
+
+        // Explicitly turn libs on --> `string` type should have properties
+        parseSingleSource(
+                "const x: string = '';",
+                runtime -> runtime.setCompilerOptionOverride("lib", Collections.singletonList("ES2020")),
+                (root, ctx) -> {
+                    TSCNode x = root.firstNodeContaining("x");
+                    TSCType xType = x.getTypeForNode();
+                    assertNotNull(xType);
+                    assertNotEquals(0, xType.getTypeProperties().size());
+                }
+        );
+
+        // Default lib --> `string` type should also have properties
+        parseSingleSource(
+                "const x: string = '';",
+                (root, ctx) -> {
+                    TSCNode x = root.firstNodeContaining("x");
+                    TSCType xType = x.getTypeForNode();
+                    assertNotNull(xType);
+                    assertNotEquals(0, xType.getTypeProperties().size());
                 }
         );
     }

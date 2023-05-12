@@ -13,8 +13,8 @@
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
+    "generate": "ts-node src/codegen/exportEnums.ts && ts-node src/codegen/generateLibs.ts",
     "buildRuntime": "parcel build && cat src/codegen/generatedLicenseHeader.txt dist/index.js > ../src/main/resources/index.js",
-    "generate": "ts-node src/codegen/exportEnums.ts",
     "update": "yarn generate && yarn buildRuntime",
     "format": "prettier --write ./src"
   },

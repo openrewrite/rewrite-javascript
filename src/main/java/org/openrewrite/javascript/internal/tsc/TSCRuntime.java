@@ -21,7 +21,8 @@ import com.caoccao.javet.interop.JavetBridge;
 import com.caoccao.javet.interop.V8Host;
 import com.caoccao.javet.interop.V8Runtime;
 import com.caoccao.javet.utils.JavetResourceUtils;
-import com.caoccao.javet.values.reference.V8ValueArray;
+import com.caoccao.javet.values.V8Value;
+import com.caoccao.javet.values.primitive.V8ValueString;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueMap;
 import com.caoccao.javet.values.reference.V8ValueObject;
@@ -51,7 +52,9 @@ public class TSCRuntime implements Closeable {
     public final V8Runtime v8Runtime;
 
     @Nullable
-    public V8ValueFunction tsParse = null;
+    public V8ValueFunction tsParseV8 = null;
+
+    private V8ValueObject parseOptionsV8;
 
     private final JavetStandardConsoleInterceptor javetStandardConsoleInterceptor;
 
@@ -74,9 +77,29 @@ public class TSCRuntime implements Closeable {
 
     }
 
+    public TSCRuntime setCompilerOptionOverride(String key, Object value) {
+        try {
+            V8Value compilerOptions = this.parseOptionsV8.get("compilerOptions");
+            if (compilerOptions.isNullOrUndefined()) {
+                compilerOptions = this.v8Runtime.createV8ValueObject();
+                this.parseOptionsV8.set("compilerOptions", compilerOptions);
+            }
+            ((V8ValueObject) compilerOptions).setWeak();
+            ((V8ValueObject) compilerOptions).set(key, value);
+            return this;
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public TSCRuntime(V8Runtime v8Runtime, JavetStandardConsoleInterceptor javetStandardConsoleInterceptor) {
         this.v8Runtime = v8Runtime;
         this.javetStandardConsoleInterceptor = javetStandardConsoleInterceptor;
+        try {
+            this.parseOptionsV8 = v8Runtime.createV8ValueObject();
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static String getJSEntryProgramText() {
@@ -89,14 +112,14 @@ public class TSCRuntime implements Closeable {
     }
 
     public void importTS() {
-        if (tsParse != null) {
+        if (tsParseV8 != null) {
             return;
         }
         try {
             v8Runtime.getExecutor("const require = () => undefined;").executeVoid();
             v8Runtime.getExecutor("const module = {exports: {}};").executeVoid();
             v8Runtime.getExecutor(getJSEntryProgramText()).executeVoid();
-            this.tsParse = v8Runtime.getExecutor("module.exports.default").execute();
+            this.tsParseV8 = v8Runtime.getExecutor("module.exports.default").execute();
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
@@ -115,23 +138,20 @@ public class TSCRuntime implements Closeable {
 
     public void parseSourceTexts(Map<Path, String> sourceTexts, BiConsumer<TSCNode, TSCSourceFileContext> callback) {
         importTS();
-        assert tsParse != null;
+        assert tsParseV8 != null;
         try (V8ValueMap sourceTextsV8 = v8Runtime.createV8ValueMap()) {
             for (Map.Entry<Path, String> entry : sourceTexts.entrySet()) {
                 sourceTextsV8.set(entry.getKey().toString(), entry.getValue());
             }
             try (
-                    V8ValueObject parseResultV8 = tsParse.call(null, sourceTextsV8);
+                    V8ValueObject parseResultV8 = tsParseV8.call(null, sourceTextsV8, this.parseOptionsV8);
                     TSCProgramContext programContext = TSCProgramContext.fromJS(parseResultV8);
-                    V8ValueArray sourceFilesV8 = parseResultV8.get("sourceFiles")
+                    V8ValueMap sourceFilesByPathV8 = parseResultV8.get("sourceFiles")
             ) {
-                sourceFilesV8.forEach((sourceFileV8) -> {
-                    String sourceText = ((V8ValueObject) sourceFileV8).invokeString("getText");
-                    Path relativeSourcePath = Paths.get(((V8ValueObject) sourceFileV8).getString("path"));
-                    if (relativeSourcePath.isAbsolute()) {
-                        relativeSourcePath = Paths.get("/").relativize(relativeSourcePath);
-                    }
-                    try (TSCSourceFileContext sourceFileContext = new TSCSourceFileContext(programContext, sourceText, relativeSourcePath)) {
+                sourceFilesByPathV8.forEach((V8ValueString filePathV8, V8ValueObject sourceFileV8) -> {
+                    String sourceText = sourceFileV8.invokeString("getText");
+                    Path filePath = Paths.get(filePathV8.getValue());
+                    try (TSCSourceFileContext sourceFileContext = new TSCSourceFileContext(programContext, sourceText, filePath)) {
                         TSCNode node = programContext.tscNode((V8ValueObject) sourceFileV8);
                         callback.accept(node, sourceFileContext);
                     }
@@ -144,7 +164,7 @@ public class TSCRuntime implements Closeable {
 
     @Override
     public void close() {
-        JavetResourceUtils.safeClose(this.tsParse);
+        JavetResourceUtils.safeClose(this.tsParseV8, this.parseOptionsV8);
 
         if (!v8Runtime.isClosed()) {
             v8Runtime.await();
