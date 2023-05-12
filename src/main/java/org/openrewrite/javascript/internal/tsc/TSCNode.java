@@ -326,6 +326,15 @@ public class TSCNode implements TSCV8Backed {
                 this.syntaxKind() == TSCSyntaxKind.EnumDeclaration;
     }
 
+    public boolean isMethodDeclaration() {
+        return this.syntaxKind() == TSCSyntaxKind.CallSignature ||
+                this.syntaxKind() == TSCSyntaxKind.Constructor ||
+                this.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
+                this.syntaxKind() == TSCSyntaxKind.FunctionDeclaration ||
+                this.syntaxKind() == TSCSyntaxKind.MethodDeclaration ||
+                this.syntaxKind() == TSCSyntaxKind.MethodSignature;
+    }
+
     public boolean isPrimitive() {
         return this.syntaxKind() == TSCSyntaxKind.BooleanKeyword ||
                 this.syntaxKind() == TSCSyntaxKind.TrueKeyword ||
@@ -333,5 +342,11 @@ public class TSCNode implements TSCV8Backed {
                 this.syntaxKind() == TSCSyntaxKind.NumberKeyword ||
                 this.syntaxKind() == TSCSyntaxKind.StringKeyword ||
                 this.syntaxKind() == TSCSyntaxKind.VoidKeyword;
+    }
+
+    public boolean isVariable() {
+        return this.syntaxKind() == TSCSyntaxKind.EnumMember ||
+                this.syntaxKind() == TSCSyntaxKind.PropertyDeclaration ||
+                this.syntaxKind() == TSCSyntaxKind.PropertySignature;
     }
 }

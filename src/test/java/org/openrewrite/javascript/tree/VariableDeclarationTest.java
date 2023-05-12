@@ -66,6 +66,18 @@ public class VariableDeclarationTest extends ParserTest {
         );
     }
 
+    @ExpectedToFail
+    @Test
+    void multiTypeVariableDeclaration() {
+        rewriteRun(
+          javascript(
+            """
+              let x: number, y: string;
+              """
+          )
+        );
+    }
+
     @Test
     void generic() {
         rewriteRun(

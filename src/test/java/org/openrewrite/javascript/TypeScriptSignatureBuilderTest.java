@@ -28,6 +28,7 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -36,7 +37,7 @@ public class TypeScriptSignatureBuilderTest {
     @Language("typescript")
     private static final String goat = StringUtils.readFully(TypeScriptSignatureBuilderTest.class.getResourceAsStream("/TypeScriptTypeGoat.ts"));
 
-    private static TSCRuntime runtime = TSCRuntime.init();
+    private static final TSCRuntime runtime = TSCRuntime.init();
 
     @AfterAll
     static void afterAll() {
@@ -52,7 +53,7 @@ public class TypeScriptSignatureBuilderTest {
         runtime.parseSourceTexts(
                 Collections.singletonMap(Paths.get("goat.ts"), goat),
                 (node, context) -> assertThat(constructorSignature(node))
-                        .isEqualTo("goat.ts.TypeScriptTypeGoat{name=<constructor>,return=goat.ts.TypeScriptTypeGoat,parameters=[]}")
+                        .isEqualTo("app.goat.ts.TypeScriptTypeGoat{name=<constructor>,return=app.goat.ts.TypeScriptTypeGoat,parameters=[]}")
         );
     }
 
@@ -62,67 +63,67 @@ public class TypeScriptSignatureBuilderTest {
         runtime.parseSourceTexts(
                 Collections.singletonMap(Paths.get("goat.ts"), goat),
                 (node, context) -> assertThat(fieldSignature(node, "parameterizedField"))
-                        .isEqualTo("goat.ts.TypeScriptTypeGoat{name=parameterizedField,type=goat.ts.PT<goat.ts.TypeScriptTypeGoat$TypeA>}")
+                        .isEqualTo("app.goat.ts.TypeScriptTypeGoat{name=parameterizedField,type=app.goat.ts.PT<goat.ts.TypeScriptTypeGoat$TypeA>}")
         );
     }
 
     @Test
     void array() {
         assertMethodSignature("array",
-                "goat.ts.A[]",
-                "goat.ts.TypeScriptTypeGoat{name=array,return=void,parameters=[goat.ts.A[]]}");
+                "app.goat.ts.A[]",
+                "app.goat.ts.TypeScriptTypeGoat{name=array,return=void,parameters=[app.goat.ts.A[]]}");
     }
 
     @Test
     void multidimensionalArray() {
         assertMethodSignature("multidimensionalArray",
-                "goat.ts.A[][]",
-                "goat.ts.TypeScriptTypeGoat{name=multidimensionalArray,return=void,parameters=[goat.ts.A[][]]}");
+                "app.goat.ts.A[][]",
+                "app.goat.ts.TypeScriptTypeGoat{name=multidimensionalArray,return=void,parameters=[app.goat.ts.A[][]]}");
     }
 
     @Test
     void classSignature() {
         assertMethodSignature("clazz",
-                "goat.ts.A",
-                "goat.ts.TypeScriptTypeGoat{name=clazz,return=void,parameters=[goat.ts.A]}");
+                "app.goat.ts.A",
+                "app.goat.ts.TypeScriptTypeGoat{name=clazz,return=void,parameters=[app.goat.ts.A]}");
     }
 
     @Test
     void primitive() {
         assertMethodSignature("primitive",
                 "number",
-                "goat.ts.TypeScriptTypeGoat{name=primitive,return=void,parameters=[number]}");
+                "app.goat.ts.TypeScriptTypeGoat{name=primitive,return=void,parameters=[number]}");
     }
 
     @ExpectedToFail("Requires bounded named of generics instead of declaration name")
     @Test
     void parameterized() {
         assertMethodSignature("parameterized",
-                "goat.ts.PT<goat.ts.A>",
-                "goat.ts.TypeScriptTypeGoat{name=parameterized,return=goat.ts.PT<goat.ts.A>,parameters=[goat.ts.PT<goat.ts.A>]}");
+                "app.goat.ts.PT<goat.ts.A>",
+                "app.goat.ts.TypeScriptTypeGoat{name=parameterized,return=app.goat.ts.PT<app.goat.ts.A>,parameters=[app.goat.ts.PT<app.goat.ts.A>]}");
     }
 
     @ExpectedToFail("Requires bounded named of generics instead of declaration name")
     @Test
     void parameterizedRecursive() {
         assertMethodSignature("parameterizedRecursive",
-                "goat.ts.PT<goat.ts.PT<Generic{goat.ts.A}>",
-                "goat.ts.TypeScriptTypeGoat{name=parameterizedRecursive,return=goat.ts.PT<goat.ts.PT<Generic{goat.ts.A}>,parameters=[goat.ts.PT<goat.ts.PT<Generic{goat.ts.A}>]}");
+                "app.goat.ts.PT<goat.ts.PT<Generic{app.goat.ts.A}>",
+                "app.goat.ts.TypeScriptTypeGoat{name=parameterizedRecursive,return=app.goat.ts.PT<app.goat.ts.PT<Generic{app.goat.ts.A}>,parameters=[app.goat.ts.PT<app.goat.ts.PT<Generic{app.goat.ts.A}>]}");
     }
 
     @ExpectedToFail("Requires bounded named of generics instead of declaration name")
     @Test
     void generic() {
         assertMethodSignature("generic",
-                "goat.ts.PT<Generic{T extends goat.ts.B}>",
-                "goat.ts.TypeScriptTypeGoat{name=generic,return=goat.ts.PT<Generic{T extends goat.ts.B}>,parameters=[goat.ts.PT<Generic{T extends goat.ts.B}>]}");
+                "app.goat.ts.PT<Generic{T extends app.goat.ts.B}>",
+                "app.goat.ts.TypeScriptTypeGoat{name=generic,return=app.goat.ts.PT<Generic{T extends app.goat.ts.B}>,parameters=[app.goat.ts.PT<Generic{T extends app.goat.ts.B}>]}");
     }
 
     @Test
     void genericT() {
         assertMethodSignature("genericT",
                 "Generic{T}",
-                "goat.ts.TypeScriptTypeGoat{name=genericT,return=Generic{T},parameters=[Generic{T}]}");
+                "app.goat.ts.TypeScriptTypeGoat{name=genericT,return=Generic{T},parameters=[Generic{T}]}");
     }
 
     @ExpectedToFail("Requires adding Contravariant to TSTypeGoat")
@@ -139,7 +140,7 @@ public class TypeScriptSignatureBuilderTest {
         runtime.parseSourceTexts(
                 Collections.singletonMap(Paths.get("goat.ts"), goat),
                 (node, context) -> assertThat(lastClassTypeParameterSignature(node))
-                        .isEqualTo("Generic{S extends goat.ts.PT<Generic{S}> & goat.ts.A}")
+                        .isEqualTo("Generic{S extends app.goat.ts.PT<Generic{S}> & app.goat.ts.A}")
         );
     }
 
@@ -183,7 +184,7 @@ public class TypeScriptSignatureBuilderTest {
     }
 
     private String firstMethodParameterSignature(TSCNode node, String methodName) {
-        return signatureBuilder().signature(node.getNodeListProperty("statements").stream()
+        return Objects.requireNonNull(signatureBuilder().signature(node.getNodeListProperty("statements").stream()
                 .filter(it -> it.syntaxKind() == TSCSyntaxKind.ClassDeclaration && it.hasProperty("members"))
                 .flatMap(it -> it.getNodeListProperty("members").stream())
                 .filter(it -> it.syntaxKind() == TSCSyntaxKind.MethodDeclaration && it.hasProperty("name"))
@@ -192,7 +193,7 @@ public class TypeScriptSignatureBuilderTest {
                 .orElseThrow()
                 .getNodeListProperty("parameters")
                 .get(0)
-                .getNodeProperty("type"));
+                .getNodeProperty("type")));
     }
 
     private String innerClassSignature(TSCNode node, String innerClassSimpleName) {
@@ -201,7 +202,7 @@ public class TypeScriptSignatureBuilderTest {
 
     public String lastClassTypeParameterSignature(TSCNode node) {
         List<TSCNode> typeParams = node.getNodeListProperty("statements").get(0).getNodeListProperty("typeParameters");
-        return signatureBuilder().signature(typeParams.get(typeParams.size() - 1));
+        return Objects.requireNonNull(signatureBuilder().signature(typeParams.get(typeParams.size() - 1)));
     }
 
     private void assertMethodSignature(String target, String expectedMethodParameterSignature, String expectedMethodSignature) {

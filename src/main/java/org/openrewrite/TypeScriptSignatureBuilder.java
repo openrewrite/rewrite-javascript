@@ -21,7 +21,10 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
+import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
+import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
+import org.openrewrite.javascript.tree.TsType;
 
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +37,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
     @Nullable
     Set<String> typeVariableNameStack;
 
+    @Nullable
     @Override
     public String signature(@Nullable Object object) {
         if (object == null) {
@@ -42,20 +46,39 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
 
         assert object instanceof TSCNode;
         TSCNode node = (TSCNode) object;
-        if (node.isClassDeclaration()) {
+        if (node.syntaxKind() == TSCSyntaxKind.SourceFile) {
+            return mapSourceFileFqn(node);
+        } else if (node.isClassDeclaration()) {
             return node.hasProperty("typeParameters") && !node.getNodeListProperty("typeParameters").isEmpty() ? parameterizedSignature(node) : classSignature(node);
         } else if (node.isPrimitive()) {
             return primitiveSignature(node);
+        } else if (node.isVariable()) {
+            return variableSignature(node);
         } else if (node.syntaxKind() == TSCSyntaxKind.ArrayType) {
             return arraySignature(node);
-        } else if (node.syntaxKind() == TSCSyntaxKind.Constructor ||
-                node.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
-                node.syntaxKind() == TSCSyntaxKind.MethodDeclaration ||
-                node.syntaxKind() == TSCSyntaxKind.MethodSignature) {
+        } else if (node.isMethodDeclaration()) {
             return methodSignature(node);
         } else if (node.syntaxKind() == TSCSyntaxKind.TypeParameter) {
             return genericSignature(node);
         } else {
+            TSCType type = node.getTypeChecker().getTypeFromTypeNode(node);
+            if (type == null) {
+                return "{undefined}";
+            }
+            // Get the type attribution of identifiers.
+            TSCSymbol symbol = type.getOptionalSymbolProperty("symbol");
+            if (symbol != null) {
+                TSCNode valueDeclaration = symbol.getOptionalNodeProperty("valueDeclaration");
+                if (valueDeclaration != null) {
+                    if (valueDeclaration.isClassDeclaration()) {
+                        return classSignature(valueDeclaration);
+                    } else if (valueDeclaration.isMethodDeclaration()) {
+                        return methodSignature(valueDeclaration);
+                    } else if (valueDeclaration.syntaxKind() == TSCSyntaxKind.EnumMember) {
+                        return variableSignature(valueDeclaration);
+                    }
+                }
+            }
             return mapNode(node);
         }
     }
@@ -72,11 +95,15 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
     public String classSignature(Object object) {
         assert object instanceof TSCNode;
         TSCNode node = (TSCNode) object;
+
+        // The node's parent is the SourceFile.
+        if (node.syntaxKind() == TSCSyntaxKind.SourceFile) {
+            return mapSourceFileFqn(node);
+        }
+
         assert node.isClassDeclaration();
 
-        StringBuilder signature = new StringBuilder();
-        mapFqn(node, signature);
-        return signature.toString();
+        return mapFqn(node);
     }
 
     @Override
@@ -119,15 +146,11 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
     public String methodSignature(Object object) {
         assert object instanceof TSCNode;
         TSCNode node = (TSCNode) object;
-        assert (node.syntaxKind() == TSCSyntaxKind.Constructor ||
-                node.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
-                node.syntaxKind() == TSCSyntaxKind.MethodDeclaration ||
-                node.syntaxKind() == TSCSyntaxKind.MethodSignature);
 
         StringBuilder signature = new StringBuilder();
         boolean isConstructor = node.syntaxKind() == TSCSyntaxKind.Constructor;
 
-        String parent = classSignature(node.getNodeProperty("parent"));
+        String parent = classSignature(getOwner(node));
         signature.append(parent);
         String name;
         String returnSignature;
@@ -135,7 +158,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
             name = "<constructor>";
             returnSignature = parent;
         } else {
-            name = node.getNodeProperty("name").getText();
+            name = node.hasProperty("name") ? node.getNodeProperty("name").getText() : "{anonymous}";
             if (node.hasProperty("type")) {
                 returnSignature = signature(node.getNodeProperty("type"));
             } else {
@@ -195,58 +218,138 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         return genericArgumentTypes.toString();
     }
 
-    // TEMP ... using `getSourceFile` does not work for all cases.
-    public static String mapFqn(TSCNode node) {
-        String dirty = node.getSourceFile().getPath().replace("/", ".");
-        String clean = dirty.startsWith(".") ? dirty.substring(1) : dirty;
-        return clean + "." + (node.hasProperty("name") ? node.getNodeProperty("name").getText() : "");
+    public String variableSignature(TSCNode node) {
+        String owner = signature(getOwner(node));
+        String name = node.getNodeProperty("name").getText();
+        String typeSig = "{undefined}";
+        if (node.hasProperty("type")) {
+            typeSig = signature(node.getNodeProperty("type"));
+        } else if (node.hasProperty("initializer")) {
+            typeSig = signature(node.getNodeProperty("initializer"));
+        } else if (node.syntaxKind() == TSCSyntaxKind.EnumMember) {
+            typeSig = owner;
+        } else {
+            TSCType type = node.getTypeForNode();
+            if (type != null) {
+                TSCSymbol symbol = type.getOptionalSymbolProperty("symbol");
+                if (symbol != null) {
+                    typeSig = signature(symbol.getValueDeclaration());
+                }
+            }
+        }
+        return owner + "{name=" + name + ",type=" + typeSig + '}';
+    }
+
+    public static String mapSourceFileFqn(TSCNode node) {
+        String clean = node.getSourceFile().getPath().replace("/", ".");
+        return clean.startsWith(".") ? clean.substring(1) : clean;
     }
 
     // FIME: resolve parents to SF, create cleaned FQN.
-    public static void mapFqn(TSCNode node, StringBuilder sb) {
+    public static String mapFqn(TSCNode node) {
         TSCNode parent = node.getParent();
         if (parent == null) {
-            return;
+            return "";
         }
+
+        String fqn = node.getNodeProperty("name").getText();
 
         if (parent.syntaxKind() == TSCSyntaxKind.SourceFile) {
-            String dirty = node.getSourceFile().getPath().replace("/", ".");
-            String clean = dirty.startsWith(".") ? dirty.substring(1) : dirty;
-            sb.insert(0, clean + ".");
-        } else if (parent.syntaxKind() == TSCSyntaxKind.ClassDeclaration) {
-            throw new IllegalStateException("implement me. $...");
+            fqn = mapSourceFileFqn(parent) + "." + fqn;
+        } else if (parent.isClassDeclaration() && node.isClassDeclaration()) {
+            String prefix = mapFqn(parent);
+            fqn = prefix + "$" + fqn;
         } else {
-            // methodName()
-            throw new IllegalStateException("implement me ...");
+            String prefix = mapFqn(parent);
+            fqn = prefix + "." + fqn;
         }
 
-        sb.append(node.getNodeProperty("name").getText());
+        return fqn;
     }
 
+    @Nullable
     public String mapNode(TSCNode node) {
-        switch (node.syntaxKind()) {
-            case Parameter:
-                TSCNode typeNode = node.getNodeProperty("type");
-                if (typeNode.getTypeChecker().getTypeFromTypeNode(typeNode).getOptionalSymbolProperty("symbol") == null) {
-                    return signature(typeNode);
-                }
+        if (node.hasProperty("type")) {
+            return signature((node.getNodeProperty("type")));
+        }
 
-                TSCNode declaration = getDeclaration(typeNode.getTypeChecker().getTypeFromTypeNode(typeNode).getSymbolForType().getDeclarations());
+        TSCType type = node.getTypeChecker().getTypeFromTypeNode(node);
+        TSCSymbol symbol;
+        if (type != null) {
+            symbol = type.getOptionalSymbolProperty("symbol");
+            if (symbol != null) {
+                TSCNode declaration = symbol.getValueDeclaration();
                 if (declaration != null) {
                     return signature(declaration);
+                } else {
+                    TSCNode tscNode = getDeclaration(symbol.getDeclarations());
+                    if (tscNode == null) {
+                        return TsType.MERGED_INTERFACE.getFullyQualifiedName();
+                    } else {
+                        return signature(getDeclaration(symbol.getDeclarations()));
+                    }
                 }
-                break;
-            case Identifier:
-            case TypeReference: {
-                TSCType type = node.getTypeChecker().getTypeFromTypeNode(node);
-                TSCSymbol symbol = type.getTypeChecker().getTypeFromTypeNode(node).getOptionalSymbolProperty("symbol");
-                if (symbol != null && symbol.getDeclarations() != null && symbol.getDeclarations().size() == 1) {
-                    return signature(symbol.getDeclarations().get(0));
+            } else {
+                TSCTypeFlag flag = null;
+                try {
+                    flag = type.getExactTypeFlag();
+                } catch (Exception ignored) {
                 }
-                break;
+
+                if (flag != null) {
+                    switch (flag) {
+                        case Any:
+                            return TsType.ANY.getFullyQualifiedName();
+                        case Boolean:
+                            return JavaType.Primitive.Boolean.getKeyword();
+                        case Number:
+                        case NumberLiteral:
+                            return TsType.NUMBER.getFullyQualifiedName();
+                        case Object:
+                            // DO NOT CACHE a signature for anonymous/reference objects.
+                            return null;
+                        case String:
+                        case StringLiteral:
+                            return JavaType.Primitive.String.getKeyword();
+                        case Undefined:
+                            return TsType.UNDEFINED.getFullyQualifiedName();
+                        case Union:
+                            return TsType.UNION.getFullyQualifiedName();
+                        case Unknown:
+                            return TsType.UNKNOWN.getFullyQualifiedName();
+                        case Void:
+                            return JavaType.Primitive.Void.getKeyword();
+                        default:
+                            throw new UnsupportedOperationException("implement me");
+                    }
+                } else {
+                    switch (TSCObjectFlag.fromMaskExact(type.getObjectFlags())) {
+                        case PrimitiveUnion:
+                            return TsType.PRIMITIVE_UNION.getFullyQualifiedName();
+                        default:
+                            throw new UnsupportedOperationException("implement me");
+                    }
+                }
             }
+        } else {
+            System.out.println();
         }
         return "{undefined}";
+    }
+
+    private TSCNode getOwner(TSCNode node) {
+        TSCNode parent = node.getParent();
+        if (parent == null) {
+            return node;
+        } else if (parent.syntaxKind() == TSCSyntaxKind.SourceFile ||
+                parent.syntaxKind() == TSCSyntaxKind.ClassDeclaration ||
+                parent.syntaxKind() == TSCSyntaxKind.EnumDeclaration ||
+                parent.syntaxKind() == TSCSyntaxKind.InterfaceDeclaration ||
+                parent.syntaxKind() == TSCSyntaxKind.MethodDeclaration) {
+            return parent;
+        } else {
+            return getOwner(node.getParent());
+        }
     }
 
     @Nullable
@@ -258,7 +361,6 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         if (declarations.size() == 1) {
             return declarations.get(0);
         } else {
-            // FIXME: Add support for merged declarations.
             return null;
         }
     }

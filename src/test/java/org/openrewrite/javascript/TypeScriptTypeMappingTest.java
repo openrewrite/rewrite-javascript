@@ -24,6 +24,7 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import static java.util.Objects.requireNonNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TypeScriptTypeMappingTest {
     private static final String goat = StringUtils.readFully(TypeScriptSignatureBuilderTest.class.getResourceAsStream("/TypeScriptTypeGoat.ts"));
@@ -43,9 +44,15 @@ public class TypeScriptTypeMappingTest {
 
     @Test
     void className() {
-        JavaType.FullyQualified clazz = TypeUtils.asFullyQualified(this.firstMethodParameter("clazzA"));
+        JavaType.FullyQualified clazz = TypeUtils.asFullyQualified(this.firstMethodParameter("clazz"));
         Assertions.assertThat(clazz).isNotNull();
         Assertions.assertThat(clazz.getFullyQualifiedName()).endsWith(".file.js.A");
+    }
+
+    @Test
+    void constructor() {
+        JavaType.Method ctor = methodType("<constructor>");
+        assertThat(ctor.getDeclaringType().getFullyQualifiedName()).endsWith(".file.js.TypeScriptTypeGoat");
     }
 
     public JavaType.Method methodType(String methodName) {

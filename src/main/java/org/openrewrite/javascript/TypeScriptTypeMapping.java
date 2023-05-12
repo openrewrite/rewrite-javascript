@@ -24,12 +24,15 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
+import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
+import org.openrewrite.javascript.tree.TsType;
 
 import java.util.*;
 
 import static org.openrewrite.TypeScriptSignatureBuilder.mapFqn;
+import static org.openrewrite.TypeScriptSignatureBuilder.mapSourceFileFqn;
 import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.INVARIANT;
 
 @Incubating(since = "0.0")
@@ -56,16 +59,26 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         }
 
         String signature = signatureBuilder.signature(node);
+        if (signature == null) {
+            return null;
+        }
+
         JavaType existing = typeCache.get(signature);
         if (existing != null) {
             return existing;
         }
 
-        if (node.isClassDeclaration()) {
+        if (node.syntaxKind() == TSCSyntaxKind.SourceFile) {
+            return JavaType.ShallowClass.build(mapSourceFileFqn(node));
+        } else if (node.syntaxKind() == TSCSyntaxKind.UnknownKeyword) {
+            return JavaType.ShallowClass.build("unknown");
+        } else if (node.syntaxKind() == TSCSyntaxKind.UndefinedKeyword) {
+            return JavaType.ShallowClass.build("undefined");
+        } else if (node.isClassDeclaration()) {
             return classType(node);
         } else if (node.isPrimitive()) {
             return primitive(node);
-        } else if (isMethodDeclaration(node)) {
+        } else if (node.isMethodDeclaration()) {
             return methodDeclarationType(node);
         } else {
             // Get the type attribution of identifiers.
@@ -75,24 +88,15 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 if (valueDeclaration != null) {
                     if (valueDeclaration.isClassDeclaration()) {
                         return classType(valueDeclaration);
-                    } else if (isMethodDeclaration(node)) {
+                    } else if (valueDeclaration.isMethodDeclaration()) {
                         return methodDeclarationType(valueDeclaration);
-                    } else {
-                        throw new IllegalStateException("Unable to find value declaration for symbol " + symbol);
+                    } else if (valueDeclaration.syntaxKind() == TSCSyntaxKind.EnumMember) {
+                        return variableType(valueDeclaration);
                     }
                 }
             }
             return mapNode(node);
         }
-    }
-
-    private boolean isMethodDeclaration(TSCNode node) {
-        return node.syntaxKind() == TSCSyntaxKind.Constructor ||
-                node.syntaxKind() == TSCSyntaxKind.MethodDeclaration
-                // TODO: signatures require these, so it may be necessary for JavaType.Method. IFF needed on TypeMapping, this may be moved to TSCNode.
-//                node.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
-//                node.syntaxKind() == TSCSyntaxKind.MethodSignature
-                ;
     }
 
     @Nullable
@@ -129,7 +133,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             clazz = new JavaType.Class(
                     null,
                     mapFlags(), // FIXME
-                    mapFqn(node), // FIXME: using `getSourceFile` only works for simple case.
+                    mapFqn(node),
                     kind,
                     null, null, null, null, null, null, null
             );
@@ -143,18 +147,24 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
             List<TSCNode> propertyNodes = null;
             List<TSCNode> methodNodes = null;
+            List<TSCNode> enumNodes = null;
             if (node.hasProperty("members")) {
                 for (TSCNode member : node.getNodeListProperty("members")) {
-                    if (member.syntaxKind() == TSCSyntaxKind.MethodDeclaration || member.syntaxKind() == TSCSyntaxKind.Constructor) {
+                    if (member.isMethodDeclaration()) {
                         if (methodNodes == null) {
                             methodNodes = new ArrayList<>(1);
                         }
                         methodNodes.add(member);
-                    } else if (member.syntaxKind() == TSCSyntaxKind.PropertyDeclaration) {
+                    } else if (member.isVariable()) {
                         if (propertyNodes == null) {
                             propertyNodes = new ArrayList<>(1);
                         }
                         propertyNodes.add(member);
+                    } else if (member.syntaxKind() == TSCSyntaxKind.EnumMember) {
+                        if (enumNodes == null) {
+                            enumNodes = new ArrayList<>(1);
+                        }
+                        enumNodes.add(member);
                     } else {
                         throw new IllegalStateException("Unable to find value declaration for symbol " + member);
                     }
@@ -162,6 +172,13 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             }
 
             List<JavaType.Variable> members = null;
+            if (enumNodes != null) {
+                members = new ArrayList<>(enumNodes.size() + (propertyNodes == null ? 0 : propertyNodes.size()));
+                for (TSCNode enumNode : enumNodes) {
+                    members.add(variableType(enumNode, clazz));
+                }
+            }
+
             if (propertyNodes != null) {
                 members = new ArrayList<>(propertyNodes.size());
                 for (TSCNode propertyNode : propertyNodes) {
@@ -214,14 +231,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
     @Nullable
     public JavaType.Method methodDeclarationType(TSCNode node) {
-        TSCNode parent = node.getParent();
-        assert parent != null;
-
-        if (!(parent.syntaxKind() == TSCSyntaxKind.ClassDeclaration ||
-                parent.syntaxKind() == TSCSyntaxKind.InterfaceDeclaration ||
-                parent.syntaxKind() == TSCSyntaxKind.EnumDeclaration)) {
-            throw new IllegalStateException("implement me.");
-        }
+        TSCNode parent = getOwner(node);
 
         return methodDeclarationType(node, classType(parent));
     }
@@ -243,7 +253,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 null,
                 mapFlags(),// FIXME.
                 null,
-                isConstructor ? "<constructor>" : node.getNodeProperty("name").getText(),
+                isConstructor ? "<constructor>" : node.hasProperty("name") ? node.getNodeProperty("name").getText() : "{anonymous}",
                 null,
                 paramNames,
                 null, null, null,
@@ -255,11 +265,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
         JavaType.FullyQualified resolvedDeclaringType = declaringType;
         if (declaringType == null) {
-            throw new IllegalStateException("implement me.");
-        }
-
-        if (resolvedDeclaringType == null) {
-            return null;
+            resolvedDeclaringType = (JavaType.FullyQualified) type(getOwner(node));
         }
 
         JavaType returnType = null; // FIXME.
@@ -271,13 +277,9 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             for (TSCNode paramNode : paramNodes) {
                 TSCNode typeNode = paramNode.getOptionalNodeProperty("type");
                 if (typeNode == null) {
-                    throw new IllegalStateException("Find the type");
+                    parameterTypes.add(type(paramNode));
                 } else {
-                    if (typeNode.syntaxKind() == TSCSyntaxKind.TypeReference) {
-                        parameterTypes.add(type(typeNode));
-                    } else {
-                        throw new IllegalStateException("implement me.");
-                    }
+                    parameterTypes.add(type(typeNode));
                 }
             }
         }
@@ -304,12 +306,49 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
     }
 
     public JavaType.Primitive primitive(TSCNode node) {
-        return JavaType.Primitive.None;
+        switch (node.syntaxKind()) {
+            case BooleanKeyword:
+            case FalseKeyword:
+            case TrueKeyword:
+                return JavaType.Primitive.Boolean;
+            case StringKeyword:
+                return JavaType.Primitive.String;
+            // FIXME. Revisit with Gary on how to translate number ~= java.
+            case NumberKeyword:
+            case NumericLiteral:
+                return JavaType.Primitive.Long;
+            case UnknownKeyword:
+                return JavaType.Primitive.None;
+            case VoidKeyword:
+                return JavaType.Primitive.Void;
+            default:
+                throw new IllegalStateException("implement me.");
+        }
     }
 
     @Nullable
     public JavaType.Variable variableType(TSCNode node) {
-        return null;
+        String signature = signatureBuilder.variableSignature(node);
+        JavaType.Variable existing = typeCache.get(signature);
+        if (existing != null) {
+            return existing;
+        }
+
+        JavaType.Variable variable = new JavaType.Variable(
+                null,
+                mapFlags(), // TODO
+                node.getNodeProperty("name").getText(),
+                null, null, null);
+
+        typeCache.put(signature, variable);
+
+        List<JavaType.FullyQualified> annotations = Collections.emptyList();
+
+        JavaType resolvedOwner = type(getOwner(node));
+        JavaType type = type(node.hasProperty("type") ? node.getNodeProperty("type") : node);
+        variable.unsafeSet(resolvedOwner, type, annotations);
+
+        return variable;
     }
 
     @Nullable
@@ -328,54 +367,109 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
     @Nullable
     private JavaType mapNode(TSCNode node) {
-        switch (node.syntaxKind()) {
-            case Identifier:
-            case TypeReference: {
-                TSCType type = node.getTypeChecker().getTypeFromTypeNode(node);
-                TSCSymbol symbol = type.getTypeChecker().getTypeFromTypeNode(node).getOptionalSymbolProperty("symbol");
-                if (symbol == null) {
-                    return null;
+        if (node.hasProperty("type")) {
+            return type((node.getNodeProperty("type")));
+        }
+
+        TSCType type = node.getTypeChecker().getTypeFromTypeNode(node);
+        TSCSymbol symbol;
+        if (type != null) {
+            symbol = type.getOptionalSymbolProperty("symbol");
+            if (symbol != null) {
+                TSCNode declaration = symbol.getValueDeclaration();
+                if (declaration != null) {
+                    return type(declaration);
+                } else {
+                    TSCNode tscNode = getDeclaration(symbol.getDeclarations());
+                    if (tscNode == null) {
+                        return TsType.MERGED_INTERFACE;
+                    } else {
+                        return type(getDeclaration(symbol.getDeclarations()));
+                    }
+                }
+            } else {
+                TSCTypeFlag flag = null;
+                try {
+                    flag = type.getExactTypeFlag();
+                } catch (Exception ignored) {
                 }
 
-                if (symbol.getDeclarations() != null && symbol.getDeclarations().size() == 1) {
-                    return type(symbol.getDeclarations().get(0));
+                if (flag != null) {
+                    switch (flag) {
+                        case Any:
+                            return TsType.ANY;
+                        case Boolean:
+                            return JavaType.Primitive.Boolean;
+                        case Number:
+                        case NumberLiteral:
+                            return TsType.NUMBER;
+                        case Object:
+                            // DO NOT CACHE a signature for anonymous/reference objects.
+                            return null;
+                        case String:
+                        case StringLiteral:
+                            return JavaType.Primitive.String;
+                        case Undefined:
+                            return TsType.UNDEFINED;
+                        case Union:
+                            return TsType.UNION;
+                        case Unknown:
+                            return TsType.UNKNOWN;
+                        case Void:
+                            return JavaType.Primitive.Void;
+                        default:
+                            throw new UnsupportedOperationException("implement me");
+                    }
                 } else {
-                    return JavaType.ShallowClass.build("analysis.MergedTypesAreNotSupported");
+                    switch (TSCObjectFlag.fromMaskExact(type.getObjectFlags())) {
+                        case PrimitiveUnion:
+                            return TsType.PRIMITIVE_UNION;
+                        default:
+                            throw new UnsupportedOperationException("implement me");
+                    }
                 }
             }
-            case ArrayLiteralExpression:
-                List<TSCNode> elements = node.getNodeListProperty("elements");
-                Set<JavaType> javaTypes = Collections.newSetFromMap(new IdentityHashMap<>());
-                for (TSCNode element : elements) {
-                    javaTypes.add(type(element));
-                }
-                if (javaTypes.size() == 1) {
-                    return (JavaType) javaTypes.toArray()[0];
-                } else {
-                    // FIXME: requires union types.
-                    return null;
-                }
-            case BinaryExpression:
-                return JavaType.Primitive.Boolean;
-            case NumericLiteral:
-                TSCTypeFlag flag = TSCTypeFlag.fromMaskExact(node.getTypeChecker().getNumberType().getTypeFlags());
-                // FIXME: TS.PrimitiveType ??
-                return null;
-            case TypeOfExpression:
-                // FIXME
-                return null;
-            case TypeParameter:
-                return generic(node);
-            default:
-                throw new IllegalStateException("implement me: " + node.syntaxKind());
+        } else {
+            System.out.println();
         }
+        return null;
     }
 
+    // FIXME
     private long mapFlags() {
         return 0;
     }
 
+    // FIXME
     private JavaType.FullyQualified.Kind mapClassKind() {
         return JavaType.FullyQualified.Kind.Class;
+    }
+
+    @Nullable
+    private TSCNode getDeclaration(@Nullable List<TSCNode> declarations) {
+        if (declarations == null || declarations.isEmpty()) {
+            return null;
+        }
+
+        if (declarations.size() == 1) {
+            return declarations.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    private TSCNode getOwner(TSCNode node) {
+        TSCNode parent = node.getParent();
+        if (parent == null) {
+            return node;
+        } else if (parent.syntaxKind() == TSCSyntaxKind.SourceFile ||
+                parent.syntaxKind() == TSCSyntaxKind.ClassDeclaration ||
+                parent.syntaxKind() == TSCSyntaxKind.EnumDeclaration ||
+                parent.syntaxKind() == TSCSyntaxKind.InterfaceDeclaration ||
+                parent.syntaxKind() == TSCSyntaxKind.MethodDeclaration) {
+            return parent;
+        } else {
+            return getOwner(node.getParent());
+        }
     }
 }

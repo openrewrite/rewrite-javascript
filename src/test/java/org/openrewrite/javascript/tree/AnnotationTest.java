@@ -25,17 +25,13 @@ public class AnnotationTest extends ParserTest {
         rewriteRun(
           javascript(
             """
-              function enumerable ( value : boolean ) {
-                  return function ( target : any ,
-                          propertyKey : string,
-                          descriptor : PropertyDescriptor ) {
-                      descriptor . enumerable = value ;
-                  } ;
-              }
-              """
-          ),
-          javascript(
-            """
+            function enumerable ( value : boolean ) {
+                return function ( target : any ,
+                        propertyKey : string,
+                        descriptor : PropertyDescriptor ) {
+                    descriptor . enumerable = value ;
+                } ;
+            }
             class Foo {
                 @enumerable ( false )
                 foo ( ) {

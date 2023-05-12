@@ -71,7 +71,7 @@ class CommentTest extends ParserTest {
                * @param {string} p1
                * @param {string} p2
                */
-              function f ( p1, p2 ) {
+              function f ( p1 , p2 ) {
               }
               """
           )
