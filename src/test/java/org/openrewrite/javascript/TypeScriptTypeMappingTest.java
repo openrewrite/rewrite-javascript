@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TypeScriptTypeMappingTest {
     private static final String goat = StringUtils.readFully(TypeScriptSignatureBuilderTest.class.getResourceAsStream("/TypeScriptTypeGoat.ts"));
-    private static JavaType.FullyQualified goatType = requireNonNull(TypeUtils.asFullyQualified(JavaScriptParser.builder().build()
+    private static final JavaType.FullyQualified goatType = requireNonNull(TypeUtils.asFullyQualified(JavaScriptParser.builder().build()
             .parse(new InMemoryExecutionContext(), goat)
             .get(0)
             .getStatements()
