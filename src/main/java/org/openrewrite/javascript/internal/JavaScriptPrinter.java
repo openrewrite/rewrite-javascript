@@ -25,6 +25,7 @@ import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.javascript.tree.JsRightPadded;
 import org.openrewrite.javascript.tree.JsSpace;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
@@ -80,8 +81,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         p.append(keyword);
 
         visit(binary.getRight(), p);
-        afterSyntax(binary, p);
 
+        afterSyntax(binary, p);
         return binary;
     }
 
@@ -107,9 +108,19 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         p.append(keyword);
 
         visit(operator.getRight(), p);
-        afterSyntax(operator, p);
 
+        afterSyntax(operator, p);
         return operator;
+    }
+
+    @Override
+    public J visitUnion(JS.Union union, PrintOutputCapture<P> p) {
+        beforeSyntax(union, JsSpace.Location.UNION_PREFIX, p);
+
+        visitRightPadded(union.getPadding().getTypes(), JsRightPadded.Location.UNION_TYPE, "|", p);
+
+        afterSyntax(union, p);
+        return union;
     }
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
@@ -320,6 +331,17 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             }
             visit(leftPadded.getElement(), p);
             afterSyntax(leftPadded.getMarkers(), p);
+        }
+    }
+
+    protected void visitRightPadded(List<? extends JRightPadded<? extends J>> nodes, JsRightPadded.Location location, String suffixBetween, PrintOutputCapture<P> p) {
+        for (int i = 0; i < nodes.size(); i++) {
+            JRightPadded<? extends J> node = nodes.get(i);
+            visit(node.getElement(), p);
+            visitSpace(node.getAfter(), location.getAfterLocation(), p);
+            if (i < nodes.size() - 1) {
+                p.append(suffixBetween);
+            }
         }
     }
 

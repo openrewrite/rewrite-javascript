@@ -22,7 +22,9 @@ public class JsSpace {
         ARRAY_LITERAL_ELEMENTS,
         BINARY_PREFIX,
         OPERATOR_PREFIX,
-        TOP_LEVEL_STATEMENT,
+        ARRAY_LITERAL_SUFFIX,
+        UNION_PREFIX,
+        UNION_TYPE_SUFFIX,
         VARIABLE_DECLARATION_PREFIX
     }
 }

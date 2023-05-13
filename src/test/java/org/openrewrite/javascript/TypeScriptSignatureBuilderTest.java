@@ -34,6 +34,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class TypeScriptSignatureBuilderTest {
 
+    //TODO: identify why `app.` is added to FQNs. Happened after libs change.
+
     @Language("typescript")
     private static final String goat = StringUtils.readFully(TypeScriptSignatureBuilderTest.class.getResourceAsStream("/TypeScriptTypeGoat.ts"));
 
@@ -57,13 +59,12 @@ public class TypeScriptSignatureBuilderTest {
         );
     }
 
-    @ExpectedToFail("Requires typeof")
     @Test
     void parameterizedField() {
         runtime.parseSourceTexts(
                 Collections.singletonMap(Paths.get("goat.ts"), goat),
                 (node, context) -> assertThat(fieldSignature(node, "parameterizedField"))
-                        .isEqualTo("app.goat.ts.TypeScriptTypeGoat{name=parameterizedField,type=app.goat.ts.PT<goat.ts.TypeScriptTypeGoat$TypeA>}")
+                        .isEqualTo("app.goat.ts.TypeScriptTypeGoat{name=parameterizedField,type=app.goat.ts.PT<app.goat.ts.TypeScriptTypeGoat$TypeA>}")
         );
     }
 
@@ -95,28 +96,32 @@ public class TypeScriptSignatureBuilderTest {
                 "app.goat.ts.TypeScriptTypeGoat{name=primitive,return=void,parameters=[number]}");
     }
 
-    @ExpectedToFail("Requires bounded named of generics instead of declaration name")
     @Test
     void parameterized() {
         assertMethodSignature("parameterized",
-                "app.goat.ts.PT<goat.ts.A>",
+                "app.goat.ts.PT<app.goat.ts.A>",
                 "app.goat.ts.TypeScriptTypeGoat{name=parameterized,return=app.goat.ts.PT<app.goat.ts.A>,parameters=[app.goat.ts.PT<app.goat.ts.A>]}");
     }
 
-    @ExpectedToFail("Requires bounded named of generics instead of declaration name")
     @Test
     void parameterizedRecursive() {
         assertMethodSignature("parameterizedRecursive",
-                "app.goat.ts.PT<goat.ts.PT<Generic{app.goat.ts.A}>",
-                "app.goat.ts.TypeScriptTypeGoat{name=parameterizedRecursive,return=app.goat.ts.PT<app.goat.ts.PT<Generic{app.goat.ts.A}>,parameters=[app.goat.ts.PT<app.goat.ts.PT<Generic{app.goat.ts.A}>]}");
+                "app.goat.ts.PT<app.goat.ts.PT<app.goat.ts.A>>",
+                "app.goat.ts.TypeScriptTypeGoat{name=parameterizedRecursive,return=app.goat.ts.PT<app.goat.ts.PT<app.goat.ts.A>>,parameters=[app.goat.ts.PT<app.goat.ts.PT<app.goat.ts.A>>]}");
     }
 
-    @ExpectedToFail("Requires bounded named of generics instead of declaration name")
     @Test
     void generic() {
         assertMethodSignature("generic",
-                "app.goat.ts.PT<Generic{T extends app.goat.ts.B}>",
-                "app.goat.ts.TypeScriptTypeGoat{name=generic,return=app.goat.ts.PT<Generic{T extends app.goat.ts.B}>,parameters=[app.goat.ts.PT<Generic{T extends app.goat.ts.B}>]}");
+                "app.goat.ts.PT<Generic{T extends app.goat.ts.A}>",
+                "app.goat.ts.TypeScriptTypeGoat{name=generic,return=app.goat.ts.PT<Generic{T extends app.goat.ts.A}>,parameters=[app.goat.ts.PT<Generic{T extends app.goat.ts.A}>]}");
+    }
+
+    @Test
+    void mergedInterfaceGeneric() {
+        assertMethodSignature("mergedGeneric",
+          "app.goat.ts.PT<Generic{T extends type.analysis.MergedInterface}>",
+          "app.goat.ts.TypeScriptTypeGoat{name=mergedGeneric,return=app.goat.ts.PT<Generic{T extends type.analysis.MergedInterface}>,parameters=[app.goat.ts.PT<Generic{T extends type.analysis.MergedInterface}>]}");
     }
 
     @Test
@@ -134,7 +139,6 @@ public class TypeScriptSignatureBuilderTest {
                 "Add me");
     }
 
-    @ExpectedToFail("Requires bounded named of generics instead of declaration name")
     @Test
     void genericRecursiveInClassDefinition() {
         runtime.parseSourceTexts(
@@ -144,7 +148,7 @@ public class TypeScriptSignatureBuilderTest {
         );
     }
 
-    @ExpectedToFail("Requires bounded named of generics instead of declaration name")
+    @ExpectedToFail("Implement TS recursive generic")
     @Test
     void genericRecursiveInMethodDeclaration() {
         assertMethodSignature("genericRecursive",
@@ -152,16 +156,29 @@ public class TypeScriptSignatureBuilderTest {
                 "Add me");
     }
 
-    @ExpectedToFail("Requires support for merged classes")
     @Test
-    void mergedClass() {
-        assertMethodSignature("mergedClass",
-                "Add me",
-                "Add me");
+    void merged() {
+        assertMethodSignature("merged",
+                "type.analysis.MergedInterface",
+                "app.goat.ts.TypeScriptTypeGoat{name=merged,return=void,parameters=[type.analysis.MergedInterface]}");
+    }
+
+    @Test
+    void unionField() {
+        runtime.parseSourceTexts(
+          Collections.singletonMap(Paths.get("goat.ts"), goat),
+          (node, context) -> assertThat(fieldSignature(node, "unionField"))
+                  .isEqualTo("app.goat.ts.TypeScriptTypeGoat{name=unionField,type=type.analysis.Union}")
+        );
     }
 
     private String fieldSignature(TSCNode node, String field) {
-        throw new UnsupportedOperationException("todo");
+        return signatureBuilder().variableSignature(node.getNodeListProperty("statements").stream()
+                .filter(it -> it.syntaxKind() == TSCSyntaxKind.ClassDeclaration && it.hasProperty("members"))
+                .flatMap(it -> it.getNodeListProperty("members").stream())
+                .filter(it -> it.syntaxKind() == TSCSyntaxKind.PropertyDeclaration && it.hasProperty("name") && field.equals(it.getNodeProperty("name").getText()))
+                .findFirst()
+                .orElseThrow());
     }
 
     public String methodSignature(TSCNode node, String methodName) {

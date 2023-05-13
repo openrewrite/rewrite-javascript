@@ -319,34 +319,4 @@ public class TSCNode implements TSCV8Backed {
     public V8ValueObject getBackingV8Object() {
         return this.nodeV8;
     }
-
-    public boolean isClassDeclaration() {
-        return this.syntaxKind() == TSCSyntaxKind.ClassDeclaration ||
-                this.syntaxKind() == TSCSyntaxKind.InterfaceDeclaration ||
-                this.syntaxKind() == TSCSyntaxKind.EnumDeclaration;
-    }
-
-    public boolean isMethodDeclaration() {
-        return this.syntaxKind() == TSCSyntaxKind.CallSignature ||
-                this.syntaxKind() == TSCSyntaxKind.Constructor ||
-                this.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
-                this.syntaxKind() == TSCSyntaxKind.FunctionDeclaration ||
-                this.syntaxKind() == TSCSyntaxKind.MethodDeclaration ||
-                this.syntaxKind() == TSCSyntaxKind.MethodSignature;
-    }
-
-    public boolean isPrimitive() {
-        return this.syntaxKind() == TSCSyntaxKind.BooleanKeyword ||
-                this.syntaxKind() == TSCSyntaxKind.TrueKeyword ||
-                this.syntaxKind() == TSCSyntaxKind.FalseKeyword ||
-                this.syntaxKind() == TSCSyntaxKind.NumberKeyword ||
-                this.syntaxKind() == TSCSyntaxKind.StringKeyword ||
-                this.syntaxKind() == TSCSyntaxKind.VoidKeyword;
-    }
-
-    public boolean isVariable() {
-        return this.syntaxKind() == TSCSyntaxKind.EnumMember ||
-                this.syntaxKind() == TSCSyntaxKind.PropertyDeclaration ||
-                this.syntaxKind() == TSCSyntaxKind.PropertySignature;
-    }
 }
