@@ -341,7 +341,7 @@ public interface JS extends J {
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Data
-    final class JsOperator implements JS, Expression, TypedTree {
+    final class JsOperator implements JS, Expression, TypedTree, NameTree {
 
         @Nullable
         @NonFinal
@@ -500,6 +500,81 @@ public interface JS extends J {
         @Override
         public String print(Cursor cursor) {
             return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Data
+    final class Union implements JS, Expression, TypeTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<JS.Union.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        List<JRightPadded<Expression>> types;
+
+        public List<Expression> getTypes() {
+            return JRightPadded.getElements(types);
+        }
+
+        public JS.Union withTypes(List<Expression> types) {
+            return getPadding().withTypes(JRightPadded.withElements(this.types, types));
+        }
+
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitUnion(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public JS.Union.Padding getPadding() {
+            JS.Union.Padding p;
+            if (this.padding == null) {
+                p = new JS.Union.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JS.Union.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JS.Union t;
+
+            public List<JRightPadded<Expression>> getTypes() {
+                return t.types;
+            }
+
+            public JS.Union withTypes(List<JRightPadded<Expression>> types) {
+                return t.types == types ? t : new JS.Union(t.id, t.prefix, t.markers, types, t.type);
+            }
         }
     }
 

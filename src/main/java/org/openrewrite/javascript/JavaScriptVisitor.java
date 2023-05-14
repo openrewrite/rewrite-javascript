@@ -16,6 +16,7 @@
 package org.openrewrite.javascript;
 
 import org.openrewrite.SourceFile;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.*;
@@ -81,6 +82,14 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         o = o.withRight(visitAndCast(o.getRight(), p));
         o = o.withType(visitType(o.getType(), p));
         return o;
+    }
+
+    public J visitUnion(JS.Union union, P p) {
+        JS.Union u = union;
+        u = u.withPrefix(visitSpace(u.getPrefix(), JsSpace.Location.UNION_PREFIX, p));
+        u = u.withMarkers(visitMarkers(u.getMarkers(), p));
+        u = u.getPadding().withTypes(ListUtils.map(u.getPadding().getTypes(), t -> visitRightPadded(t, JsRightPadded.Location.UNION_TYPE, p)));
+        return u;
     }
 
     public Space visitSpace(Space space, JsSpace.Location loc, P p) {

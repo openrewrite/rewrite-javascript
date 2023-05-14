@@ -28,6 +28,7 @@ import org.openrewrite.javascript.internal.tsc.TSCNodeList;
 import org.openrewrite.javascript.internal.tsc.TSCSourceFileContext;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.javascript.tree.TsType;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.markers.ForLoopType;
 import org.openrewrite.markers.FunctionDeclaration;
@@ -75,6 +76,8 @@ public class TypeScriptParserVisitor {
             try {
                 visited = visitNode(child);
             } catch (Exception e) {
+                // TODO: convert child node to a UnsupportedStatement.
+                // Convert exception to marker on the statement.
                 throw new JavaScriptParsingException("Failed to parse statement", e);
             }
             if (visited != null) {
@@ -522,7 +525,14 @@ public class TypeScriptParserVisitor {
         if (node.hasProperty("name")) {
             name = visitIdentifier(node.getNodeProperty("name"));
         } else {
-            throw new UnsupportedOperationException("Class has no name ... add support");
+            name = new J.Identifier(
+                    randomId(),
+                    EMPTY,
+                    Markers.EMPTY,
+                    "",
+                    null,
+                    null
+            );
         }
 
         JLeftPadded<TypeTree> extendings = null;
@@ -1106,6 +1116,10 @@ public class TypeScriptParserVisitor {
                     consumeToken(TSCSyntaxKind.AbstractKeyword);
                     modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Abstract, annotations));
                     break;
+                case AsyncKeyword:
+                    consumeToken(TSCSyntaxKind.AsyncKeyword);
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Async, annotations));
+                    break;
                 case PublicKeyword:
                     consumeToken(TSCSyntaxKind.PublicKeyword);
                     modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Public, annotations));
@@ -1117,6 +1131,10 @@ public class TypeScriptParserVisitor {
                 case ProtectedKeyword:
                     consumeToken(TSCSyntaxKind.ProtectedKeyword);
                     modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Protected, annotations));
+                    break;
+                case StaticKeyword:
+                    consumeToken(TSCSyntaxKind.StaticKeyword);
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Static, annotations));
                     break;
                 default:
                     implementMe(node);
@@ -1171,6 +1189,7 @@ public class TypeScriptParserVisitor {
                 TSCSyntaxKind.CloseParenToken,
                 t -> (Expression) visitNode(t)
         );
+
         return new J.NewClass(
                 randomId(),
                 EMPTY,
@@ -1266,6 +1285,17 @@ public class TypeScriptParserVisitor {
             name = name.withType(typeMapping.type(type));
         }
 
+        JLeftPadded<Expression> initializer;
+        if (node.hasProperty("initializer")) {
+            Space beforeEquals = sourceBefore(TSCSyntaxKind.EqualsToken);
+            J init = visitNode(node.getNodeProperty("initializer"));
+            if (init != null && !(init instanceof Expression)) {
+                init = new JS.StatementExpression(randomId(), (Statement) init);
+            }
+            initializer = padLeft(beforeEquals, (Expression) init);
+        } else {
+            initializer = null;
+        }
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = new ArrayList<>(1);
         variables.add(maybeSemicolon(new J.VariableDeclarations.NamedVariable(
                 randomId(),
@@ -1273,9 +1303,7 @@ public class TypeScriptParserVisitor {
                 Markers.EMPTY,
                 name,
                 emptyList(),
-                node.hasProperty("initializer") ?
-                        padLeft(sourceBefore(TSCSyntaxKind.EqualsToken),
-                                (Expression) Objects.requireNonNull(visitNode(node.getNodeProperty("initializer")))) : null,
+                initializer,
                 typeMapping.variableType(node)
         )));
 
@@ -1290,6 +1318,17 @@ public class TypeScriptParserVisitor {
                 null,
                 dimensions,
                 variables
+        );
+    }
+
+    private J.FieldAccess visitQualifiedName(TSCNode node) {
+        return new J.FieldAccess(
+                randomId(),
+                whitespace(),
+                Markers.EMPTY,
+                (Expression) visitNode(node.getNodeProperty("left")),
+                padLeft(sourceBefore(TSCSyntaxKind.DotToken), (J.Identifier) visitNode(node.getNodeProperty("right"))),
+                typeMapping.type(node)
         );
     }
 
@@ -1371,6 +1410,83 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private JS.JsOperator visitTsOperator(TSCNode node) {
+        Space prefix = whitespace();
+        Expression left = null; // placeholder for 'bar' in foo. Remove left expression if it is unnecessary.
+        JLeftPadded<JS.JsOperator.Type> op = null;
+        Expression right = null;
+        if (node.syntaxKind() == TSCSyntaxKind.TypeOfExpression) {
+            op = padLeft(sourceBefore(TSCSyntaxKind.TypeOfKeyword), JS.JsOperator.Type.TypeOf);
+            right = (Expression) visitNode(node.getNodeProperty("expression"));
+        } else {
+            implementMe(node);
+        }
+        return new JS.JsOperator(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                left,
+                op,
+                right,
+                typeMapping.type(node)
+        );
+    }
+
+    private J.TypeParameter visitTypeParameter(TSCNode node) {
+        Space prefix = whitespace();
+        implementMe(node, "modifiers");
+        implementMe(node, "expression");
+        implementMe(node, "default");
+        Expression name = (Expression) visitNode(node.getNodeProperty("name"));
+        JContainer<TypeTree> bounds = !node.hasProperty("constraint") ? null :
+                JContainer.build(
+                        sourceBefore(TSCSyntaxKind.ExtendsKeyword),
+                        convertAll(node.getNodeProperty("constraint").syntaxKind() == TSCSyntaxKind.IntersectionType ?
+                                node.getNodeProperty("constraint").getNodeListProperty("types") :
+                                singletonList(node.getNodeProperty("constraint")), t -> sourceBefore(TSCSyntaxKind.AmpersandToken), noDelim),
+                        Markers.EMPTY);
+
+        return new J.TypeParameter(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                emptyList(), // FIXME
+                name,
+                bounds
+        );
+    }
+
+    private J.ParameterizedType visitTypeQuery(TSCNode node) {
+        Space prefix = whitespace();
+        Space typeOfPrefix = sourceBefore(TSCSyntaxKind.TypeOfKeyword);
+        Expression name = (Expression) visitNode(node.getNodeProperty("exprName"));
+
+        JS.JsOperator op = new JS.JsOperator(
+                randomId(),
+                typeOfPrefix,
+                Markers.EMPTY,
+                null,
+                padLeft(EMPTY, JS.JsOperator.Type.TypeOf),
+                name,
+                typeMapping.type(node)
+        );
+        return new J.ParameterizedType(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                op,
+                !node.hasProperty("typeArguments") ? null :
+                        mapContainer(
+                                TSCSyntaxKind.LessThanToken,
+                                node.getNodeListProperty("typeArguments"),
+                                TSCSyntaxKind.CommaToken,
+                                TSCSyntaxKind.GreaterThanToken,
+                                t -> (Expression) visitNode(t)
+                        ),
+                typeMapping.type(node)
+        );
+    }
+
     private J.ParameterizedType visitTypeReference(TSCNode node) {
         return new J.ParameterizedType(
                 randomId(),
@@ -1427,49 +1543,14 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitTsOperator(TSCNode node) {
+    private J visitUnionType(TSCNode node) {
         Space prefix = whitespace();
-        Expression left = null; // placeholder for 'bar' in foo. Remove left expression if it is unnecessary.
-        JLeftPadded<JS.JsOperator.Type> op = null;
-        Expression right = null;
-        if (node.syntaxKind() == TSCSyntaxKind.TypeOfExpression) {
-            op = padLeft(sourceBefore(TSCSyntaxKind.TypeOfKeyword), JS.JsOperator.Type.TypeOf);
-            right = (Expression) visitNode(node.getNodeProperty("expression"));
-        } else {
-            implementMe(node);
-        }
-        return new JS.JsOperator(
+        return new JS.Union(
                 randomId(),
                 prefix,
                 Markers.EMPTY,
-                left,
-                op,
-                right,
-                typeMapping.type(node)
-        );
-    }
-
-    private J.TypeParameter visitTypeParameter(TSCNode node) {
-        Space prefix = whitespace();
-        implementMe(node, "modifiers");
-        implementMe(node, "expression");
-        implementMe(node, "default");
-        Expression name = (Expression) visitNode(node.getNodeProperty("name"));
-        JContainer<TypeTree> bounds = !node.hasProperty("constraint") ? null :
-                JContainer.build(
-                        sourceBefore(TSCSyntaxKind.ExtendsKeyword),
-                        convertAll(node.getNodeProperty("constraint").syntaxKind() == TSCSyntaxKind.IntersectionType ?
-                                node.getNodeProperty("constraint").getNodeListProperty("types") :
-                                singletonList(node.getNodeProperty("constraint")), t -> sourceBefore(TSCSyntaxKind.AmpersandToken), noDelim),
-                        Markers.EMPTY);
-
-        return new J.TypeParameter(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                emptyList(), // FIXME
-                name,
-                bounds
+                convertAll(node.getNodeListProperty("types"), t -> sourceBefore(TSCSyntaxKind.BarToken), t -> EMPTY),
+                TsType.UNION
         );
     }
 
@@ -1732,6 +1813,7 @@ public class TypeScriptParserVisitor {
         switch (node.syntaxKind()) {
             // Multi-case statements
             case ClassDeclaration:
+            case ClassExpression:
             case EnumDeclaration:
             case InterfaceDeclaration:
                 j = visitClassDeclaration(node);
@@ -1854,6 +1936,9 @@ public class TypeScriptParserVisitor {
             case PropertyAccessExpression:
                 j = visitPropertyAccessExpression(node);
                 break;
+            case QualifiedName:
+                j = visitQualifiedName(node);
+                break;
             case ReturnStatement:
                 j = visitReturnStatement(node);
                 break;
@@ -1866,14 +1951,20 @@ public class TypeScriptParserVisitor {
             case TryStatement:
                 j = visitTryStatement(node);
                 break;
-            case TypeReference:
-                j = visitTypeReference(node);
-                break;
             case TypeOfExpression:
                 j = visitTsOperator(node);
                 break;
             case TypeParameter:
                 j = visitTypeParameter(node);
+                break;
+            case TypeQuery:
+                j = visitTypeQuery(node);
+                break;
+            case TypeReference:
+                j = visitTypeReference(node);
+                break;
+            case UnionType:
+                j = visitUnionType(node);
                 break;
             case WhileStatement:
                 j = visitWhileStatement(node);

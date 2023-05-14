@@ -15,19 +15,19 @@
  */
 package org.openrewrite.javascript.tree;
 
-public class JsRightPadded {
-    public enum Location {
-        ARRAY_LITERAL_ELEMENT_SUFFIX(JsSpace.Location.ARRAY_LITERAL_SUFFIX),
-        UNION_TYPE(JsSpace.Location.UNION_TYPE_SUFFIX);
+import org.junit.jupiter.api.Test;
 
-        private final JsSpace.Location afterLocation;
+@SuppressWarnings("JSUnusedLocalSymbols")
+public class UnionTest extends ParserTest {
 
-        Location(JsSpace.Location afterLocation) {
-            this.afterLocation = afterLocation;
-        }
-
-        public JsSpace.Location getAfterLocation() {
-            return afterLocation;
-        }
+    @Test
+    void union() {
+        rewriteRun(
+          javascript(
+            """
+              let unionField: typeof Boolean | typeof Number
+              """
+          )
+        );
     }
 }

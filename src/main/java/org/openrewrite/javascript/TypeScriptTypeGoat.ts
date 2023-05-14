@@ -18,13 +18,15 @@ abstract class TypeScriptTypeGoat<T, S extends PT<S> & A> {
     protected constructor() {
     }
 
-    // public static parameterizedField: PT<typeof TypeScriptTypeGoat.TypeA>;
+    public static parameterizedField: PT<typeof TypeScriptTypeGoat.TypeA>;
 
-    // static TypeA = class {
-    // }
+    public static unionField: typeof TypeScriptTypeGoat.TypeA | typeof TypeScriptTypeGoat.TypeB
 
-    // static TypeB = class {
-    // }
+    static TypeA = class {
+    }
+
+    static TypeB = class {
+    }
 
     // public static abstract class InheritedJavaTypeGoat<T, U extends PT<U> & C> extends JavaTypeGoat<T, U> {
     // public InheritedJavaTypeGoat() {
@@ -71,7 +73,7 @@ abstract class TypeScriptTypeGoat<T, S extends PT<S> & A> {
         return n
     }
 
-    generic<T extends B>(n: PT<T>): PT<T> {
+    generic<T extends A>(n: PT<T>): PT<T> {
         return n
     }
 
@@ -98,10 +100,14 @@ abstract class TypeScriptTypeGoat<T, S extends PT<S> & A> {
     //     return n
     // }
 
-    mergedClass(n: B) {
+    merged(n: B) {
         n.foo()
         n.bar()
         n.buz()
+    }
+
+    mergedGeneric<T extends B>(n: PT<T>): PT<T> {
+        return n
     }
 }
 
@@ -134,6 +140,10 @@ function decorator ( value : boolean ) {
                       descriptor : PropertyDescriptor ) {
         descriptor . enumerable = value ;
     } ;
+}
+
+enum EnumTypeA {
+    FOO, BAR,
 }
 
 // TODO: add as much parody to JavaTypeGoat as possible.
