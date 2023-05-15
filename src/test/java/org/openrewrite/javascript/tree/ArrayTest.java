@@ -16,6 +16,7 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable"})
 public class ArrayTest extends ParserTest {
@@ -72,6 +73,31 @@ public class ArrayTest extends ParserTest {
             """
               const arr = [ 1 , 2 ]
               const a = arr [ 0 ]
+              """
+          )
+        );
+    }
+
+    @Test
+    void threeDimensional() {
+        rewriteRun(
+          javascript(
+            // This test is a proof that the dimensions are converted correctly from a TS Node to a J.ArrayType.
+            """
+              const arr: number [ ] [ ] [ ] = [ ]
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail("Requires support for TupleType. Note: TupleType needs to implement TypeTree")
+    @Test
+    void noElementType() {
+        rewriteRun(
+          javascript(
+            // This test is a proof that the dimensions are converted correctly from a TS Node to a J.ArrayType.
+            """
+              const arr: [ ] [ ] [ ] = [ ]
               """
           )
         );

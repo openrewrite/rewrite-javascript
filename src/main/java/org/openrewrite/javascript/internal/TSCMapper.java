@@ -83,7 +83,6 @@ public abstract class TSCMapper implements AutoCloseable {
                 sourceTextsForTSC,
                 (node, context) -> {
                     final SourceWrapper source = this.sourcesByRelativePath.get(context.getRelativeSourcePath());
-                    // TODO: sort out type caching
                     final TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
                             node,
                             context,

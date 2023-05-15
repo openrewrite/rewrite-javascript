@@ -183,31 +183,6 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J.ArrayType visitArrayType(TSCNode node) {
-        Space prefix = whitespace();
-        TypeTree typeTree = visitIdentifier(node.getNodeProperty("elementType"));
-
-        List<JRightPadded<Space>> dimensions = new ArrayList<>();
-        while (true) {
-            int saveCursor = getCursor();
-            Space before = whitespace();
-            if (source.getText().charAt(getCursor()) != '[') {
-                cursor(saveCursor);
-                break;
-            }
-            consumeToken(TSCSyntaxKind.OpenBracketToken);
-            dimensions.add(padRight(before, sourceBefore(TSCSyntaxKind.CloseBracketToken)));
-        }
-
-        return new J.ArrayType(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                typeTree,
-                dimensions
-        );
-    }
-
     private J visitAsExpression(TSCNode node) {
         Space prefix = whitespace();
         Expression nameExpr = (Expression) visitNode(node.getNodeProperty("expression"));
@@ -1859,7 +1834,7 @@ public class TypeScriptParserVisitor {
                 j = visitArrayLiteralExpression(node);
                 break;
             case ArrayType:
-                j = visitArrayType(node);
+                j = mapArrayType(node);
                 break;
             case AsExpression:
                 j = visitAsExpression(node);
@@ -2056,10 +2031,6 @@ public class TypeScriptParserVisitor {
         }
     }
 
-    private String tokenStreamDebug() {
-        return String.format("[start=%d, end=%d, text=`%s`]", this.cursorContext.scannerTokenStart(), this.cursorContext.scannerTokenEnd(), this.cursorContext.scannerTokenText().replace("\n", "⏎"));
-    }
-
     private <J2 extends J> List<JRightPadded<J2>> convertAll(List<TSCNode> elements,
                                                              Function<TSCNode, Space> innerSuffix,
                                                              Function<TSCNode, Space> suffix) {
@@ -2118,6 +2089,32 @@ public class TypeScriptParserVisitor {
         }
         consumeToken(close);
         return JContainer.build(containerPrefix, elements, Markers.EMPTY);
+    }
+
+    private J.ArrayType mapArrayType(TSCNode node) {
+        Space prefix = whitespace();
+
+        int dimensionsCount = 1;
+        TSCNode curElement = node.getNodeProperty("elementType");
+        while (curElement.syntaxKind() == TSCSyntaxKind.ArrayType) {
+            dimensionsCount++;
+            curElement = curElement.getNodeProperty("elementType");
+        }
+
+        TypeTree typeTree = (TypeTree) visitNode(curElement);
+        List<JRightPadded<Space>> dimensions = new ArrayList<>(dimensionsCount);
+        for (int i = 0; i < dimensionsCount; i++) {
+            Space before = sourceBefore(TSCSyntaxKind.OpenBracketToken);
+            dimensions.add(padRight(before, sourceBefore(TSCSyntaxKind.CloseBracketToken)));
+        }
+
+        return new J.ArrayType(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                typeTree,
+                dimensions
+        );
     }
 
     private Space sourceBefore(TSCSyntaxKind syntaxKind) {
