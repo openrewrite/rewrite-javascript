@@ -19,7 +19,8 @@ dependencies {
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
 
-    implementation("com.caoccao.javet:javet-macos:2.1.1") // Mac OS (x86_64 and arm64)
+    implementation("com.caoccao.javet:javet-macos:2.1.2") // Mac OS (x86_64 and arm64)
+    implementation("com.caoccao.javet:javet:2.1.2") // Linux and Windows
 }
 
 tasks.withType<Javadoc> {
