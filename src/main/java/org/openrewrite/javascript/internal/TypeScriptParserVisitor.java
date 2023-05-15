@@ -99,10 +99,12 @@ public class TypeScriptParserVisitor {
                 statements.add(maybeSemicolon((Statement) visited));
             }
         }
+        Space eof = whitespace();
+        eof = eof.withWhitespace(eof.getWhitespace() + (getCursor() < source.getText().length() ? source.getText().substring(getCursor()) : ""));
         return new JS.CompilationUnit(
                 randomId(),
                 EMPTY,
-                markers,
+                markers == null ? Markers.EMPTY : markers,
                 relativeTo == null ? null : relativeTo.relativize(sourcePath),
                 FileAttributes.fromPath(sourcePath),
                 charset,
@@ -112,7 +114,7 @@ public class TypeScriptParserVisitor {
                 source.getText(),
                 emptyList(),
                 statements,
-                EMPTY
+                eof
         );
     }
 
@@ -1785,16 +1787,6 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private void implementMe(TSCNode node) {
-        throw new UnsupportedOperationException(String.format("Implement syntax kind: %s.", node.syntaxKind()));
-    }
-
-    private void implementMe(TSCNode node, String propertyName) {
-        if (node.hasProperty(propertyName)) {
-            throw new UnsupportedOperationException(String.format("Implement syntax kind: %s property %s", node.syntaxKind(), propertyName));
-        }
-    }
-
     @Nullable
     private J visitNode(TSCNode node) {
         J j;
@@ -2185,5 +2177,17 @@ public class TypeScriptParserVisitor {
             }
         } while (!done);
         return Space.build(initialSpace, comments);
+    }
+
+    private void implementMe(TSCNode node) {
+        throw new UnsupportedOperationException(String.format("Implement syntax kind {%s} at: {%s}.",
+                node.syntaxKind(), source.getText().substring(getCursor(), getCursor() + 20)));
+    }
+
+    private void implementMe(TSCNode node, String propertyName) {
+        if (node.hasProperty(propertyName)) {
+            throw new UnsupportedOperationException(String.format("Implement syntax kind {%s} with property {%s} at: {%s}",
+                    node.syntaxKind(), propertyName, source.getText().substring(getCursor(), getCursor() + 20)));
+        }
     }
 }

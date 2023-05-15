@@ -155,12 +155,12 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                     if (heritageClause.getText().contains("extends")) {
                         List<TSCNode> superTypes = heritageClause.getNodeListProperty("types");
                         if (superTypes.size() > 1) {
-                            implementMe();
+                            implementMe(node.syntaxKind());
                         } else {
                             supertype = (JavaType.FullyQualified) type(superTypes.get(0));
                         }
                     } else {
-                        implementMe();
+                        implementMe(node.syntaxKind());
                     }
                 }
             }
@@ -382,7 +382,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 if (j instanceof JavaType.FullyQualified) {
                     resolvedDeclaringType = (JavaType.FullyQualified) type(symbol.getValueDeclaration());
                 } else {
-                    implementMe();
+                    implementMe(node.syntaxKind());
                 }
             } else {
                 // FIXME: lib calls like console log do not resolve to a symbol.
@@ -465,7 +465,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                     return TsType.MERGED_INTERFACE;
                 }
             } else {
-                implementMe();
+                implementMe(node.syntaxKind());
             }
         }
         return mapType(node.getTypeChecker().getTypeAtLocation(node));
@@ -501,7 +501,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                     if (modifier.syntaxKind() == TSCSyntaxKind.Decorator) {
                         // FIXME. Add annotations by list.
                     } else {
-                        implementMe();
+                        implementMe(modifier.syntaxKind());
                     }
             }
         }
@@ -623,11 +623,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return mapType(node.getTypeChecker().getTypeAtLocation(node));
     }
 
-    private void implementMe() {
-        throw new RuntimeException("Implement me");
-    }
-
     private void implementMe(TSCSyntaxKind syntaxKind) {
-        throw new RuntimeException("Implement me: " + syntaxKind);
+        throw new RuntimeException("Add support for syntaxKind: " + syntaxKind);
     }
 }

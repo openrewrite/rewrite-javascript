@@ -278,7 +278,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
                     return TsType.MERGED_INTERFACE.getFullyQualifiedName();
                 }
             } else {
-                implementMe();
+                implementMe(node.syntaxKind());
             }
         }
         return mapType(node.getTypeChecker().getTypeAtLocation(node));
@@ -398,11 +398,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         return s.replaceAll("\\s+", "");
     }
 
-    private void implementMe() {
-        throw new RuntimeException("Implement me");
-    }
-
     private void implementMe(TSCSyntaxKind syntaxKind) {
-        throw new RuntimeException("Implement me: " + syntaxKind);
+        throw new RuntimeException("Add support for syntaxKind: " + syntaxKind);
     }
 }

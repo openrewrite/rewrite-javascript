@@ -57,8 +57,12 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     public J visitCompilationUnit(JS.CompilationUnit cu, PrintOutputCapture<P> p) {
-        // FIXME Implement
+        beforeSyntax(cu, Space.Location.COMPILATION_UNIT_PREFIX, p);
+
         visitRightPadded(cu.getPadding().getStatements(), JRightPadded.Location.LANGUAGE_EXTENSION, "", p);
+
+        visitSpace(cu.getEof(), Space.Location.COMPILATION_UNIT_EOF, p);
+        afterSyntax(cu, p);
         return cu;
     }
 

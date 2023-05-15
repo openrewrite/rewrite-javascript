@@ -78,4 +78,19 @@ public class ClassDeclarationTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void endOfFile() {
+        rewriteRun(
+          javascript(
+            """
+              class Foo {
+              }
+              
+              
+              
+              """
+          )
+        );
+    }
 }
