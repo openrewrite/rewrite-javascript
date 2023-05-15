@@ -70,7 +70,10 @@ public class ParserTest implements RewriteTest {
                 }
             }.visit(cu, 0);
             if (cu.getMarkers() != null) {
-                assertThat(cu.getMarkers().findFirst(ParseExceptionResult.class).isPresent()).isFalse();
+                ParseExceptionResult result = cu.getMarkers().findFirst(ParseExceptionResult.class).orElse(null);
+                if (result != null) {
+                    assertThat(result.getMessage()).isEqualTo("");
+                }
             }
         });
     }

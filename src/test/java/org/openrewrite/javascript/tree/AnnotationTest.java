@@ -21,7 +21,30 @@ import org.junit.jupiter.api.Test;
 public class AnnotationTest extends ParserTest {
 
     @Test
-    void decorator() {
+    void classDecorator() {
+        rewriteRun(
+          javascript(
+            """
+            function enumerable ( value : boolean ) {
+                return function ( target : any ,
+                        propertyKey : string,
+                        descriptor : PropertyDescriptor ) {
+                    descriptor . enumerable = value ;
+                } ;
+            }
+            @enumerable ( false )
+            class Foo {
+                foo ( ) {
+                    return "hello"
+                }
+            }
+            """
+          )
+        );
+    }
+
+    @Test
+    void methodDecorator() {
         rewriteRun(
           javascript(
             """
@@ -37,6 +60,27 @@ public class AnnotationTest extends ParserTest {
                 foo ( ) {
                     return "hello"
                 }
+            }
+            """
+          )
+        );
+    }
+
+    @Test
+    void propertyDecorator() {
+        rewriteRun(
+          javascript(
+            """
+            function enumerable ( value : boolean ) {
+                return function ( target : any ,
+                        propertyKey : string,
+                        descriptor : PropertyDescriptor ) {
+                    descriptor . enumerable = value ;
+                } ;
+            }
+            class Foo {
+                @enumerable ( false )
+                foo: String = "hello";
             }
             """
           )

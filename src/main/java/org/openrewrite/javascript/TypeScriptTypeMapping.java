@@ -32,6 +32,7 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 import org.openrewrite.javascript.tree.TsType;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static org.openrewrite.TypeScriptSignatureBuilder.mapFqn;
@@ -221,8 +222,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 }
             }
 
-            List<JavaType.FullyQualified> annotations = emptyList();
-            clazz.unsafeSet(null, supertype, owner, annotations, interfaces, members, methods);
+            clazz.unsafeSet(null, supertype, owner, mapAnnotations(modifiers), interfaces, members, methods);
         }
 
         if (node.hasProperty("typeParameters")) {
@@ -332,7 +332,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
         method.unsafeSet(resolvedDeclaringType,
                 isConstructor ? resolvedDeclaringType : returnType,
-                parameterTypes, exceptionTypes, emptyList()); // FIXME: add annotations if necessary.
+                parameterTypes, exceptionTypes, mapAnnotations(modifiers));
         return method;
     }
 
@@ -385,7 +385,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                     implementMe(node.syntaxKind());
                 }
             } else {
-                // FIXME: lib calls like console log do not resolve to a symbol.
+                resolvedDeclaringType = TsType.MISSING_SYMBOL;
             }
         }
 
@@ -393,29 +393,33 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         JavaType returnType = returnNode == null ? null : type(returnNode);
         method.unsafeSet(resolvedDeclaringType,
                 isConstructor ? resolvedDeclaringType : returnType,
-                parameterTypes, exceptionTypes, emptyList()); // FIXME: add annotations if necessary.
+                parameterTypes, exceptionTypes, mapAnnotations(modifiers));
         return method;
     }
 
     public JavaType.Primitive primitive(TSCNode node) {
         switch (node.syntaxKind()) {
+            case BigIntKeyword:
+            case BigIntLiteral:
+                implementMe(node.syntaxKind());
             case BooleanKeyword:
             case FalseKeyword:
             case TrueKeyword:
                 return JavaType.Primitive.Boolean;
             case StringKeyword:
                 return JavaType.Primitive.String;
-            // FIXME. Revisit with Gary on how to translate number ~= java.
             case NumberKeyword:
             case NumericLiteral:
+                // NOTE: number includes doubles and floats ...
                 return JavaType.Primitive.Long;
             case UnknownKeyword:
                 return JavaType.Primitive.None;
             case VoidKeyword:
                 return JavaType.Primitive.Void;
             default:
-                throw new IllegalStateException("implement me.");
+                implementMe(node.syntaxKind());
         }
+        return JavaType.Primitive.None;
     }
 
     @Nullable
@@ -448,6 +452,23 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         variable.unsafeSet(resolvedOwner, type, annotations);
 
         return variable;
+    }
+
+    @Nullable
+    private List<JavaType.FullyQualified> mapAnnotations(@Nullable List<TSCNode> modifiers) {
+        if (modifiers == null || modifiers.isEmpty()) {
+            return null;
+        }
+
+        List<TSCNode> annotationNodes = modifiers.stream()
+                .filter(n -> n.syntaxKind() == TSCSyntaxKind.Decorator)
+                .collect(Collectors.toList());
+
+        List<JavaType.FullyQualified> annotations = new ArrayList<>(annotationNodes.size());
+        for (TSCNode modifier : modifiers) {
+            annotations.add((JavaType.FullyQualified) type(modifier));
+        }
+        return annotations.isEmpty() ? null : annotations;
     }
 
     private JavaType mapEnumMember(TSCNode node) {
@@ -498,9 +519,8 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                     flags.add(Flag.Abstract);
                     break;
                 default:
-                    if (modifier.syntaxKind() == TSCSyntaxKind.Decorator) {
-                        // FIXME. Add annotations by list.
-                    } else {
+                    if (modifier.syntaxKind() != TSCSyntaxKind.Decorator) {
+                        // Decorators are handled separately to ensure the JavaType for a class is cached before type attributing annotations.
                         implementMe(modifier.syntaxKind());
                     }
             }
@@ -588,16 +608,18 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 case Void:
                     return JavaType.Primitive.Void;
                 default:
-                    throw new UnsupportedOperationException("implement me: " + flag);
+                    implementMe(type);
+                    break;
             }
         } else {
             TSCObjectFlag objectFlag = TSCObjectFlag.fromMaskExact(type.getObjectFlags());
             if (objectFlag == TSCObjectFlag.PrimitiveUnion) {
                 return TsType.PRIMITIVE_UNION;
             } else {
-                throw new UnsupportedOperationException("implement me");
+                implementMe(type);
             }
         }
+        return null;
     }
 
     private TSCNode getOwner(TSCNode node) {
@@ -624,6 +646,10 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
     }
 
     private void implementMe(TSCSyntaxKind syntaxKind) {
-        throw new RuntimeException("Add support for syntaxKind: " + syntaxKind);
+        throw new UnsupportedOperationException("Add support for syntaxKind: " + syntaxKind);
+    }
+
+    private void implementMe(TSCType type) {
+        throw new UnsupportedOperationException("Add support for type: " + type);
     }
 }

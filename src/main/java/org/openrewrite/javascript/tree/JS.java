@@ -110,12 +110,6 @@ public interface JS extends J {
         @Nullable
         Checksum checksum;
 
-        // FIXME Remove; just for testing
-        @With
-        @Getter
-        String sourceText;
-
-
         @Override
         public Charset getCharset() {
             return charsetName == null ? StandardCharsets.UTF_8 : Charset.forName(charsetName);
@@ -231,7 +225,7 @@ public interface JS extends J {
             @Override
             public JS.CompilationUnit withImports(List<JRightPadded<Import>> imports) {
                 return t.imports == imports ? t : new JS.CompilationUnit(t.id, t.prefix, t.markers, t.sourcePath, t.fileAttributes, t.charsetName, t.charsetBomMarked, null,
-                        t.sourceText, imports, t.statements, t.eof);
+                        imports, t.statements, t.eof);
             }
 
             public List<JRightPadded<Statement>> getStatements() {
@@ -240,7 +234,7 @@ public interface JS extends J {
 
             public JS.CompilationUnit withStatements(List<JRightPadded<Statement>> statements) {
                 return t.statements == statements ? t : new JS.CompilationUnit(t.id, t.prefix, t.markers, t.sourcePath,
-                        t.fileAttributes, t.charsetName, t.charsetBomMarked, t.checksum, t.sourceText, t.imports, statements, t.eof);
+                        t.fileAttributes, t.charsetName, t.charsetBomMarked, t.checksum, t.imports, statements, t.eof);
             }
         }
     }

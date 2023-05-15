@@ -80,12 +80,11 @@ public class TypeScriptParserVisitor {
             try {
                 visited = visitNode(child);
             } catch (Throwable t) {
-                JavaScriptParsingException ex = new JavaScriptParsingException("Failed to parse statement with syntaxKind: " + child.syntaxKind(), t);
                 cursor(saveCursor);
                 // `UnknownElement` is a temporary LST element until sources are fully parsed with a high degree of accuracy.
                 visited = new JS.UnknownElement(randomId(), whitespace(), Markers.EMPTY, child.getText());
                 cursor(getCursor() + child.getText().length());
-                ParseExceptionResult parseExceptionResult = ParseExceptionResult.build(JavaScriptParser.builder().build(), ex);
+                ParseExceptionResult parseExceptionResult = ParseExceptionResult.build(JavaScriptParser.builder().build(), t);
                 if (markers == null) {
                     markers = Markers.build(singletonList(parseExceptionResult));
                 }
@@ -110,8 +109,6 @@ public class TypeScriptParserVisitor {
                 charset,
                 isCharsetBomMarked,
                 null,
-                // FIXME remove
-                source.getText(),
                 emptyList(),
                 statements,
                 eof
@@ -482,14 +479,16 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
-        List<J.Annotation> leadingAnnotation = emptyList(); // FIXME
-
-        List<J.Modifier> modifiers = emptyList();
-        if (node.hasProperty("modifiers")) {
-            modifiers = visitModifiers(node.getNodeListProperty("modifiers"));
+        List<J.Annotation> leadingAnnotation = new ArrayList<>();
+        List<J.Modifier> modifiers;
+        List<TSCNode> modifierNodes = node.getOptionalNodeListProperty("modifiers");
+        if (modifierNodes != null) {
+            modifiers = mapModifiers(node.getNodeListProperty("modifiers"), leadingAnnotation);
+        } else {
+            modifiers = emptyList();
         }
 
-        List<J.Annotation> kindAnnotations = emptyList(); // FIXME
+        List<J.Annotation> kindAnnotations = emptyList();
 
         Space kindPrefix;
         TSCSyntaxKind syntaxKind = node.syntaxKind();
@@ -604,7 +603,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                leadingAnnotation,
+                leadingAnnotation.isEmpty() ? emptyList() : leadingAnnotation,
                 modifiers,
                 kind,
                 name,
@@ -641,8 +640,9 @@ public class TypeScriptParserVisitor {
     private J.MethodDeclaration visitConstructor(TSCNode node) {
         Space prefix = whitespace();
         List<J.Modifier> modifiers;
+        List<J.Annotation> leadingAnnotations = new ArrayList<>();
         if (node.hasProperty("modifiers")) {
-            modifiers = visitModifiers(node.getNodeListProperty("modifiers"));
+            modifiers = mapModifiers(node.getNodeListProperty("modifiers"), leadingAnnotations);
         } else {
             modifiers = emptyList();
         }
@@ -673,7 +673,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 Markers.EMPTY,
-                emptyList(),
+                leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
                 modifiers,
                 null,
                 null,
@@ -745,14 +745,11 @@ public class TypeScriptParserVisitor {
     }
 
     private J.EnumValue visitEnumMember(TSCNode node) {
-        Space prefix = whitespace();
-
-        List<J.Annotation> annotations = null; // FIXME
         return new J.EnumValue(
                 randomId(),
-                prefix,
+                whitespace(),
                 Markers.EMPTY,
-                annotations == null ? emptyList() : annotations,
+                emptyList(),
                 visitIdentifier(node.getNodeProperty("name")),
                 null);
     }
@@ -885,14 +882,15 @@ public class TypeScriptParserVisitor {
     private Statement visitFunctionParameter(TSCNode node) {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
-        implementMe(node, "modifiers");
+
+        List<J.Annotation> leadingAnnotations = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leadingAnnotations);
 
         Space variablePrefix = whitespace();
         J.Identifier name = visitIdentifier(node.getNodeProperty("name"));
 
         implementMe(node, "questionToken");
 
-        Space afterName = EMPTY;
         TypeTree typeTree = null;
         TSCNode type = node.getOptionalNodeProperty("type");
         if (type != null) {
@@ -912,7 +910,7 @@ public class TypeScriptParserVisitor {
                 emptyList(),
                 null,
                 typeMapping.variableType(node)
-        ), afterName));
+        ), EMPTY));
 
         implementMe(node, "initializer");
 
@@ -923,8 +921,8 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                emptyList(), // TODO:
-                emptyList(), // TODO:
+                leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
+                modifiers,
                 typeTree,
                 varargs,
                 dimensionsBeforeName,
@@ -1037,14 +1035,8 @@ public class TypeScriptParserVisitor {
 
     private J.MethodDeclaration visitMethodDeclaration(TSCNode node) {
         Space prefix = whitespace();
-        List<J.Annotation> annotations = emptyList();
-        if (node.hasProperty("modifiers")) {
-            annotations = node.getNodeListProperty("modifiers").stream()
-                    .map(it -> (J.Annotation) visitNode(it))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-        }
-        List<J.Modifier> modifiers = emptyList();
+        List<J.Annotation> annotations = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
 
         implementMe(node, "asteriskToken");
         implementMe(node, "questionToken");
@@ -1082,7 +1074,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 Markers.EMPTY,
-                annotations,
+                annotations.isEmpty() ? emptyList() : annotations,
                 modifiers,
                 typeParameters,
                 returnTypeExpression,
@@ -1093,44 +1085,6 @@ public class TypeScriptParserVisitor {
                 defaultValue,
                 methodType
         );
-    }
-
-    private List<J.Modifier> visitModifiers(List<TSCNode> nodes) {
-        List<J.Modifier> modifiers = new ArrayList<>(nodes.size());
-        for (TSCNode node : nodes) {
-            List<J.Annotation> annotations = emptyList(); // FIXME: maybe add annotations.
-            Space prefix = whitespace();
-            switch (node.syntaxKind()) {
-                case AbstractKeyword:
-                    consumeToken(TSCSyntaxKind.AbstractKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Abstract, annotations));
-                    break;
-                case AsyncKeyword:
-                    consumeToken(TSCSyntaxKind.AsyncKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Async, annotations));
-                    break;
-                case PublicKeyword:
-                    consumeToken(TSCSyntaxKind.PublicKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Public, annotations));
-                    break;
-                case PrivateKeyword:
-                    consumeToken(TSCSyntaxKind.PrivateKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Private, annotations));
-                    break;
-                case ProtectedKeyword:
-                    consumeToken(TSCSyntaxKind.ProtectedKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Protected, annotations));
-                    break;
-                case StaticKeyword:
-                    consumeToken(TSCSyntaxKind.StaticKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Static, annotations));
-                    break;
-                default:
-                    implementMe(node);
-            }
-        }
-
-        return modifiers;
     }
 
     private Expression visitNameExpression(TSCNode expression) {
@@ -1246,9 +1200,10 @@ public class TypeScriptParserVisitor {
         implementMe(node, "questionToken");
         implementMe(node, "exclamationToken");
 
+        List<J.Annotation> leadingAnnotations = new ArrayList<>();
         List<J.Modifier> modifiers;
         if (node.hasProperty("modifiers")) {
-            modifiers = visitModifiers(node.getNodeListProperty("modifiers"));
+            modifiers = mapModifiers(node.getNodeListProperty("modifiers"), leadingAnnotations);
         } else {
             modifiers = emptyList();
         }
@@ -1301,7 +1256,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                emptyList(),
+                leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
                 modifiers,
                 typeTree,
                 null,
@@ -1966,16 +1921,6 @@ public class TypeScriptParserVisitor {
         return j;
     }
 
-    private <J2 extends J> J.ControlParentheses<J2> mapControlParentheses(TSCNode node) {
-        //noinspection unchecked
-        return new J.ControlParentheses<>(
-                randomId(),
-                sourceBefore(TSCSyntaxKind.OpenParenToken),
-                Markers.EMPTY,
-                padRight((J2) visitNode(node), sourceBefore(TSCSyntaxKind.CloseParenToken))
-        );
-    }
-
     private final Function<TSCNode, Space> commaDelim = ignored -> sourceBefore(TSCSyntaxKind.CommaToken);
     private final Function<TSCNode, Space> noDelim = ignored -> EMPTY;
 
@@ -2096,6 +2041,16 @@ public class TypeScriptParserVisitor {
         return JContainer.build(containerPrefix, elements, Markers.EMPTY);
     }
 
+    private <J2 extends J> J.ControlParentheses<J2> mapControlParentheses(TSCNode node) {
+        //noinspection unchecked
+        return new J.ControlParentheses<>(
+                randomId(),
+                sourceBefore(TSCSyntaxKind.OpenParenToken),
+                Markers.EMPTY,
+                padRight((J2) visitNode(node), sourceBefore(TSCSyntaxKind.CloseParenToken))
+        );
+    }
+
     private J.ArrayType mapArrayType(TSCNode node) {
         Space prefix = whitespace();
 
@@ -2120,6 +2075,63 @@ public class TypeScriptParserVisitor {
                 typeTree,
                 dimensions
         );
+    }
+
+    private List<J.Modifier> mapModifiers(@Nullable List<TSCNode> nodes, List<J.Annotation> leadingAnnotations) {
+        if (nodes == null) {
+            return emptyList();
+        }
+
+        List<J.Modifier> modifiers = new ArrayList<>(nodes.size());
+        List<J.Annotation> annotations = null;
+        for (TSCNode node : nodes) {
+            Space prefix = whitespace();
+            switch (node.syntaxKind()) {
+                case Decorator:
+                    J.Annotation annotation = (J.Annotation) visitNode(node);
+                    if (annotations == null) {
+                        annotations = new ArrayList<>(1);
+                    }
+                    annotations.add(annotation);
+                    break;
+                case AbstractKeyword:
+                    consumeToken(TSCSyntaxKind.AbstractKeyword);
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Abstract, annotations == null ? emptyList() : annotations));
+                    annotations = null;
+                    break;
+                case AsyncKeyword:
+                    consumeToken(TSCSyntaxKind.AsyncKeyword);
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Async, annotations == null ? emptyList() : annotations));
+                    annotations = null;
+                    break;
+                case PublicKeyword:
+                    consumeToken(TSCSyntaxKind.PublicKeyword);
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Public, annotations == null ? emptyList() : annotations));
+                    annotations = null;
+                    break;
+                case PrivateKeyword:
+                    consumeToken(TSCSyntaxKind.PrivateKeyword);
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Private, annotations == null ? emptyList() : annotations));
+                    annotations = null;
+                    break;
+                case ProtectedKeyword:
+                    consumeToken(TSCSyntaxKind.ProtectedKeyword);
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Protected, annotations == null ? emptyList() : annotations));
+                    annotations = null;
+                    break;
+                case StaticKeyword:
+                    consumeToken(TSCSyntaxKind.StaticKeyword);
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Static, annotations == null ? emptyList() : annotations));
+                    annotations = null;
+                    break;
+                default:
+                    implementMe(node);
+            }
+        }
+        if (annotations != null) {
+            leadingAnnotations.addAll(annotations);
+        }
+        return modifiers.isEmpty() ? emptyList() : modifiers;
     }
 
     private Space sourceBefore(TSCSyntaxKind syntaxKind) {
@@ -2180,13 +2192,13 @@ public class TypeScriptParserVisitor {
     }
 
     private void implementMe(TSCNode node) {
-        throw new UnsupportedOperationException(String.format("Implement syntax kind {%s} at: {%s}.",
+        throw new UnsupportedOperationException(String.format("Implement syntax kind <%s> at: <%s>.",
                 node.syntaxKind(), source.getText().substring(getCursor(), getCursor() + 20)));
     }
 
     private void implementMe(TSCNode node, String propertyName) {
         if (node.hasProperty(propertyName)) {
-            throw new UnsupportedOperationException(String.format("Implement syntax kind {%s} with property {%s} at: {%s}",
+            throw new UnsupportedOperationException(String.format("Implement syntax kind <%s> with property <%s> at: <%s>",
                     node.syntaxKind(), propertyName, source.getText().substring(getCursor(), getCursor() + 20)));
         }
     }

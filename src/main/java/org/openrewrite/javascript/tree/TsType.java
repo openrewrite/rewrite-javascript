@@ -27,6 +27,7 @@ public class TsType {
 
     public static final JavaType.ShallowClass ANONYMOUS = JavaType.ShallowClass.build("type.analysis.Anonymous");
     public static final JavaType.ShallowClass MERGED_INTERFACE = JavaType.ShallowClass.build("type.analysis.MergedInterface");
+    public static final JavaType.ShallowClass MISSING_SYMBOL = JavaType.ShallowClass.build("type.analysis.MissingSymbol");
     public static final JavaType.ShallowClass PRIMITIVE_UNION = JavaType.ShallowClass.build("type.analysis.PrimitiveUnion");
     public static final JavaType.ShallowClass UNION = JavaType.ShallowClass.build("type.analysis.Union");
 }
