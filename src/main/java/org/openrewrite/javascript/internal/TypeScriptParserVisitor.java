@@ -16,12 +16,14 @@
 package org.openrewrite.javascript.internal;
 
 import org.openrewrite.FileAttributes;
+import org.openrewrite.ParseExceptionResult;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
+import org.openrewrite.javascript.JavaScriptParser;
 import org.openrewrite.javascript.TypeScriptTypeMapping;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCNodeList;
@@ -71,14 +73,24 @@ public class TypeScriptParserVisitor {
 
     public JS.CompilationUnit visitSourceFile() {
         List<JRightPadded<Statement>> statements = new ArrayList<>();
+        Markers markers = null;
         for (TSCNode child : source.getNodeListProperty("statements")) {
             @Nullable J visited;
+            int saveCursor = getCursor();
             try {
                 visited = visitNode(child);
-            } catch (Exception e) {
-                // TODO: convert child node to a UnsupportedStatement.
-                // Convert exception to marker on the statement.
-                throw new JavaScriptParsingException("Failed to parse statement", e);
+            } catch (Throwable t) {
+                JavaScriptParsingException ex = new JavaScriptParsingException("Failed to parse statement with syntaxKind: " + child.syntaxKind(), t);
+                cursor(saveCursor);
+                // `UnknownElement` is a temporary LST element until sources are fully parsed with a high degree of accuracy.
+                visited = new JS.UnknownElement(randomId(), whitespace(), Markers.EMPTY, child.getText());
+                cursor(getCursor() + child.getText().length());
+                ParseExceptionResult parseExceptionResult = ParseExceptionResult.build(JavaScriptParser.builder().build(), ex);
+                if (markers == null) {
+                    markers = Markers.build(singletonList(parseExceptionResult));
+                }
+                visited = visited.withMarkers(visited.getMarkers().addIfAbsent(parseExceptionResult));
+//                throw ex;
             }
             if (visited != null) {
                 if (!(visited instanceof Statement) && visited instanceof Expression) {
@@ -90,7 +102,7 @@ public class TypeScriptParserVisitor {
         return new JS.CompilationUnit(
                 randomId(),
                 EMPTY,
-                Markers.EMPTY,
+                markers,
                 relativeTo == null ? null : relativeTo.relativize(sourcePath),
                 FileAttributes.fromPath(sourcePath),
                 charset,
@@ -880,13 +892,13 @@ public class TypeScriptParserVisitor {
 
         Space afterName = EMPTY;
         TypeTree typeTree = null;
-        if (node.hasProperty("type")) {
+        TSCNode type = node.getOptionalNodeProperty("type");
+        if (type != null) {
             // FIXME: method(x: { suit: string; card: number }[])
             Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
             if (beforeColon != EMPTY) {
                 markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
             }
-            TSCNode type = node.getNodeProperty("type");
             typeTree = (TypeTree) visitNode(type);
         }
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = new ArrayList<>(1);
@@ -1326,7 +1338,6 @@ public class TypeScriptParserVisitor {
     }
 
     private JRightPadded<Statement> visitStatement(TSCNode node) {
-        // FIXME
         Statement statement = (Statement) visitNode(node);
 
         assert statement != null;
@@ -1334,8 +1345,10 @@ public class TypeScriptParserVisitor {
     }
 
     private J.Literal visitStringLiteral(TSCNode node) {
-        // singleQuote
-        // hasExtendedUnicodeEscape
+        implementMe(node, "singleQuote");
+        if (node.getBooleanProperty("hasExtendedUnicodeEscape")) {
+            implementMe(node, "hasExtendedUnicodeEscape");
+        }
         return new J.Literal(
                 randomId(),
                 sourceBefore(TSCSyntaxKind.StringLiteral),

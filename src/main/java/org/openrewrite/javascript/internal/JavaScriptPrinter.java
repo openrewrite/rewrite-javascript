@@ -123,6 +123,14 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return union;
     }
 
+    @Override
+    public J visitUnknownElement(JS.UnknownElement unknownElement, PrintOutputCapture<P> p) {
+        beforeSyntax(unknownElement, JsSpace.Location.UNION_PREFIX, p);
+        p.append(unknownElement.getSource());
+        afterSyntax(unknownElement, p);
+        return unknownElement;
+    }
+
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
         @Override

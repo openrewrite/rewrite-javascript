@@ -243,11 +243,6 @@ public interface JS extends J {
                         t.fileAttributes, t.charsetName, t.charsetBomMarked, t.checksum, t.sourceText, t.imports, statements, t.eof);
             }
         }
-
-        @Override
-        public String print(Cursor cursor) {
-            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
-        }
     }
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -491,16 +486,6 @@ public interface JS extends J {
         public CoordinateBuilder.Statement getCoordinates() {
             return new CoordinateBuilder.Statement(this);
         }
-
-        @Override
-        public String toString() {
-            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
-        }
-
-        @Override
-        public String print(Cursor cursor) {
-            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
-        }
     }
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -638,15 +623,28 @@ public interface JS extends J {
         public CoordinateBuilder.Statement getCoordinates() {
             return new CoordinateBuilder.Statement(this);
         }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @AllArgsConstructor
+    @Data
+    @With
+    final class UnknownElement implements JS, Statement {
+
+        UUID id;
+        Space prefix;
+        Markers markers;
+        String source;
 
         @Override
-        public String toString() {
-            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitUnknownElement(this, p);
         }
 
         @Override
-        public String print(Cursor cursor) {
-            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
         }
     }
 }

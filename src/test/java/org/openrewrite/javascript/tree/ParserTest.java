@@ -16,6 +16,7 @@
 package org.openrewrite.javascript.tree;
 
 import org.intellij.lang.annotations.Language;
+import org.openrewrite.ParseExceptionResult;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.Space;
@@ -60,12 +61,17 @@ public class ParserTest implements RewriteTest {
     }
 
     public static Consumer<SourceSpec<JS.CompilationUnit>> isFullyParsed() {
-        return spec -> spec.afterRecipe(cu -> new JavaVisitor<Integer>() {
-            @Override
-            public Space visitSpace(Space space, Space.Location loc, Integer integer) {
-                assertThat(space.getWhitespace().trim()).isEmpty();
-                return super.visitSpace(space, loc, integer);
+        return spec -> spec.afterRecipe(cu -> {
+            new JavaVisitor<Integer>() {
+                @Override
+                public Space visitSpace(Space space, Space.Location loc, Integer integer) {
+                    assertThat(space.getWhitespace().trim()).isEmpty();
+                    return super.visitSpace(space, loc, integer);
+                }
+            }.visit(cu, 0);
+            if (cu.getMarkers() != null) {
+                assertThat(cu.getMarkers().findFirst(ParseExceptionResult.class).isPresent()).isFalse();
             }
-        }.visit(cu, 0));
+        });
     }
 }

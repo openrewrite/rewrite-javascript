@@ -25,6 +25,7 @@ public class JsSpace {
         ARRAY_LITERAL_SUFFIX,
         UNION_PREFIX,
         UNION_TYPE_SUFFIX,
+        UNKNOWN_PREFIX,
         VARIABLE_DECLARATION_PREFIX
     }
 }

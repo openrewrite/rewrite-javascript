@@ -92,6 +92,13 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return u;
     }
 
+    public J visitUnknownElement(JS.UnknownElement unknownElement, P p) {
+        JS.UnknownElement u = unknownElement;
+        u = u.withPrefix(visitSpace(u.getPrefix(), JsSpace.Location.UNKNOWN_PREFIX, p));
+        u = u.withMarkers(visitMarkers(u.getMarkers(), p));
+        return u;
+    }
+
     public Space visitSpace(Space space, JsSpace.Location loc, P p) {
         return visitSpace(space, Space.Location.LANGUAGE_EXTENSION, p);
     }
