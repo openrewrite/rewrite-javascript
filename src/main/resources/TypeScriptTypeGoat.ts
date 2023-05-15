@@ -22,36 +22,25 @@ abstract class TypeScriptTypeGoat<T, S extends PT<S> & A> {
 
     public static unionField: typeof TypeScriptTypeGoat.TypeA | typeof TypeScriptTypeGoat.TypeB
 
-    static TypeA = class {
+    public static TypeA = class {
     }
 
-    static TypeB = class {
+    public static TypeB = class {
     }
 
-    // public static abstract class InheritedJavaTypeGoat<T, U extends PT<U> & C> extends JavaTypeGoat<T, U> {
-    // public InheritedJavaTypeGoat() {
-    //         super();
-    //     }
-    // }
-
-//     public enum EnumTypeA {
-//     FOO, BAR(),
-//     @AnnotationWithRuntimeRetention
-//     FUZ
-// }
-
-// public enum EnumTypeB {
-//     FOO(null);
-// private TypeA label;
-// EnumTypeB(TypeA label) {
-//     this.label = label;
-// }
-// }
-
-// public abstract class ExtendsJavaTypeGoat extends JavaTypeGoat<T, S> {
-// }
-
-// public static abstract class Extension<U extends Extension<U>> {}
+    ExtendsJavaTypeGoat = class extends TypeScriptTypeGoat<T, S> {
+        enumTypeA(n: EnumTypeA): void {
+        }
+        genericIntersection<U>(n: U): U {
+            return undefined;
+        }
+        genericRecursive<U>(n: TypeScriptTypeGoat<readonly U[], unknown>): TypeScriptTypeGoat<readonly U[], unknown> {
+            return undefined;
+        }
+        inheritedJavaTypeGoat<U>(n: InheritedJavaTypeGoat<T, U>): InheritedJavaTypeGoat<T, U> {
+            return undefined;
+        }
+    }
 
     clazz(n: A): void {
     }
@@ -77,8 +66,7 @@ abstract class TypeScriptTypeGoat<T, S extends PT<S> & A> {
         return n
     }
 
-    // public abstract PT<? super C> genericContravariant(PT<? super C> n);
-    // public abstract <U extends JavaTypeGoat<U, ?>> JavaTypeGoat<? extends U[], ?> genericRecursive(JavaTypeGoat<? extends U[], ?> n);
+    public abstract genericRecursive<U extends TypeScriptTypeGoat<U, unknown>>(n: TypeScriptTypeGoat<readonly U[], unknown>): TypeScriptTypeGoat<readonly U[], unknown>;
 
     genericUnbounded<U>(n: PT<U>): PT<U> {
         return n
@@ -87,18 +75,16 @@ abstract class TypeScriptTypeGoat<T, S extends PT<S> & A> {
     genericArray(n: PT<A>[]): void {
     }
 
-    // public abstract void inner(C.Inner n);
-    // public abstract void enumTypeA(EnumTypeA n);
-    // public abstract void enumTypeB(EnumTypeB n);
-    // public abstract <U extends PT<U> & C> InheritedJavaTypeGoat<T, U> inheritedJavaTypeGoat(InheritedJavaTypeGoat<T, U> n);
-    // public abstract <U extends TypeA & PT<U> & C> U genericIntersection(U n);
+    public abstract enumTypeA(n: EnumTypeA): void;
+    public abstract inheritedJavaTypeGoat<U extends PT<U> & C>(n: InheritedJavaTypeGoat<T, U>): InheritedJavaTypeGoat<T, U>;
+    public abstract genericIntersection<U extends (typeof TypeScriptTypeGoat)['TypeA'] & PT<U> & C>(n: U): U;
+
     genericT(n: T): T {
         return n
     }
 
-    // recursiveIntersection<U extends Extension<U> & Intersection<U>>(n: U): void {
-    //     return n
-    // }
+    recursiveIntersection<U extends Extension<U> & Intersection<U>>(n: U): void {
+    }
 
     merged(n: B) {
         n.foo()
@@ -127,24 +113,38 @@ class B {
     }
 }
 
+interface C {
+
+}
+
 interface PT<T> {
 }
 
-// interface Intersection<T extends TypeScriptTypeGoat.Extension<T> & Intersection<T>> {
-//     getIntersectionType(): T
-// }
+interface Intersection<T extends Extension<T> & Intersection<T>> {
+    getIntersectionType(): T
+}
 
-function decorator ( value : boolean ) {
-    return function ( target : any ,
-                      propertyKey : string,
-                      descriptor : PropertyDescriptor ) {
-        descriptor . enumerable = value ;
-    } ;
+abstract class Extension<U extends Extension<U>> {
+}
+
+function decorator(value: boolean) {
+    return function (target: any,
+                     propertyKey: string,
+                     descriptor: PropertyDescriptor) {
+        descriptor.enumerable = value;
+    };
 }
 
 enum EnumTypeA {
-    FOO, BAR,
+    FOO, BAR
 }
 
-// TODO: add as much parody to JavaTypeGoat as possible.
+abstract class InheritedJavaTypeGoat<T, U extends PT<U> & C> extends TypeScriptTypeGoat<T, U> {
+    protected constructor() {
+        super();
+    }
+}
+
+
+// TODO: add as much parity to JavaTypeGoat as possible.
 // TODO: add code unique to type script.
