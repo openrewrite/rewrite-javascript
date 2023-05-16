@@ -32,4 +32,4 @@ tasks.getByName("yarn_build") {
     outputs.dir("dist")
 }
 
-// TODO add artifact for dist/index.js
+// TODO add artifact for index.js

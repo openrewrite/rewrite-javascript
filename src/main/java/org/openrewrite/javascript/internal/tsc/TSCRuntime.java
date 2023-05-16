@@ -27,7 +27,7 @@ import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueMap;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.intellij.lang.annotations.Language;
-import org.openrewrite.IOUtils;
+import org.openrewrite.DebugOnly;
 import org.openrewrite.internal.lang.Nullable;
 
 import java.io.Closeable;
@@ -40,11 +40,13 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import static org.openrewrite.internal.StringUtils.readFully;
+
 public class TSCRuntime implements Closeable {
     /**
      * Manually enable this when tracking down reference-counting issues.
      * <br/>
-     * It causes tests to fail if references are not recycled, and will
+     * This causes tests to fail if references are not recycled, and will
      * attribute dangling references to the call site that created them.
      */
     private final static boolean USE_WRAPPED_V8_RUNTIME = false;
@@ -54,7 +56,7 @@ public class TSCRuntime implements Closeable {
     @Nullable
     public V8ValueFunction tsParseV8 = null;
 
-    private V8ValueObject parseOptionsV8;
+    private final V8ValueObject parseOptionsV8;
 
     private final JavetStandardConsoleInterceptor javetStandardConsoleInterceptor;
 
@@ -103,9 +105,9 @@ public class TSCRuntime implements Closeable {
     }
 
     private static String getJSEntryProgramText() {
-        try (InputStream is = TSCRuntime.class.getClassLoader().getResourceAsStream("index.js")) {
+        try (InputStream is = TSCRuntime.class.getClassLoader().getResourceAsStream("tsc/index.js")) {
             if (is == null) throw new IllegalStateException("entry JS resource does not exist");
-            return IOUtils.readFully(is, StandardCharsets.UTF_8);
+            return readFully(is, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -125,9 +127,7 @@ public class TSCRuntime implements Closeable {
         }
     }
 
-    /**
-     * Only intended for testing and debugging.
-     */
+    @DebugOnly
     public void parseSingleSource(@Language("typescript") String sourceText, BiConsumer<TSCNode, TSCSourceFileContext> callback) {
         parseSingleSource(sourceText, "file.ts", callback);
     }
