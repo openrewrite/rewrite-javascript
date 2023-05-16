@@ -83,7 +83,7 @@ public class TypeScriptParserVisitor {
                 cursor(saveCursor);
                 // `UnknownElement` is a temporary LST element until sources are fully parsed with a high degree of accuracy.
                 visited = new JS.UnknownElement(randomId(), whitespace(), Markers.EMPTY, child.getText());
-                cursor(getCursor() + child.getText().length());
+                cursor(getCursor() + child.getText().length() + 1);
                 ParseExceptionResult parseExceptionResult = ParseExceptionResult.build(JavaScriptParser.builder().build(), t);
                 if (markers == null) {
                     markers = Markers.build(singletonList(parseExceptionResult));
@@ -194,7 +194,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitAsExpression(TSCNode node) {
+    private J.TypeCast visitAsExpression(TSCNode node) {
         Space prefix = whitespace();
         Expression nameExpr = (Expression) visitNode(node.getNodeProperty("expression"));
         Space asPrefix = sourceBefore(TSCSyntaxKind.AsKeyword);
@@ -523,6 +523,14 @@ public class TypeScriptParserVisitor {
             );
         }
 
+        JContainer<J.TypeParameter> typeParams = !node.hasProperty("typeParameters") ? null : mapContainer(
+                TSCSyntaxKind.LessThanToken,
+                node.getNodeListProperty("typeParameters"),
+                TSCSyntaxKind.CommaToken,
+                TSCSyntaxKind.GreaterThanToken,
+                t -> (J.TypeParameter) visitNode(t)
+        );
+
         JLeftPadded<TypeTree> extendings = null;
         JContainer<TypeTree> implementings = null;
         if (node.hasProperty("heritageClauses")) {
@@ -536,14 +544,6 @@ public class TypeScriptParserVisitor {
                 }
             }
         }
-
-        JContainer<J.TypeParameter> typeParams = !node.hasProperty("typeParameters") ? null : mapContainer(
-                TSCSyntaxKind.LessThanToken,
-                node.getNodeListProperty("typeParameters"),
-                TSCSyntaxKind.CommaToken,
-                TSCSyntaxKind.GreaterThanToken,
-                t -> (J.TypeParameter) visitNode(t)
-        );
 
         J.Block body;
         List<JRightPadded<Statement>> members;
@@ -829,13 +829,27 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitExpressionWithTypeArguments(TSCNode node) {
+        Space prefix = whitespace();
         NameTree nameTree = (NameTree) visitNode(node.getNodeProperty("expression"));
-        if (node.hasProperty("typeArguments")) {
-            implementMe(node, "typeArguments");
-            // .. return J.ParameterizedType
+        List<TSCNode> typeArguments = node.getOptionalNodeListProperty("typeArguments");
+        if (typeArguments != null) {
+            return new J.ParameterizedType(
+                    randomId(),
+                    prefix,
+                    Markers.EMPTY,
+                    nameTree,
+                    mapContainer(
+                            TSCSyntaxKind.LessThanToken,
+                            typeArguments,
+                            TSCSyntaxKind.CommaToken,
+                            TSCSyntaxKind.GreaterThanToken,
+                            t -> (Expression) visitNode(t)
+                    ),
+                    typeMapping.type(node)
+            );
         }
 
-        return nameTree;
+        return nameTree.withPrefix(prefix);
     }
 
     private J.MethodDeclaration visitFunctionDeclaration(TSCNode node) {
@@ -952,6 +966,17 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J visitIndexedAccessType(TSCNode node) {
+        cursor(getCursor() + node.getText().length() + 1);
+        // TODO.
+        return new JS.UnknownElement(
+                randomId(),
+                whitespace(),
+                Markers.EMPTY,
+                node.getText()
+        );
+    }
+
     private J.If visitIfStatement(TSCNode node) {
         Space prefix = whitespace();
 
@@ -981,7 +1006,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitInstanceOf(TSCNode node) {
+    private J.InstanceOf visitInstanceOf(TSCNode node) {
         return new J.InstanceOf(
                 randomId(),
                 whitespace(),
@@ -1118,7 +1143,7 @@ public class TypeScriptParserVisitor {
         }
     }
 
-    private J visitNewExpression(TSCNode node) {
+    private J.NewClass visitNewExpression(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.NewKeyword);
         TypeTree typeTree = null;
         if (node.hasProperty("expression")) {
@@ -1377,6 +1402,29 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private JS.TypeOperator visitTypeOperator(TSCNode node) {
+        Space prefix = whitespace();
+
+        TSCSyntaxKind op = node.getSyntaxKindProperty("operator");
+        JS.TypeOperator.Type operator = null;
+        Space before = EMPTY;
+        if (op == TSCSyntaxKind.ReadonlyKeyword) {
+            before = sourceBefore(TSCSyntaxKind.ReadonlyKeyword);
+            operator = JS.TypeOperator.Type.ReadOnly;
+        } else {
+            implementMe(node);
+        }
+
+        return new JS.TypeOperator(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                operator,
+                padLeft(before, (Expression) visitNode(node.getNodeProperty("type"))),
+                null
+        );
+    }
+
     private J.TypeParameter visitTypeParameter(TSCNode node) {
         Space prefix = whitespace();
         implementMe(node, "modifiers");
@@ -1488,7 +1536,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J visitUnionType(TSCNode node) {
+    private JS.Union visitUnionType(TSCNode node) {
         Space prefix = whitespace();
         return new JS.Union(
                 randomId(),
@@ -1844,6 +1892,9 @@ public class TypeScriptParserVisitor {
             case Identifier:
                 j = visitIdentifier(node);
                 break;
+            case IndexedAccessType:
+                j = visitIndexedAccessType(node);
+                break;
             case IfStatement:
                 j = visitIfStatement(node);
                 break;
@@ -1888,6 +1939,9 @@ public class TypeScriptParserVisitor {
                 break;
             case TypeOfExpression:
                 j = visitTsOperator(node);
+                break;
+            case TypeOperator:
+                j = visitTypeOperator(node);
                 break;
             case TypeParameter:
                 j = visitTypeParameter(node);

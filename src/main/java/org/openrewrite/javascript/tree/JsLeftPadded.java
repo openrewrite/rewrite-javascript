@@ -19,7 +19,8 @@ public class JsLeftPadded {
     public enum Location {
         TODO(JsSpace.Location.TODO),
         BINARY_OPERATOR(JsSpace.Location.BINARY_PREFIX),
-        OPERATOR(JsSpace.Location.OPERATOR_PREFIX);
+        OPERATOR(JsSpace.Location.OPERATOR_PREFIX),
+        TYPE_OPERATOR(JsSpace.Location.TYPE_OPERATOR_PREFIX);
 
         private final JsSpace.Location beforeLocation;
 

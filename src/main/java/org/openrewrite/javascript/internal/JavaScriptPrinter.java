@@ -25,6 +25,7 @@ import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.javascript.tree.JsLeftPadded;
 import org.openrewrite.javascript.tree.JsRightPadded;
 import org.openrewrite.javascript.tree.JsSpace;
 import org.openrewrite.marker.Marker;
@@ -115,6 +116,23 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         afterSyntax(operator, p);
         return operator;
+    }
+
+    @Override
+    public J visitTypeOperator(JS.TypeOperator typeOperator, PrintOutputCapture<P> p) {
+        beforeSyntax(typeOperator, JsSpace.Location.BINARY_PREFIX, p);
+
+        String keyword = "";
+        if (typeOperator.getOperator() == JS.TypeOperator.Type.ReadOnly) {
+            keyword = "readonly";
+        }
+
+        p.append(keyword);
+
+        visitLeftPadded(typeOperator.getPadding().getExpression(), JsLeftPadded.Location.TYPE_OPERATOR, p);
+
+        afterSyntax(typeOperator, p);
+        return typeOperator;
     }
 
     @Override

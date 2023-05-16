@@ -413,6 +413,100 @@ public interface JS extends J {
         }
     }
 
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Data
+    final class TypeOperator implements JS, Expression, TypedTree, NameTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<JS.TypeOperator.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        @With
+        JS.TypeOperator.Type operator;
+
+        @With
+        JLeftPadded<Expression> expression;
+
+        @With
+        @Nullable
+        JavaType type;
+
+        public Expression getExpression() {
+            return expression.getElement();
+        }
+
+        public JS.TypeOperator withExpression(Expression expression) {
+            return getPadding().withExpression(this.expression.withElement(expression));
+        }
+
+        @Override
+        public @Nullable JavaType getType() {
+            return expression.getElement().getType();
+        }
+
+        @Override
+        public <T extends J> T withType(@Nullable JavaType type) {
+            //noinspection unchecked
+            return (T) getPadding().withExpression(this.expression.withElement(this.expression.getElement().withType(type)));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTypeOperator(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public enum Type {
+            ReadOnly
+        }
+
+        public JS.TypeOperator.Padding getPadding() {
+            JS.TypeOperator.Padding p;
+            if (this.padding == null) {
+                p = new JS.TypeOperator.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JS.TypeOperator.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JS.TypeOperator t;
+
+            public JLeftPadded<Expression> getExpression() {
+                return t.expression;
+            }
+
+            public JS.TypeOperator withExpression(JLeftPadded<Expression> expression) {
+                return t.expression == expression ? t : new JS.TypeOperator(t.id, t.prefix, t.markers, t.operator, expression, t.type);
+            }
+        }
+    }
+
     @SuppressWarnings("unchecked")
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)

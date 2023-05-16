@@ -84,6 +84,14 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return o;
     }
 
+    public J visitTypeOperator(JS.TypeOperator typeOperator, P p) {
+        JS.TypeOperator t = typeOperator;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.TYPE_OPERATOR_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+        t = t.getPadding().withExpression(visitLeftPadded(t.getPadding().getExpression(), JsLeftPadded.Location.TYPE_OPERATOR, p));
+        return t;
+    }
+
     public J visitUnion(JS.Union union, P p) {
         JS.Union u = union;
         u = u.withPrefix(visitSpace(u.getPrefix(), JsSpace.Location.UNION_PREFIX, p));
