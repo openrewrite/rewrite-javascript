@@ -1130,6 +1130,27 @@ public class TypeScriptParserVisitor {
         }
     }
 
+    private J visitLiteralType(TSCNode node) {
+        Space prefix = whitespace();
+        Object obj = null;
+        TSCNode literal = node.getNodeProperty("literal");
+        if (literal.syntaxKind() == TSCSyntaxKind.NullKeyword) {
+            consumeToken(TSCSyntaxKind.NullKeyword);
+        } else {
+            implementMe(literal);
+        }
+
+        return new J.Literal(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                obj,
+                literal.getText(),
+                null,
+                typeMapping.primitive(literal)
+        );
+    }
+
     private J.NewClass visitNewExpression(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.NewKeyword);
         TypeTree typeTree = null;
@@ -1638,6 +1659,7 @@ public class TypeScriptParserVisitor {
         TypeTree typeTree = null;
         if (node.hasProperty("declarations")) {
             List<TSCNode> declarations = node.getNodeListProperty("declarations");
+            Set<JavaType> types = new HashSet<>(declarations.size());
             namedVariables = new ArrayList<>(declarations.size());
             for (int i = 0; i < declarations.size(); i++) {
                 TSCNode declaration = declarations.get(i);
@@ -1660,6 +1682,12 @@ public class TypeScriptParserVisitor {
                     }
                     TSCNode type = declaration.getNodeProperty("type");
                     typeTree = (TypeTree) visitNode(type);
+                    if (typeTree.getType() != null) {
+                        types.add(typeTree.getType());
+                        if (types.size() > 1) {
+                            throw new UnsupportedOperationException("Multiple variable types are not supported");
+                        }
+                    }
                 }
                 J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
                         randomId(),
@@ -1720,10 +1748,14 @@ public class TypeScriptParserVisitor {
 
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = emptyList();
         TypeTree typeTree = null;
+
+        // TS allows for multiple variable types to be expressed in a single statement.
+        // The count is used to prevent a malformed LST element until multiple variable types are supported.
         if (node.hasProperty("declarationList")) {
             TSCNode declarationList = node.getNodeProperty("declarationList");
 
             List<TSCNode> declarations = declarationList.getNodeListProperty("declarations");
+            Set<JavaType> types = new HashSet<>(declarations.size());
             namedVariables = new ArrayList<>(declarations.size());
             for (int i = 0; i < declarations.size(); i++) {
                 TSCNode declaration = declarations.get(i);
@@ -1745,6 +1777,12 @@ public class TypeScriptParserVisitor {
                     }
                     TSCNode type = declaration.getNodeProperty("type");
                     typeTree = (TypeTree) visitNode(type);
+                    if (typeTree.getType() != null) {
+                        types.add(typeTree.getType());
+                        if (types.size() > 1) {
+                            throw new UnsupportedOperationException("Multiple variable types are not supported");
+                        }
+                    }
                 }
                 J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
                         randomId(),
@@ -1892,6 +1930,9 @@ public class TypeScriptParserVisitor {
                 break;
             case LabeledStatement:
                 j = visitLabelledStatement(node);
+                break;
+            case LiteralType:
+                j = visitLiteralType(node);
                 break;
             case NewExpression:
                 j = visitNewExpression(node);

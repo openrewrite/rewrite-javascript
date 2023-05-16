@@ -408,6 +408,8 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 return JavaType.Primitive.Boolean;
             case StringKeyword:
                 return JavaType.Primitive.String;
+            case NullKeyword:
+                return JavaType.Primitive.Null;
             case NumberKeyword:
             case NumericLiteral:
                 // NOTE: number includes doubles and floats ...
