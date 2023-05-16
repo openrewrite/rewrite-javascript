@@ -32,7 +32,6 @@ public class VariableDeclarationTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail("Added support for union type expressions")
     @Test
     void multiTypeLet() {
         rewriteRun(

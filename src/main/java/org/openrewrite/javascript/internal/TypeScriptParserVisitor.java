@@ -1171,13 +1171,11 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitObjectBindingPattern(TSCNode node) {
-        implementMe(node);
-        return null;
+        return unknownElement(node);
     }
 
     private J visitObjectLiteralExpression(TSCNode node) {
-        implementMe(node);
-        return null;
+        return unknownElement(node);
     }
 
     private <J2 extends J> J.Parentheses<J2> visitParenthesizedExpression(TSCNode node) {
@@ -2258,13 +2256,17 @@ public class TypeScriptParserVisitor {
 
     private void implementMe(TSCNode node) {
         throw new UnsupportedOperationException(String.format("Implement syntax kind <%s> at: <%s>.",
-                node.syntaxKind(), source.getText().substring(getCursor(), getCursor() + 20)));
+                node.syntaxKind(), getCursor() + 20 < source.getText().length() ?
+                        source.getText().substring(getCursor(), getCursor() + 20) :
+                        source.getText().substring(getCursor())));
     }
 
     private void implementMe(TSCNode node, String propertyName) {
         if (node.hasProperty(propertyName)) {
             throw new UnsupportedOperationException(String.format("Implement syntax kind <%s> with property <%s> at: <%s>",
-                    node.syntaxKind(), propertyName, source.getText().substring(getCursor(), getCursor() + 20)));
+                    node.syntaxKind(), propertyName, getCursor() + 20 < source.getText().length() ?
+                            source.getText().substring(getCursor(), getCursor() + 20) :
+                            source.getText().substring(getCursor())));
         }
     }
 }
