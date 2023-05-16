@@ -22,9 +22,12 @@ import com.caoccao.javet.utils.JavetResourceUtils;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.io.Closeable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class TSCProgramContext implements Closeable {
     private final V8Scope contextScope = new V8Scope();
@@ -35,6 +38,11 @@ public class TSCProgramContext implements Closeable {
     private final V8ValueFunction createScanner;
     private final V8ValueFunction getOpenRewriteId;
 
+    /** In the virtual filesystem used by the compiler, this is the prefix for all input sources. */
+    private final Path compilerAppPath;
+    /** In the virtual filesystem used by the compiler, this is the prefix for all libs shipped with TS. */
+    private final Path compilerLibPath;
+
     private @Nullable TSCGlobals typescriptGlobals;
     private @Nullable TSCTypeChecker typeChecker;
     private @Nullable TSCInstanceOfChecks instanceOfChecks;
@@ -44,13 +52,15 @@ public class TSCProgramContext implements Closeable {
     final TSCObjectCache<TSCSymbol> symbolCache = TSCObjectCache.usingInternalKey(TSCSymbol::new);
     final TSCObjectCache<TSCSignature> signatureCache = TSCObjectCache.usingInternalKey(TSCSignature::new);
 
-    public TSCProgramContext(V8Runtime runtime, V8ValueObject program, V8ValueObject typescriptV8, V8ValueObject typeChecker, V8ValueFunction createScanner, V8ValueFunction getOpenRewriteId) {
+    public TSCProgramContext(V8Runtime runtime, V8ValueObject program, V8ValueObject typescriptV8, V8ValueObject typeChecker, V8ValueFunction createScanner, V8ValueFunction getOpenRewriteId, Path compilerAppPath, Path compilerLibPath) {
         this.runtime = runtime;
         this.program = contextScope.add(program);
         this.typescriptV8 = contextScope.add(typescriptV8);
         this.typeCheckerV8 = contextScope.add(typeChecker);
         this.createScanner = contextScope.add(createScanner);
         this.getOpenRewriteId = contextScope.add(getOpenRewriteId);
+        this.compilerAppPath = compilerAppPath;
+        this.compilerLibPath = compilerLibPath;
     }
 
     public static TSCProgramContext fromJS(V8ValueObject contextV8) {
@@ -60,6 +70,7 @@ public class TSCProgramContext implements Closeable {
                 V8ValueObject typeChecker = contextV8.get("typeChecker");
                 V8ValueFunction createScanner = contextV8.get("createScanner");
                 V8ValueFunction getOpenRewriteId = contextV8.get("getOpenRewriteId");
+                V8ValueObject pathPrefixes = contextV8.get("pathPrefixes");
         ) {
             return new TSCProgramContext(
                     contextV8.getV8Runtime(),
@@ -67,7 +78,9 @@ public class TSCProgramContext implements Closeable {
                     typescript.toClone(),
                     typeChecker.toClone(),
                     createScanner.toClone(),
-                    getOpenRewriteId.toClone()
+                    getOpenRewriteId.toClone(),
+                    Paths.get(pathPrefixes.getString("app")),
+                    Paths.get(pathPrefixes.getString("lib"))
             );
         } catch (JavetException e) {
             throw new RuntimeException(e);
@@ -130,6 +143,34 @@ public class TSCProgramContext implements Closeable {
 
     public TSCSignature tscSignature(V8ValueObject v8Value) {
         return this.signatureCache.getOrCreate(this, v8Value);
+    }
+
+    /** This is *not* a concept in the TS compiler. This is part of the OpenRewrite-to-TSC bridge. */
+    public enum CompilerBridgeSourceKind {
+        ApplicationCode,
+        SystemLibrary,
+    }
+
+    @Value
+    public static class CompilerBridgeSourceInfo {
+        CompilerBridgeSourceKind sourceKind;
+        Path relativePath;
+    }
+
+    protected CompilerBridgeSourceInfo getBridgeSourceInfo(TSCNode.SourceFile sourceFile) {
+        Path rawPath = Paths.get(sourceFile.getOriginalFileName());
+        Path sourceKindRoot;
+        CompilerBridgeSourceKind sourceKind;
+        if (rawPath.startsWith(this.compilerAppPath)) {
+            sourceKindRoot = this.compilerAppPath;
+            sourceKind = CompilerBridgeSourceKind.ApplicationCode;
+        } else if (rawPath.startsWith(this.compilerLibPath)) {
+            sourceKindRoot = this.compilerLibPath;
+            sourceKind = CompilerBridgeSourceKind.SystemLibrary;
+        } else {
+            throw new IllegalArgumentException("unknown bridge source path (expected app or lib): " + rawPath);
+        }
+        return new CompilerBridgeSourceInfo(sourceKind, sourceKindRoot.relativize(rawPath));
     }
 
     @Override

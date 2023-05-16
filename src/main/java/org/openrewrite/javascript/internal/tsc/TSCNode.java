@@ -86,6 +86,11 @@ public class TSCNode implements TSCV8Backed {
         public String getModuleName() {
             return getStringProperty("moduleName");
         }
+
+        /** This is *not* a concept in the TS compiler. This is part of the OpenRewrite-to-TSC bridge. */
+        public TSCProgramContext.CompilerBridgeSourceInfo getCompilerBridgeSourceInfo() {
+            return this.getProgramContext().getBridgeSourceInfo(this);
+        }
     }
 
     public static class TypeNode extends TSCNode {
@@ -274,6 +279,13 @@ public class TSCNode implements TSCV8Backed {
 
     public String getText() {
         return this.getStringProperty("getText()");
+    }
+
+    public TypeNode assertTypeNode() {
+        if (this instanceof TypeNode) {
+            return (TypeNode) this;
+        }
+        throw new IllegalStateException("expected a TypeNode, but this is an ordinary Node");
     }
 
     public List<TSCNode> getAllChildNodes() {
