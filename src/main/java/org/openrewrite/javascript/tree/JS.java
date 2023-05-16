@@ -718,7 +718,7 @@ public interface JS extends J {
     @AllArgsConstructor
     @Data
     @With
-    final class UnknownElement implements JS, Statement {
+    final class UnknownElement implements JS, Statement, Expression, TypeTree, TypedTree, NameTree {
 
         UUID id;
         Space prefix;
@@ -728,6 +728,17 @@ public interface JS extends J {
         @Override
         public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
             return v.visitUnknownElement(this, p);
+        }
+
+        @Override
+        public @Nullable JavaType getType() {
+            return null;
+        }
+
+        @Override
+        public <T extends J> T withType(@Nullable JavaType type) {
+            //noinspection DataFlowIssue
+            return null;
         }
 
         @Override

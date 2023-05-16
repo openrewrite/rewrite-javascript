@@ -35,8 +35,7 @@ public abstract class TSCMapper implements AutoCloseable {
 
     @Value
     private static class SourceWrapper {
-        Path path;
-        Path relativePath;
+        Path sourcePath;
         Charset charset;
         boolean isCharsetBomMarked;
         String sourceText;
@@ -60,7 +59,6 @@ public abstract class TSCMapper implements AutoCloseable {
         final Path relativePath = input.getRelativePath(relativeTo);
 
         final SourceWrapper source = new SourceWrapper(
-                input.getPath(),
                 input.getRelativePath(relativeTo),
                 is.getCharset(),
                 is.isCharsetBomMarked(),
@@ -86,8 +84,7 @@ public abstract class TSCMapper implements AutoCloseable {
                     final TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
                             node,
                             context,
-                            source.getPath(),
-                            relativeTo,
+                            source.getSourcePath(),
                             new JavaTypeCache(),
                             source.getCharset().toString(),
                             source.isCharsetBomMarked()

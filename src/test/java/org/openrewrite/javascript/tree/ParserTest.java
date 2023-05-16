@@ -19,8 +19,10 @@ import org.intellij.lang.annotations.Language;
 import org.openrewrite.ParseExceptionResult;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.javascript.JavaScriptParser;
+import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.SourceSpec;
 import org.openrewrite.test.SourceSpecs;
@@ -69,12 +71,16 @@ public class ParserTest implements RewriteTest {
                     return super.visitSpace(space, loc, integer);
                 }
             }.visit(cu, 0);
-            if (cu.getMarkers() != null) {
-                ParseExceptionResult result = cu.getMarkers().findFirst(ParseExceptionResult.class).orElse(null);
-                if (result != null) {
-                    assertThat(result.getMessage()).isEqualTo("");
+            new JavaScriptVisitor<Integer>() {
+                @Override
+                public @Nullable J preVisit(J tree, Integer integer) {
+                    if (tree instanceof JS.UnknownElement) {
+                        tree.getMarkers().findFirst(ParseExceptionResult.class)
+                          .ifPresent(result -> assertThat(result.getMessage()).isEqualTo(""));
+                    }
+                    return super.preVisit(tree, integer);
                 }
-            }
+            }.visit(cu, 0);
         });
     }
 }

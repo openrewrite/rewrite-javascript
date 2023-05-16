@@ -40,7 +40,6 @@ import org.openrewrite.markers.VariableModifier;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -55,17 +54,13 @@ public class TypeScriptParserVisitor {
     private final Path sourcePath;
     private final TypeScriptTypeMapping typeMapping;
 
-    @Nullable
-    private final Path relativeTo;
-
     private final String charset;
     private final boolean isCharsetBomMarked;
 
-    public TypeScriptParserVisitor(TSCNode source, TSCSourceFileContext sourceContext, Path sourcePath, @Nullable Path relativeTo, JavaTypeCache typeCache, String charset, boolean isCharsetBomMarked) {
+    public TypeScriptParserVisitor(TSCNode source, TSCSourceFileContext sourceContext, Path sourcePath, JavaTypeCache typeCache, String charset, boolean isCharsetBomMarked) {
         this.source = source;
         this.cursorContext = sourceContext;
         this.sourcePath = sourcePath;
-        this.relativeTo = relativeTo;
         this.charset = charset;
         this.isCharsetBomMarked = isCharsetBomMarked;
         this.typeMapping = new TypeScriptTypeMapping(typeCache);
@@ -82,8 +77,7 @@ public class TypeScriptParserVisitor {
             } catch (Throwable t) {
                 cursor(saveCursor);
                 // `UnknownElement` is a temporary LST element until sources are fully parsed with a high degree of accuracy.
-                visited = new JS.UnknownElement(randomId(), whitespace(), Markers.EMPTY, child.getText());
-                cursor(getCursor() + child.getText().length() + 1);
+                visited = unknownElement(child).withMarkers(Markers.EMPTY);
                 ParseExceptionResult parseExceptionResult = ParseExceptionResult.build(JavaScriptParser.builder().build(), t);
                 if (markers == null) {
                     markers = Markers.build(singletonList(parseExceptionResult));
@@ -104,7 +98,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 EMPTY,
                 markers == null ? Markers.EMPTY : markers,
-                relativeTo == null ? null : relativeTo.relativize(sourcePath),
+                sourcePath,
                 FileAttributes.fromPath(sourcePath),
                 charset,
                 isCharsetBomMarked,
@@ -967,14 +961,7 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitIndexedAccessType(TSCNode node) {
-        cursor(getCursor() + node.getText().length() + 1);
-        // TODO.
-        return new JS.UnknownElement(
-                randomId(),
-                whitespace(),
-                Markers.EMPTY,
-                node.getText()
-        );
+        return unknownElement(node);
     }
 
     private J.If visitIfStatement(TSCNode node) {
@@ -1378,6 +1365,10 @@ public class TypeScriptParserVisitor {
                 singletonList(aCatch),
                 finallyBlock
         );
+    }
+
+    private J visitTupleType(TSCNode node) {
+        return unknownElement(node);
     }
 
     private JS.JsOperator visitTsOperator(TSCNode node) {
@@ -1937,6 +1928,9 @@ public class TypeScriptParserVisitor {
             case TryStatement:
                 j = visitTryStatement(node);
                 break;
+            case TupleType:
+                j = visitTupleType(node);
+                break;
             case TypeOfExpression:
                 j = visitTsOperator(node);
                 break;
@@ -2243,6 +2237,23 @@ public class TypeScriptParserVisitor {
             }
         } while (!done);
         return Space.build(initialSpace, comments);
+    }
+
+    private JS.UnknownElement unknownElement(TSCNode node) {
+        Space prefix = whitespace();
+        String text = node.getText();
+        System.out.println("Unknown element: " + text);
+        cursor(getCursor() + text.length());
+        ParseExceptionResult result = new ParseExceptionResult(
+                randomId(),
+                "Unsupported syntaxKind: " + node.syntaxKind()
+        );
+        return new JS.UnknownElement(
+                randomId(),
+                prefix,
+                Markers.build(singletonList(result)),
+                text
+        );
     }
 
     private void implementMe(TSCNode node) {
