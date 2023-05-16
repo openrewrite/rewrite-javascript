@@ -20,6 +20,12 @@ import { CompilerOptions } from "typescript";
 
 const OPEN_REWRITE_ID = Symbol("OpenRewriteId");
 
+/** This object's property names are referenced by the Java code; do not change them. */
+const PathPrefixes = Object.freeze({
+    lib: "/lib/",
+    app: "/app/",
+});
+
 const libMap: Map<string, string> = (ts as any).libMap;
 const toFileNameLowerCase: (s: string) => string = (ts as any).toFileNameLowerCase;
 
@@ -37,13 +43,13 @@ export default function parse(originalInputs: Map<string, string>, options?: Par
 
         const originalInputPathToProgramPath = new Map();
         for (const [inputPath, inputData] of originalInputs) {
-            const newInputPath = `/app/${inputPath}`;
+            const newInputPath = `${PathPrefixes.app}${inputPath}`;
             originalInputPathToProgramPath.set(inputPath, newInputPath);
             allFiles.set(newInputPath, inputData);
         }
 
         for (const [libPath, libData] of Object.entries(libFileData)) {
-            allFiles.set(`/${libPath}`, libData);
+            allFiles.set(`${PathPrefixes.lib}${libPath}`, libData);
         }
 
         let compilerOptions: ts.CompilerOptions = {
@@ -72,6 +78,10 @@ export default function parse(originalInputs: Map<string, string>, options?: Par
         }
 
         const host = tsvfs.createVirtualCompilerHost(system, compilerOptions, ts).compilerHost;
+        host.getDefaultLibLocation = () => PathPrefixes.lib;
+        host.getDefaultLibFileName = (compilerOptions) =>
+            PathPrefixes.lib + ts.getDefaultLibFileName(compilerOptions);
+
         const program = ts.createProgram({
             host,
             ...createProgramOptions,
@@ -88,9 +98,7 @@ export default function parse(originalInputs: Map<string, string>, options?: Par
         };
 
         return {
-            meta: {
-                syntaxKinds: new Map(Object.entries(ts.SyntaxKind)),
-            },
+            pathPrefixes: PathPrefixes,
             program,
             getOpenRewriteId,
             typeChecker: program.getTypeChecker(),
@@ -116,7 +124,14 @@ function remapLibNames(compilerOptions: CompilerOptions): CompilerOptions {
     if (compilerOptions.lib) {
         compilerOptions.lib = compilerOptions.lib.map((lib) => {
             const lowercaseLib = toFileNameLowerCase(lib);
-            return libMap.get(lowercaseLib) ?? lib;
+            const foundLib = libMap.get(lowercaseLib);
+            if (foundLib !== undefined) {
+                console.log("found lib: " + foundLib);
+                return `${PathPrefixes.lib}${foundLib}`;
+            } else {
+                console.log("didn't find lib: " + lib);
+                return lib;
+            }
         });
     }
     return compilerOptions;
