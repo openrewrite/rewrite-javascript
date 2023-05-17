@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import static org.openrewrite.javascript.internal.tsc.TSCProgramContext.CompilerBridgeSourceKind.ApplicationCode;
+
 @Incubating(since = "0.0")
 public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
 
@@ -46,7 +48,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         TSCNode node = (TSCNode) object;
         switch (node.syntaxKind()) {
             case SourceFile:
-                return mapSourceFileFqn(node);
+                return mapSourceFileFqn((TSCNode.SourceFile) node);
             case ClassDeclaration:
             case EnumDeclaration:
             case InterfaceDeclaration:
@@ -64,6 +66,8 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
                 return mapQualifiedName(node);
             case ThisKeyword:
                 return mapThis(node);
+            case TypeOperator:
+                return mapTypeOperator(node);
             case TypeParameter:
                 return genericSignature(node);
             case ExpressionWithTypeArguments:
@@ -90,7 +94,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
     public String classSignature(Object object) {
         TSCNode node = (TSCNode) object;
         if (node.syntaxKind() == TSCSyntaxKind.SourceFile) {
-            return mapSourceFileFqn(node);
+            return mapSourceFileFqn((TSCNode.SourceFile) node);
         }
 
         return mapFqn(node);
@@ -129,7 +133,8 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         }
 
         typeVariableNameStack.remove(name);
-        return s.append("}").toString();
+        s.append("}");
+        return s.toString();
     }
 
     public String methodSignature(Object object) {
@@ -255,7 +260,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         String fqn = name == null ? "" : node.getNodeProperty("name").getText();
 
         if (parent.syntaxKind() == TSCSyntaxKind.SourceFile) {
-            fqn = mapSourceFileFqn(parent) + "." + fqn;
+            fqn = mapSourceFileFqn((TSCNode.SourceFile) parent) + "." + fqn;
         } else if (isClassDeclaration(parent) && isClassDeclaration(node)) {
             String prefix = mapFqn(parent);
             fqn = prefix + "$" + fqn;
@@ -296,8 +301,14 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         return left + "$" + node.getNodeProperty("right").getText();
     }
 
-    private static String mapSourceFileFqn(TSCNode node) {
-        String clean = node.getSourceFile().getPath().replace("/", ".");
+    private static String mapSourceFileFqn(TSCNode.SourceFile node) {
+        String path;
+        if (node.getCompilerBridgeSourceInfo().getSourceKind() == ApplicationCode) {
+            path = node.getSourceFile().getPath().replaceFirst("/app", "");
+        } else {
+            path = node.getSourceFile().getPath().replaceFirst("/lib", "lib");
+        }
+        String clean = path.replace("/", ".");
         return clean.startsWith(".") ? clean.substring(1) : clean;
     }
 
@@ -348,6 +359,10 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         }
     }
 
+    private String mapTypeOperator(TSCNode node) {
+        return signature(node.getNodeProperty("type"));
+    }
+
     private String mapTypeReference(TSCNode node) {
         String className = null;
         TSCNode name = node.getOptionalNodeProperty("typeName");
@@ -364,7 +379,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
             className = signature(node.getNodeProperty("expression"));
         }
 
-        if (className.contains("<")) {
+        if (className.contains("<") && !className.startsWith("Generic{")) {
             className = className.substring(0, className.indexOf('<'));
         }
 

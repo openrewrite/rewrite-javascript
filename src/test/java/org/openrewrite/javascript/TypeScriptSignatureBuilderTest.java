@@ -18,23 +18,18 @@ package org.openrewrite.javascript;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.TypeScriptSignatureBuilder;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
-import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class TypeScriptSignatureBuilderTest {
-
-    //TODO: identify why `app.` is added to FQNs. Happened after libs change.
 
     @Language("typescript")
     private static final String goat = StringUtils.readFully(TypeScriptSignatureBuilderTest.class.getResourceAsStream("/TypeScriptTypeGoat.ts"));
@@ -52,123 +47,135 @@ public class TypeScriptSignatureBuilderTest {
 
     @Test
     void constructor() {
-        runtime.parseSourceTexts(
-                Collections.singletonMap(Paths.get("goat.ts"), goat),
+        runtime.parseSingleSource(
+                goat,
                 (node, context) -> assertThat(constructorSignature(node))
-                        .isEqualTo("app.goat.ts.TypeScriptTypeGoat{name=<constructor>,return=app.goat.ts.TypeScriptTypeGoat,parameters=[]}")
+                        .isEqualTo("file.ts.TypeScriptTypeGoat{name=<constructor>,return=file.ts.TypeScriptTypeGoat,parameters=[]}")
         );
     }
 
     @Test
     void parameterizedField() {
-        runtime.parseSourceTexts(
-                Collections.singletonMap(Paths.get("goat.ts"), goat),
+        runtime.parseSingleSource(
+                goat,
                 (node, context) -> assertThat(fieldSignature(node, "parameterizedField"))
-                        .isEqualTo("app.goat.ts.TypeScriptTypeGoat{name=parameterizedField,type=app.goat.ts.PT<app.goat.ts.TypeScriptTypeGoat$TypeA>}")
+                        .isEqualTo("file.ts.TypeScriptTypeGoat{name=parameterizedField,type=file.ts.PT<file.ts.TypeScriptTypeGoat$TypeA>}")
         );
     }
 
     @Test
     void array() {
         assertMethodSignature("array",
-                "app.goat.ts.A[]",
-                "app.goat.ts.TypeScriptTypeGoat{name=array,return=void,parameters=[app.goat.ts.A[]]}");
+                "file.ts.A[]",
+                "file.ts.TypeScriptTypeGoat{name=array,return=void,parameters=[file.ts.A[]]}");
     }
 
     @Test
     void multidimensionalArray() {
         assertMethodSignature("multidimensionalArray",
-                "app.goat.ts.A[][]",
-                "app.goat.ts.TypeScriptTypeGoat{name=multidimensionalArray,return=void,parameters=[app.goat.ts.A[][]]}");
+                "file.ts.A[][]",
+                "file.ts.TypeScriptTypeGoat{name=multidimensionalArray,return=void,parameters=[file.ts.A[][]]}");
     }
 
     @Test
     void classSignature() {
         assertMethodSignature("clazz",
-                "app.goat.ts.A",
-                "app.goat.ts.TypeScriptTypeGoat{name=clazz,return=void,parameters=[app.goat.ts.A]}");
+                "file.ts.A",
+                "file.ts.TypeScriptTypeGoat{name=clazz,return=void,parameters=[file.ts.A]}");
     }
 
     @Test
     void primitive() {
         assertMethodSignature("primitive",
                 "number",
-                "app.goat.ts.TypeScriptTypeGoat{name=primitive,return=void,parameters=[number]}");
+                "file.ts.TypeScriptTypeGoat{name=primitive,return=void,parameters=[number]}");
     }
 
     @Test
     void parameterized() {
         assertMethodSignature("parameterized",
-                "app.goat.ts.PT<app.goat.ts.A>",
-                "app.goat.ts.TypeScriptTypeGoat{name=parameterized,return=app.goat.ts.PT<app.goat.ts.A>,parameters=[app.goat.ts.PT<app.goat.ts.A>]}");
+                "file.ts.PT<file.ts.A>",
+                "file.ts.TypeScriptTypeGoat{name=parameterized,return=file.ts.PT<file.ts.A>,parameters=[file.ts.PT<file.ts.A>]}");
     }
 
     @Test
     void parameterizedRecursive() {
         assertMethodSignature("parameterizedRecursive",
-                "app.goat.ts.PT<app.goat.ts.PT<app.goat.ts.A>>",
-                "app.goat.ts.TypeScriptTypeGoat{name=parameterizedRecursive,return=app.goat.ts.PT<app.goat.ts.PT<app.goat.ts.A>>,parameters=[app.goat.ts.PT<app.goat.ts.PT<app.goat.ts.A>>]}");
+                "file.ts.PT<file.ts.PT<file.ts.A>>",
+                "file.ts.TypeScriptTypeGoat{name=parameterizedRecursive,return=file.ts.PT<file.ts.PT<file.ts.A>>,parameters=[file.ts.PT<file.ts.PT<file.ts.A>>]}");
     }
 
     @Test
     void generic() {
         assertMethodSignature("generic",
-                "app.goat.ts.PT<Generic{T extends app.goat.ts.A}>",
-                "app.goat.ts.TypeScriptTypeGoat{name=generic,return=app.goat.ts.PT<Generic{T extends app.goat.ts.A}>,parameters=[app.goat.ts.PT<Generic{T extends app.goat.ts.A}>]}");
+                "file.ts.PT<Generic{T extends file.ts.A}>",
+                "file.ts.TypeScriptTypeGoat{name=generic,return=file.ts.PT<Generic{T extends file.ts.A}>,parameters=[file.ts.PT<Generic{T extends file.ts.A}>]}");
+    }
+
+    @Test
+    void genericUnbounded() {
+        assertMethodSignature("genericUnbounded",
+                "file.ts.PT<Generic{U}>",
+                "file.ts.TypeScriptTypeGoat{name=genericUnbounded,return=file.ts.PT<Generic{U}>,parameters=[file.ts.PT<Generic{U}>]}");
     }
 
     @Test
     void mergedInterfaceGeneric() {
         assertMethodSignature("mergedGeneric",
-          "app.goat.ts.PT<Generic{T extends type.analysis.MergedInterface}>",
-          "app.goat.ts.TypeScriptTypeGoat{name=mergedGeneric,return=app.goat.ts.PT<Generic{T extends type.analysis.MergedInterface}>,parameters=[app.goat.ts.PT<Generic{T extends type.analysis.MergedInterface}>]}");
+                "file.ts.PT<Generic{T extends type.analysis.MergedInterface}>",
+                "file.ts.TypeScriptTypeGoat{name=mergedGeneric,return=file.ts.PT<Generic{T extends type.analysis.MergedInterface}>,parameters=[file.ts.PT<Generic{T extends type.analysis.MergedInterface}>]}");
     }
 
     @Test
     void genericT() {
         assertMethodSignature("genericT",
                 "Generic{T}",
-                "app.goat.ts.TypeScriptTypeGoat{name=genericT,return=Generic{T},parameters=[Generic{T}]}");
-    }
-
-    @ExpectedToFail("Requires adding Contravariant to TSTypeGoat")
-    @Test
-    void genericContravariant() {
-        assertMethodSignature("genericContravariant",
-                "Add me",
-                "Add me");
+                "file.ts.TypeScriptTypeGoat{name=genericT,return=Generic{T},parameters=[Generic{T}]}");
     }
 
     @Test
     void genericRecursiveInClassDefinition() {
-        runtime.parseSourceTexts(
-                Collections.singletonMap(Paths.get("goat.ts"), goat),
+        runtime.parseSingleSource(
+                goat,
                 (node, context) -> assertThat(lastClassTypeParameterSignature(node))
-                        .isEqualTo("Generic{S extends app.goat.ts.PT<Generic{S}> & app.goat.ts.A}")
+                        .isEqualTo("Generic{S extends file.ts.PT<Generic{S}> & file.ts.A}")
         );
     }
 
-    @ExpectedToFail("Implement TS recursive generic")
     @Test
     void genericRecursiveInMethodDeclaration() {
         assertMethodSignature("genericRecursive",
-                "Add me",
-                "Add me");
+                "file.ts.TypeScriptTypeGoat<Generic{U extends file.ts.TypeScriptTypeGoat<Generic{U}, unknown>}[], unknown>",
+                "file.ts.TypeScriptTypeGoat{name=genericRecursive,return=file.ts.TypeScriptTypeGoat<Generic{U extends file.ts.TypeScriptTypeGoat<Generic{U}, unknown>}[], unknown>,parameters=[file.ts.TypeScriptTypeGoat<Generic{U extends file.ts.TypeScriptTypeGoat<Generic{U}, unknown>}[], unknown>]}");
+    }
+
+    @Test
+    void genericIntersection() {
+        assertMethodSignature("genericIntersection",
+                "Generic{U extends type.analysis.Anonymous & file.ts.PT<Generic{U}> & file.ts.C}",
+                "file.ts.TypeScriptTypeGoat{name=genericIntersection,return=Generic{U extends type.analysis.Anonymous & file.ts.PT<Generic{U}> & file.ts.C},parameters=[Generic{U extends type.analysis.Anonymous & file.ts.PT<Generic{U}> & file.ts.C}]}");
+    }
+
+    @Test
+    void recursiveIntersection() {
+        assertMethodSignature("recursiveIntersection",
+                "Generic{U extends file.ts.Extension<Generic{U}> & file.ts.Intersection<Generic{U}>}",
+                "file.ts.TypeScriptTypeGoat{name=recursiveIntersection,return=void,parameters=[Generic{U extends file.ts.Extension<Generic{U}> & file.ts.Intersection<Generic{U}>}]}");
     }
 
     @Test
     void merged() {
         assertMethodSignature("merged",
                 "type.analysis.MergedInterface",
-                "app.goat.ts.TypeScriptTypeGoat{name=merged,return=void,parameters=[type.analysis.MergedInterface]}");
+                "file.ts.TypeScriptTypeGoat{name=merged,return=void,parameters=[type.analysis.MergedInterface]}");
     }
 
     @Test
     void unionField() {
-        runtime.parseSourceTexts(
-          Collections.singletonMap(Paths.get("goat.ts"), goat),
-          (node, context) -> assertThat(fieldSignature(node, "unionField"))
-                  .isEqualTo("app.goat.ts.TypeScriptTypeGoat{name=unionField,type=type.analysis.Union}")
+        runtime.parseSingleSource(
+                goat,
+                (node, context) -> assertThat(fieldSignature(node, "unionField"))
+                        .isEqualTo("file.ts.TypeScriptTypeGoat{name=unionField,type=type.analysis.Union}")
         );
     }
 
@@ -213,18 +220,14 @@ public class TypeScriptSignatureBuilderTest {
                 .getNodeProperty("type")));
     }
 
-    private String innerClassSignature(TSCNode node, String innerClassSimpleName) {
-        throw new UnsupportedOperationException("todo");
-    }
-
     public String lastClassTypeParameterSignature(TSCNode node) {
         List<TSCNode> typeParams = node.getNodeListProperty("statements").get(0).getNodeListProperty("typeParameters");
         return Objects.requireNonNull(signatureBuilder().signature(typeParams.get(typeParams.size() - 1)));
     }
 
     private void assertMethodSignature(String target, String expectedMethodParameterSignature, String expectedMethodSignature) {
-        runtime.parseSourceTexts(
-                Collections.singletonMap(Paths.get("goat.ts"), goat),
+        runtime.parseSingleSource(
+                goat,
                 (node, context) -> {
                     assertThat(firstMethodParameterSignature(node, target))
                             .isEqualTo(expectedMethodParameterSignature);

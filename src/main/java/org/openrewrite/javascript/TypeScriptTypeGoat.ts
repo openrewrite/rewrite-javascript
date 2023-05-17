@@ -28,7 +28,7 @@ abstract class TypeScriptTypeGoat<T, S extends PT<S> & A> {
     public static TypeB = class {
     }
 
-    ExtendsJavaTypeGoat = class extends TypeScriptTypeGoat<T, S> {
+    ExtendsTypeScriptTypeGoat = class extends TypeScriptTypeGoat<T, S> {
         enumTypeA(n: EnumTypeA): void {
         }
         genericIntersection<U>(n: U): U {
@@ -37,7 +37,7 @@ abstract class TypeScriptTypeGoat<T, S extends PT<S> & A> {
         genericRecursive<U>(n: TypeScriptTypeGoat<readonly U[], unknown>): TypeScriptTypeGoat<readonly U[], unknown> {
             return undefined;
         }
-        inheritedJavaTypeGoat<U>(n: InheritedJavaTypeGoat<T, U>): InheritedJavaTypeGoat<T, U> {
+        inheritedTypeScriptTypeGoat<U>(n: InheritedTypeScriptTypeGoat<T, U>): InheritedTypeScriptTypeGoat<T, U> {
             return undefined;
         }
     }
@@ -72,11 +72,8 @@ abstract class TypeScriptTypeGoat<T, S extends PT<S> & A> {
         return n
     }
 
-    genericArray(n: PT<A>[]): void {
-    }
-
     public abstract enumTypeA(n: EnumTypeA): void;
-    public abstract inheritedJavaTypeGoat<U extends PT<U> & C>(n: InheritedJavaTypeGoat<T, U>): InheritedJavaTypeGoat<T, U>;
+    public abstract inheritedTypeScriptTypeGoat<U extends PT<U> & C>(n: InheritedTypeScriptTypeGoat<T, U>): InheritedTypeScriptTypeGoat<T, U>;
     public abstract genericIntersection<U extends (typeof TypeScriptTypeGoat)['TypeA'] & PT<U> & C>(n: U): U;
 
     genericT(n: T): T {
@@ -139,12 +136,8 @@ enum EnumTypeA {
     FOO, BAR
 }
 
-abstract class InheritedJavaTypeGoat<T, U extends PT<U> & C> extends TypeScriptTypeGoat<T, U> {
+abstract class InheritedTypeScriptTypeGoat<T, U extends PT<U> & C> extends TypeScriptTypeGoat<T, U> {
     protected constructor() {
         super();
     }
 }
-
-
-// TODO: add as much parity to JavaTypeGoat as possible.
-// TODO: add code unique to type script.

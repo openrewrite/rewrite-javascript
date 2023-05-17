@@ -59,7 +59,7 @@ public abstract class TSCMapper implements AutoCloseable {
         final Path relativePath = input.getRelativePath(relativeTo);
 
         final SourceWrapper source = new SourceWrapper(
-                input.getRelativePath(relativeTo),
+                relativePath,
                 is.getCharset(),
                 is.isCharsetBomMarked(),
                 inputSourceText

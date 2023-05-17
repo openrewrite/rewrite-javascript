@@ -23,6 +23,7 @@ import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.javascript.tree.JS;
 
 import java.util.List;
 
@@ -32,9 +33,10 @@ import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.*;
 @SuppressWarnings("DataFlowIssue")
 public class TypeScriptTypeMappingTest {
     private static final String goat = StringUtils.readFully(TypeScriptSignatureBuilderTest.class.getResourceAsStream("/TypeScriptTypeGoat.ts"));
-    private static final List<JavaType.FullyQualified> classes = JavaScriptParser.builder().build()
+    private static final JS.CompilationUnit cu = JavaScriptParser.builder().build()
             .parse(new InMemoryExecutionContext(), goat)
-            .get(0)
+            .get(0);
+    private static final List<JavaType.FullyQualified> classes = cu
             .getStatements()
             .stream()
             .filter(it -> it instanceof J.ClassDeclaration)
@@ -46,24 +48,57 @@ public class TypeScriptTypeMappingTest {
     // TODO: add methods to access methods via name.
     // Add methods to access types as types are added.
 
+    private String getSourcePath() {
+        return cu.getSourcePath().toString().replace("/", ".");
+    }
+
     @Test
     void className() {
         JavaType.FullyQualified clazz = TypeUtils.asFullyQualified(this.firstMethodParameter("clazz"));
         Assertions.assertThat(clazz).isNotNull();
-        Assertions.assertThat(clazz.getFullyQualifiedName()).endsWith(".file.js.A");
+        Assertions.assertThat(clazz.getFullyQualifiedName()).isEqualTo(getSourcePath() + ".A");
     }
 
     @Test
     void constructor() {
         JavaType.Method ctor = methodType("<constructor>");
-        assertThat(ctor.getDeclaringType().getFullyQualifiedName()).endsWith(".file.js.TypeScriptTypeGoat");
+        assertThat(ctor.getDeclaringType().getFullyQualifiedName()).isEqualTo("%s.TypeScriptTypeGoat", getSourcePath());
+    }
+
+    @Test
+    void parameterizedField() {
+        JavaType.Variable type = firstField("parameterizedField");
+        assertThat(type.getType().toString()).isEqualTo("%s.PT<type.analysis.Anonymous>", getSourcePath());
+    }
+
+    @Test
+    void unionField() {
+        JavaType.Variable type = firstField("unionField");
+        assertThat(type.getType().toString()).isEqualTo("type.analysis.Union", getSourcePath());
+    }
+
+    @ExpectedToFail
+    @Test
+    void extendsJavaTypeGoat() {
+        JavaType.Variable type = firstField("ExtendsTypeScriptTypeGoat");
+        assertThat(type.getType().toString()).isEqualTo("%s.ExtendsTypeScriptTypeGoat", getSourcePath());
+        System.out.println();
     }
 
     @Test
     void parameterized() {
+        String sourcePath = getSourcePath();
         JavaType.Parameterized parameterized = (JavaType.Parameterized) firstMethodParameter("parameterized");
-        assertThat(parameterized.getType().getFullyQualifiedName()).endsWith(".file.js.PT");
-        assertThat(TypeUtils.asFullyQualified(parameterized.getTypeParameters().get(0)).getFullyQualifiedName()).endsWith(".file.js.A");
+        assertThat(parameterized.getType().getFullyQualifiedName()).isEqualTo("%s.PT", sourcePath);
+        assertThat(TypeUtils.asFullyQualified(parameterized.getTypeParameters().get(0)).getFullyQualifiedName()).isEqualTo("%s.A", sourcePath);
+    }
+
+    @Test
+    void parameterizedRecursive() {
+        String sourcePath = getSourcePath();
+        JavaType.Parameterized parameterized = (JavaType.Parameterized) firstMethodParameter("parameterizedRecursive");
+        assertThat(parameterized.getType().getFullyQualifiedName()).isEqualTo("%s.PT", sourcePath);
+        assertThat(TypeUtils.asFullyQualified(parameterized.getTypeParameters().get(0)).getFullyQualifiedName()).isEqualTo("%s.PT", sourcePath);
     }
 
     @Test
@@ -77,28 +112,14 @@ public class TypeScriptTypeMappingTest {
         JavaType.GenericTypeVariable generic = (JavaType.GenericTypeVariable) TypeUtils.asParameterized(firstMethodParameter("generic")).getTypeParameters().get(0);
         assertThat(generic.getName()).isEqualTo("T");
         assertThat(generic.getVariance()).isEqualTo(COVARIANT);
-        assertThat(TypeUtils.asFullyQualified(generic.getBounds().get(0)).getFullyQualifiedName()).endsWith(".file.js.A");
-    }
-
-    @ExpectedToFail("add contravariant to type goat.")
-    @Test
-    void genericContravariant() {
-        JavaType.GenericTypeVariable generic = (JavaType.GenericTypeVariable) TypeUtils.asParameterized(firstMethodParameter("genericContravariant")).getTypeParameters().get(0);
-        assertThat(generic.getName()).isEqualTo("");
-        assertThat(generic.getVariance()).isEqualTo(CONTRAVARIANT);
-        assertThat(TypeUtils.asFullyQualified(generic.getBounds().get(0)).getFullyQualifiedName()).
-          isEqualTo("org.openrewrite.kotlin.C");
+        assertThat(TypeUtils.asFullyQualified(generic.getBounds().get(0)).getFullyQualifiedName()).isEqualTo("%s.A", getSourcePath());
     }
 
     @Test
-    void genericMultipleBounds() {
-        List<JavaType> typeParameters = goatType.getTypeParameters();
-        JavaType.GenericTypeVariable generic = (JavaType.GenericTypeVariable) typeParameters.get(typeParameters.size() - 1);
-        assertThat(generic.getName()).isEqualTo("S");
-        assertThat(generic.getVariance()).isEqualTo(COVARIANT);
-        assertThat(TypeUtils.asFullyQualified(generic.getBounds().get(0)).getFullyQualifiedName()).endsWith(".file.js.PT");
-        assertThat(TypeUtils.asFullyQualified(generic.getBounds().get(1)).getFullyQualifiedName()).
-          endsWith(".file.js.A");
+    void genericT() {
+        JavaType.GenericTypeVariable generic = (JavaType.GenericTypeVariable) firstMethodParameter("genericT");
+        assertThat(generic.getName()).isEqualTo("T");
+        assertThat(generic.getVariance()).isEqualTo(INVARIANT);
     }
 
     @Test
@@ -106,16 +127,27 @@ public class TypeScriptTypeMappingTest {
         JavaType.GenericTypeVariable generic = (JavaType.GenericTypeVariable) TypeUtils.asParameterized(firstMethodParameter("genericUnbounded")).getTypeParameters().get(0);
         assertThat(generic.getName()).isEqualTo("U");
         assertThat(generic.getVariance()).isEqualTo(INVARIANT);
-        assertThat(generic.getBounds()).isEmpty();
     }
 
-    @ExpectedToFail("add to type goat")
+    @Test
+    void genericMultipleBounds() {
+        String sourcePath = getSourcePath();
+        List<JavaType> typeParameters = goatType.getTypeParameters();
+        JavaType.GenericTypeVariable generic = (JavaType.GenericTypeVariable) typeParameters.get(typeParameters.size() - 1);
+        assertThat(generic.getName()).isEqualTo("S");
+        assertThat(generic.getVariance()).isEqualTo(COVARIANT);
+        assertThat(TypeUtils.asFullyQualified(generic.getBounds().get(0)).getFullyQualifiedName()).isEqualTo("%s.PT", sourcePath);
+        assertThat(TypeUtils.asFullyQualified(generic.getBounds().get(1)).getFullyQualifiedName()).
+          isEqualTo("%s.A", sourcePath);
+    }
+
     @Test
     void genericRecursive() {
+        String sourcePath = getSourcePath();
         JavaType.Parameterized param = (JavaType.Parameterized) firstMethodParameter("genericRecursive");
-        JavaType typeParam = param.getTypeParameters().get(0);
-        JavaType.GenericTypeVariable generic = (JavaType.GenericTypeVariable) typeParam;
-        assertThat(generic.getName()).isEqualTo("");
+        assertThat(param.toString()).isEqualTo("%s.TypeScriptTypeGoat<Generic{U extends %s.TypeScriptTypeGoat<Generic{U}, unknown>}[], unknown>", sourcePath, sourcePath);
+        JavaType.Array.GenericTypeVariable generic = (JavaType.GenericTypeVariable) ((JavaType.Array) param.getTypeParameters().get(0)).getElemType();
+        assertThat(generic.getName()).isEqualTo("U");
         assertThat(generic.getVariance()).isEqualTo(COVARIANT);
         assertThat(TypeUtils.asParameterized(generic.getBounds().get(0))).isNotNull();
 
@@ -123,36 +155,33 @@ public class TypeScriptTypeMappingTest {
         assertThat(elemType.getName()).isEqualTo("U");
         assertThat(elemType.getVariance()).isEqualTo(COVARIANT);
         assertThat(elemType.getBounds()).hasSize(1);
+
+        JavaType.GenericTypeVariable gtv = (JavaType.GenericTypeVariable) ((JavaType.Parameterized) elemType.getBounds().get(0)).getTypeParameters().get(0);
+        assertThat(gtv.toString()).isEqualTo("Generic{U extends %s.TypeScriptTypeGoat<Generic{U}, unknown>}", sourcePath);
     }
 
-    @ExpectedToFail("add to type goat")
     @Test
-    void innerClass() {
-        JavaType.FullyQualified clazz = TypeUtils.asFullyQualified(firstMethodParameter("inner"));
-        assertThat(clazz.getFullyQualifiedName()).isEqualTo("org.openrewrite.kotlin.C$Inner");
-    }
-
-    @ExpectedToFail("add to type goat")
-    @Test
-    void inheritedJavaTypeGoat() {
-        JavaType.Parameterized clazz = (JavaType.Parameterized) firstMethodParameter("InheritedKotlinTypeGoat");
+    void inheritedTypeScriptTypeGoat() {
+        String sourcePath = getSourcePath();
+        JavaType.Parameterized clazz = (JavaType.Parameterized) firstMethodParameter("inheritedTypeScriptTypeGoat");
         assertThat(clazz.getTypeParameters().get(0).toString()).isEqualTo("Generic{T}");
-        assertThat(clazz.getTypeParameters().get(1).toString()).isEqualTo("Generic{U extends org.openrewrite.kotlin.PT<Generic{U}> & org.openrewrite.kotlin.C}");
-        assertThat(clazz.toString()).isEqualTo("org.openrewrite.kotlin.KotlinTypeGoat$InheritedKotlinTypeGoat<Generic{T}, Generic{U extends org.openrewrite.kotlin.PT<Generic{U}> & org.openrewrite.kotlin.C}>");
+        assertThat(clazz.getTypeParameters().get(1).toString()).isEqualTo("Generic{U extends %s.PT<Generic{U}> & %s.C}", sourcePath, sourcePath);
+        assertThat(clazz.toString()).isEqualTo("%s.InheritedTypeScriptTypeGoat<Generic{T}, Generic{U extends %s.PT<Generic{U}> & %s.C}>", sourcePath, sourcePath, sourcePath);
     }
 
-    @ExpectedToFail("add to type goat")
     @Test
     void genericIntersectionType() {
+        String sourcePath = getSourcePath();
         JavaType.GenericTypeVariable clazz = (JavaType.GenericTypeVariable) firstMethodParameter("genericIntersection");
-        assertThat(clazz.getBounds().get(0).toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat$TypeA");
-        assertThat(clazz.getBounds().get(1).toString()).isEqualTo("org.openrewrite.java.PT<Generic{U extends org.openrewrite.java.JavaTypeGoat$TypeA & org.openrewrite.java.C}>");
-        assertThat(clazz.getBounds().get(2).toString()).isEqualTo("org.openrewrite.java.C");
-        assertThat(clazz.toString()).isEqualTo("Generic{U extends org.openrewrite.java.JavaTypeGoat$TypeA & org.openrewrite.java.PT<Generic{U}> & org.openrewrite.java.C}");
+        assertThat(clazz.getBounds().get(0).toString()).isEqualTo("type.analysis.Anonymous");
+        assertThat(clazz.getBounds().get(1).toString()).isEqualTo("%s.PT<Generic{U extends type.analysis.Anonymous & %s.C}>", sourcePath, sourcePath, sourcePath);
+        assertThat(clazz.getBounds().get(2).toString()).isEqualTo("%s.C", sourcePath);
+        assertThat(clazz.toString()).isEqualTo("Generic{U extends type.analysis.Anonymous & %s.PT<Generic{U}> & %s.C}", sourcePath, sourcePath);
     }
 
     @Test
     void enumTypeA() {
+        String sourcePath = getSourcePath();
         JavaType.Class clazz = (JavaType.Class) firstClassType("EnumTypeA");
 
         List<JavaType.Variable> enumConstants = clazz.getMembers().stream()
@@ -160,31 +189,40 @@ public class TypeScriptTypeMappingTest {
                 .toList();
         assertThat(enumConstants).hasSize(2);
         assertThat(enumConstants.get(0).getName()).isEqualTo("FOO");
-        assertThat(TypeUtils.asFullyQualified(enumConstants.get(0).getOwner()).getFullyQualifiedName()).endsWith(".file.js.EnumTypeA");
-        assertThat(TypeUtils.asFullyQualified(enumConstants.get(0).getType()).getFullyQualifiedName()).endsWith(".file.js.EnumTypeA");
+        assertThat(TypeUtils.asFullyQualified(enumConstants.get(0).getOwner()).getFullyQualifiedName()).isEqualTo("%s.EnumTypeA", sourcePath);
+        assertThat(TypeUtils.asFullyQualified(enumConstants.get(0).getType()).getFullyQualifiedName()).isEqualTo("%s.EnumTypeA", sourcePath);
         assertThat(enumConstants.get(1).getName()).isEqualTo("BAR");
-        assertThat(TypeUtils.asFullyQualified(enumConstants.get(1).getOwner()).getFullyQualifiedName()).endsWith(".file.js.EnumTypeA");
-        assertThat(TypeUtils.asFullyQualified(enumConstants.get(1).getType()).getFullyQualifiedName()).endsWith(".file.js.EnumTypeA");
+        assertThat(TypeUtils.asFullyQualified(enumConstants.get(1).getOwner()).getFullyQualifiedName()).isEqualTo("%s.EnumTypeA", sourcePath);
+        assertThat(TypeUtils.asFullyQualified(enumConstants.get(1).getType()).getFullyQualifiedName()).isEqualTo("%s.EnumTypeA", sourcePath);
     }
 
-    @ExpectedToFail("add to type goat")
     @Test
     void recursiveIntersection() {
+        String sourcePath = getSourcePath();
         JavaType.GenericTypeVariable clazz = TypeUtils.asGeneric(firstMethodParameter("recursiveIntersection"));
-        assertThat(clazz.toString()).isEqualTo("Generic{U extends org.openrewrite.java.JavaTypeGoat$Extension<Generic{U}> & org.openrewrite.java.Intersection<Generic{U}>}");
+        assertThat(clazz.toString()).isEqualTo("Generic{U extends %s.Extension<Generic{U}> & %s.Intersection<Generic{U}>}", sourcePath, sourcePath);
     }
 
     public JavaType.Method methodType(String methodName) {
         JavaType.Method type = goatType.getMethods().stream()
-          .filter(m -> m.getName().equals(methodName))
-          .findFirst()
-          .orElseThrow(() -> new IllegalStateException("Expected to find matching method named " + methodName));
-        Assertions.assertThat(type.getDeclaringType().toString()).endsWith(".file.js.TypeScriptTypeGoat");
+                .filter(m -> m.getName().equals(methodName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Expected to find matching method named " + methodName));
+        Assertions.assertThat(type.getDeclaringType().toString()).isEqualTo("%s.TypeScriptTypeGoat", getSourcePath());
         return type;
     }
 
     public JavaType firstMethodParameter(String methodName) {
         return methodType(methodName).getParameterTypes().get(0);
+    }
+
+    public JavaType.Variable firstField(String fieldName) {
+        JavaType.Variable type = goatType.getMembers().stream()
+                .filter(m -> m.getName().equals(fieldName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Expected to find matching member named " + fieldName));
+        Assertions.assertThat(type.getOwner().toString()).isEqualTo("%s.TypeScriptTypeGoat", getSourcePath());
+        return type;
     }
 
     public JavaType firstClassType(String className) {

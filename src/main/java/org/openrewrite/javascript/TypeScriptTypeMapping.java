@@ -80,6 +80,8 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 return mapQualifiedName(node);
             case ThisKeyword:
                 return mapThis(node);
+            case TypeOperator:
+                return mapTypeOperator(node);
             case TypeParameter:
                 return generic(node, signature);
             case ExpressionWithTypeArguments:
@@ -577,6 +579,10 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
     private JavaType mapThis(TSCNode node) {
         return resolveNode(node);
+    }
+
+    private JavaType mapTypeOperator(TSCNode node) {
+        return type(node.getNodeProperty("type"));
     }
 
     private JavaType mapType(TSCType type) {
