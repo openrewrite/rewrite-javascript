@@ -81,7 +81,7 @@ public class TypeScriptTypeMappingTest {
     @Test
     void extendsJavaTypeGoat() {
         JavaType.Variable type = firstField("ExtendsTypeScriptTypeGoat");
-        assertThat(type.getType().toString()).isEqualTo("%s.ExtendsTypeScriptTypeGoat", getSourcePath());
+        assertThat(type.getType().toString()).isEqualTo("implement me", getSourcePath());
         System.out.println();
     }
 

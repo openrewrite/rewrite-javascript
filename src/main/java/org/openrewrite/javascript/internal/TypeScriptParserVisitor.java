@@ -2281,7 +2281,6 @@ public class TypeScriptParserVisitor {
     private JS.UnknownElement unknownElement(TSCNode node) {
         Space prefix = whitespace();
         String text = node.getText();
-        System.out.println("Unknown element: " + text);
         cursor(getCursor() + text.length());
         ParseExceptionResult result = new ParseExceptionResult(
                 randomId(),

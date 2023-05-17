@@ -90,6 +90,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 return mapReference(node);
             case UnionType:
                 return TsType.UNION;
+            case PropertyDeclaration:
             case VariableDeclaration:
                 return variableType(node);
         }
@@ -452,7 +453,13 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         List<JavaType.FullyQualified> annotations = emptyList();
 
         JavaType resolvedOwner = declaringType != null ? declaringType : type(getOwner(node));
-        JavaType type = type(node.hasProperty("type") ? node.getNodeProperty("type") : node);
+        TSCNode typeNode = node.getOptionalNodeProperty("type");
+        JavaType type;
+        if (typeNode != null) {
+            type = type(typeNode);
+        } else {
+            type = resolveNode(node);
+        }
         variable.unsafeSet(resolvedOwner, type, annotations);
 
         return variable;

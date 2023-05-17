@@ -76,6 +76,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
                 return mapTypeReference(node);
             case UnionType:
                 return TsType.UNION.getFullyQualifiedName();
+            case PropertyDeclaration:
             case VariableDeclaration:
                 return variableSignature(node);
         }
