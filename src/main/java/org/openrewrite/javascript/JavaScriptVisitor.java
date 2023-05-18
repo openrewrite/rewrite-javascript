@@ -45,9 +45,13 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
     }
 
     public J visitCompilationUnit(JS.CompilationUnit cu, P p) {
-        // FIXME Implement
-        visit(cu.getStatements(), p);
-        return cu;
+        JS.CompilationUnit c = cu;
+        c = c.withPrefix(visitSpace(c.getPrefix(), Space.Location.COMPILATION_UNIT_PREFIX, p));
+        c = c.withMarkers(visitMarkers(c.getMarkers(), p));
+        c = c.getPadding().withImports(ListUtils.map(c.getPadding().getImports(), t -> visitRightPadded(t, JRightPadded.Location.IMPORT, p)));
+        c = c.withStatements(ListUtils.map(c.getStatements(), e -> visitAndCast(e, p)));
+        c = c.withEof(visitSpace(c.getEof(), Space.Location.COMPILATION_UNIT_EOF, p));
+        return c;
     }
 
     public J visitJsBinary(JS.JsBinary binary, P p) {

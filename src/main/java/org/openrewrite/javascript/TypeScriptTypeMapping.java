@@ -29,6 +29,7 @@ import org.openrewrite.javascript.internal.tsc.TSCType;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
+import org.openrewrite.javascript.table.ParseExceptionAnalysis;
 import org.openrewrite.javascript.tree.TsType;
 
 import java.util.*;
@@ -661,10 +662,10 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
     }
 
     private void implementMe(TSCSyntaxKind syntaxKind) {
-        throw new UnsupportedOperationException("Add support for syntaxKind: " + syntaxKind);
+        throw new RuntimeException(ParseExceptionAnalysis.getAnalysisMessage(syntaxKind.name()));
     }
 
     private void implementMe(TSCType type) {
-        throw new UnsupportedOperationException("Add support for type: " + type);
+        throw new RuntimeException(ParseExceptionAnalysis.getAnalysisMessage(type.typeToString()));
     }
 }

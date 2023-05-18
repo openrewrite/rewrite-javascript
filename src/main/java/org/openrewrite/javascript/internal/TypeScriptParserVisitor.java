@@ -29,6 +29,7 @@ import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCNodeList;
 import org.openrewrite.javascript.internal.tsc.TSCSourceFileContext;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
+import org.openrewrite.javascript.table.ParseExceptionAnalysis;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.javascript.tree.TsType;
 import org.openrewrite.marker.Markers;
@@ -76,15 +77,14 @@ public class TypeScriptParserVisitor {
                 visited = visitNode(child);
             } catch (Throwable t) {
                 cursor(saveCursor);
-                // `UnknownElement` is a temporary LST element until sources are fully parsed with a high degree of accuracy.
                 visited = unknownElement(child).withMarkers(Markers.EMPTY);
                 ParseExceptionResult parseExceptionResult = ParseExceptionResult.build(JavaScriptParser.builder().build(), t);
                 if (markers == null) {
                     markers = Markers.build(singletonList(parseExceptionResult));
                 }
                 visited = visited.withMarkers(visited.getMarkers().addIfAbsent(parseExceptionResult));
-//                throw ex;
             }
+
             if (visited != null) {
                 if (!(visited instanceof Statement) && visited instanceof Expression) {
                     visited = new JS.ExpressionStatement(randomId(), (Expression) visited);
@@ -2284,7 +2284,9 @@ public class TypeScriptParserVisitor {
         cursor(getCursor() + text.length());
         ParseExceptionResult result = new ParseExceptionResult(
                 randomId(),
-                "Unsupported syntaxKind: " + node.syntaxKind()
+                ParseExceptionAnalysis.getAnalysisMessage(node.syntaxKind().name(),
+                        getCursor() + 20 < source.getText().length() ? source.getText().substring(getCursor(), getCursor() + 20) :
+                                source.getText().substring(getCursor()))
         );
         return new JS.UnknownElement(
                 randomId(),
@@ -2295,18 +2297,20 @@ public class TypeScriptParserVisitor {
     }
 
     private void implementMe(TSCNode node) {
-        throw new UnsupportedOperationException(String.format("Implement syntax kind <%s> at: <%s>.",
-                node.syntaxKind(), getCursor() + 20 < source.getText().length() ?
-                        source.getText().substring(getCursor(), getCursor() + 20) :
-                        source.getText().substring(getCursor())));
+        throw new RuntimeException(
+                ParseExceptionAnalysis.getAnalysisMessage(node.syntaxKind().name(),
+                        getCursor() + 20 < source.getText().length() ? source.getText().substring(getCursor(), getCursor() + 20) :
+                                source.getText().substring(getCursor()))
+        );
     }
 
     private void implementMe(TSCNode node, String propertyName) {
         if (node.hasProperty(propertyName)) {
-            throw new UnsupportedOperationException(String.format("Implement syntax kind <%s> with property <%s> at: <%s>",
-                    node.syntaxKind(), propertyName, getCursor() + 20 < source.getText().length() ?
-                            source.getText().substring(getCursor(), getCursor() + 20) :
-                            source.getText().substring(getCursor())));
+            throw new RuntimeException(
+                    ParseExceptionAnalysis.getAnalysisMessage(node.syntaxKind().name() + "." + propertyName,
+                            getCursor() + 20 < source.getText().length() ? source.getText().substring(getCursor(), getCursor() + 20) :
+                                    source.getText().substring(getCursor()))
+            );
         }
     }
 }

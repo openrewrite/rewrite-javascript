@@ -136,8 +136,7 @@ public class TypeScriptTypeMappingTest {
         assertThat(generic.getName()).isEqualTo("S");
         assertThat(generic.getVariance()).isEqualTo(COVARIANT);
         assertThat(TypeUtils.asFullyQualified(generic.getBounds().get(0)).getFullyQualifiedName()).isEqualTo("%s.PT", sourcePath);
-        assertThat(TypeUtils.asFullyQualified(generic.getBounds().get(1)).getFullyQualifiedName()).
-          isEqualTo("%s.A", sourcePath);
+        assertThat(TypeUtils.asFullyQualified(generic.getBounds().get(1)).getFullyQualifiedName()).isEqualTo("%s.A", sourcePath);
     }
 
     @Test

@@ -24,6 +24,7 @@ import org.openrewrite.javascript.internal.tsc.TSCType;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
+import org.openrewrite.javascript.table.ParseExceptionAnalysis;
 import org.openrewrite.javascript.tree.TsType;
 
 import java.util.HashSet;
@@ -415,6 +416,6 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
     }
 
     private void implementMe(TSCSyntaxKind syntaxKind) {
-        throw new RuntimeException("Add support for syntaxKind: " + syntaxKind);
+        throw new RuntimeException(ParseExceptionAnalysis.getAnalysisMessage(syntaxKind.name()));
     }
 }
