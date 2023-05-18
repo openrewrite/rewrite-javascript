@@ -23,7 +23,7 @@ public class NewClassTest extends ParserTest {
     @Test
     void newClass() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class Foo { }
               const foo = new Foo ( ) ;
@@ -35,7 +35,7 @@ public class NewClassTest extends ParserTest {
     @Test
     void withParams() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class Foo {
                   private name : string ;

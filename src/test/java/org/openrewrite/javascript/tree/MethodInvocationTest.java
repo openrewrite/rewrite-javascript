@@ -22,7 +22,7 @@ public class MethodInvocationTest extends ParserTest {
     @Test
     void methodInvocation() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               console . log ( "hello world" )
               """

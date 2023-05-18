@@ -22,7 +22,7 @@ class DoWhileTest extends ParserTest {
     @Test
     void doWhileLoop() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var i = 0
               do { i++ } while ( i < 10 )
@@ -34,7 +34,7 @@ class DoWhileTest extends ParserTest {
     @Test
     void noBlock() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var i = 0
               do i++ ; while ( i < 10 )

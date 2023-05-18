@@ -24,7 +24,7 @@ public class ArrayTest extends ParserTest {
     @Test
     void array() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let arr : string [ ] = [ 'a' , 'b' , 'c' ]
               """
@@ -35,7 +35,7 @@ public class ArrayTest extends ParserTest {
     @Test
     void multiDimensional() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var multi : number [ ] [ ] = [ [ 1 , 2 , 3 ] , [ 23 , 24 , 25 ] ]
               """
@@ -46,7 +46,7 @@ public class ArrayTest extends ParserTest {
     @Test
     void multiline() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var multi : number [ ] [ ] =
               [
@@ -69,7 +69,7 @@ public class ArrayTest extends ParserTest {
     @Test
     void arrayAccess() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               const arr = [ 1 , 2 ]
               const a = arr [ 0 ]
@@ -81,7 +81,7 @@ public class ArrayTest extends ParserTest {
     @Test
     void threeDimensional() {
         rewriteRun(
-          javascript(
+          javaScript(
             // This test is a proof that the dimensions are converted correctly from a TS Node to a J.ArrayType.
             """
               const arr: number [ ] [ ] [ ] = [ ]
@@ -94,7 +94,7 @@ public class ArrayTest extends ParserTest {
     @Test
     void noElementType() {
         rewriteRun(
-          javascript(
+          javaScript(
             // This test is a proof that the dimensions are converted correctly from a TS Node to a J.ArrayType.
             """
               const arr: [ ] [ ] [ ] = [ ]

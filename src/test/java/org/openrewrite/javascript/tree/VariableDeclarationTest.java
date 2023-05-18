@@ -24,7 +24,7 @@ public class VariableDeclarationTest extends ParserTest {
     @Test
     void let() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let hello = "World" ;
               """
@@ -35,7 +35,7 @@ public class VariableDeclarationTest extends ParserTest {
     @Test
     void multiTypeLet() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let stringWord : string | null ;
               """
@@ -46,7 +46,7 @@ public class VariableDeclarationTest extends ParserTest {
     @Test
     void constant() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               const hello = "World" ;
               """
@@ -57,7 +57,7 @@ public class VariableDeclarationTest extends ParserTest {
     @Test
     void var() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var hello = "World" ;
               """
@@ -69,7 +69,7 @@ public class VariableDeclarationTest extends ParserTest {
     @Test
     void multiTypeVariableDeclaration() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let x: number, y: string;
               """
@@ -80,7 +80,7 @@ public class VariableDeclarationTest extends ParserTest {
     @Test
     void generic() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var v : Array < string > = [ 'foo' , 'bar', 'buz' ] ;
               """

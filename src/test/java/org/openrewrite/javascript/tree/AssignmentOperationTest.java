@@ -23,7 +23,7 @@ public class AssignmentOperationTest extends ParserTest {
     @Test
     void minusEqual() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var n = 0
               n -= 5
@@ -35,7 +35,7 @@ public class AssignmentOperationTest extends ParserTest {
     @Test
     void plusEqual() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var n = 0
               n += 5
@@ -47,7 +47,7 @@ public class AssignmentOperationTest extends ParserTest {
     @Test
     void timesEqual() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var n = 0
               n *= 5
@@ -59,7 +59,7 @@ public class AssignmentOperationTest extends ParserTest {
     @Test
     void divideEqual() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var n = 0
               n /= 5
@@ -71,7 +71,7 @@ public class AssignmentOperationTest extends ParserTest {
     @Test
     void moduloEqual() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var n = 0
               n = n %= 5
@@ -83,7 +83,7 @@ public class AssignmentOperationTest extends ParserTest {
     @Test
     void ternary() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let n = 0
               let r = ( n == 0 ) ? true : false

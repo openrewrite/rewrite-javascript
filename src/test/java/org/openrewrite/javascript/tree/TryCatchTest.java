@@ -23,7 +23,7 @@ class TryCatchTest extends ParserTest {
     @Test
     void tryCatch() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               try {
                 throw new Error ( 'err' ) ;
@@ -37,7 +37,7 @@ class TryCatchTest extends ParserTest {
     @Test
     void tryCatchFinally() {
         rewriteRun(
-            javascript(
+            javaScript(
               """
                 try {
                   throw new Error ( 'err' ) ;

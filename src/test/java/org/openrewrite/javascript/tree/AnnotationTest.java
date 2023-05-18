@@ -23,7 +23,7 @@ public class AnnotationTest extends ParserTest {
     @Test
     void classDecorator() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
             function enumerable ( value : boolean ) {
                 return function ( target : any ,
@@ -46,7 +46,7 @@ public class AnnotationTest extends ParserTest {
     @Test
     void methodDecorator() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
             function enumerable ( value : boolean ) {
                 return function ( target : any ,
@@ -69,7 +69,7 @@ public class AnnotationTest extends ParserTest {
     @Test
     void propertyDecorator() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
             function enumerable ( value : boolean ) {
                 return function ( target : any ,

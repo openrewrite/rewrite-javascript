@@ -25,7 +25,7 @@ public class TypeOperatorTest extends ParserTest {
     @Test
     void in() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let foo = { bar : 'v1' , buz : 'v2' }
               v = 'bar' in foo
@@ -38,7 +38,7 @@ public class TypeOperatorTest extends ParserTest {
     @Test
     void delete() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let foo = { bar : 'v1' , buz : 'v2' }
               delete foo . buz
@@ -50,7 +50,7 @@ public class TypeOperatorTest extends ParserTest {
     @Test
     void typeof() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let s = "hello"
               let t = typeof s
@@ -62,7 +62,7 @@ public class TypeOperatorTest extends ParserTest {
     @Test
     void instanceofOp() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let arr = [ 1, 2 ]
               let t = arr instanceof Array

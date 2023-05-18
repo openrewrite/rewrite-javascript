@@ -148,9 +148,17 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     @Override
     public J visitUnknownElement(JS.UnknownElement unknownElement, PrintOutputCapture<P> p) {
         beforeSyntax(unknownElement, JsSpace.Location.UNION_PREFIX, p);
-        p.append(unknownElement.getSource());
+        visit(unknownElement.getSource(), p);
         afterSyntax(unknownElement, p);
         return unknownElement;
+    }
+
+    @Override
+    public J visitUnknownElementSource(JS.UnknownElement.Source source, PrintOutputCapture<P> p) {
+        beforeSyntax(source, JsSpace.Location.UNKNOWN_SOURCE_PREFIX, p);
+        p.append(source.getText());
+        afterSyntax(source, p);
+        return source;
     }
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {

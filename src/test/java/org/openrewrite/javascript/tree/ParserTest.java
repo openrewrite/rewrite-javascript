@@ -33,23 +33,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ParserTest implements RewriteTest {
 
-    public static SourceSpecs javascript(@Language("typescript") @Nullable String before) {
-        return javascript(before, s -> {
+    public static SourceSpecs javaScript(@Language("typescript") @Nullable String before) {
+        return javaScript(before, s -> {
         });
     }
 
-    public static SourceSpecs javascript(@Language("typescript") @Nullable String before, Consumer<SourceSpec<JS.CompilationUnit>> spec) {
+    public static SourceSpecs javaScript(@Language("typescript") @Nullable String before, Consumer<SourceSpec<JS.CompilationUnit>> spec) {
         SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, null);
         acceptSpec(spec, js);
         return js;
     }
 
-    public static SourceSpecs javascript(@Language("typescript") @Nullable String before, @Language("typescript") String after) {
-        return javascript(before, after, s -> {
+    public static SourceSpecs javaScript(@Language("typescript") @Nullable String before, @Language("typescript") String after) {
+        return javaScript(before, after, s -> {
         });
     }
 
-    public static SourceSpecs javascript(@Language("typescript") @Nullable String before, @Language("typescript") String after,
+    public static SourceSpecs javaScript(@Language("typescript") @Nullable String before, @Language("typescript") String after,
                                          Consumer<SourceSpec<JS.CompilationUnit>> spec) {
         SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, s -> after);
         acceptSpec(spec, js);

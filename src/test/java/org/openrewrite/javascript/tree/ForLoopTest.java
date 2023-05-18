@@ -24,7 +24,7 @@ class ForLoopTest extends ParserTest {
     @Test
     void forLoop() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               for ( let i = 0 ; i < 3 ; i++ ) {
               }
@@ -36,7 +36,7 @@ class ForLoopTest extends ParserTest {
     @Test
     void multiDeclarationForLoop() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               for ( let i = 0 , j = 1 , k = 2 ; i < 10 ; i++ , j *= 2 , k += 2 ) {
               }
@@ -48,7 +48,7 @@ class ForLoopTest extends ParserTest {
     @Test
     void forOfLoop() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let arr = [ 10 , 20 , 30 , 40 ] ;
               for ( var val of arr ) {
@@ -61,7 +61,7 @@ class ForLoopTest extends ParserTest {
     @Test
     void forInLoop() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let arr = [ 10 , 20 , 30 , 40 ] ;
               for ( var val in arr ) {
@@ -75,7 +75,7 @@ class ForLoopTest extends ParserTest {
     @Test
     void destruct() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               for ( const { a , b } of [ { a : 1 , b : 2 } , { a : 3 , b : 4 } ] ) {
               }

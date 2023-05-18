@@ -77,7 +77,9 @@ public class TypeScriptParserVisitor {
                 visited = visitNode(child);
             } catch (Throwable t) {
                 cursor(saveCursor);
-                visited = unknownElement(child).withMarkers(Markers.EMPTY);
+                JS.UnknownElement element = unknownElement(child);
+                element = element.withSource(element.getSource().withMarkers(Markers.EMPTY));
+                visited = element;
                 ParseExceptionResult parseExceptionResult = ParseExceptionResult.build(JavaScriptParser.builder().build(), t);
                 if (markers == null) {
                     markers = Markers.build(singletonList(parseExceptionResult));
@@ -86,6 +88,12 @@ public class TypeScriptParserVisitor {
             }
 
             if (visited != null) {
+                if (visited instanceof JS.UnknownElement) {
+                    ParseExceptionResult result = ((JS.UnknownElement) visited).getSource().getMarkers().findFirst(ParseExceptionResult.class).orElse(null);
+                    if (result != null) {
+                        markers = Markers.build(singletonList(result));
+                    }
+                }
                 if (!(visited instanceof Statement) && visited instanceof Expression) {
                     visited = new JS.ExpressionStatement(randomId(), (Expression) visited);
                 }
@@ -2292,8 +2300,13 @@ public class TypeScriptParserVisitor {
         return new JS.UnknownElement(
                 randomId(),
                 prefix,
-                Markers.build(singletonList(result)),
-                text
+                Markers.EMPTY,
+                new JS.UnknownElement.Source(
+                        randomId(),
+                        EMPTY,
+                        Markers.build(singletonList(result)),
+                        text
+                )
         );
     }
 

@@ -23,7 +23,7 @@ class ReturnTest extends ParserTest {
     @Test
     void returnValue() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function method ( ) {
                   return "42"

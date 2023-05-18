@@ -23,7 +23,7 @@ public class EnumTest extends ParserTest {
     @Test
     void enumDeclaration() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               enum Foo {
                 Bar , Buz

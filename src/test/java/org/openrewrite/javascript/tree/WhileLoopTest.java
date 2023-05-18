@@ -23,7 +23,7 @@ class WhileLoopTest extends ParserTest {
     @Test
     void whileLoop() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               while ( true ) { }
               """

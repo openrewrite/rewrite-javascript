@@ -30,7 +30,7 @@ public class BinaryTest extends ParserTest {
     })
     void arithmeticOps(String arg) {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let n = 0 %s 1
               """.formatted(arg)
@@ -48,7 +48,7 @@ public class BinaryTest extends ParserTest {
     })
     void comparisonOps(String arg) {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let n = 0 %s 1
               """.formatted(arg)
@@ -63,7 +63,7 @@ public class BinaryTest extends ParserTest {
     })
     void logicalOps(String arg) {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function foo( left : boolean , right : boolean ) {
                   if ( left %s right ) {
@@ -83,7 +83,7 @@ public class BinaryTest extends ParserTest {
     })
     void bitwiseOps(String arg) {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let n = 0 %s 1
               """.formatted(arg)
@@ -99,7 +99,7 @@ public class BinaryTest extends ParserTest {
     })
     void greaterThanOps(String arg) {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let n = 0 %s 1
               """.formatted(arg)
@@ -114,7 +114,7 @@ public class BinaryTest extends ParserTest {
     })
     void identityEquals(String arg) {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               if ( 1 %s 2 ) {
               }

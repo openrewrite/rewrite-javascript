@@ -23,7 +23,7 @@ public class LiteralTest extends ParserTest {
     @Test
     void stringLiteral() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let hello = 'World' ;
               """
@@ -34,7 +34,7 @@ public class LiteralTest extends ParserTest {
     @Test
     void numericLiteral() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let n = 0 ;
               """
@@ -45,7 +45,7 @@ public class LiteralTest extends ParserTest {
     @Test
     void intentionallyBadUnicodeCharacter() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let s1 = "\\\\u{U1}"
               let s2 = "\\\\u1234"
@@ -58,7 +58,7 @@ public class LiteralTest extends ParserTest {
     @Test
     void unmatchedSurrogatePair() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let c1 : Character = '\uD800'
               let c2 : Character = '\uDfFf'
@@ -70,7 +70,7 @@ public class LiteralTest extends ParserTest {
     @Test
     void unmatchedSurrogatePairInString() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let s1 : String = "\uD800"
               let s2 : String = "\uDfFf"

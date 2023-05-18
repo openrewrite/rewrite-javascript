@@ -23,7 +23,7 @@ public class IfStatementTest extends ParserTest {
     @Test
     void ifStatement() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               if ( true ) {
               }
@@ -35,7 +35,7 @@ public class IfStatementTest extends ParserTest {
     @Test
     void ifElse() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function foo( a : number ) {
                   if ( a <= 0 ) {
@@ -51,7 +51,7 @@ public class IfStatementTest extends ParserTest {
     @Test
     void singleLineIfElseStatements() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function foo ( a : number ) {
                   if ( a <= 0 )

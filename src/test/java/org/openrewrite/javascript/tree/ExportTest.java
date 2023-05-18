@@ -25,7 +25,7 @@ public class ExportTest extends ParserTest {
     @Test
     void exportDeclaration() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class ZipCodeValidator {
                 isAcceptable(s: string) {
@@ -42,7 +42,7 @@ public class ExportTest extends ParserTest {
     @Test
     void propertyModifier() {
         rewriteRun(
-            javascript(
+            javaScript(
               """
                 export const numberRegexp = /^[0-9]+$/;
                 """
@@ -54,8 +54,8 @@ public class ExportTest extends ParserTest {
     @Test
     void fromClass() {
         rewriteRun(
-          javascript("class CreateFile {}"),
-          javascript(
+          javaScript("class CreateFile {}"),
+          javaScript(
             """
               export * from "./f0.ts";
               """
@@ -67,8 +67,8 @@ public class ExportTest extends ParserTest {
     @Test
     void alias() {
         rewriteRun(
-          javascript("class CreateFile {}"),
-          javascript(
+          javaScript("class CreateFile {}"),
+          javaScript(
             """
               export * from "./f0.ts";
               """

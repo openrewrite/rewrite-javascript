@@ -720,10 +720,12 @@ public interface JS extends J {
     @With
     final class UnknownElement implements JS, Statement, Expression, TypeTree, TypedTree, NameTree {
 
+        @EqualsAndHashCode.Include
         UUID id;
+
         Space prefix;
         Markers markers;
-        String source;
+        Source source;
 
         @Override
         public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
@@ -744,6 +746,30 @@ public interface JS extends J {
         @Override
         public CoordinateBuilder.Statement getCoordinates() {
             return new CoordinateBuilder.Statement(this);
+        }
+
+        /**
+         * This class only exists to clean up the printed results from `SearchResult` markers.
+         * Without the marker the comments will print before the LST prefix.
+         */
+        @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+        @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+        @AllArgsConstructor
+        @Data
+        @With
+        public static class Source implements JS {
+
+            @EqualsAndHashCode.Include
+            UUID id;
+
+            Space prefix;
+            Markers markers;
+            String text;
+
+            @Override
+            public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+                return v.visitUnknownElementSource(this, p);
+            }
         }
     }
 }

@@ -23,7 +23,7 @@ class BreakTest extends ParserTest {
     @Test
     void breakFromWhileLoop() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function method ( ) {
                   while ( true ) break
@@ -36,7 +36,7 @@ class BreakTest extends ParserTest {
     @Test
     void labeled() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function test ( ) {
                   outer : for ( var i = 0 ; i < 3 ; i++ ) {

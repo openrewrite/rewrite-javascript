@@ -23,7 +23,7 @@ public class ClassDeclarationTest extends ParserTest {
     @Test
     void classDeclaration() {
         rewriteRun(
-            javascript(
+            javaScript(
               "class Foo { }"
             )
         );
@@ -32,7 +32,7 @@ public class ClassDeclarationTest extends ParserTest {
     @Test
     void abstractClass() {
         rewriteRun(
-            javascript(
+            javaScript(
               "abstract class Foo { }"
             )
         );
@@ -41,7 +41,7 @@ public class ClassDeclarationTest extends ParserTest {
     @Test
     void interfaceDeclaration() {
         rewriteRun(
-            javascript(
+            javaScript(
               "interface Foo { }"
             )
         );
@@ -50,7 +50,7 @@ public class ClassDeclarationTest extends ParserTest {
     @Test
     void withConstructor() {
         rewriteRun(
-           javascript(
+           javaScript(
              """
                class Foo {
                    private name : string ;
@@ -66,7 +66,7 @@ public class ClassDeclarationTest extends ParserTest {
     @Test
     void parameterizedType() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class Foo<T, S extends PT<S> & C> {
               }
@@ -82,7 +82,7 @@ public class ClassDeclarationTest extends ParserTest {
     @Test
     void endOfFile() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class Foo {
               }

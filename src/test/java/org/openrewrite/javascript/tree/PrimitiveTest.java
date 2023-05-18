@@ -29,7 +29,7 @@ public class PrimitiveTest extends ParserTest {
     })
     void primitives(String arg) {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var a = %s
               """.formatted(arg)

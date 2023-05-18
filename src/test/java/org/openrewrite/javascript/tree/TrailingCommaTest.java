@@ -24,7 +24,7 @@ public class TrailingCommaTest extends ParserTest {
     @Test
     void onMethodParameter() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               console . log ( "hello world" , )
               """
@@ -36,7 +36,7 @@ public class TrailingCommaTest extends ParserTest {
     @Test
     void onTuple() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let tuple : [ number , boolean , ] = [ 1, true , ]
               """
@@ -47,7 +47,7 @@ public class TrailingCommaTest extends ParserTest {
     @Test
     void onEnum() {
         rewriteRun(
-            javascript(
+            javaScript(
               """
                 enum Foo {
                   Bar , Buz ,

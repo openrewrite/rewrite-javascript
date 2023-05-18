@@ -23,7 +23,7 @@ public class UnionTest extends ParserTest {
     @Test
     void union() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let unionField: typeof Boolean | typeof Number
               """

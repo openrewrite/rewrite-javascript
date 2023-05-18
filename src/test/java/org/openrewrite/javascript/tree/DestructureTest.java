@@ -25,7 +25,7 @@ public class DestructureTest extends ParserTest {
     @Test
     void destruct() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let input = [ 1 , 2 ] ;
               let [ first , second ] = input ;
@@ -38,7 +38,7 @@ public class DestructureTest extends ParserTest {
     @Test
     void varArg() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let [ first , ... rest ] = [ 1 , 2 , 3 ]
               """
@@ -50,7 +50,7 @@ public class DestructureTest extends ParserTest {
     @Test
     void destructObject() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               const c = { fName : 'Foo' , lName : 'Bar' }
               const { fName, lName } = c

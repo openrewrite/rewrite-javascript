@@ -32,7 +32,7 @@ public class UnaryTest extends ParserTest {
     })
     void unaryOps(String arg) {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var n = 1
               %s

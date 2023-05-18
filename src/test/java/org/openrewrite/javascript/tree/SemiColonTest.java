@@ -23,7 +23,7 @@ public class SemiColonTest extends ParserTest {
     @Test
     void semiColon() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let hello = "World" ;
               """
@@ -34,7 +34,7 @@ public class SemiColonTest extends ParserTest {
     @Test
     void noSemiColon() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let hello = "World" 
               """
@@ -45,7 +45,7 @@ public class SemiColonTest extends ParserTest {
     @Test
     void multiSemiColon() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let hello = "World" ; ;
               """
@@ -56,7 +56,7 @@ public class SemiColonTest extends ParserTest {
     @Test
     void singleLineIfElseStatements() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function foo ( a : number ) {
                   if ( a <= 0 )

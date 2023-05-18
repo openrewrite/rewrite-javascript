@@ -19,10 +19,6 @@ import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * WIP data table analysis to accelerate implementing language parsing.
  * The analysis is likely generalizable to other languages, and might be moved to a common module after testing.
@@ -70,42 +66,15 @@ public class ParseExceptionAnalysis extends DataTable<ParseExceptionAnalysis.Row
     }
 
     public static String getNodeType(String message) {
-        return message.substring(message.indexOf("{{") + 2, message.indexOf("}}"));
+        if (message.contains("{{")) {
+            return message.substring(message.indexOf("{{") + 2, message.indexOf("}}"));
+        } else {
+            return message.substring(0, message.indexOf(":"));
+        }
     }
 
     public static String getSourceSnippet(String message) {
         int start = message.indexOf("}} at :") + 7;
         return start > 6 ? message.substring(start) : "";
-    }
-
-    public static <S extends SourceFile> void findParserExceptions(List<S> sources, ParseExceptionAnalysis parseExceptionAnalysis, ExecutionContext ctx) {
-        Map<String, Map<String, Integer>> counts = new HashMap<>();
-        for (S source : sources) {
-            new TreeVisitor<Tree, ExecutionContext>() {
-                final String extension = source.getSourcePath().toString().substring(source.getSourcePath().toString().lastIndexOf(".") + 1);
-
-                @Override
-                public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
-                    if (tree == null) {
-                        return null;
-                    }
-
-                    Tree t = super.visit(tree, ctx);
-                    if (t != null) {
-                        ParseExceptionResult result = tree.getMarkers().findFirst(ParseExceptionResult.class).orElse(null);
-                        if (result != null) {
-                            Map<String, Integer> nodeTypeCounts = counts.computeIfAbsent(extension, k -> new HashMap<>());
-                            nodeTypeCounts.merge(getNodeType(result.getMessage()), 1, Integer::sum);
-                        }
-                    }
-                    return t;
-                }
-            }.visit(source, ctx);
-        }
-        for (Map.Entry<String, Map<String, Integer>> fileExtensionEntries : counts.entrySet()) {
-            for (Map.Entry<String, Integer> nodeTypeCounts : fileExtensionEntries.getValue().entrySet()) {
-                parseExceptionAnalysis.insertRow(ctx, new Row(fileExtensionEntries.getKey(), nodeTypeCounts.getKey(), nodeTypeCounts.getValue()));
-            }
-        }
     }
 }

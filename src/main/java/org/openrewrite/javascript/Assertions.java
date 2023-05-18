@@ -28,24 +28,24 @@ public final class Assertions {
     private Assertions() {
     }
 
-    public static SourceSpecs javascript(@Language("js") @Nullable String before) {
-        return javascript(before, s -> {
+    public static SourceSpecs javaScript(@Language("js") @Nullable String before) {
+        return javaScript(before, s -> {
         });
     }
 
-    public static SourceSpecs javascript(@Language("js") @Nullable String before, Consumer<SourceSpec<JS.CompilationUnit>> spec) {
+    public static SourceSpecs javaScript(@Language("js") @Nullable String before, Consumer<SourceSpec<JS.CompilationUnit>> spec) {
         SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, null);
         spec.accept(js);
         return js;
     }
 
-    public static SourceSpecs javascript(@Language("js") @Nullable String before, @Language("js") String after) {
-        return javascript(before, after, s -> {
+    public static SourceSpecs javaScript(@Language("js") @Nullable String before, @Language("js") String after) {
+        return javaScript(before, after, s -> {
         });
     }
 
-    public static SourceSpecs javascript(@Language("js") @Nullable String before, @Language("js") String after,
-                                     Consumer<SourceSpec<JS.CompilationUnit>> spec) {
+    public static SourceSpecs javaScript(@Language("js") @Nullable String before, @Language("js") String after,
+                                         Consumer<SourceSpec<JS.CompilationUnit>> spec) {
         SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, s -> after);
         spec.accept(js);
         return js;

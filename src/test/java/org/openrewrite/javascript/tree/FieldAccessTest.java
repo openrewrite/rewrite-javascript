@@ -24,7 +24,7 @@ class FieldAccessTest extends ParserTest {
     @Test
     void thisAccess() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class Test {
                   private id : String = "" ;
@@ -40,7 +40,7 @@ class FieldAccessTest extends ParserTest {
     @Test
     void superAccess() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class Super {
                   id : string = "" ;
@@ -67,7 +67,7 @@ class FieldAccessTest extends ParserTest {
     @Test
     void nullSafeDereference() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class Test {
                   property : number = 42

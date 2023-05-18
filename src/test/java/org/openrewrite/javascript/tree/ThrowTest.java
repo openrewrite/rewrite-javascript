@@ -23,7 +23,7 @@ class ThrowTest extends ParserTest {
     @Test
     void throwError() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function method ( ) {
                   throw new Error ( "42" )

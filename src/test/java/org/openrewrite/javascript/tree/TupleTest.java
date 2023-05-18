@@ -25,7 +25,7 @@ public class TupleTest extends ParserTest {
     @Test
     void emptyTuple() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let tuple : [ ]
               """
@@ -37,7 +37,7 @@ public class TupleTest extends ParserTest {
     @Test
     void tuple() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let tuple : [ number , boolean , ] = [ 1, true ]
               """
@@ -49,7 +49,7 @@ public class TupleTest extends ParserTest {
     @Test
     void typed() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let input : [ x : number , y : number ] = [ 1 , 2 ]
               """

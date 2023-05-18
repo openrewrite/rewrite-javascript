@@ -23,7 +23,7 @@ class ContinueTest extends ParserTest {
     @Test
     void continueStatement() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               for (let i = 0; i < 10; i++) {
                   if (i % 2)
@@ -37,7 +37,7 @@ class ContinueTest extends ParserTest {
     @Test
     void labeled() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function test ( ) {
                   outer : for ( var i = 0 ; i < 3 ; i++ ) {

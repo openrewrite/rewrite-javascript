@@ -23,7 +23,7 @@ class CastTest extends ParserTest {
     @Test
     void castAs() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let x : unknown = 'hello'
               let b = ( x as string ) . length

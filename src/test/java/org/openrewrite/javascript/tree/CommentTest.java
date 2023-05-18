@@ -23,7 +23,7 @@ class CommentTest extends ParserTest {
     @Test
     void singleLineComment() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class Test {
                   // C1
@@ -36,7 +36,7 @@ class CommentTest extends ParserTest {
     @Test
     void multilineNestedInsideSingleLine() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class Test { // /*
               }
@@ -48,7 +48,7 @@ class CommentTest extends ParserTest {
     @Test
     void multilineComment() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class Test {
                   /*
@@ -63,7 +63,7 @@ class CommentTest extends ParserTest {
     @Test
     void javaScriptDoc() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               var s ;
               

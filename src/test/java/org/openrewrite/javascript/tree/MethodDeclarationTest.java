@@ -24,7 +24,7 @@ public class MethodDeclarationTest extends ParserTest {
     @Test
     void functionDeclaration() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function foo ( ) { }
               """
@@ -35,7 +35,7 @@ public class MethodDeclarationTest extends ParserTest {
     @Test
     void functionParameters() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function foo ( x : number , y : number ) { }
               """
@@ -46,7 +46,7 @@ public class MethodDeclarationTest extends ParserTest {
     @Test
     void decorator() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               function enumerable ( value : boolean ) {
                   return function ( target : any ,
@@ -63,7 +63,7 @@ public class MethodDeclarationTest extends ParserTest {
     @Test
     void methodDeclaration() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               class Foo {
                   foo ( ) {
@@ -78,7 +78,7 @@ public class MethodDeclarationTest extends ParserTest {
     @Test
     void arrowDeclaration() {
         rewriteRun(
-          javascript(
+          javaScript(
             """
               let sum = ( a : number , b : number ) : number => {
                   return a + b ;
