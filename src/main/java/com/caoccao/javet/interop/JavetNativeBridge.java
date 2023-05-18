@@ -39,12 +39,23 @@ public class JavetNativeBridge {
     private static final Object loadNativeLibLock = new Object();
 
     public static Class<?>[] getClassesInitializedByBridge() {
-        return new Class<?>[] {
+        return new Class<?>[]{
                 JavetNativeBridge.class,
                 JavetLibLoader.class,
                 JavetOSUtils.class,
                 JSRuntimeType.class,
                 StringUtils.class
+        };
+    }
+
+    public static String[] getPackagesInitializedByBridge() {
+        return new String[]{
+                "com.caoccao.javet.interop",
+                "com.caoccao.javet.interop.loader",
+                "com.caoccao.javet.values.reference",
+                "com.caoccao.javet.enums",
+                "com.caoccao.javet.utils",
+                "com.caoccao.javet.exceptions"
         };
     }
 
@@ -79,12 +90,11 @@ public class JavetNativeBridge {
             }
 
             if (System.getProperty("org.graalvm.nativeimage.kind") != null) {
-                System.err.println("**** Loading native lib from " + getLibResourcePath() + "...");
                 String nativeLibPath = getLibResourcePath();
 
                 File tempFile;
                 try {
-                    tempFile = Files.createTempFile("javet", "").toFile();
+                    tempFile = Files.createTempFile("libjavet", "").toFile();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -114,8 +124,6 @@ public class JavetNativeBridge {
                 } catch (Throwable t) {
                     throw new RuntimeException(t);
                 }
-
-                System.err.println("**** Loaded native lib.");
             }
 
             hasLoadedNativeLib = true;
