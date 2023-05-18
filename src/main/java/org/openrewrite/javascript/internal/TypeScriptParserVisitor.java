@@ -1071,7 +1071,7 @@ public class TypeScriptParserVisitor {
                 t -> (Statement) visitNode(t)
         );
 
-        JContainer<NameTree> throwz = null;
+        JContainer<NameTree> throw_ = null;
 
         TypeTree returnTypeExpression = null;
         if (node.hasProperty("type")) {
@@ -1092,7 +1092,7 @@ public class TypeScriptParserVisitor {
                 returnTypeExpression,
                 new J.MethodDeclaration.IdentifierWithAnnotations(name, emptyList()),
                 parameters,
-                throwz,
+                throw_,
                 body,
                 defaultValue,
                 methodType
