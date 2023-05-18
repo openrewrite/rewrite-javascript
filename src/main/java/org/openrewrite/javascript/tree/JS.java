@@ -195,7 +195,7 @@ public interface JS extends J {
 
         @Override
         public JavaSourceFile withPackageDeclaration(Package pkg) {
-            throw new IllegalStateException("Javascript does not support package declarations");
+            throw new IllegalStateException("JavaScript does not support package declarations");
         }
 
         public Padding getPadding() {
