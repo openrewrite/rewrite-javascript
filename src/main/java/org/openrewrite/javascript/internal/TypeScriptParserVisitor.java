@@ -78,13 +78,12 @@ public class TypeScriptParserVisitor {
             } catch (Throwable t) {
                 cursor(saveCursor);
                 JS.UnknownElement element = unknownElement(child);
-                element = element.withSource(element.getSource().withMarkers(Markers.EMPTY));
-                visited = element;
                 ParseExceptionResult parseExceptionResult = ParseExceptionResult.build(JavaScriptParser.builder().build(), t);
+                element = element.withSource(element.getSource().withMarkers(Markers.EMPTY.withMarkers(singletonList(parseExceptionResult))));
+                visited = element;
                 if (markers == null) {
                     markers = Markers.build(singletonList(parseExceptionResult));
                 }
-                visited = visited.withMarkers(visited.getMarkers().addIfAbsent(parseExceptionResult));
             }
 
             if (visited != null) {
