@@ -1437,7 +1437,8 @@ public class TypeScriptParserVisitor {
 
     private J.TypeParameter visitTypeParameter(TSCNode node) {
         Space prefix = whitespace();
-        implementMe(node, "modifiers");
+        List<J.Annotation> annotations = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
         implementMe(node, "expression");
         implementMe(node, "default");
         Expression name = (Expression) visitNode(node.getNodeProperty("name"));
@@ -1453,7 +1454,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 Markers.EMPTY,
-                emptyList(), // FIXME
+                annotations.isEmpty() ? emptyList() : annotations,
                 name,
                 bounds
         );

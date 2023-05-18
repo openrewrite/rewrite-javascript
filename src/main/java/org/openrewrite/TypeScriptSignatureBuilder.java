@@ -349,16 +349,19 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
                 case Void:
                     return JavaType.Primitive.Void.getKeyword();
                 default:
-                    throw new UnsupportedOperationException("implement me: " + flag);
+                    implementMe(type);
+                    break;
             }
         } else {
             TSCObjectFlag objectFlag = TSCObjectFlag.fromMaskExact(type.getObjectFlags());
             if (objectFlag == TSCObjectFlag.PrimitiveUnion) {
                 return TsType.PRIMITIVE_UNION.getFullyQualifiedName();
             } else {
-                throw new UnsupportedOperationException("implement me");
+                implementMe(type);
             }
         }
+        // This should never happen. If it does, we need to add support for the type.
+        throw new UnsupportedOperationException("Cannot map type " + type);
     }
 
     private String mapTypeOperator(TSCNode node) {
@@ -417,5 +420,9 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
 
     private void implementMe(TSCSyntaxKind syntaxKind) {
         throw new RuntimeException(ParseExceptionAnalysis.getAnalysisMessage(syntaxKind.name()));
+    }
+
+    private void implementMe(TSCType type) {
+        throw new RuntimeException(ParseExceptionAnalysis.getAnalysisMessage(type.typeToString()));
     }
 }
