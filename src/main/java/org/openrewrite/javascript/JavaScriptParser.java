@@ -15,6 +15,7 @@
  */
 package org.openrewrite.javascript;
 
+import com.caoccao.javet.interop.JavetNativeBridge;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.openrewrite.ExecutionContext;
@@ -37,6 +38,11 @@ import java.util.List;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class JavaScriptParser implements Parser<JS.CompilationUnit> {
+
+    static {
+        JavetNativeBridge.init();
+    }
+
     @Override
     public List<JS.CompilationUnit> parse(@NonNull String... sources) {
         List<Input> inputs = new ArrayList<>(sources.length);
