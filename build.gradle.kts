@@ -2,7 +2,7 @@ plugins {
     id("org.openrewrite.build.recipe-library") version "latest.release"
 }
 group = "org.openrewrite"
-description = "Rewrite Javascript"
+description = "Rewrite JavaScript"
 
 val latest = rewriteRecipe.rewriteVersion.get()
 dependencies {
