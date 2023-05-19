@@ -105,7 +105,7 @@ public class TSCRuntime implements Closeable {
     }
 
     private static String getJSEntryProgramText() {
-        try (InputStream is = TSCRuntime.class.getClassLoader().getResourceAsStream("tsc/index.js")) {
+        try (InputStream is = TSCRuntime.class.getResourceAsStream("/tsc/index.js")) {
             if (is == null) throw new IllegalStateException("entry JS resource does not exist");
             return readFully(is, StandardCharsets.UTF_8);
         } catch (IOException e) {
