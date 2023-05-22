@@ -64,7 +64,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
         switch (node.syntaxKind()) {
             case SourceFile:
-                return mapSourceFileFqn(node);
+                return mapSourceFileFqn(signature);
             case ClassDeclaration:
             case EnumDeclaration:
             case InterfaceDeclaration:
@@ -88,12 +88,12 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             case ExpressionWithTypeArguments:
             case TypeReference:
             case TypeQuery:
-                return mapReference(node);
+                return mapReference(node, signature);
             case UnionType:
                 return TsType.UNION;
             case PropertyDeclaration:
             case VariableDeclaration:
-                return variableType(node);
+                return variableType(node, signature);
         }
         TSCType type = node.getTypeChecker().getTypeAtLocation(node);
         return mapType(type);
@@ -280,8 +280,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
     @Nullable
     public JavaType.Method methodDeclarationType(TSCNode node) {
-        JavaType.FullyQualified owner = classType(getOwner(node));
-        return methodDeclarationType(node, owner);
+        return methodDeclarationType(node, null);
     }
 
     @Nullable
@@ -314,7 +313,11 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
         JavaType.FullyQualified resolvedDeclaringType = declaringType;
         if (declaringType == null) {
-            resolvedDeclaringType = (JavaType.FullyQualified) type(getOwner(node));
+            resolvedDeclaringType = TypeUtils.asFullyQualified(type(getOwner(node)));
+        }
+
+        if (resolvedDeclaringType == null) {
+            return null;
         }
 
         TSCNode returnTypeNode = node.getOptionalNodeProperty("type");
@@ -430,13 +433,21 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
     @Nullable
     public JavaType.Variable variableType(TSCNode node) {
-        JavaType.FullyQualified owner = classType(getOwner(node));
-        return variableType(node, owner);
+        return variableType(node, null, signatureBuilder.variableSignature(node));
+    }
+
+    @Nullable
+    public JavaType.Variable variableType(TSCNode node, String signature) {
+        return variableType(node, null, signature);
     }
 
     @Nullable
     public JavaType.Variable variableType(TSCNode node, @Nullable JavaType.FullyQualified declaringType) {
-        String signature = signatureBuilder.variableSignature(node);
+        return variableType(node, declaringType, signatureBuilder.variableSignature(node));
+    }
+
+    @Nullable
+    public JavaType.Variable variableType(TSCNode node, @Nullable JavaType.FullyQualified declaringType, String signature) {
         JavaType.Variable existing = typeCache.get(signature);
         if (existing != null) {
             return existing;
@@ -453,7 +464,12 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
         List<JavaType.FullyQualified> annotations = emptyList();
 
-        JavaType resolvedOwner = declaringType != null ? declaringType : type(getOwner(node));
+        JavaType resolvedOwner = declaringType;
+        if (resolvedOwner == null) {
+            resolvedOwner = classType(getOwner(node));
+            assert resolvedOwner != null;
+        }
+
         TSCNode typeNode = node.getOptionalNodeProperty("type");
         JavaType type;
         if (typeNode != null) {
@@ -549,7 +565,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return resolveNode(node);
     }
 
-    private JavaType mapReference(TSCNode node) {
+    private JavaType mapReference(TSCNode node, String signature) {
         JavaType classType = null;
         TSCNode name = node.getOptionalNodeProperty("typeName");
         if (name != null) {
@@ -570,19 +586,28 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         }
 
         List<TSCNode> typeArguments = node.getOptionalNodeListProperty("typeArguments");
-        List<JavaType> params = null;
-        if (typeArguments != null) {
-            params = new ArrayList<>(typeArguments.size());
+        if (typeArguments == null) {
+            typeCache.put(signature, classType);
+            return classType;
+        } else {
+            JavaType fq = TypeUtils.asFullyQualified(classType);
+            assert fq != null;
+
+            JavaType.Parameterized pt = new JavaType.Parameterized(null, null, null);
+            typeCache.put(signature, pt);
+            List<JavaType> params = new ArrayList<>(typeArguments.size());
             for (TSCNode typeArg : typeArguments) {
                 params.add(type(typeArg));
             }
+            pt.unsafeSet(TypeUtils.asFullyQualified(classType), params);
+            return pt;
         }
-        return params == null ? classType : new JavaType.Parameterized(null, TypeUtils.asFullyQualified(classType), params);
     }
 
-    private static JavaType mapSourceFileFqn(TSCNode node) {
-        String clean = node.getSourceFile().getPath().replace("/", ".");
-        return JavaType.ShallowClass.build(clean.startsWith(".") ? clean.substring(1) : clean);
+    private JavaType mapSourceFileFqn(String signature) {
+        JavaType sourceClass = JavaType.ShallowClass.build(signature);
+        typeCache.put(signature, sourceClass);
+        return sourceClass;
     }
 
     private JavaType mapThis(TSCNode node) {
