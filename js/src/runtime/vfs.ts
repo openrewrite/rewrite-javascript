@@ -31,6 +31,9 @@ export function createCompilerHost(
     const getSourceFile = host.getSourceFile;
 
     host.getSourceFile = (filename, ...args) => {
+        if (vfsOptions.traceVirtualFileSystem) {
+            console.error("host.getSourceFile(" + filename + ")");
+        }
         if (!host.fileExists(filename)) {
             return;
         } else {

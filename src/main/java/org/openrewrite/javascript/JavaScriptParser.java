@@ -92,6 +92,10 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
     @Override
     public boolean accept(Path path) {
         final String filename = path.getFileName().toString().toLowerCase();
+        if (path.toString().contains("/dist/")) {
+            // FIXME this is a workaround to not having tsconfig info
+            return false;
+        }
         for (String ext : EXTENSIONS) {
             if (filename.endsWith("." + ext)) {
                 return true;
