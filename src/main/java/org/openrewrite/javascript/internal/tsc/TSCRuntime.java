@@ -48,7 +48,7 @@ public class TSCRuntime implements AutoCloseable {
      * This causes tests to fail if references are not recycled, and will
      * attribute dangling references to the call site that created them.
      */
-    private final static boolean USE_WRAPPED_V8_RUNTIME = true;
+    private final static boolean USE_WRAPPED_V8_RUNTIME = false;
 
     public final V8Runtime v8Runtime;
 
@@ -70,7 +70,7 @@ public class TSCRuntime implements AutoCloseable {
                     : V8Host.getV8Instance().createV8Runtime();
             JavetStandardConsoleInterceptor javetStandardConsoleInterceptor = new JavetStandardConsoleInterceptor(v8Runtime);
             javetStandardConsoleInterceptor.register(v8Runtime.getGlobalObject());
-            return new TSCRuntime(v8Runtime, javetStandardConsoleInterceptor);
+            return new TSCRuntime(v8Runtime, javetStandardConsoleInterceptor).enableVirtualFileSystemTracing();
         } catch (
                 JavetException e) {
             throw new RuntimeException(e);
