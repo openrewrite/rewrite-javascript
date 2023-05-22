@@ -27,10 +27,9 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 import org.openrewrite.javascript.table.ParseExceptionAnalysis;
 import org.openrewrite.javascript.tree.TsType;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static org.openrewrite.javascript.internal.tsc.TSCProgramContext.CompilerBridgeSourceKind.ApplicationCode;
 
@@ -229,17 +228,33 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         return owner + "{name=" + name + ",type=" + typeSig + '}';
     }
 
-    private String resolveNode(TSCNode node) {
-        TSCNode type = node.getOptionalNodeProperty("type");
-        if (type != null) {
-            return signature(type);
-        }
+    private final ThreadLocal<Integer> depth = ThreadLocal.withInitial(() -> 0);
+    private final ThreadLocal<Map<TSCNode, Integer>> resolvingNodes = ThreadLocal.withInitial(HashMap::new);
 
-        TSCSymbol symbol = node.getTypeChecker().getTypeAtLocation(node).getOptionalSymbolProperty("symbol");
-        if (symbol != null) {
-            return signature(symbol.getValueDeclaration());
+    public static @Nullable BiConsumer<TSCNode, Integer> globalResolveNodeCallback = null;
+
+    private String resolveNode(TSCNode node) {
+        final int newlySeenCount = resolvingNodes.get().compute(node, (_node, seenCount) -> 1 + (seenCount == null ? 0 : seenCount));
+        if (globalResolveNodeCallback != null) {
+            globalResolveNodeCallback.accept(node, newlySeenCount);
         }
-        return mapType(node.getTypeChecker().getTypeAtLocation(node));
+        final int originalDepth = depth.get();
+        depth.set(originalDepth + 1);
+        try {
+            TSCNode type = node.getOptionalNodeProperty("type");
+            if (type != null) {
+                return signature(type);
+            }
+
+            TSCSymbol symbol = node.getTypeChecker().getTypeAtLocation(node).getOptionalSymbolProperty("symbol");
+            if (symbol != null) {
+                return signature(symbol.getValueDeclaration());
+            }
+            return mapType(node.getTypeChecker().getTypeAtLocation(node));
+        } finally {
+            resolvingNodes.get().compute(node, (_node, seenCount) -> seenCount == 1 ? null : seenCount - 1);
+            depth.set(originalDepth);
+        }
     }
 
     private static boolean isClassDeclaration(TSCNode node) {
