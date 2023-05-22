@@ -70,7 +70,7 @@ public class TSCRuntime implements AutoCloseable {
                     : V8Host.getV8Instance().createV8Runtime();
             JavetStandardConsoleInterceptor javetStandardConsoleInterceptor = new JavetStandardConsoleInterceptor(v8Runtime);
             javetStandardConsoleInterceptor.register(v8Runtime.getGlobalObject());
-            return new TSCRuntime(v8Runtime, javetStandardConsoleInterceptor).enableVirtualFileSystemTracing();
+            return new TSCRuntime(v8Runtime, javetStandardConsoleInterceptor);
         } catch (
                 JavetException e) {
             throw new RuntimeException(e);

@@ -433,5 +433,8 @@ public class V8InteropTests {
         );
     }
 
-
+    @Test
+    public void testEmptyFile() {
+        parseSingleSource("", (root, ctx) -> {});
+    }
 }

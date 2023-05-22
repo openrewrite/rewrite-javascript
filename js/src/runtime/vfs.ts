@@ -50,88 +50,93 @@ export function createCompilerHost(
 function createVirtualFileSystem(vfsOptions: VfsOptions, allFiles: Map<string, string>) {
     const system = tsvfs.createSystem(allFiles);
 
+    if (!system.realpath) {
+        // FIXME not a valid assumption
+        system.realpath = (path) => path;
+    }
+
+    if (!system.getFileSize) {
+        system.getFileSize = (path) => system.readFile(path)?.length ?? 0;
+    }
+
+    if (system.readFile) {
+        const oldReadFile = system.readFile;
+        system.readFile = (filename, ...args) => {
+            const result = oldReadFile(filename, ...args);
+            if (result === undefined && allFiles.has(filename)) {
+                return allFiles.get(filename);
+            }
+            return result;
+        };
+    }
+
     if (vfsOptions.traceVirtualFileSystem) {
-        const readFile = system.readFile;
-        if (readFile) {
-            system.readFile = function (...[filename, ...args]: Parameters<typeof readFile>) {
-                console.error("system.readFile(", filename, ...args, ")");
-                const result = readFile(filename, ...args);
-                if (result === undefined && allFiles.has(filename)) {
-                    return allFiles.get(filename);
-                }
-                return result;
-            };
-        } else {
-            console.error("*** no system.readFile");
-        }
-
-        const fileExists = system.fileExists;
-        system.fileExists = function (path) {
-            console.error("system.fileExists(" + path + ")");
-            const result = fileExists(path);
-            console.error("--> " + result);
-            return result;
-        };
-
-        const resolvePath = system.resolvePath;
-        system.resolvePath = function (path) {
-            console.error("system.resolvePath(" + path + ")");
-            const result = resolvePath(path);
-            console.error("--> " + result);
-            return result;
-        };
-
-        const realpath = system.realpath;
-        if (realpath) {
-            system.realpath = function (path) {
-                console.error("system.realpath(" + path + ")");
-                const result = realpath(path);
-                console.error("--> " + result);
-                return result;
-            };
-        } else {
-            // for resolving symlinks; assume there are none
-            system.realpath = function (path) {
-                console.error("system.realpath(" + path + ")");
-                const result = path;
-                console.error("--> " + result + " [patched]");
-                return result;
-            };
-        }
-
-        const readDirectory = system.readDirectory;
-        system.readDirectory = function (path, ...args) {
-            console.error("system.readDirectory(" + path + ")");
-            const result = readDirectory.call(system, path, ...args);
-            console.error("--> " + result);
-            return result;
-        };
-
-        const directoryExists = system.directoryExists;
-        system.directoryExists = function (path) {
-            console.error("system.directoryExists(" + path + ")");
-            const result = directoryExists(path);
-            console.error("--> " + result);
-            return result;
-        };
-
-        const getFileSize = system.getFileSize;
-        if (getFileSize) {
-            system.getFileSize = function (path) {
-                console.error("system.getFileSize(" + path + ")");
-                const result = getFileSize(path);
-                console.error("--> " + result);
-                return result;
-            };
-        } else {
-            system.getFileSize = function (path) {
-                console.error("system.getFileSize(" + path + ")");
-                const result = readFile(path)?.length ?? 0;
-                console.error("--> " + result + " [patched]");
-                return result;
-            };
-        }
+        addFileSystemTracing(system, allFiles);
     }
 
     return system;
+}
+
+function addFileSystemTracing(system: ts.System, allFiles: Map<string, string>) {
+    const readFile = system.readFile;
+    if (readFile) {
+        system.readFile = function (...[filename, ...args]: Parameters<typeof readFile>) {
+            console.error("system.readFile(", filename, ...args, ")");
+            return readFile(filename, ...args);
+        };
+    } else {
+        console.error("*** no system.readFile");
+    }
+
+    const fileExists = system.fileExists;
+    system.fileExists = function (path) {
+        console.error("system.fileExists(" + path + ")");
+        const result = fileExists(path);
+        console.error("--> " + result);
+        return result;
+    };
+
+    const resolvePath = system.resolvePath;
+    system.resolvePath = function (path) {
+        console.error("system.resolvePath(" + path + ")");
+        const result = resolvePath(path);
+        console.error("--> " + result);
+        return result;
+    };
+
+    const realpath = system.realpath;
+    if (realpath) {
+        system.realpath = function (path) {
+            console.error("system.realpath(" + path + ")");
+            const result = realpath(path);
+            console.error("--> " + result);
+            return result;
+        };
+    }
+
+    const readDirectory = system.readDirectory;
+    system.readDirectory = function (path, ...args) {
+        console.error("system.readDirectory(" + path + ")");
+        const result = readDirectory.call(system, path, ...args);
+        console.error("--> " + result);
+        return result;
+    };
+
+    const directoryExists = system.directoryExists;
+    system.directoryExists = function (path) {
+        console.error("system.directoryExists(" + path + ")");
+        const result = directoryExists(path);
+        console.error("--> " + result);
+        return result;
+    };
+
+    const getFileSize = system.getFileSize;
+    if (getFileSize) {
+        system.getFileSize = function (path) {
+            console.error("system.getFileSize(" + path + ")");
+            const result = getFileSize(path);
+            console.error("--> " + result);
+            return result;
+        };
+    }
 }
