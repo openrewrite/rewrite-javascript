@@ -75,11 +75,9 @@ public final class TSCConversions {
 
     public static final TSCConversion<TSCNode> NODE = cached(context -> context.nodeCache);
 
-    static final TSCConversion<TSCNodeList<TSCNode>> NODE_LIST = nodeList(NODE);
+    static final TSCConversion<TSCNodeList> NODE_LIST = cached(context -> context.nodeListCache);
 
     public static final TSCConversion<TSCNode.TypeNode> TYPE_NODE = cast(NODE, TSCNode.TypeNode.class);
-
-    public static final TSCConversion<TSCNodeList<TSCNode.TypeNode>> TYPE_NODE_LIST = nodeList(TYPE_NODE);
 
     public static final TSCConversion<TSCSyntaxListNode> SYNTAX_LIST_NODE = cast(NODE, TSCSyntaxListNode.class);
 
@@ -188,19 +186,6 @@ public final class TSCConversions {
             converted.putAll(collections);
 
             return converted;
-        };
-    }
-
-    static <T extends TSCNode> TSCConversion<TSCNodeList<T>> nodeList(TSCConversion<T> conversion) {
-        return (context, valueV8) -> {
-            if (!(valueV8 instanceof V8ValueArray)) {
-                throw new IllegalStateException("expected a V8 array");
-            }
-
-            V8ValueArray arrayV8 = valueV8.toClone();
-            arrayV8.setWeak();
-
-            return TSCNodeList.wrap(context, arrayV8, conversion);
         };
     }
 

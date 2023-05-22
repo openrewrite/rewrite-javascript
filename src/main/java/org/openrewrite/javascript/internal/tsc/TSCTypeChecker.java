@@ -23,23 +23,24 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.openrewrite.javascript.internal.tsc.TSCConversions.*;
 
-public class TSCTypeChecker implements TSCV8Backed {
+public class TSCTypeChecker extends TSCV8ValueHolder implements TSCV8Backed {
 
     // TODO: unmapped functions include all marked @internal and those that return "uncheckable" nodes
 
-    public static TSCTypeChecker wrap(TSCProgramContext context, V8ValueObject objectV8) {
+    public static TSCTypeChecker fromJS(Supplier<TSCProgramContext> context, V8ValueObject objectV8) {
         return new TSCTypeChecker(context, objectV8);
     }
 
-    private final TSCProgramContext programContext;
+    private final Supplier<TSCProgramContext> programContext;
     private final V8ValueObject objectV8;
 
-    private TSCTypeChecker(TSCProgramContext programContext, V8ValueObject objectV8) {
+    private TSCTypeChecker(Supplier<TSCProgramContext> programContext, V8ValueObject objectV8) {
         this.programContext = programContext;
-        this.objectV8 = objectV8;
+        this.objectV8 = lifecycleLinked(objectV8);
     }
 
     public TSCType getTypeOfSymbolAtLocation(TSCSymbol symbol, TSCNode node) {
@@ -333,7 +334,7 @@ public class TSCTypeChecker implements TSCV8Backed {
 
     @Override
     public TSCProgramContext getProgramContext() {
-        return programContext;
+        return programContext.get();
     }
 
     @Override

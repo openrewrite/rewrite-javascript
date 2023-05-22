@@ -15,30 +15,32 @@
  */
 package org.openrewrite.javascript.internal.tsc;
 
+import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.reference.V8ValueObject;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Supplier;
 
-import static org.openrewrite.javascript.internal.tsc.TSCConversions.*;
+import static org.openrewrite.javascript.internal.tsc.TSCConversions.NODE_LIST;
 
-public class TSCGlobals implements TSCV8Backed {
+public class TSCGlobals extends TSCV8ValueHolder implements TSCV8Backed {
 
-    public static TSCGlobals wrap(TSCProgramContext context, V8ValueObject objectV8) {
+    public static TSCGlobals fromJS(Supplier<TSCProgramContext> context, V8ValueObject objectV8) {
         return new TSCGlobals(context, objectV8);
     }
 
-    private final TSCProgramContext programContext;
+    private final Supplier<TSCProgramContext> programContext;
     private final V8ValueObject typescriptV8;
 
-    private TSCGlobals(TSCProgramContext programContext, V8ValueObject typescriptV8) {
+    private TSCGlobals(Supplier<TSCProgramContext> programContext, V8ValueObject typescriptV8) {
         this.programContext = programContext;
-        this.typescriptV8 = typescriptV8;
+        this.typescriptV8 = lifecycleLinked(typescriptV8);
     }
 
     @Override
     public TSCProgramContext getProgramContext() {
-        return programContext;
+        return programContext.get();
     }
 
     @Override

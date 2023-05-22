@@ -20,7 +20,6 @@ import com.caoccao.javet.interception.logging.JavetStandardConsoleInterceptor;
 import com.caoccao.javet.interop.JavetBridge;
 import com.caoccao.javet.interop.V8Host;
 import com.caoccao.javet.interop.V8Runtime;
-import com.caoccao.javet.utils.JavetResourceUtils;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.primitive.V8ValueString;
 import com.caoccao.javet.values.reference.V8ValueFunction;
@@ -29,8 +28,8 @@ import com.caoccao.javet.values.reference.V8ValueObject;
 import org.intellij.lang.annotations.Language;
 import org.openrewrite.DebugOnly;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.javascript.internal.JavetUtils;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -42,14 +41,14 @@ import java.util.function.BiConsumer;
 
 import static org.openrewrite.internal.StringUtils.readFully;
 
-public class TSCRuntime implements Closeable {
+public class TSCRuntime implements AutoCloseable {
     /**
      * Manually enable this when tracking down reference-counting issues.
      * <br/>
      * This causes tests to fail if references are not recycled, and will
      * attribute dangling references to the call site that created them.
      */
-    private final static boolean USE_WRAPPED_V8_RUNTIME = false;
+    private final static boolean USE_WRAPPED_V8_RUNTIME = true;
 
     public final V8Runtime v8Runtime;
 
@@ -92,6 +91,15 @@ public class TSCRuntime implements Closeable {
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public TSCRuntime enableVirtualFileSystemTracing() {
+        try {
+            this.parseOptionsV8.set("traceVirtualFileSystem", true);
+        } catch (JavetException e) {
+            throw new RuntimeException(e);
+        }
+        return this;
     }
 
     public TSCRuntime(V8Runtime v8Runtime, JavetStandardConsoleInterceptor javetStandardConsoleInterceptor) {
@@ -148,11 +156,18 @@ public class TSCRuntime implements Closeable {
                     TSCProgramContext programContext = TSCProgramContext.fromJS(parseResultV8);
                     V8ValueMap sourceFilesByPathV8 = parseResultV8.get("sourceFiles")
             ) {
-                sourceFilesByPathV8.forEach((V8ValueString filePathV8, V8ValueObject sourceFileV8) -> {
+                sourceFilesByPathV8.forEach((V8ValueString filePathV8, V8Value maybeSourceFileV8) -> {
+                    if (maybeSourceFileV8.isNullOrUndefined()) {
+                        // TODO figure out how to handle this
+                        System.err.println("**** missing source file: " + filePathV8.getValue());
+                        return;
+                    }
+
+                    V8ValueObject sourceFileV8 = (V8ValueObject) maybeSourceFileV8;
                     String sourceText = sourceFileV8.invokeString("getText");
                     Path filePath = Paths.get(filePathV8.getValue());
                     try (TSCSourceFileContext sourceFileContext = new TSCSourceFileContext(programContext, sourceText, filePath)) {
-                        TSCNode node = programContext.tscNode((V8ValueObject) sourceFileV8);
+                        TSCNode node = programContext.tscNode(sourceFileV8);
                         callback.accept(node, sourceFileContext);
                     }
                 });
@@ -164,7 +179,8 @@ public class TSCRuntime implements Closeable {
 
     @Override
     public void close() {
-        JavetResourceUtils.safeClose(this.tsParseV8, this.parseOptionsV8);
+        JavetUtils.close(this.tsParseV8);
+        JavetUtils.close(this.parseOptionsV8);
 
         if (!v8Runtime.isClosed()) {
             v8Runtime.await();
