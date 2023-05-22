@@ -19,19 +19,19 @@ import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
-import java.io.Closeable;
 import java.nio.file.Path;
 
-public class TSCSourceFileContext implements Closeable {
+public class TSCSourceFileContext extends TSCV8ValueHolder {
     private final TSCProgramContext programContext;
     private final V8ValueObject scanner;
+
     private final Path relativeSourcePath;
 
     TSCSourceFileContext(TSCProgramContext programContext, String sourceText, Path relativeSourcePath) {
         this.programContext = programContext;
         this.relativeSourcePath = relativeSourcePath;
-        try {
-            this.scanner = programContext.getCreateScannerFunction().call(null);
+        try (V8ValueObject scannerV8 = programContext.getCreateScannerFunction().call(null)) {
+            this.scanner = lifecycleLinked(scannerV8);
             this.scanner.invokeVoid("setText", sourceText);
         } catch (JavetException e) {
             throw new RuntimeException(e);
@@ -86,13 +86,5 @@ public class TSCSourceFileContext implements Closeable {
 
     public Path getRelativeSourcePath() {
         return relativeSourcePath;
-    }
-
-    @Override
-    public void close() {
-        try {
-            this.scanner.close();
-        } catch (JavetException e) {
-        }
     }
 }

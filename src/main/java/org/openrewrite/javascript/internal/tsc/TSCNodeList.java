@@ -18,26 +18,28 @@ package org.openrewrite.javascript.internal.tsc;
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.reference.V8ValueArray;
+import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.internal.lang.NonNull;
 
 import java.util.*;
 
 import static org.openrewrite.javascript.internal.tsc.TSCConversions.NODE;
 
-public class TSCNodeList<T extends TSCNode> implements TSCV8Backed, List<T> {
+public class TSCNodeList implements TSCV8Backed, List<TSCNode> {
 
-    public static <T extends TSCNode> TSCNodeList<T> wrap(TSCProgramContext programContext, V8ValueArray arrayV8, TSCConversion<T> conversion) {
-        return new TSCNodeList<>(programContext, arrayV8, conversion);
+    public static TSCNodeList wrap(TSCProgramContext programContext, V8ValueObject maybeArrayV8) {
+        if (!(maybeArrayV8 instanceof V8ValueArray)) {
+            throw new IllegalArgumentException("expected a v8 array");
+        }
+        return new TSCNodeList(programContext, (V8ValueArray) maybeArrayV8);
     }
 
     private final TSCProgramContext programContext;
     private final V8ValueArray arrayV8;
-    private final TSCConversion<T> conversion;
 
-    private TSCNodeList(TSCProgramContext programContext, V8ValueArray arrayV8, TSCConversion<T> conversion) {
+    private TSCNodeList(TSCProgramContext programContext, V8ValueArray arrayV8) {
         this.programContext = programContext;
         this.arrayV8 = arrayV8;
-        this.conversion = conversion;
     }
 
     @Override
@@ -71,7 +73,7 @@ public class TSCNodeList<T extends TSCNode> implements TSCV8Backed, List<T> {
 
     @NonNull
     @Override
-    public Iterator<T> iterator() {
+    public Iterator<TSCNode> iterator() {
         return listIterator();
     }
 
@@ -120,12 +122,12 @@ public class TSCNodeList<T extends TSCNode> implements TSCV8Backed, List<T> {
     }
 
     @Override
-    public boolean addAll(@NonNull Collection<? extends T> c) {
+    public boolean addAll(@NonNull Collection<? extends TSCNode> c) {
         throw new UnsupportedOperationException("node list is not modifiable");
     }
 
     @Override
-    public boolean addAll(int index, @NonNull Collection<? extends T> c) {
+    public boolean addAll(int index, @NonNull Collection<? extends TSCNode> c) {
         throw new UnsupportedOperationException("node list is not modifiable");
     }
 
@@ -145,16 +147,16 @@ public class TSCNodeList<T extends TSCNode> implements TSCV8Backed, List<T> {
     }
 
     @Override
-    public T get(int index) {
+    public TSCNode get(int index) {
         try (V8Value childV8 = arrayV8.get(index)) {
-            return conversion.convertNonNull(programContext, childV8);
+            return programContext.tscNode((V8ValueObject) childV8);
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public T set(int index, TSCNode element) {
+    public TSCNode set(int index, TSCNode element) {
         throw new UnsupportedOperationException("node list is not modifiable");
     }
 
@@ -164,7 +166,7 @@ public class TSCNodeList<T extends TSCNode> implements TSCV8Backed, List<T> {
     }
 
     @Override
-    public T remove(int index) {
+    public TSCNode remove(int index) {
         throw new UnsupportedOperationException("node list is not modifiable");
     }
 
@@ -173,7 +175,7 @@ public class TSCNodeList<T extends TSCNode> implements TSCV8Backed, List<T> {
         if (!(o instanceof TSCNode)) {
             return -1;
         }
-        T node = (T) o;
+        TSCNode node = (TSCNode) o;
         final int size = size();
         for (int i = 0; i < size; i++) {
             if (get(i) == node) {
@@ -200,14 +202,14 @@ public class TSCNodeList<T extends TSCNode> implements TSCV8Backed, List<T> {
 
     @NonNull
     @Override
-    public ListIterator<T> listIterator() {
+    public ListIterator<TSCNode> listIterator() {
         return listIterator(0);
     }
 
     @NonNull
     @Override
-    public ListIterator<T> listIterator(int startIndex) {
-        return new ListIterator<T>() {
+    public ListIterator<TSCNode> listIterator(int startIndex) {
+        return new ListIterator<TSCNode>() {
 
             final int size = size();
             int cursor = startIndex;
@@ -218,7 +220,7 @@ public class TSCNodeList<T extends TSCNode> implements TSCV8Backed, List<T> {
             }
 
             @Override
-            public T next() {
+            public TSCNode next() {
                 return get(cursor++);
             }
 
@@ -228,7 +230,7 @@ public class TSCNodeList<T extends TSCNode> implements TSCV8Backed, List<T> {
             }
 
             @Override
-            public T previous() {
+            public TSCNode previous() {
                 return get(--cursor);
             }
 
@@ -261,8 +263,8 @@ public class TSCNodeList<T extends TSCNode> implements TSCV8Backed, List<T> {
 
     @NonNull
     @Override
-    public List<T> subList(int fromIndex, int toIndex) {
-        ArrayList<T> result = new ArrayList<>(toIndex - fromIndex);
+    public List<TSCNode> subList(int fromIndex, int toIndex) {
+        ArrayList<TSCNode> result = new ArrayList<>(toIndex - fromIndex);
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(get(i));
         }

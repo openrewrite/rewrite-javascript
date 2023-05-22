@@ -23,9 +23,9 @@ import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import lombok.Value;
 import org.openrewrite.DebugOnly;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -137,7 +137,7 @@ public interface TSCV8Backed {
         return invokeMethodNonNull(name, BOOLEAN, args);
     }
 
-    default <T> T getPropertyNullable(String name, TSCConversion<T> conversion) {
+    default <T> @Nullable T getPropertyNullable(String name, TSCConversion<T> conversion) {
         try (V8Value value = getPropertyUnsafe(name)) {
             return conversion.convertNullable(getProgramContext(), value);
         } catch (JavetException e) {
@@ -161,7 +161,7 @@ public interface TSCV8Backed {
         return getPropertyNonNull(name, BOOLEAN);
     }
 
-    default Boolean getOptionalBooleanProperty(String name) {
+    default @Nullable Boolean getOptionalBooleanProperty(String name) {
         return getPropertyNullable(name, BOOLEAN);
     }
 
@@ -214,11 +214,11 @@ public interface TSCV8Backed {
         return getPropertyNullable(name, NODE);
     }
 
-    default TSCNodeList<TSCNode> getNodeListProperty(String name) {
+    default TSCNodeList getNodeListProperty(String name) {
         return getPropertyNonNull(name, NODE_LIST);
     }
 
-    default @Nullable TSCNodeList<TSCNode> getOptionalNodeListProperty(String name) {
+    default @Nullable TSCNodeList getOptionalNodeListProperty(String name) {
         return getPropertyNullable(name, NODE_LIST);
     }
 
@@ -226,7 +226,7 @@ public interface TSCV8Backed {
         return getPropertyNonNull(name, TYPE_NODE);
     }
 
-    default TSCNode.TypeNode getOptionalTypeNodeProperty(String name) {
+    default @Nullable TSCNode.TypeNode getOptionalTypeNodeProperty(String name) {
         return getPropertyNullable(name, TYPE_NODE);
     }
 

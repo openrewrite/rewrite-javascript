@@ -551,7 +551,7 @@ public class TypeScriptParserVisitor {
         if (node.hasProperty("members")) {
             Space bodyPrefix = sourceBefore(TSCSyntaxKind.OpenBraceToken);
 
-            TSCNodeList<TSCNode> memberNodes = node.getNodeListProperty("members");
+            TSCNodeList memberNodes = node.getNodeListProperty("members");
             if (kind.getType() == J.ClassDeclaration.Kind.Type.Enum) {
                 Space enumPrefix = whitespace();
 

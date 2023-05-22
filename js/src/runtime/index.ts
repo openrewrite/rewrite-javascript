@@ -14,26 +14,20 @@
  * limitations under the License.
  */
 import * as ts from "typescript";
-import * as tsvfs from "@typescript/vfs";
-import libFileData from "../generated/libs.json";
 import { CompilerOptions } from "typescript";
+import libFileData from "../generated/libs.json";
+import { PathPrefixes } from "./PathPrefixes";
+import { createCompilerHost, VfsOptions } from "./vfs";
 
-const OPEN_REWRITE_ID = Symbol("OpenRewriteId");
-
-/** This object's property names are referenced by the Java code; do not change them. */
-const PathPrefixes = Object.freeze({
-    lib: "/lib/",
-    app: "/app/",
-});
+const OPEN_REWRITE_ID_SYMBOL = Symbol("OpenRewriteId");
 
 const libMap: Map<string, string> = (ts as any).libMap;
 const toFileNameLowerCase: (s: string) => string = (ts as any).toFileNameLowerCase;
 
 type ParseOptions = {
     readonly compilerOptions?: CompilerOptions;
-};
-
-const TRACE_SYSTEM_READ_FILE = false;
+    readonly forwardedPaths?: Map<string, string>;
+} & VfsOptions;
 
 // (entry point from Java code)
 // noinspection JSUnusedGlobalSymbols
@@ -66,21 +60,7 @@ export default function parse(originalInputs: Map<string, string>, options?: Par
             rootNames: [...originalInputPathToProgramPath.values()],
         };
 
-        const system = tsvfs.createSystem(allFiles);
-        if (TRACE_SYSTEM_READ_FILE) {
-            const readFile = system.readFile;
-            if (readFile) {
-                system.readFile = function (...[filename, ...args]: Parameters<typeof readFile>) {
-                    console.error("system.readFile(", filename, ...args, ")");
-                    return readFile(filename, ...args);
-                }.bind(system);
-            }
-        }
-
-        const host = tsvfs.createVirtualCompilerHost(system, compilerOptions, ts).compilerHost;
-        host.getDefaultLibLocation = () => PathPrefixes.lib;
-        host.getDefaultLibFileName = (compilerOptions) =>
-            PathPrefixes.lib + ts.getDefaultLibFileName(compilerOptions);
+        const host = createCompilerHost(options ?? {}, compilerOptions, allFiles);
 
         const program = ts.createProgram({
             host,
@@ -89,10 +69,10 @@ export default function parse(originalInputs: Map<string, string>, options?: Par
 
         let nextNodeId = BigInt(1);
         const getOpenRewriteId = (obj: any) => {
-            let objId = obj[OPEN_REWRITE_ID];
+            let objId = obj[OPEN_REWRITE_ID_SYMBOL];
             if (objId === undefined) {
                 objId = nextNodeId++;
-                obj[OPEN_REWRITE_ID] = objId;
+                obj[OPEN_REWRITE_ID_SYMBOL] = objId;
             }
             return objId;
         };

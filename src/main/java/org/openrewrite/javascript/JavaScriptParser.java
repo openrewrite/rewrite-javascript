@@ -93,7 +93,7 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
     public boolean accept(Path path) {
         final String filename = path.getFileName().toString().toLowerCase();
         for (String ext : EXTENSIONS) {
-            if (filename.endsWith(ext)) {
+            if (filename.endsWith("." + ext)) {
                 return true;
             }
         }

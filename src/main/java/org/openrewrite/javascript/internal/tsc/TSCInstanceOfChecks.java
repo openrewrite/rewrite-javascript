@@ -17,11 +17,11 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.interop.V8Runtime;
-import com.caoccao.javet.interop.V8Scope;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.primitive.V8ValuePrimitive;
 import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueFunction;
+import com.caoccao.javet.values.reference.V8ValueMap;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.intellij.lang.annotations.Language;
 
@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
 
-public class TSCInstanceOfChecks {
+public class TSCInstanceOfChecks extends TSCV8ValueHolder {
 
     public enum InterfaceKind {
         Node,
@@ -63,16 +63,20 @@ public class TSCInstanceOfChecks {
         }
     }
 
-    public static TSCInstanceOfChecks wrap(V8Scope scope, TSCGlobals globals) {
-        V8Runtime runtimeV8 = globals.getBackingV8Object().getV8Runtime();
-        try (V8ValueObject allocators = globals.getBackingV8Object().get("objectAllocator")) {
-            V8ValueArray constructors = runtimeV8.createV8ValueArray();
+    public static TSCInstanceOfChecks fromJS(V8ValueObject tsGlobalsV8) {
+        V8Runtime runtimeV8 = tsGlobalsV8.getV8Runtime();
+        try (
+                V8ValueObject allocators = tsGlobalsV8.get("objectAllocator");
+                V8ValueArray constructors = runtimeV8.createV8ValueArray();
+                V8ValueObject outerVars = runtimeV8.createV8ValueObject()
+        ) {
+
             for (ConstructorKind constructorKind : ConstructorKind.values()) {
                 try (V8ValueFunction constructor = allocators.invoke(constructorKind.allocatorAccessorName)) {
                     constructors.set(constructorKind.ordinal(), constructor);
                 }
             }
-            Map<String, Object> outerVars = Collections.singletonMap("ctors", constructors);
+
             @Language("javascript")
             String code = "" +
                     "(arg) => {\n" +
@@ -80,8 +84,11 @@ public class TSCInstanceOfChecks {
                     "    if (arg.constructor === ctors[i]) return i;\n" +
                     "  }\n" +
                     "}";
-            V8ValueFunction constructorOrdinalFunctionV8 = TSCV8Utils.makeFunction(runtimeV8, code, outerVars);
-            return new TSCInstanceOfChecks(scope.add(constructorOrdinalFunctionV8));
+
+            outerVars.set("ctors", constructors);
+            try (V8ValueFunction constructorOrdinalFunctionV8 = TSCV8Utils.makeFunction(runtimeV8, code, outerVars)) {
+                return new TSCInstanceOfChecks(constructorOrdinalFunctionV8);
+            }
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }
@@ -90,7 +97,7 @@ public class TSCInstanceOfChecks {
     private final V8ValueFunction constructorOrdinalFunctionV8;
 
     private TSCInstanceOfChecks(V8ValueFunction constructorOrdinalFunctionV8) {
-        this.constructorOrdinalFunctionV8 = constructorOrdinalFunctionV8;
+        this.constructorOrdinalFunctionV8 = lifecycleLinked(constructorOrdinalFunctionV8);
     }
 
     public @Nullable ConstructorKind identifyConstructorKind(V8Value valueV8) {

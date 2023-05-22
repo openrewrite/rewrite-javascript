@@ -48,21 +48,21 @@ public final class JavetBridge {
             @Override
             void addReference(IV8ValueReference iV8ValueReference) {
                 super.addReference(iV8ValueReference);
-                String caller = "unknown";
+                StringBuilder sb = new StringBuilder();
                 for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
-                    if (element.toString().startsWith("org.openrewrite")) {
-                        caller = element.toString();
-                        break;
-                    }
+                    sb.append("\t").append(element.toString()).append("\n");
                 }
-                remainingReferences.put(iV8ValueReference.getHandle(), caller);
+                remainingReferences.put(iV8ValueReference.getHandle(), sb.toString());
             }
 
             @Override
             void removeReference(IV8ValueReference iV8ValueReference) throws JavetException {
                 super.removeReference(iV8ValueReference);
-                remainingReferences.remove(iV8ValueReference.getHandle());
+                // Uncommenting this surfaces unmatched references for some reason
+//                remainingReferences.remove(iV8ValueReference.getHandle());
             }
+
+
 
             public void close(boolean forceClose) throws JavetException {
                 if (!isClosed() && forceClose) {
@@ -99,6 +99,13 @@ public final class JavetBridge {
                         } else {
                             // TODO
                             System.err.print(valueV8);
+                        }
+                        try {
+                            if (valueV8.isWeak()) {
+                                System.err.print(" (weak)");
+                            }
+                        } catch (JavetException e) {
+                            throw new RuntimeException(e);
                         }
                         System.err.println();
                         String caller = remainingReferences.get(valueV8.getHandle());

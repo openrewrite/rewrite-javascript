@@ -401,5 +401,37 @@ public class V8InteropTests {
         );
     }
 
+    @Test
+    public void missingImportDoesNotThrow() {
+        parseSingleSource(
+                """
+                import * as doesNotExist from './does/not/exist';
+                                
+                function test() {
+                    return doesNotExist;
+                }
+                """,
+                "example.ts",
+                (root, ctx) -> {
+                }
+        );
+    }
+
+    @Test
+    public void missingDirectiveOrDirectiveDoesNotThrow() {
+        parseSingleSource(
+                """
+                /// <reference path='..\\..\\src\\compiler\\tsc.ts'/>
+                                
+                function test() {
+                    return 42;
+                }
+                """,
+                "example.ts",
+                (root, ctx) -> {
+                }
+        );
+    }
+
 
 }
