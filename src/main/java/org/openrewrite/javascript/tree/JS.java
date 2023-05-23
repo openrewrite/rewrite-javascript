@@ -60,6 +60,11 @@ public interface JS extends J {
         return v.defaultValue(this, p);
     }
 
+    Space getPrefix();
+
+    default List<Comment> getComments() {
+        return getPrefix().getComments();
+    }
 
     @ToString
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -437,10 +442,8 @@ public interface JS extends J {
         @With
         JS.TypeOperator.Type operator;
 
-        @With
         JLeftPadded<Expression> expression;
 
-        @With
         @Nullable
         JavaType type;
 
