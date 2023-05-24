@@ -17,13 +17,13 @@ package org.openrewrite.javascript.internal;
 
 import org.openrewrite.FileAttributes;
 import org.openrewrite.ParseExceptionResult;
+import org.openrewrite.internal.ExceptionUtils;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
-import org.openrewrite.javascript.JavaScriptParser;
 import org.openrewrite.javascript.TypeScriptTypeMapping;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCNodeList;
@@ -78,7 +78,9 @@ public class TypeScriptParserVisitor {
             } catch (Throwable t) {
                 cursor(saveCursor);
                 JS.UnknownElement element = unknownElement(child);
-                ParseExceptionResult parseExceptionResult = ParseExceptionResult.build(JavaScriptParser.builder().build(), t);
+                ParseExceptionResult parseExceptionResult = new ParseExceptionResult(
+                        UUID.randomUUID(),
+                        ExceptionUtils.sanitizeStackTrace(t, TypeScriptParserVisitor.class));
                 element = element.withSource(element.getSource().withMarkers(Markers.EMPTY.withMarkers(singletonList(parseExceptionResult))));
                 visited = element;
                 if (markers == null) {
@@ -87,18 +89,25 @@ public class TypeScriptParserVisitor {
             }
 
             if (visited != null) {
-                if (visited instanceof JS.UnknownElement) {
-                    ParseExceptionResult result = ((JS.UnknownElement) visited).getSource().getMarkers().findFirst(ParseExceptionResult.class).orElse(null);
-                    if (result != null) {
-                        markers = Markers.build(singletonList(result));
-                    }
-                }
                 if (!(visited instanceof Statement) && visited instanceof Expression) {
                     visited = new JS.ExpressionStatement(randomId(), (Expression) visited);
                 }
                 statements.add(maybeSemicolon((Statement) visited));
             }
         }
+
+        if (markers == null) {
+            for (JRightPadded<Statement> statement : statements) {
+                if (statement.getElement() instanceof JS.UnknownElement) {
+                    ParseExceptionResult result = ((JS.UnknownElement) statement.getElement()).getSource().getMarkers().findFirst(ParseExceptionResult.class).orElse(null);
+                    if (result != null) {
+                        markers = Markers.build(singletonList(result));
+                        break;
+                    }
+                }
+            }
+        }
+
         Space eof = whitespace();
         eof = eof.withWhitespace(eof.getWhitespace() + (getCursor() < source.getText().length() ? source.getText().substring(getCursor()) : ""));
         return new JS.CompilationUnit(

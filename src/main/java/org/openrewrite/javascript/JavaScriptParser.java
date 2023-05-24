@@ -15,7 +15,6 @@
  */
 package org.openrewrite.javascript;
 
-import org.openrewrite.javascript.internal.JavetNativeBridge;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.openrewrite.ExecutionContext;
