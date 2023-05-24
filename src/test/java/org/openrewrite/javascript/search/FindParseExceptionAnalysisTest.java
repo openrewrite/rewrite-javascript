@@ -27,6 +27,7 @@ import org.openrewrite.javascript.table.ParseExceptionAnalysis;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.test.AdHocRecipe;
+import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import java.nio.file.Path;
@@ -40,6 +41,11 @@ import static org.openrewrite.test.RewriteTest.toRecipe;
 public class FindParseExceptionAnalysisTest implements RewriteTest {
 
     private final JavaScriptPrinter<Integer> printer = new JavaScriptPrinter<>();
+
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.recipe(addUnknownElements);
+    }
 
     // Mock ParserVisitor#unknownElement to prevent tests from breaking as parsing issues are fixed.
     private final AdHocRecipe addUnknownElements = toRecipe(() -> new JavaScriptVisitor<>() {
@@ -74,7 +80,6 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
     @Test
     void markSpecifiedNodeType() {
         rewriteRun(
-          recipeSpec -> recipeSpec.recipe(addUnknownElements),
           javaScript(
             """
               class Foo {
@@ -111,7 +116,6 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
     @Test
     void markAllNodeTypes() {
         rewriteRun(
-          recipeSpec -> recipeSpec.recipe(addUnknownElements),
           javaScript(
             """
               class Foo {
@@ -171,7 +175,6 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
     @Test
     void singleJsSources() {
         rewriteRun(
-          recipeSpec -> recipeSpec.recipe(addUnknownElements),
           javaScript(
             """
               class Foo {
@@ -204,7 +207,6 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
     @Test
     void multipleJsSources() {
         rewriteRun(
-          recipeSpec -> recipeSpec.recipe(addUnknownElements),
           javaScript(
             """
               class Foo {
@@ -242,7 +244,6 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
     @Test
     void differentExtensions() {
         rewriteRun(
-          recipeSpec -> recipeSpec.recipe(addUnknownElements),
           javaScript(
             """
               class Foo {
