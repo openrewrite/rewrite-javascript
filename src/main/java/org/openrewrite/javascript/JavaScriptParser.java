@@ -60,19 +60,19 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
     }
 
     @Override
-    public List<JS.CompilationUnit> parseInputs(Iterable<Input> inputs, @Nullable Path relativeTo, ExecutionContext ogCtx) {
-        ParsingExecutionContextView ctx = ParsingExecutionContextView.view(ogCtx);
+    public List<JS.CompilationUnit> parseInputs(Iterable<Input> inputs, @Nullable Path relativeTo, ExecutionContext ctx) {
+        ParsingExecutionContextView pctx = ParsingExecutionContextView.view(ctx);
         List<JS.CompilationUnit> outputs;
-        try (TSCMapper mapper = new TSCMapper(relativeTo) {
+        try (TSCMapper mapper = new TSCMapper(relativeTo, pctx) {
             @Override
             protected void onParseFailure(Input input, Throwable error) {
-                ctx.parseFailure(input, relativeTo, JavaScriptParser.this, error);
+                pctx.parseFailure(input, relativeTo, JavaScriptParser.this, error);
                 ctx.getOnError().accept(error);
             }
         }) {
 
             for (Input input : inputs) {
-                mapper.add(input, ctx);
+                mapper.add(input);
             }
 
             outputs = mapper.build();
@@ -81,19 +81,20 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
     }
 
     private final static List<String> EXTENSIONS = Collections.unmodifiableList(Arrays.asList(
-            "js", "jsx", "mjs", "cjs",
-            "ts", "tsx", "mts", "cts"
+            ".js", ".jsx", ".mjs", ".cjs",
+            ".ts", ".tsx", ".mts", ".cts"
     ));
 
     @Override
     public boolean accept(Path path) {
-        final String filename = path.getFileName().toString().toLowerCase();
         if (path.toString().contains("/dist/")) {
             // FIXME this is a workaround to not having tsconfig info
             return false;
         }
+
+        final String filename = path.getFileName().toString().toLowerCase();
         for (String ext : EXTENSIONS) {
-            if (filename.endsWith("." + ext)) {
+            if (filename.endsWith(ext)) {
                 return true;
             }
         }
@@ -110,6 +111,8 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
     }
 
     public static class Builder extends Parser.Builder {
+        // FIXME add logCompilationWarningsAndErrors.
+
         public Builder() {
             super(JS.CompilationUnit.class);
         }

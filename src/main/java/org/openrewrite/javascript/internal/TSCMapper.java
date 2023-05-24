@@ -16,13 +16,13 @@
 package org.openrewrite.javascript.internal;
 
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.tree.ParsingExecutionContextView;
 
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -35,6 +35,7 @@ public abstract class TSCMapper implements AutoCloseable {
 
     @Value
     private static class SourceWrapper {
+        Parser.Input input;
         Path sourcePath;
         Charset charset;
         boolean isCharsetBomMarked;
@@ -46,20 +47,23 @@ public abstract class TSCMapper implements AutoCloseable {
     @Nullable
     private final Path relativeTo;
 
+    private final ParsingExecutionContextView pctx;
     private final Map<Path, SourceWrapper> sourcesByRelativePath = new HashMap<>();
 
-    public TSCMapper(@Nullable Path relativeTo) {
+    public TSCMapper(@Nullable Path relativeTo, ParsingExecutionContextView pctx) {
         JavetNativeBridge.init();
         this.runtime = TSCRuntime.init();
         this.relativeTo = relativeTo;
+        this.pctx = pctx;
     }
 
-    public void add(Parser.Input input, ExecutionContext ctx) {
-        final EncodingDetectingInputStream is = input.getSource(ctx);
+    public void add(Parser.Input input) {
+        final EncodingDetectingInputStream is = input.getSource(pctx);
         final String inputSourceText = is.readFully();
         final Path relativePath = input.getRelativePath(relativeTo);
 
         final SourceWrapper source = new SourceWrapper(
+                input,
                 relativePath,
                 is.getCharset(),
                 is.isCharsetBomMarked(),
@@ -90,7 +94,9 @@ public abstract class TSCMapper implements AutoCloseable {
                             source.getCharset().toString(),
                             source.isCharsetBomMarked()
                     );
-                    compilationUnits.add(fileMapper.visitSourceFile());
+                    JS.CompilationUnit cu = fileMapper.visitSourceFile();
+                    pctx.getParsingListener().parsed(source.getInput(), cu);
+                    compilationUnits.add(cu);
                 }
         );
         return compilationUnits;
