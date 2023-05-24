@@ -97,48 +97,52 @@ public class JavetNativeBridge {
     }
 
     private static void actuallyInit() {
+        String nativeLibPath = getLibResourcePath();
+        File tempFile = null;
         if (System.getProperty("org.graalvm.nativeimage.kind") != null) {
-            String nativeLibPath = getLibResourcePath();
-
-            File tempFile;
             try {
-                tempFile = Files.createTempFile("libjavet", "").toFile();
-            } catch (IOException e) {
-                throw new RuntimeException("error while creating temp file to extract Javet native library", e);
-            }
+                try {
+                    tempFile = Files.createTempFile("libjavet", "").toFile();
+                } catch (IOException e) {
+                    throw new RuntimeException("error while creating temp file to extract Javet native library", e);
+                }
 
-            try (
-                    InputStream inputStream = JavetLibLoader.class.getResourceAsStream(nativeLibPath);
-                    FileOutputStream outputStream = new FileOutputStream(tempFile)
-            ) {
-                if (inputStream == null) {
-                    throw new IllegalStateException("Could not find bundled resource for " + nativeLibPath);
-                }
-                byte[] buffer = new byte[4096];
-                while (true) {
-                    int length = inputStream.read(buffer);
-                    if (length == -1) {
-                        break;
+                try (
+                        InputStream inputStream = JavetLibLoader.class.getResourceAsStream(nativeLibPath);
+                        FileOutputStream outputStream = new FileOutputStream(tempFile)
+                ) {
+                    if (inputStream == null) {
+                        throw new IllegalStateException("Could not find bundled resource for " + nativeLibPath);
                     }
-                    outputStream.write(buffer, 0, length);
-                }
-                if (JavetOSUtils.IS_LINUX || JavetOSUtils.IS_MACOS || JavetOSUtils.IS_ANDROID) {
-                    try {
-                        final int result = Runtime.getRuntime().exec(new String[]{"chmod", "755", tempFile.getAbsolutePath()}).waitFor();
-                        if (result != 0) {
-                            throw new RuntimeException("attempt to chmod Javet library resulted in " + result);
+                    byte[] buffer = new byte[4096];
+                    while (true) {
+                        int length = inputStream.read(buffer);
+                        if (length == -1) {
+                            break;
                         }
-                    } catch (Throwable t) {
-                        throw new RuntimeException("error while chmod-ing extracted Javet library (" + nativeLibPath + ")", t);
+                        outputStream.write(buffer, 0, length);
+                    }
+                    if (JavetOSUtils.IS_LINUX || JavetOSUtils.IS_MACOS || JavetOSUtils.IS_ANDROID) {
+                        try {
+                            final int result = Runtime.getRuntime().exec(new String[]{"chmod", "755", tempFile.getAbsolutePath()}).waitFor();
+                            if (result != 0) {
+                                throw new RuntimeException("attempt to chmod Javet library resulted in " + result);
+                            }
+                        } catch (Throwable t) {
+                            throw new RuntimeException("error while chmod-ing extracted Javet library (" + nativeLibPath + ")", t);
+                        }
                     }
                 }
+
                 System.load(tempFile.getAbsolutePath());
             } catch (Throwable t) {
                 System.err.println("Javet debugging information:");
                 System.err.printf("   OS arch: %s%n", JavetOSUtils.OS_ARCH);
                 System.err.printf("   OS name: %s%n", JavetOSUtils.OS_NAME);
                 System.err.printf("  lib name: %s%n", nativeLibPath);
-                System.err.printf("  tmp path: %s%n", tempFile.getAbsolutePath());
+                if (tempFile != null) {
+                    System.err.printf("  tmp path: %s%n", tempFile.getAbsolutePath());
+                }
 
                 t.printStackTrace();
                 nativeLibError = t;
