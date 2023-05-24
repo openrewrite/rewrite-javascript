@@ -49,6 +49,7 @@ public abstract class TSCMapper implements AutoCloseable {
     private final Map<Path, SourceWrapper> sourcesByRelativePath = new HashMap<>();
 
     public TSCMapper(@Nullable Path relativeTo) {
+        JavetNativeBridge.init();
         this.runtime = TSCRuntime.init();
         this.relativeTo = relativeTo;
     }
