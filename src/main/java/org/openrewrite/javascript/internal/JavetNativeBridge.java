@@ -134,6 +134,12 @@ public class JavetNativeBridge {
                 }
                 System.load(tempFile.getAbsolutePath());
             } catch (Throwable t) {
+                System.err.println("Javet debugging information:");
+                System.err.printf("   OS arch: %s%n", JavetOSUtils.OS_ARCH);
+                System.err.printf("   OS name: %s%n", JavetOSUtils.OS_NAME);
+                System.err.printf("  lib name: %s%n", nativeLibPath);
+                System.err.printf("  tmp path: %s%n", tempFile.getAbsolutePath());
+
                 t.printStackTrace();
                 nativeLibError = t;
             }
