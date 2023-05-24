@@ -20,6 +20,7 @@ import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.interop.loader.JavetLibLoader;
 import com.caoccao.javet.utils.JavetOSUtils;
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.internal.lang.Nullable;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,6 +37,7 @@ public class JavetNativeBridge {
     }
 
     private static volatile boolean hasLoadedNativeLib = false;
+    private static volatile @Nullable Throwable nativeLibError = null;
     private static final Object loadNativeLibLock = new Object();
 
     public static Class<?>[] getClassesInitializedByBridge() {
@@ -81,52 +83,60 @@ public class JavetNativeBridge {
     }
 
     public static void init() {
-        if (hasLoadedNativeLib) {
-            return;
+        if (!hasLoadedNativeLib) {
+            synchronized (loadNativeLibLock) {
+                if (!hasLoadedNativeLib) {
+                    hasLoadedNativeLib = true;
+                    actuallyInit();
+                }
+            }
         }
-        synchronized (loadNativeLibLock) {
-            if (hasLoadedNativeLib) {
-                return;
+        if (nativeLibError != null) {
+            throw new RuntimeException("error while loading Javet library", nativeLibError);
+        }
+    }
+
+    private static void actuallyInit() {
+        if (System.getProperty("org.graalvm.nativeimage.kind") != null) {
+            String nativeLibPath = getLibResourcePath();
+
+            File tempFile;
+            try {
+                tempFile = Files.createTempFile("libjavet", "").toFile();
+            } catch (IOException e) {
+                throw new RuntimeException("error while creating temp file to extract Javet native library", e);
             }
 
-            if (System.getProperty("org.graalvm.nativeimage.kind") != null) {
-                String nativeLibPath = getLibResourcePath();
-
-                File tempFile;
-                try {
-                    tempFile = Files.createTempFile("libjavet", "").toFile();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+            try (
+                    InputStream inputStream = JavetLibLoader.class.getResourceAsStream(nativeLibPath);
+                    FileOutputStream outputStream = new FileOutputStream(tempFile)
+            ) {
+                if (inputStream == null) {
+                    throw new IllegalStateException("Could not find bundled resource for " + nativeLibPath);
                 }
-
-                try (
-                        InputStream inputStream = JavetLibLoader.class.getResourceAsStream(nativeLibPath);
-                        FileOutputStream outputStream = new FileOutputStream(tempFile)
-                ) {
-                    if (inputStream == null) {
-                        throw new IllegalStateException("Could not find bundled resource for " + nativeLibPath);
+                byte[] buffer = new byte[4096];
+                while (true) {
+                    int length = inputStream.read(buffer);
+                    if (length == -1) {
+                        break;
                     }
-                    byte[] buffer = new byte[4096];
-                    while (true) {
-                        int length = inputStream.read(buffer);
-                        if (length == -1) {
-                            break;
-                        }
-                        outputStream.write(buffer, 0, length);
-                    }
-                    if (JavetOSUtils.IS_LINUX || JavetOSUtils.IS_MACOS || JavetOSUtils.IS_ANDROID) {
-                        try {
-                            Runtime.getRuntime().exec(new String[]{"chmod", "755", tempFile.getAbsolutePath()}).waitFor();
-                        } catch (Throwable ignored) {
-                        }
-                    }
-                    System.load(tempFile.getAbsolutePath());
-                } catch (Throwable t) {
-                    throw new RuntimeException(t);
+                    outputStream.write(buffer, 0, length);
                 }
+                if (JavetOSUtils.IS_LINUX || JavetOSUtils.IS_MACOS || JavetOSUtils.IS_ANDROID) {
+                    try {
+                        final int result = Runtime.getRuntime().exec(new String[]{"chmod", "755", tempFile.getAbsolutePath()}).waitFor();
+                        if (result != 0) {
+                            throw new RuntimeException("attempt to chmod Javet library resulted in " + result);
+                        }
+                    } catch (Throwable t) {
+                        throw new RuntimeException("error while chmod-ing extracted Javet library (" + nativeLibPath + ")", t);
+                    }
+                }
+                System.load(tempFile.getAbsolutePath());
+            } catch (Throwable t) {
+                t.printStackTrace();
+                nativeLibError = t;
             }
-
-            hasLoadedNativeLib = true;
         }
     }
 }
