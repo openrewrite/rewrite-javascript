@@ -90,7 +90,7 @@ public abstract class TSCMapper implements AutoCloseable {
                             node,
                             context,
                             source.getSourcePath(),
-                            new JavaTypeCache(),
+                            new JavaScriptTypeCache(),
                             source.getCharset().toString(),
                             source.isCharsetBomMarked()
                     );

@@ -19,10 +19,10 @@ import org.openrewrite.Incubating;
 import org.openrewrite.TypeScriptSignatureBuilder;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeMapping;
-import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.javascript.internal.JavaScriptTypeCache;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
@@ -43,9 +43,9 @@ import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.*;
 public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
     private final TypeScriptSignatureBuilder signatureBuilder;
-    private final JavaTypeCache typeCache;
+    private final JavaScriptTypeCache typeCache;
 
-    public TypeScriptTypeMapping(JavaTypeCache typeCache) {
+    public TypeScriptTypeMapping(JavaScriptTypeCache typeCache) {
         this.signatureBuilder = new TypeScriptSignatureBuilder();
         this.typeCache = typeCache;
     }

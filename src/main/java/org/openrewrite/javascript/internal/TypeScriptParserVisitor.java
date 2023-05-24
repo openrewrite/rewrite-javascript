@@ -20,7 +20,6 @@ import org.openrewrite.ParseExceptionResult;
 import org.openrewrite.internal.ExceptionUtils;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
@@ -58,7 +57,7 @@ public class TypeScriptParserVisitor {
     private final String charset;
     private final boolean isCharsetBomMarked;
 
-    public TypeScriptParserVisitor(TSCNode source, TSCSourceFileContext sourceContext, Path sourcePath, JavaTypeCache typeCache, String charset, boolean isCharsetBomMarked) {
+    public TypeScriptParserVisitor(TSCNode source, TSCSourceFileContext sourceContext, Path sourcePath, JavaScriptTypeCache typeCache, String charset, boolean isCharsetBomMarked) {
         this.source = source;
         this.cursorContext = sourceContext;
         this.sourcePath = sourcePath;
