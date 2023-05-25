@@ -34,7 +34,7 @@ public class FindJavaScriptSources extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Find Kotlin sources and collect data metrics";
+        return "Find JavaScript sources and collect data metrics";
     }
 
     @Override
