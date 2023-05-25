@@ -1029,6 +1029,9 @@ public class TypeScriptParserVisitor {
             );
         } else {
             name = (J.Identifier) visitNode(nameNode);
+            // FIXME: resolve imports in the TSC node and find a means to attribution types.
+            name = name.withType(null);
+            name = name.withFieldType(null);
         }
 
         // JS/TS does not have a concept of FQNs. The qualifier is a String literal that refers to a module, which does not work in Java.
