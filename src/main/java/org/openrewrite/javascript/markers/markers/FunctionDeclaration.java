@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2022 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.markers;
+package org.openrewrite.javascript.markers.markers;
 
 import lombok.Value;
 import lombok.With;
@@ -25,22 +25,6 @@ import java.util.UUID;
 @Incubating(since = "0.0")
 @Value
 @With
-public class ForLoopType implements Marker {
-
+public class FunctionDeclaration implements Marker {
     UUID id;
-    ForLoopType.Keyword keyword;
-
-    public enum Keyword {
-        OF("of"), IN("in");
-
-        final String word;
-
-        Keyword(String word) {
-            this.word = word;
-        }
-
-        public String getWord() {
-            return word;
-        }
-    }
 }

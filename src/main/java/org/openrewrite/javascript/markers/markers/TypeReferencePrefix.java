@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.markers;
+package org.openrewrite.javascript.markers.markers;
 
 import lombok.Value;
 import lombok.With;
 import org.openrewrite.Incubating;
+import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Marker;
 
 import java.util.UUID;
@@ -25,6 +26,7 @@ import java.util.UUID;
 @Incubating(since = "0.0")
 @Value
 @With
-public class FunctionDeclaration implements Marker {
+public class TypeReferencePrefix implements Marker {
     UUID id;
+    Space prefix;
 }
