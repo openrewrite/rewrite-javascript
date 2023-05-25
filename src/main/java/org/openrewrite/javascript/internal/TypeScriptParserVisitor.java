@@ -178,6 +178,10 @@ public class TypeScriptParserVisitor {
         return null;
     }
 
+    private J visitArrowFunction(TSCNode node) {
+        return unknownElement(node);
+    }
+
     private J.NewArray visitArrayLiteralExpression(TSCNode node) {
         Space prefix = whitespace();
 
@@ -2009,6 +2013,9 @@ public class TypeScriptParserVisitor {
             // Single case statements
             case ArrayBindingPattern:
                 j = visitArrayBindingPattern(node);
+                break;
+            case ArrowFunction:
+                j = visitArrowFunction(node);
                 break;
             case ArrayLiteralExpression:
                 j = visitArrayLiteralExpression(node);
