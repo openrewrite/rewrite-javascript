@@ -24,11 +24,10 @@ import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
-import org.openrewrite.javascript.markers.markers.*;
+import org.openrewrite.javascript.markers.*;
 import org.openrewrite.javascript.tree.*;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
-import org.openrewrite.markers.*;
 
 import java.util.List;
 import java.util.function.UnaryOperator;

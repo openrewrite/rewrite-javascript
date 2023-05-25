@@ -28,12 +28,11 @@ import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCNodeList;
 import org.openrewrite.javascript.internal.tsc.TSCSourceFileContext;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
-import org.openrewrite.javascript.markers.markers.*;
+import org.openrewrite.javascript.markers.*;
 import org.openrewrite.javascript.table.ParseExceptionAnalysis;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.javascript.tree.TsType;
 import org.openrewrite.marker.Markers;
-import org.openrewrite.markers.*;
 
 import java.nio.file.Path;
 import java.util.*;
