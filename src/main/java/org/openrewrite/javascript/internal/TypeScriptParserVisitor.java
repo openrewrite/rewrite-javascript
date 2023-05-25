@@ -984,7 +984,75 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitImportDeclaration(TSCNode node) {
-        return unknownElement(node);
+        Space prefix = sourceBefore(TSCSyntaxKind.ImportKeyword);
+        JLeftPadded<Boolean> static_ = padLeft(EMPTY, false);
+
+        TSCNode target = node.getOptionalNodeProperty("importClause");
+        boolean isTypeOnly = target.getBooleanProperty("isTypeOnly");
+        if (isTypeOnly) {
+            implementMe(target, "isTypeOnly");
+        }
+
+        TSCNode nameNode = target.getOptionalNodeProperty("name");
+        TSCNode namedBindingsNode = target.getOptionalNodeProperty("namedBindings");
+        J.Identifier name;
+        if (namedBindingsNode != null) {
+            Space namePrefix = whitespace();
+            List<TSCNode> nodes = new ArrayList<>(1 + (nameNode != null ? 1 : 0));
+            if (nameNode != null) {
+                nodes.add(nameNode);
+            }
+            nodes.add(namedBindingsNode);
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < nodes.size(); i++) {
+                TSCNode n = nodes.get(i);
+                if (i > 0) {
+                    String sourceBetween = source.getText().substring(getCursor(), n.getStart());
+                    sb.append(sourceBetween);
+                    cursor(getCursor() + sourceBetween.length());
+                }
+                sb.append(n.getText());
+                cursor(getCursor() + n.getText().length());
+            }
+
+            // FIXME: imports with namedBindings do not fit into J.Import.
+            // This will require a new TS statement that contains the namedBindings, and name.
+            name = new J.Identifier(
+                    randomId(),
+                    namePrefix,
+                    Markers.EMPTY,
+                    sb.toString(),
+                    null,
+                    null
+            );
+        } else {
+            name = (J.Identifier) visitNode(nameNode);
+        }
+
+        // JS/TS does not have a concept of FQNs. The qualifier is a String literal that refers to a module, which does not work in Java.
+        // Example: '../../../index.js'
+        Space fromPrefix = sourceBefore(TSCSyntaxKind.FromKeyword);
+        Space modulePrefix = whitespace();
+        TSCNode moduleSpecifier = node.getNodeProperty("moduleSpecifier");
+        cursor(getCursor() + moduleSpecifier.getText().length());
+        J.FieldAccess qualid = new J.FieldAccess(
+                randomId(),
+                fromPrefix,
+                Markers.EMPTY,
+                new J.Empty(randomId(), EMPTY, Markers.EMPTY),
+                padLeft(modulePrefix, new J.Identifier(randomId(), EMPTY, Markers.EMPTY, moduleSpecifier.getText(), null, null)),
+                null
+        );
+
+        return new J.Import(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                static_,
+                qualid,
+                padLeft(EMPTY, name)
+        );
     }
 
     private J visitIndexedAccessType(TSCNode node) {

@@ -174,19 +174,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
-        public J visitTypeCast(J.TypeCast typeCast, PrintOutputCapture<P> p) {
-            beforeSyntax(typeCast, Space.Location.TYPE_CAST_PREFIX, p);
-
-            visit(typeCast.getExpression(), p);
-            visitSpace(typeCast.getClazz().getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-            p.append("as");
-            visitRightPadded(typeCast.getClazz().getPadding().getTree(), JRightPadded.Location.NAMED_VARIABLE, p);
-
-            afterSyntax(typeCast, p);
-            return typeCast;
-        }
-
-        @Override
         public J visitForEachLoop(J.ForEachLoop forEachLoop, PrintOutputCapture<P> p) {
             beforeSyntax(forEachLoop, Space.Location.FOR_EACH_LOOP_PREFIX, p);
             p.append("for");
@@ -201,6 +188,18 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitStatement(forEachLoop.getPadding().getBody(), JRightPadded.Location.FOR_BODY, p);
             afterSyntax(forEachLoop, p);
             return forEachLoop;
+        }
+
+        @Override
+        public J visitImport(J.Import import_, PrintOutputCapture<P> p) {
+            beforeSyntax(import_, Space.Location.IMPORT_PREFIX, p);
+            p.append("import");
+            visit(import_.getAlias(), p);
+            visitSpace(import_.getQualid().getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+            p.append("from");
+            visitLeftPadded(import_.getQualid().getPadding().getName(), JLeftPadded.Location.LANGUAGE_EXTENSION, p);
+            afterSyntax(import_, p);
+            return import_;
         }
 
         @Override
@@ -236,6 +235,19 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitContainer("[", newArray.getPadding().getInitializer(), JContainer.Location.NEW_ARRAY_INITIALIZER, ",", "]", p);
             afterSyntax(newArray, p);
             return newArray;
+        }
+
+        @Override
+        public J visitTypeCast(J.TypeCast typeCast, PrintOutputCapture<P> p) {
+            beforeSyntax(typeCast, Space.Location.TYPE_CAST_PREFIX, p);
+
+            visit(typeCast.getExpression(), p);
+            visitSpace(typeCast.getClazz().getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+            p.append("as");
+            visitRightPadded(typeCast.getClazz().getPadding().getTree(), JRightPadded.Location.NAMED_VARIABLE, p);
+
+            afterSyntax(typeCast, p);
+            return typeCast;
         }
 
         @Override

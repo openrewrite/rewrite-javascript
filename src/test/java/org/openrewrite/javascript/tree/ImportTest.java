@@ -16,18 +16,49 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
+@SuppressWarnings("ES6UnusedImports")
 public class ImportTest extends ParserTest {
 
-    @ExpectedToFail
     @Test
     void importStatement() {
         rewriteRun(
           javaScript(
             """
               import num from "./file"
-              console.log(num)
+              """
+          )
+        );
+    }
+
+    @Test
+    void importObjectLiteral() {
+        rewriteRun(
+          javaScript(
+            """
+              import { First , Second , Third } from 'target';
+              """
+          )
+        );
+    }
+
+    @Test
+    void mixedTypes() {
+        rewriteRun(
+          javaScript(
+            """
+              import nameA , { First , Second } from 'targetA';
+              """
+          )
+        );
+    }
+
+    @Test
+    void multiAlias() {
+        rewriteRun(
+          javaScript(
+            """
+              import { FormData as FormDataPolyfill , Blob as BlobPolyfill , File as FilePolyfill } from 'formdata-node'
               """
           )
         );
