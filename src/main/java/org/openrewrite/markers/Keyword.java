@@ -17,30 +17,15 @@ package org.openrewrite.markers;
 
 import lombok.Value;
 import lombok.With;
-import org.openrewrite.Incubating;
 import org.openrewrite.marker.Marker;
 
 import java.util.UUID;
 
-@Incubating(since = "0.0")
+/**
+ * Note: this may be used across all languages to represent a keyword as an annotation, and print without the `@`.
+ */
 @Value
 @With
-public class VariableModifier implements Marker {
-
+public class Keyword implements Marker {
     UUID id;
-    Keyword keyword;
-
-    public enum Keyword {
-        VAR("var"), LET("let"), CONST("const");
-
-        final String word;
-
-        Keyword(String word) {
-            this.word = word;
-        }
-
-        public String getWord() {
-            return word;
-        }
-    }
 }

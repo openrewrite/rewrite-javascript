@@ -77,7 +77,6 @@ public class VariableDeclarationTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void declareModifier() {
         rewriteRun(

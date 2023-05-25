@@ -32,10 +32,7 @@ import org.openrewrite.javascript.table.ParseExceptionAnalysis;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.javascript.tree.TsType;
 import org.openrewrite.marker.Markers;
-import org.openrewrite.markers.ForLoopType;
-import org.openrewrite.markers.FunctionDeclaration;
-import org.openrewrite.markers.TypeReferencePrefix;
-import org.openrewrite.markers.VariableModifier;
+import org.openrewrite.markers.*;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -1533,7 +1530,7 @@ public class TypeScriptParserVisitor {
     private J.TypeParameter visitTypeParameter(TSCNode node) {
         Space prefix = whitespace();
         List<J.Annotation> annotations = new ArrayList<>();
-        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+        mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
         implementMe(node, "expression");
         implementMe(node, "default");
         Expression name = (Expression) visitNode(node.getNodeProperty("name"));
@@ -1671,20 +1668,35 @@ public class TypeScriptParserVisitor {
 
         implementMe(node, "exclamationToken");
         int saveCursor = getCursor();
+        Space beforeVariableModifier = whitespace();
         TSCSyntaxKind keyword = scan();
-        VariableModifier.Keyword variableModifier = null;
+        List<J.Annotation> annotations = new ArrayList<>();
         if (keyword == TSCSyntaxKind.ConstKeyword) {
-            variableModifier = VariableModifier.Keyword.CONST;
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "const", null, null),
+                    null)
+            );
         } else if (keyword == TSCSyntaxKind.LetKeyword) {
-            variableModifier = VariableModifier.Keyword.LET;
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "let", null, null),
+                    null)
+            );
         } else if (keyword == TSCSyntaxKind.VarKeyword) {
-            variableModifier = VariableModifier.Keyword.VAR;
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "var", null, null),
+                    null)
+            );
         } else {
             cursor(saveCursor);
-        }
-
-        if (variableModifier != null) {
-            markers = markers.addIfAbsent(new VariableModifier(randomId(), variableModifier));
         }
 
         TypeTree typeTree = null;
@@ -1723,7 +1735,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                emptyList(),
+                annotations,
                 emptyList(),
                 typeTree,
                 null,
@@ -1736,20 +1748,37 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
+        Space beforeVariableModifier = whitespace();
         TSCSyntaxKind keyword = scan();
-        VariableModifier.Keyword variableModifier = null;
+        List<J.Annotation> annotations = new ArrayList<>();
         if (keyword == TSCSyntaxKind.ConstKeyword) {
-            variableModifier = VariableModifier.Keyword.CONST;
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "const", null, null),
+                    null)
+            );
         } else if (keyword == TSCSyntaxKind.LetKeyword) {
-            variableModifier = VariableModifier.Keyword.LET;
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "let", null, null),
+                    null)
+            );
         } else if (keyword == TSCSyntaxKind.VarKeyword) {
-            variableModifier = VariableModifier.Keyword.VAR;
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "var", null, null),
+                    null)
+            );
         } else {
             // Unclear if the modifier should be `@Nullable` in the `JSVariableDeclaration`.
             implementMe(node);
         }
-
-        markers = markers.addIfAbsent(new VariableModifier(randomId(), variableModifier));
 
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = emptyList();
         TypeTree typeTree = null;
@@ -1809,7 +1838,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                emptyList(),
+                annotations,
                 emptyList(),
                 typeTree,
                 null,
@@ -1827,20 +1856,36 @@ public class TypeScriptParserVisitor {
         List<J.Annotation> annotations = new ArrayList<>();
         List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
 
+        Space beforeVariableModifier = whitespace();
         TSCSyntaxKind keyword = scan();
-        VariableModifier.Keyword variableModifier = null;
         if (keyword == TSCSyntaxKind.ConstKeyword) {
-            variableModifier = VariableModifier.Keyword.CONST;
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "const", null, null),
+                    null)
+            );
         } else if (keyword == TSCSyntaxKind.LetKeyword) {
-            variableModifier = VariableModifier.Keyword.LET;
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "let", null, null),
+                    null)
+            );
         } else if (keyword == TSCSyntaxKind.VarKeyword) {
-            variableModifier = VariableModifier.Keyword.VAR;
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "var", null, null),
+                    null)
+            );
         } else {
             // Unclear if the modifier should be `@Nullable` in the `JSVariableDeclaration`.
             implementMe(node);
         }
-
-        markers = markers.addIfAbsent(new VariableModifier(randomId(), variableModifier));
 
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = emptyList();
         TypeTree typeTree = null;
@@ -2285,6 +2330,20 @@ public class TypeScriptParserVisitor {
             switch (node.syntaxKind()) {
                 case Decorator: {
                     J.Annotation annotation = (J.Annotation) visitNode(node);
+                    if (annotations == null) {
+                        annotations = new ArrayList<>(1);
+                    }
+                    annotations.add(annotation);
+                    break;
+                }
+                case DeclareKeyword: {
+                    J.Annotation annotation = new J.Annotation(
+                            randomId(),
+                            prefix,
+                            Markers.build(singletonList(new Keyword(randomId()))),
+                            (NameTree) visitNode(node),
+                            null
+                    );
                     if (annotations == null) {
                         annotations = new ArrayList<>(1);
                     }

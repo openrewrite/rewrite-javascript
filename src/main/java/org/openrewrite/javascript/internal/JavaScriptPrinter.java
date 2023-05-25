@@ -30,15 +30,10 @@ import org.openrewrite.javascript.tree.JsRightPadded;
 import org.openrewrite.javascript.tree.JsSpace;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
-import org.openrewrite.markers.ForLoopType;
-import org.openrewrite.markers.FunctionDeclaration;
-import org.openrewrite.markers.TypeReferencePrefix;
-import org.openrewrite.markers.VariableModifier;
+import org.openrewrite.markers.*;
 
 import java.util.List;
 import java.util.function.UnaryOperator;
-
-import static org.openrewrite.markers.VariableModifier.Keyword.*;
 
 public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P>> {
 
@@ -174,6 +169,18 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
+        public J visitAnnotation(J.Annotation annotation, PrintOutputCapture<P> p) {
+            beforeSyntax(annotation, Space.Location.ANNOTATION_PREFIX, p);
+            if (!annotation.getMarkers().findFirst(Keyword.class).isPresent()) {
+                p.append("@");
+            }
+            visit(annotation.getAnnotationType(), p);
+            visitContainer("(", annotation.getPadding().getArguments(), JContainer.Location.ANNOTATION_ARGUMENTS, ",", ")", p);
+            afterSyntax(annotation, p);
+            return annotation;
+        }
+
+        @Override
         public J visitForEachLoop(J.ForEachLoop forEachLoop, PrintOutputCapture<P> p) {
             beforeSyntax(forEachLoop, Space.Location.FOR_EACH_LOOP_PREFIX, p);
             p.append("for");
@@ -256,21 +263,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visit(multiVariable.getLeadingAnnotations(), p);
             for (J.Modifier m : multiVariable.getModifiers()) {
                 visitModifier(m, p);
-            }
-
-            VariableModifier variableModifier = multiVariable.getMarkers().findFirst(VariableModifier.class).orElse(null);
-            if (variableModifier != null) {
-                switch (variableModifier.getKeyword()) {
-                    case CONST:
-                        p.append(CONST.getWord());
-                        break;
-                    case LET:
-                        p.append(LET.getWord());
-                        break;
-                    case VAR:
-                        p.append(VAR.getWord());
-                        break;
-                }
             }
 
             List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = multiVariable.getPadding().getVariables();
