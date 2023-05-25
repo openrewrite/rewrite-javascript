@@ -77,6 +77,18 @@ public class VariableDeclarationTest extends ParserTest {
         );
     }
 
+    @ExpectedToFail
+    @Test
+    void declareModifier() {
+        rewriteRun(
+          javaScript(
+            """
+              declare const name;
+              """
+          )
+        );
+    }
+
     @Test
     void generic() {
         rewriteRun(

@@ -763,6 +763,10 @@ public class TypeScriptParserVisitor {
                 null);
     }
 
+    private J visitExportAssignment(TSCNode node) {
+        return unknownElement(node);
+    }
+
     private J visitExportDeclaration(TSCNode node) {
         return unknownElement(node);
     }
@@ -1750,10 +1754,10 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
-        List<J.Annotation> annotations = emptyList();
-        List<J.Modifier> modifiers = emptyList();
-        implementMe(node, "modifiers");
         implementMe(node, "exclamationToken");
+
+        List<J.Annotation> annotations = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
 
         TSCSyntaxKind keyword = scan();
         VariableModifier.Keyword variableModifier = null;
@@ -1853,9 +1857,13 @@ public class TypeScriptParserVisitor {
                 j = visitClassDeclaration(node);
                 break;
             case AnyKeyword:
+            case AsyncKeyword:
             case BooleanKeyword:
+            case DeclareKeyword:
+            case ExportKeyword:
             case FalseKeyword:
             case NumberKeyword:
+            case NullKeyword:
             case StringKeyword:
             case SuperKeyword:
             case ThisKeyword:
@@ -1933,6 +1941,9 @@ public class TypeScriptParserVisitor {
                 break;
             case EnumMember:
                 j = visitEnumMember(node);
+                break;
+            case ExportAssignment:
+                j = visitExportAssignment(node);
                 break;
             case ExportDeclaration:
                 j = visitExportDeclaration(node);
@@ -2204,13 +2215,14 @@ public class TypeScriptParserVisitor {
         for (TSCNode node : nodes) {
             Space prefix = whitespace();
             switch (node.syntaxKind()) {
-                case Decorator:
+                case Decorator: {
                     J.Annotation annotation = (J.Annotation) visitNode(node);
                     if (annotations == null) {
                         annotations = new ArrayList<>(1);
                     }
                     annotations.add(annotation);
                     break;
+                }
                 case AbstractKeyword:
                     consumeToken(TSCSyntaxKind.AbstractKeyword);
                     modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Abstract, annotations == null ? emptyList() : annotations));
