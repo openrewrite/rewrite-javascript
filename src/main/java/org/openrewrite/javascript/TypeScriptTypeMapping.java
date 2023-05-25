@@ -114,7 +114,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
     @Nullable
     private JavaType.FullyQualified classType(@Nullable TSCNode node, String signature) {
-        if (node == null) {
+        if (node == null || node.getTypeForNode() == null) {
             return null;
         }
 
