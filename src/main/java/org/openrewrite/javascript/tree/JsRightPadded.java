@@ -18,6 +18,7 @@ package org.openrewrite.javascript.tree;
 public class JsRightPadded {
     public enum Location {
         ARRAY_LITERAL_ELEMENT_SUFFIX(JsSpace.Location.ARRAY_LITERAL_SUFFIX),
+        FUNCTION_TYPE_PARAMETER_SUFFIX(JsSpace.Location.FUNCTION_TYPE_SUFFIX),
         UNION_TYPE(JsSpace.Location.UNION_TYPE_SUFFIX);
 
         private final JsSpace.Location afterLocation;

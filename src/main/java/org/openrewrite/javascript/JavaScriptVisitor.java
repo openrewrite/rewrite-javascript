@@ -54,6 +54,27 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return c;
     }
 
+    public J visitDefaultType(JS.DefaultType defaultType, P p) {
+        JS.DefaultType d = defaultType;
+        d = d.withPrefix(visitSpace(d.getPrefix(), Space.Location.ASSIGNMENT_PREFIX, p));
+        d = d.withMarkers(visitMarkers(d.getMarkers(), p));
+        d = d.withLeft(visitAndCast(d.getLeft(), p));
+        d = d.withBeforeEquals(visitSpace(d.getBeforeEquals(), Space.Location.ASSIGNMENT_OPERATION_PREFIX, p));
+        d = d.withRight(visitAndCast(d.getRight(), p));
+        return d;
+    }
+
+    public J visitFunctionType(JS.FunctionType functionType, P p) {
+        JS.FunctionType f = functionType;
+        f = f.withPrefix(visitSpace(f.getPrefix(), JsSpace.Location.FUNCTION_TYPE_PREFIX, p));
+        f = f.withMarkers(visitMarkers(f.getMarkers(), p));
+        f = f.getPadding().withParameters(visitContainer(f.getPadding().getParameters(), JContainer.Location.LANGUAGE_EXTENSION, p));
+        f = f.withParameters(ListUtils.map(f.getParameters(), e -> visitAndCast(e, p)));
+        f = f.withArrow(visitSpace(f.getArrow(), JsSpace.Location.FUNCTION_TYPE_ARROW_PREFIX, p));
+        f = f.withReturnType(visitAndCast(f.getReturnType(), p));
+        return f;
+    }
+
     public J visitJsBinary(JS.JsBinary binary, P p) {
         JS.JsBinary b = binary;
         b = b.withPrefix(visitSpace(b.getPrefix(), JsSpace.Location.BINARY_PREFIX, p));

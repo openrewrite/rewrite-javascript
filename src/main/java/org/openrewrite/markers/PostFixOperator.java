@@ -13,26 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript.tree;
+package org.openrewrite.markers;
 
-public class JsSpace {
-    public enum Location {
-        TODO,
-        ARRAY_LITERAL_PREFIX,
-        ARRAY_LITERAL_ELEMENTS,
-        BINARY_PREFIX,
-        DEFAULT_TYPE_PREFIX,
-        FUNCTION_TYPE_PREFIX,
-        FUNCTION_TYPE_PARAMETERS,
-        FUNCTION_TYPE_SUFFIX,
-        FUNCTION_TYPE_ARROW_PREFIX,
-        OPERATOR_PREFIX,
-        ARRAY_LITERAL_SUFFIX,
-        UNION_PREFIX,
-        UNION_TYPE_SUFFIX,
-        UNKNOWN_PREFIX,
-        UNKNOWN_SOURCE_PREFIX,
-        TYPE_OPERATOR_PREFIX,
-        VARIABLE_DECLARATION_PREFIX
+import lombok.Value;
+import lombok.With;
+import org.openrewrite.java.tree.Space;
+import org.openrewrite.marker.Marker;
+
+import java.util.UUID;
+
+@Value
+@With
+public class PostFixOperator implements Marker {
+    UUID id;
+    Space prefix;
+    Operator operator;
+
+    // TODO: @Gary: rename operators to match JS/TS
+    public enum Operator {
+        ExclamationMark("!"),
+        QuestionMark("?");
+
+        private final String value;
+
+        Operator(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

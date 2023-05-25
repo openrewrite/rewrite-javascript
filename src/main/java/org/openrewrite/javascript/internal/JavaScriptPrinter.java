@@ -24,10 +24,7 @@ import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
-import org.openrewrite.javascript.tree.JS;
-import org.openrewrite.javascript.tree.JsLeftPadded;
-import org.openrewrite.javascript.tree.JsRightPadded;
-import org.openrewrite.javascript.tree.JsSpace;
+import org.openrewrite.javascript.tree.*;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.markers.*;
@@ -60,6 +57,28 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visitSpace(cu.getEof(), Space.Location.COMPILATION_UNIT_EOF, p);
         afterSyntax(cu, p);
         return cu;
+    }
+
+    @Override
+    public J visitDefaultType(JS.DefaultType defaultType, PrintOutputCapture<P> p) {
+        beforeSyntax(defaultType, JsSpace.Location.DEFAULT_TYPE_PREFIX, p);
+        visit(defaultType.getLeft(), p);
+        visitSpace(defaultType.getBeforeEquals(), Space.Location.ASSIGNMENT_OPERATION_PREFIX, p);
+        p.append("=");
+        visit(defaultType.getRight(), p);
+        afterSyntax(defaultType, p);
+        return defaultType;
+    }
+
+    @Override
+    public J visitFunctionType(JS.FunctionType functionType, PrintOutputCapture<P> p) {
+        beforeSyntax(functionType, JsSpace.Location.FUNCTION_TYPE_PREFIX, p);
+        visitContainer("(", functionType.getPadding().getParameters(), JsContainer.Location.FUNCTION_TYPE_PARAMETER, ",", ")", p);
+        visitSpace(functionType.getArrow(), JsSpace.Location.FUNCTION_TYPE_ARROW_PREFIX, p);
+        p.append("=>");
+        visit(functionType.getReturnType(), p);
+        afterSyntax(functionType, p);
+        return functionType;
     }
 
     @Override
@@ -270,6 +289,12 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 JRightPadded<J.VariableDeclarations.NamedVariable> variable = variables.get(i);
                 beforeSyntax(variable.getElement(), Space.Location.VARIABLE_PREFIX, p);
                 visit(variable.getElement().getName(), p);
+                PostFixOperator postFixOperator = variable.getElement().getMarkers().findFirst(PostFixOperator.class).orElse(null);
+                if (postFixOperator != null) {
+                    visitSpace(postFixOperator.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+                    p.append(postFixOperator.getOperator().getValue());
+                }
+
                 if (multiVariable.getTypeExpression() != null) {
                     multiVariable.getMarkers().findFirst(TypeReferencePrefix.class).ifPresent(typeReferencePrefix -> visitSpace(typeReferencePrefix.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p));
                     p.append(":");
@@ -363,6 +388,17 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         for (Marker marker : markers.getMarkers()) {
             p.out.append(p.getMarkerPrinter().afterSyntax(marker, new Cursor(getCursor(), marker), JAVA_SCRIPT_MARKER_WRAPPER));
         }
+    }
+
+    protected void visitContainer(String before, @Nullable JContainer<? extends J> container, JsContainer.Location location,
+                                  String suffixBetween, @Nullable String after, PrintOutputCapture<P> p) {
+        if (container == null) {
+            return;
+        }
+        visitSpace(container.getBefore(), location.getBeforeLocation(), p);
+        p.append(before);
+        visitRightPadded(container.getPadding().getElements(), location.getElementLocation(), suffixBetween, p);
+        p.append(after == null ? "" : after);
     }
 
     protected void visitLeftPadded(@Nullable String prefix, @Nullable JLeftPadded<? extends J> leftPadded, JLeftPadded.Location location, PrintOutputCapture<P> p) {

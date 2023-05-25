@@ -1131,6 +1131,41 @@ public class TypeScriptParserVisitor {
         return visitIdentifier(node);
     }
 
+    private J visitFunctionType(TSCNode node) {
+        implementMe(node, "typeParameters");
+        implementMe(node, "modifiers");
+        implementMe(node, "typeArguments");
+        implementMe(node, "asteriskToken");
+        Space prefix = whitespace();
+
+        List<TSCNode> params = node.getOptionalNodeListProperty("parameters");
+        if (params == null) {
+            implementMe(node);
+        }
+        JContainer<Statement> parameters = mapContainer(
+                TSCSyntaxKind.OpenParenToken,
+                params,
+                TSCSyntaxKind.CommaToken,
+                TSCSyntaxKind.CloseParenToken,
+                t -> (Statement) visitNode(t)
+        );
+
+        TSCNode type = node.getOptionalNodeProperty("type");
+        if (type == null) {
+            implementMe(node);
+        }
+
+        return new JS.FunctionType(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                parameters,
+                sourceBefore(TSCSyntaxKind.EqualsGreaterThanToken),
+                (Expression) visitNode(type),
+                typeMapping.type(node)
+        );
+    }
+
     private J.Label visitLabelledStatement(TSCNode node) {
         return new J.Label(
                 randomId(),
@@ -1152,7 +1187,20 @@ public class TypeScriptParserVisitor {
         implementMe(node, "typeArguments");
 
         JavaType.Method methodType = typeMapping.methodDeclarationType(node);
-        J.Identifier name = visitIdentifier(node.getNodeProperty("name"), methodType);
+        TSCNode nameNode = node.getOptionalNodeProperty("name");
+        J.Identifier name;
+        if (nameNode == null) {
+            name = new J.Identifier(
+                    randomId(),
+                    EMPTY,
+                    Markers.EMPTY,
+                    "",
+                    null,
+                    null
+            );
+        } else {
+            name = visitIdentifier(nameNode, methodType);
+        }
 
         J.TypeParameters typeParameters = node.hasProperty("typeParameters") ?
                 new J.TypeParameters(randomId(), sourceBefore(TSCSyntaxKind.LessThanToken), Markers.EMPTY,
@@ -1536,8 +1584,21 @@ public class TypeScriptParserVisitor {
         List<J.Annotation> annotations = new ArrayList<>();
         mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
         implementMe(node, "expression");
-        implementMe(node, "default");
+        TSCNode defaultType = node.getOptionalNodeProperty("default");
         Expression name = (Expression) visitNode(node.getNodeProperty("name"));
+
+        if (defaultType != null) {
+            name = new JS.DefaultType(
+                    randomId(),
+                    name.getPrefix(),
+                    Markers.EMPTY,
+                    name.withPrefix(EMPTY),
+                    sourceBefore(TSCSyntaxKind.EqualsToken),
+                    (Expression) visitNode(defaultType),
+                    typeMapping.type(defaultType)
+            );
+        }
+
         JContainer<TypeTree> bounds = !node.hasProperty("constraint") ? null :
                 JContainer.build(
                         sourceBefore(TSCSyntaxKind.ExtendsKeyword),
@@ -1670,7 +1731,6 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
-        implementMe(node, "exclamationToken");
         int saveCursor = getCursor();
         Space beforeVariableModifier = whitespace();
         TSCSyntaxKind keyword = scan();
@@ -1714,6 +1774,26 @@ public class TypeScriptParserVisitor {
             implementMe(node);
         }
 
+        Markers variableMarker = Markers.EMPTY;
+        TSCNode exclamationToken = node.getOptionalNodeProperty("exclamationToken");
+        if (exclamationToken != null) {
+            variableMarker = variableMarker.addIfAbsent(new PostFixOperator(
+                    randomId(),
+                    sourceBefore(TSCSyntaxKind.ExclamationToken),
+                    PostFixOperator.Operator.ExclamationMark)
+            );
+            implementMe(exclamationToken);
+        }
+
+        TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
+        if (questionToken != null) {
+            variableMarker = variableMarker.addIfAbsent(new PostFixOperator(
+                    randomId(),
+                    sourceBefore(TSCSyntaxKind.QuestionToken),
+                    PostFixOperator.Operator.QuestionMark)
+            );
+        }
+
         if (node.hasProperty("type")) {
             Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
             if (beforeColon != EMPTY) {
@@ -1724,7 +1804,7 @@ public class TypeScriptParserVisitor {
         J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
                 randomId(),
                 variablePrefix,
-                Markers.EMPTY,
+                variableMarker,
                 name,
                 emptyList(),
                 node.hasProperty("initializer") ?
@@ -1998,6 +2078,7 @@ public class TypeScriptParserVisitor {
             case FunctionExpression:
                 j = visitFunctionDeclaration(node);
                 break;
+            case CallSignature:
             case MethodDeclaration:
             case MethodSignature:
                 j = visitMethodDeclaration(node);
@@ -2089,6 +2170,9 @@ public class TypeScriptParserVisitor {
             case ForStatement:
                 j = visitForStatement(node);
                 break;
+            case FunctionType:
+                j = visitFunctionType(node);
+                break;
             case LabeledStatement:
                 j = visitLabelledStatement(node);
                 break;
@@ -2152,6 +2236,7 @@ public class TypeScriptParserVisitor {
             case WhileStatement:
                 j = visitWhileStatement(node);
                 break;
+            case PropertySignature:
             case VariableDeclaration:
                 j = visitVariableDeclaration(node);
                 break;
@@ -2335,6 +2420,7 @@ public class TypeScriptParserVisitor {
         for (TSCNode node : nodes) {
             Space prefix = whitespace();
             switch (node.syntaxKind()) {
+                // JS/TS equivalent of an annotation.
                 case Decorator: {
                     J.Annotation annotation = (J.Annotation) visitNode(node);
                     if (annotations == null) {
@@ -2343,20 +2429,13 @@ public class TypeScriptParserVisitor {
                     annotations.add(annotation);
                     break;
                 }
-                case DeclareKeyword: {
-                    J.Annotation annotation = new J.Annotation(
-                            randomId(),
-                            prefix,
-                            Markers.build(singletonList(new Keyword(randomId()))),
-                            (NameTree) visitNode(node),
-                            null
-                    );
-                    if (annotations == null) {
-                        annotations = new ArrayList<>(1);
-                    }
-                    annotations.add(annotation);
+                // JS/TS keywords.
+                case DeclareKeyword:
+                case ExportKeyword: {
+                    annotations = mapKeyword(annotations, node, prefix);
                     break;
                 }
+                // Keywords that exist in J.
                 case AbstractKeyword:
                     consumeToken(TSCSyntaxKind.AbstractKeyword);
                     modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Abstract, annotations == null ? emptyList() : annotations));
@@ -2395,6 +2474,21 @@ public class TypeScriptParserVisitor {
             leadingAnnotations.addAll(annotations);
         }
         return modifiers.isEmpty() ? emptyList() : modifiers;
+    }
+
+    private List<J.Annotation> mapKeyword(@Nullable List<J.Annotation> annotations, TSCNode node, Space prefix) {
+        J.Annotation annotation = new J.Annotation(
+                randomId(),
+                prefix,
+                Markers.build(singletonList(new Keyword(randomId()))),
+                (NameTree) visitNode(node),
+                null
+        );
+        if (annotations == null) {
+            annotations = new ArrayList<>(1);
+        }
+        annotations.add(annotation);
+        return annotations;
     }
 
     private Space sourceBefore(TSCSyntaxKind syntaxKind) {

@@ -28,11 +28,11 @@ public class ExportTest extends ParserTest {
           javaScript(
             """
               class ZipCodeValidator {
-                isAcceptable(s: string) {
-                  return s.length === 5;
+                isAcceptable ( s : string ) {
+                  return s . length === 5 ;
                 }
               }
-              export { ZipCodeValidator };
+              export { ZipCodeValidator } ;
               """
           )
         );
@@ -44,7 +44,7 @@ public class ExportTest extends ParserTest {
         rewriteRun(
             javaScript(
               """
-                export const numberRegexp = /^[0-9]+$/;
+                export const numberRegexp = /^[0-9]+$/ ;
                 """
             )
         );
@@ -54,23 +54,51 @@ public class ExportTest extends ParserTest {
     @Test
     void fromClass() {
         rewriteRun(
-          javaScript("class CreateFile {}"),
           javaScript(
             """
-              export * from "./f0.ts";
+              export * from "./f0.ts" ;
               """
           )
         );
     }
 
-    @ExpectedToFail
     @Test
-    void alias() {
+    void exportInterface() {
         rewriteRun(
-          javaScript("class CreateFile {}"),
           javaScript(
             """
-              export * from "./f0.ts";
+              export interface Foo {
+                  ( value : any , defaultEncoder : ( value : any ) => any ) : any ;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void exportInterfaceParameterizedAssignment() {
+        rewriteRun(
+          javaScript(
+            """
+              export interface Foo < D = any > {
+                  url ? : string ;
+                  method ? : Method | string ;
+                  baseURL ? : string ;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void exportInterfaceAndExtends() {
+        rewriteRun(
+          javaScript(
+            """
+              export interface Foo extends Bar {
+                  encode ? : Baz ;
+                  serialize ? : Buz ;
+              }
               """
           )
         );

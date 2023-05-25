@@ -546,6 +546,9 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 case "abstract":
                     flags.add(Flag.Abstract);
                     break;
+                case "export":
+                    // TODO: get input from Gary ... is there any reason to add export as a modifier to the JavaType?
+                    break;
                 default:
                     if (modifier.syntaxKind() != TSCSyntaxKind.Decorator) {
                         // Decorators are handled separately to ensure the JavaType for a class is cached before type attributing annotations.
