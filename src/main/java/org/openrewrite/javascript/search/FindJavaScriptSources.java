@@ -39,14 +39,14 @@ public class FindJavaScriptSources extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Use data table to collect source files types and counts of files with extensions `.kt`.";
+        return "Use data table to collect source files types and counts of files with extensions `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, `.cts`.";
     }
 
     @Override
     protected TreeVisitor<?, ExecutionContext> getVisitor() {
         return new TreeVisitor<Tree, ExecutionContext>() {
-            final Set<String> jsExtensions = new HashSet<>(Arrays.asList("js", "jsx", "mjs", "cjs"));
-            final Set<String> tsExtensions = new HashSet<>(Arrays.asList("ts", "tsx", "mts", "cts"));
+            final Set<String> jsExtensions = new HashSet<>(Arrays.asList(".js", ".jsx", ".mjs", ".cjs"));
+            final Set<String> tsExtensions = new HashSet<>(Arrays.asList(".ts", ".tsx", ".mts", ".cts"));
 
             @Override
             public Tree visitSourceFile(SourceFile sourceFile, ExecutionContext ctx) {
@@ -56,7 +56,7 @@ public class FindJavaScriptSources extends Recipe {
                 } else if (sourceFile instanceof PlainText) {
                     sourceFileType = JavaScriptSourceFile.SourceFileType.PlainText;
                 } else {
-                    String extension = sourceFile.getSourcePath().toString().substring(sourceFile.getSourcePath().toString().lastIndexOf(".") + 1);
+                    String extension = sourceFile.getSourcePath().toString().substring(sourceFile.getSourcePath().toString().lastIndexOf("."));
                     if (jsExtensions.contains(extension)) {
                         sourceFileType = JavaScriptSourceFile.SourceFileType.JavaScript;
                     } else if (tsExtensions.contains(extension)) {
