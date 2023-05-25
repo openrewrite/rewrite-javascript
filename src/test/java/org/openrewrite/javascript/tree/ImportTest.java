@@ -15,5 +15,21 @@
  */
 package org.openrewrite.javascript.tree;
 
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
+
 public class ImportTest extends ParserTest {
+
+    @ExpectedToFail
+    @Test
+    void importStatement() {
+        rewriteRun(
+          javaScript(
+            """
+              import num from "./file"
+              console.log(num)
+              """
+          )
+        );
+    }
 }

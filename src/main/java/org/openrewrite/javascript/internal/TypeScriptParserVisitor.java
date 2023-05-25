@@ -763,6 +763,10 @@ public class TypeScriptParserVisitor {
                 null);
     }
 
+    private J visitExportDeclaration(TSCNode node) {
+        return unknownElement(node);
+    }
+
     public Expression visitExpressionStatement(TSCNode node) {
         return (Expression) visitNode(node.getNodeProperty("expression"));
     }
@@ -973,6 +977,10 @@ public class TypeScriptParserVisitor {
                 type == null ? typeMapping.type(node) : type,
                 fieldType
         );
+    }
+
+    private J visitImportDeclaration(TSCNode node) {
+        return unknownElement(node);
     }
 
     private J visitIndexedAccessType(TSCNode node) {
@@ -1926,6 +1934,9 @@ public class TypeScriptParserVisitor {
             case EnumMember:
                 j = visitEnumMember(node);
                 break;
+            case ExportDeclaration:
+                j = visitExportDeclaration(node);
+                break;
             case ExpressionStatement:
                 j = visitExpressionStatement(node);
                 break;
@@ -1935,11 +1946,14 @@ public class TypeScriptParserVisitor {
             case Identifier:
                 j = visitIdentifier(node);
                 break;
-            case IndexedAccessType:
-                j = visitIndexedAccessType(node);
-                break;
             case IfStatement:
                 j = visitIfStatement(node);
+                break;
+            case ImportDeclaration:
+                j = visitImportDeclaration(node);
+                break;
+            case IndexedAccessType:
+                j = visitIndexedAccessType(node);
                 break;
             case ForStatement:
                 j = visitForStatement(node);
