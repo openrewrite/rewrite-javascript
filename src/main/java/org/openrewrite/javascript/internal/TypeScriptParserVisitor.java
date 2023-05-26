@@ -1456,6 +1456,20 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J visitRegularExpressionLiteral(TSCNode node) {
+        Space prefix = whitespace();
+        cursor(getCursor() + node.getText().length());
+        return new J.Literal(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                node.getStringProperty("text"),
+                node.getText(),
+                null,
+                JavaType.Primitive.None
+        );
+    }
+
     private J.Return visitReturnStatement(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.ReturnKeyword);
         Expression expression = null;
@@ -2096,6 +2110,10 @@ public class TypeScriptParserVisitor {
             case PrefixUnaryExpression:
                 j = visitUnaryExpression(node);
                 break;
+            case PropertySignature:
+            case VariableDeclaration:
+                j = visitVariableDeclaration(node);
+                break;
             // Single case statements
             case ArrayBindingPattern:
                 j = visitArrayBindingPattern(node);
@@ -2205,6 +2223,9 @@ public class TypeScriptParserVisitor {
             case QualifiedName:
                 j = visitQualifiedName(node);
                 break;
+            case RegularExpressionLiteral:
+                j = visitRegularExpressionLiteral(node);
+                break;
             case ReturnStatement:
                 j = visitReturnStatement(node);
                 break;
@@ -2240,10 +2261,6 @@ public class TypeScriptParserVisitor {
                 break;
             case WhileStatement:
                 j = visitWhileStatement(node);
-                break;
-            case PropertySignature:
-            case VariableDeclaration:
-                j = visitVariableDeclaration(node);
                 break;
             case VariableDeclarationList:
                 j = visitVariableDeclarationList(node);

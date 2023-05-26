@@ -16,12 +16,10 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings({"JSFileReferences", "JSUnusedLocalSymbols"})
 public class ExportTest extends ParserTest {
 
-    @ExpectedToFail
     @Test
     void exportDeclaration() {
         rewriteRun(
@@ -38,7 +36,6 @@ public class ExportTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void propertyModifier() {
         rewriteRun(
@@ -50,7 +47,6 @@ public class ExportTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void fromClass() {
         rewriteRun(
