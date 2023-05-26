@@ -29,4 +29,18 @@ public class MethodInvocationTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void statementParameter() {
+        rewriteRun(
+          javaScript(
+            """
+              export default function (req) {
+                req.on('data', function () {
+                });
+              }
+              """
+          )
+        );
+    }
 }

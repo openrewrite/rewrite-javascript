@@ -37,6 +37,7 @@ import org.openrewrite.marker.Markers;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -457,15 +458,24 @@ public class TypeScriptParserVisitor {
         } else {
             implementMe(expression);
         }
-            JContainer<Expression> arguments = null;
+        JContainer<Expression> arguments = null;
         if (node.hasProperty("arguments")) {
-            arguments = mapContainer(
+            JContainer<J> jContainer = mapContainer(
                     TSCSyntaxKind.OpenParenToken,
                     node.getNodeListProperty("arguments"),
                     TSCSyntaxKind.CommaToken,
                     TSCSyntaxKind.CloseParenToken,
-                    t -> (Expression) visitNode(t)
+                    this::visitNode
             );
+            List<JRightPadded<Expression>> elements = jContainer.getPadding().getElements().stream()
+                    .map(it -> {
+                        if (!(it.getElement() instanceof Expression) && it.getElement() instanceof Statement) {
+                            return padRight((Expression) new JS.StatementExpression(randomId(), (Statement) it.getElement()), it.getAfter());
+                        }
+                        return padRight((Expression) it.getElement(), it.getAfter());
+                    })
+                    .collect(Collectors.toList());
+            arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
         }
 
         return new J.MethodInvocation(
