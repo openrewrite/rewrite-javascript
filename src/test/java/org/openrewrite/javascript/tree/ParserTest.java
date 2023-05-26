@@ -27,6 +27,7 @@ import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.SourceSpec;
 import org.openrewrite.test.SourceSpecs;
 
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,20 +39,42 @@ public class ParserTest implements RewriteTest {
         });
     }
 
+    public static SourceSpecs javaScript(Path path, @Language("typescript") @Nullable String before) {
+        return javaScript(path, before, s -> {
+        });
+    }
+
     public static SourceSpecs javaScript(@Language("typescript") @Nullable String before, Consumer<SourceSpec<JS.CompilationUnit>> spec) {
+        return javaScript(null, before, spec);
+    }
+
+    public static SourceSpecs javaScript(@Nullable Path path, @Language("typescript") @Nullable String before, Consumer<SourceSpec<JS.CompilationUnit>> spec) {
         SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, null);
+        if (path != null) {
+            js = js.path(path);
+        }
         acceptSpec(spec, js);
         return js;
     }
 
     public static SourceSpecs javaScript(@Language("typescript") @Nullable String before, @Language("typescript") String after) {
-        return javaScript(before, after, s -> {
+        return javaScript(null, before, after, s -> {
         });
     }
 
-    public static SourceSpecs javaScript(@Language("typescript") @Nullable String before, @Language("typescript") String after,
+    public static SourceSpecs javaScript(@Nullable Path path, @Language("typescript") @Nullable String before, @Language("typescript") String after) {
+        return javaScript(path, before, after, s -> {
+        });
+    }
+
+    public static SourceSpecs javaScript(@Nullable Path path,
+                                         @Language("typescript") @Nullable String before,
+                                         @Language("typescript") String after,
                                          Consumer<SourceSpec<JS.CompilationUnit>> spec) {
         SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, s -> after);
+        if (path != null) {
+            js = js.path(path);
+        }
         acceptSpec(spec, js);
         return js;
     }
