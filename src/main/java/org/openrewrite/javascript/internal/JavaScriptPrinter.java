@@ -60,6 +60,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitAlias(JS.Alias alias, PrintOutputCapture<P> p) {
+        beforeSyntax(alias, JsSpace.Location.ALIAS_PREFIX, p);
+        visitRightPadded(alias.getPadding().getPropertyName(), JsRightPadded.Location.ALIAS_PROPERTY_NAME, p);
+        p.append("as");
+        visit(alias.getAlias(), p);
+        afterSyntax(alias, p);
+        return alias;
+    }
+
+    @Override
     public J visitDefaultType(JS.DefaultType defaultType, PrintOutputCapture<P> p) {
         beforeSyntax(defaultType, JsSpace.Location.DEFAULT_TYPE_PREFIX, p);
         visit(defaultType.getLeft(), p);
@@ -68,6 +78,22 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(defaultType.getRight(), p);
         afterSyntax(defaultType, p);
         return defaultType;
+    }
+
+    @Override
+    public J visitExport(JS.Export export, PrintOutputCapture<P> p) {
+        beforeSyntax(export, JsSpace.Location.EXPORT_PREFIX, p);
+        p.append("export");
+
+        boolean printBrackets = export.getPadding().getExports().getMarkers().findFirst(Braces.class).isPresent();
+        visitContainer(printBrackets ? "{" : "", export.getPadding().getExports(), JsContainer.Location.FUNCTION_TYPE_PARAMETER, ",", printBrackets ? "}" : "", p);
+        if (export.getFrom() != null) {
+            visitSpace(export.getFrom(), Space.Location.LANGUAGE_EXTENSION, p);
+            p.append("from");
+        }
+        visit(export.getTarget(), p);
+        afterSyntax(export, p);
+        return export;
     }
 
     @Override

@@ -240,6 +240,91 @@ public interface JS extends J {
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Data
+    final class Alias implements JS, Expression {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<JS.Alias.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        JRightPadded<J.Identifier> propertyName;
+
+        @With
+        J.Identifier alias;
+
+        public J.Identifier getPropertyName() {
+            return propertyName.getElement();
+        }
+
+        public JS.Alias withPropertyName(J.Identifier propertyName) {
+            return getPadding().withPropertyName(this.propertyName.withElement(propertyName));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitAlias(this, p);
+        }
+
+        @Override
+        public @Nullable JavaType getType() {
+            return propertyName.getElement().getType();
+        }
+
+        @Override
+        public <T extends J> T withType(@Nullable JavaType type) {
+            //noinspection unchecked
+            return (T) withPropertyName(propertyName.getElement().withType(type));
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public JS.Alias.Padding getPadding() {
+            JS.Alias.Padding p;
+            if (this.padding == null) {
+                p = new JS.Alias.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JS.Alias.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JS.Alias t;
+
+            public JRightPadded<J.Identifier> getPropertyName() {
+                return t.propertyName;
+            }
+
+            public JS.Alias withPropertyName(JRightPadded<J.Identifier> propertyName) {
+                return t.propertyName == propertyName ? t : new JS.Alias(t.id, t.prefix, t.markers, propertyName, t.alias);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @Data
     @With
     final class DefaultType implements JS, Expression, TypedTree, NameTree {
@@ -272,7 +357,90 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    class Export implements JS, Statement {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<Export.Padding> padding;
+
+        @Getter
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @Getter
+        @With
+        Space prefix;
+
+        @Getter
+        @With
+        Markers markers;
+
+        JContainer<Expression> exports;
+
+        public List<Expression> getExports() {
+            return exports.getElements();
+        }
+
+        public Export withExports(List<Expression> exports) {
+            return getPadding().withExports(JContainer.withElements(this.exports, exports));
+        }
+
+        @Getter
+        @With
+        @Nullable
+        Space from;
+
+        @Getter
+        @With
+        @Nullable
+        J.Literal target;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitExport(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public Export.Padding getPadding() {
+            Export.Padding p;
+            if (this.padding == null) {
+                p = new Export.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Export.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final Export t;
+
+            public JContainer<Expression> getExports() {
+                return t.exports;
+            }
+
+            public Export withExports(JContainer<Expression> exports) {
+                return t.exports == exports ? t : new Export(t.id, t.prefix, t.markers, exports, t.from, t.target);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     class FunctionType implements JS, Expression, TypeTree {
+
         @Nullable
         @NonFinal
         transient WeakReference<Padding> padding;
@@ -851,8 +1019,8 @@ public interface JS extends J {
 
         @Override
         public <T extends J> T withType(@Nullable JavaType type) {
-            //noinspection DataFlowIssue
-            return null;
+            //noinspection unchecked
+            return (T) this;
         }
 
         @Override

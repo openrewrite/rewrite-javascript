@@ -13,22 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript.tree;
+package org.openrewrite.javascript.markers;
 
-public class JsLeftPadded {
-    public enum Location {
-        BINARY_OPERATOR(JsSpace.Location.BINARY_PREFIX),
-        OPERATOR(JsSpace.Location.OPERATOR_PREFIX),
-        TYPE_OPERATOR(JsSpace.Location.TYPE_OPERATOR_PREFIX);
+import lombok.Value;
+import lombok.With;
+import org.openrewrite.marker.Marker;
 
-        private final JsSpace.Location beforeLocation;
+import java.util.UUID;
 
-        Location(JsSpace.Location beforeLocation) {
-            this.beforeLocation = beforeLocation;
-        }
-
-        public JsSpace.Location getBeforeLocation() {
-            return beforeLocation;
-        }
-    }
+@Value
+@With
+public class Braces implements Marker {
+    UUID id;
 }

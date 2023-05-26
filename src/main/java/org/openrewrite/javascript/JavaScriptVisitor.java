@@ -54,6 +54,16 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return c;
     }
 
+    public J visitAlias(JS.Alias alias, P p) {
+        JS.Alias a = alias;
+        a = a.withPrefix(visitSpace(a.getPrefix(), JsSpace.Location.ALIAS_PREFIX, p));
+        a = a.withMarkers(visitMarkers(a.getMarkers(), p));
+        a = a.getPadding().withPropertyName(visitRightPadded(a.getPadding().getPropertyName(), JsRightPadded.Location.ALIAS_PROPERTY_NAME, p));
+        a = a.withAlias(visitAndCast(a.getAlias(), p));
+        a = a.withType(visitType(a.getType(), p));
+        return a;
+    }
+
     public J visitDefaultType(JS.DefaultType defaultType, P p) {
         JS.DefaultType d = defaultType;
         d = d.withPrefix(visitSpace(d.getPrefix(), Space.Location.ASSIGNMENT_PREFIX, p));
@@ -61,7 +71,20 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         d = d.withLeft(visitAndCast(d.getLeft(), p));
         d = d.withBeforeEquals(visitSpace(d.getBeforeEquals(), Space.Location.ASSIGNMENT_OPERATION_PREFIX, p));
         d = d.withRight(visitAndCast(d.getRight(), p));
+        d = d.withType(visitType(d.getType(), p));
         return d;
+    }
+
+    public J visitExport(JS.Export export, P p) {
+        JS.Export e = export;
+        e = e.withPrefix(visitSpace(e.getPrefix(), JsSpace.Location.EXPORT_PREFIX, p));
+        e = e.withMarkers(visitMarkers(e.getMarkers(), p));
+        e = e.getPadding().withExports(visitContainer(e.getPadding().getExports(), JContainer.Location.LANGUAGE_EXTENSION, p));
+        if (e.getFrom() != null) {
+            e = e.withFrom(visitSpace(e.getFrom(), JsSpace.Location.EXPORT_FROM_PREFIX, p));
+        }
+        e = e.withTarget(visitAndCast(e.getTarget(), p));
+        return e;
     }
 
     public J visitFunctionType(JS.FunctionType functionType, P p) {
@@ -72,6 +95,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         f = f.withParameters(ListUtils.map(f.getParameters(), e -> visitAndCast(e, p)));
         f = f.withArrow(visitSpace(f.getArrow(), JsSpace.Location.FUNCTION_TYPE_ARROW_PREFIX, p));
         f = f.withReturnType(visitAndCast(f.getReturnType(), p));
+        f = f.withType(visitType(f.getType(), p));
         return f;
     }
 
@@ -114,6 +138,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.TYPE_OPERATOR_PREFIX, p));
         t = t.withMarkers(visitMarkers(t.getMarkers(), p));
         t = t.getPadding().withExpression(visitLeftPadded(t.getPadding().getExpression(), JsLeftPadded.Location.TYPE_OPERATOR, p));
+        t = t.withType(visitType(t.getType(), p));
         return t;
     }
 
@@ -122,6 +147,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         u = u.withPrefix(visitSpace(u.getPrefix(), JsSpace.Location.UNION_PREFIX, p));
         u = u.withMarkers(visitMarkers(u.getMarkers(), p));
         u = u.getPadding().withTypes(ListUtils.map(u.getPadding().getTypes(), t -> visitRightPadded(t, JsRightPadded.Location.UNION_TYPE, p)));
+        u = u.withType(visitType(u.getType(), p));
         return u;
     }
 
@@ -130,6 +156,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         u = u.withPrefix(visitSpace(u.getPrefix(), JsSpace.Location.UNKNOWN_PREFIX, p));
         u = u.withMarkers(visitMarkers(u.getMarkers(), p));
         u = u.withSource(visitAndCast(u.getSource(), p));
+        u = u.withType(visitType(u.getType(), p));
         return u;
     }
 

@@ -53,17 +53,18 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
 
         @Override
         public J visitStatement(Statement statement, ExecutionContext executionContext) {
-            if (statement instanceof J.VariableDeclarations) {
+            Statement s = (Statement) super.visitStatement(statement, executionContext);
+            if (s instanceof J.VariableDeclarations) {
                 count++;
                 final ParseExceptionResult result = new ParseExceptionResult(
                   UUID.randomUUID(),
                   ParseExceptionAnalysis.getAnalysisMessage("someNodeType" + count)
                 );
                 PrintOutputCapture<Integer> output = new PrintOutputCapture<>(0);
-                printer.visit(statement, output);
-                return new JS.UnknownElement(
+                printer.visit(s, output);
+                s = new JS.UnknownElement(
                         Tree.randomId(),
-                        statement.getPrefix(),
+                        s.getPrefix(),
                         Markers.EMPTY,
                         new JS.UnknownElement.Source(
                                 Tree.randomId(),
@@ -73,7 +74,7 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
                         ).withMarkers(Markers.build(Collections.singletonList(result)))
                 );
             }
-            return super.visitStatement(statement, executionContext);
+            return s;
         }
     });
 

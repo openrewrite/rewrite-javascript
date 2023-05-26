@@ -18,10 +18,14 @@ package org.openrewrite.javascript.tree;
 public class JsSpace {
     public enum Location {
         TODO,
+        ALIAS_PREFIX,
+        ALIAS_PROPERTY_NAME_PREFIX,
         ARRAY_LITERAL_PREFIX,
         ARRAY_LITERAL_ELEMENTS,
         BINARY_PREFIX,
         DEFAULT_TYPE_PREFIX,
+        EXPORT_PREFIX,
+        EXPORT_FROM_PREFIX,
         FUNCTION_TYPE_PREFIX,
         FUNCTION_TYPE_PARAMETERS,
         FUNCTION_TYPE_SUFFIX,

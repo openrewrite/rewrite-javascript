@@ -769,7 +769,88 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitExportDeclaration(TSCNode node) {
-        return unknownElement(node);
+        implementMe(node, "assertClause");
+        implementMe(node, "modifiers");
+
+        Space prefix = sourceBefore(TSCSyntaxKind.ExportKeyword);
+        boolean isTypeOnly = node.getBooleanProperty("isTypeOnly");
+        if (isTypeOnly) {
+            implementMe(node);
+        }
+
+        TSCNode exportClause = node.getOptionalNodeProperty("exportClause");
+        JContainer<Expression> exports;
+        if (exportClause != null) {
+            if (exportClause.syntaxKind() != TSCSyntaxKind.NamedExports) {
+                implementMe(exportClause);
+            }
+
+            List<TSCNode> elements = exportClause.getOptionalNodeListProperty("elements");
+            if (elements == null) {
+                implementMe(exportClause);
+            }
+            exports = mapContainer(
+                    TSCSyntaxKind.OpenBraceToken,
+                    elements,
+                    TSCSyntaxKind.CommaToken,
+                    TSCSyntaxKind.CloseBraceToken,
+                    t -> (Expression) visitNode(t)
+            ).withMarkers(Markers.build(singletonList(new Braces(randomId()))));
+        } else {
+            exports = JContainer.build(sourceBefore(TSCSyntaxKind.AsteriskToken), singletonList(padRight(new J.Identifier(
+                    randomId(),
+                    EMPTY,
+                    Markers.EMPTY,
+                    "*",
+                    null,
+                    null
+            ), EMPTY)), Markers.EMPTY);
+        }
+
+        TSCNode moduleSpecifier = node.getOptionalNodeProperty("moduleSpecifier");
+        Space beforeFrom = moduleSpecifier == null ? null : sourceBefore(TSCSyntaxKind.FromKeyword);
+        J.Literal target = null;
+        if (moduleSpecifier != null) {
+            Space before = whitespace();
+            String nodeText = moduleSpecifier.getText();
+            cursor(getCursor() + nodeText.length());
+            target = new J.Literal(
+                    randomId(),
+                    before,
+                    Markers.EMPTY,
+                    moduleSpecifier.getStringProperty("text"),
+                    nodeText,
+                    null,
+                    JavaType.Primitive.None
+            );
+        }
+        return new JS.Export(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                exports,
+                beforeFrom,
+                target
+        );
+    }
+
+    private J visitExportSpecifier(TSCNode node) {
+        boolean isTypeOnly = node.getBooleanProperty("isTypeOnly");
+        if (isTypeOnly) {
+            implementMe(node);
+        }
+        TSCNode propertyName = node.getOptionalNodeProperty("propertyName");
+        if (propertyName != null) {
+            return new JS.Alias(
+                    randomId(),
+                    whitespace(),
+                    Markers.EMPTY,
+                    padRight((J.Identifier) visitNode(propertyName), sourceBefore(TSCSyntaxKind.AsKeyword)),
+                    (J.Identifier) visitNode(node.getNodeProperty("name"))
+            );
+        }
+
+        return visitNode(node.getNodeProperty("name"));
     }
 
     public Expression visitExpressionStatement(TSCNode node) {
@@ -1139,24 +1220,24 @@ public class TypeScriptParserVisitor {
         implementMe(node, "modifiers");
         implementMe(node, "typeArguments");
         implementMe(node, "asteriskToken");
-        Space prefix = whitespace();
-
-        List<TSCNode> params = node.getOptionalNodeListProperty("parameters");
-        if (params == null) {
-            implementMe(node);
-        }
-        JContainer<Statement> parameters = mapContainer(
-                TSCSyntaxKind.OpenParenToken,
-                params,
-                TSCSyntaxKind.CommaToken,
-                TSCSyntaxKind.CloseParenToken,
-                t -> (Statement) visitNode(t)
-        );
-
-        TSCNode type = node.getOptionalNodeProperty("type");
-        if (type == null) {
-            implementMe(node);
-        }
+//        Space prefix = whitespace();
+//
+//        List<TSCNode> params = node.getOptionalNodeListProperty("parameters");
+//        if (params == null) {
+//            implementMe(node);
+//        }
+//        JContainer<Statement> parameters = mapContainer(
+//                TSCSyntaxKind.OpenParenToken,
+//                params,
+//                TSCSyntaxKind.CommaToken,
+//                TSCSyntaxKind.CloseParenToken,
+//                t -> (Statement) visitNode(t)
+//        );
+//
+//        TSCNode type = node.getOptionalNodeProperty("type");
+//        if (type == null) {
+//            implementMe(node);
+//        }
 
         // FIXME: does not deserialize due to double visit.
 //        return new JS.FunctionType(
@@ -2171,6 +2252,9 @@ public class TypeScriptParserVisitor {
                 break;
             case ExportDeclaration:
                 j = visitExportDeclaration(node);
+                break;
+            case ExportSpecifier:
+                j = visitExportSpecifier(node);
                 break;
             case ExpressionStatement:
                 j = visitExpressionStatement(node);

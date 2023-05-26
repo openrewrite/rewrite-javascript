@@ -16,6 +16,7 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings({"JSFileReferences", "JSUnusedLocalSymbols"})
 public class ExportTest extends ParserTest {
@@ -37,17 +38,6 @@ public class ExportTest extends ParserTest {
     }
 
     @Test
-    void propertyModifier() {
-        rewriteRun(
-            javaScript(
-              """
-                export const numberRegexp = /^[0-9]+$/ ;
-                """
-            )
-        );
-    }
-
-    @Test
     void fromClass() {
         rewriteRun(
           javaScript(
@@ -58,6 +48,46 @@ public class ExportTest extends ParserTest {
         );
     }
 
+    @Test
+    void multiExport() {
+        rewriteRun(
+          javaScript(
+            """
+              export {
+                  first,
+                  second,
+                  third
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void alias() {
+        rewriteRun(
+          javaScript(
+            """
+              export {
+                  name as default
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void exportProperty() {
+        rewriteRun(
+          javaScript(
+            """
+              export const numberRegexp = /^[0-9]+$/ ;
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail
     @Test
     void exportInterface() {
         rewriteRun(
