@@ -110,4 +110,15 @@ public class VariableDeclarationTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void typeDeclaration() {
+        rewriteRun(
+          javaScript(
+            """
+              type Value = string | string[] | number | boolean | null;
+              """
+          )
+        );
+    }
 }

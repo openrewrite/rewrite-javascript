@@ -141,4 +141,15 @@ public class ExportTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void exportType() {
+        rewriteRun(
+          javaScript(
+            """
+              export type Value = string | string[] | number | boolean | null;
+              """
+          )
+        );
+    }
 }

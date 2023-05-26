@@ -946,8 +946,7 @@ public class TypeScriptParserVisitor {
         List<J.Annotation> annotations = new ArrayList<>();
         List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
 
-        Space before = whitespace();
-        consumeToken(TSCSyntaxKind.FunctionKeyword);
+        Space before = sourceBefore(TSCSyntaxKind.FunctionKeyword);
         annotations = mapKeywordToAnnotation(before, "function", annotations);
 
         J.Identifier name;
@@ -1614,6 +1613,50 @@ public class TypeScriptParserVisitor {
 
     private J visitTupleType(TSCNode node) {
         return unknownElement(node);
+    }
+
+    private J visitTypeAliasDeclaration(TSCNode node) {
+        implementMe(node, "typeParameters");
+        Space prefix = whitespace();
+        Markers markers = Markers.EMPTY;
+
+        List<J.Annotation> annotations = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+
+        Space before = sourceBefore(TSCSyntaxKind.TypeKeyword);
+        annotations = mapKeywordToAnnotation(before, "type", annotations);
+
+        TypeTree typeTree = null;
+        List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = new ArrayList<>(1);
+
+        TSCNode nameNode = node.getNodeProperty("name");
+        J.Identifier name = (J.Identifier) visitNode(nameNode);
+        name = name.withType(typeMapping.type(nameNode));
+
+        J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
+                randomId(),
+                EMPTY,
+                Markers.EMPTY,
+                name,
+                emptyList(),
+                padLeft(sourceBefore(TSCSyntaxKind.EqualsToken),
+                        (Expression) Objects.requireNonNull(visitNode(node.getNodeProperty("type")))),
+                typeMapping.variableType(node)
+        );
+
+        namedVariables.add(padRight(variable, EMPTY));
+
+        return new J.VariableDeclarations(
+                randomId(),
+                prefix,
+                markers,
+                annotations,
+                modifiers,
+                typeTree,
+                null,
+                emptyList(),
+                namedVariables
+        );
     }
 
     private JS.JsOperator visitTsOperator(TSCNode node) {
@@ -2307,6 +2350,9 @@ public class TypeScriptParserVisitor {
                 break;
             case TupleType:
                 j = visitTupleType(node);
+                break;
+            case TypeAliasDeclaration:
+                j = visitTypeAliasDeclaration(node);
                 break;
             case TypeOfExpression:
                 j = visitTsOperator(node);
