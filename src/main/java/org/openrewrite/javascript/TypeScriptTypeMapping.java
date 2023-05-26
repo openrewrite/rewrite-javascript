@@ -467,7 +467,6 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         JavaType resolvedOwner = declaringType;
         if (resolvedOwner == null) {
             resolvedOwner = classType(getOwner(node));
-            assert resolvedOwner != null;
         }
 
         TSCNode typeNode = node.getOptionalNodeProperty("type");
@@ -477,6 +476,11 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         } else {
             type = resolveNode(node);
         }
+
+        if (resolvedOwner == null || type instanceof JavaType.Unknown) {
+            return null;
+        }
+
         variable.unsafeSet(resolvedOwner, type, annotations);
 
         return variable;

@@ -1158,15 +1158,17 @@ public class TypeScriptParserVisitor {
             implementMe(node);
         }
 
-        return new JS.FunctionType(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                parameters,
-                sourceBefore(TSCSyntaxKind.EqualsGreaterThanToken),
-                (Expression) visitNode(type),
-                typeMapping.type(node)
-        );
+        // FIXME: does not deserialize due to double visit.
+//        return new JS.FunctionType(
+//                randomId(),
+//                prefix,
+//                Markers.EMPTY,
+//                parameters,
+//                sourceBefore(TSCSyntaxKind.EqualsGreaterThanToken),
+//                (Expression) visitNode(type),
+//                typeMapping.type(node)
+//        );
+        return unknownElement(node);
     }
 
     private J.Label visitLabelledStatement(TSCNode node) {
