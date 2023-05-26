@@ -493,8 +493,8 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 .collect(Collectors.toList());
 
         List<JavaType.FullyQualified> annotations = new ArrayList<>(annotationNodes.size());
-        for (TSCNode modifier : modifiers) {
-            annotations.add((JavaType.FullyQualified) type(modifier));
+        for (TSCNode annotation : annotationNodes) {
+            annotations.add((JavaType.FullyQualified) type(annotation));
         }
         return annotations.isEmpty() ? null : annotations;
     }
