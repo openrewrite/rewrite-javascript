@@ -62,7 +62,7 @@ public class ParseExceptionAnalysis extends DataTable<ParseExceptionAnalysis.Row
      * @return analysis message.
      */
     public static String getAnalysisMessage(String nodeType, @Nullable String sourceSnippet) {
-        return "Unable to parse node of type {{" + nodeType + (sourceSnippet != null ? "}} at :" + sourceSnippet : "}}");
+        return "Unable to parse node of type {{" + nodeType + (sourceSnippet != null ? "}} at: " + sourceSnippet : "}}");
     }
 
     public static String getNodeType(String message) {
@@ -74,7 +74,7 @@ public class ParseExceptionAnalysis extends DataTable<ParseExceptionAnalysis.Row
     }
 
     public static String getSourceSnippet(String message) {
-        int start = message.indexOf("}} at :") + 7;
+        int start = message.indexOf("}} at: ") + 7;
         return start > 6 ? message.substring(start) : "";
     }
 }

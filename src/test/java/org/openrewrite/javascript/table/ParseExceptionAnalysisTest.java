@@ -27,7 +27,7 @@ public class ParseExceptionAnalysisTest {
         assertThat(msg).isEqualTo("Unable to parse node of type {{someNodeType}}");
 
         String msgWithSnipper = ParseExceptionAnalysis.getAnalysisMessage("someNodeType", "someSnippet");
-        assertThat(msgWithSnipper).isEqualTo("Unable to parse node of type {{someNodeType}} at :someSnippet");
+        assertThat(msgWithSnipper).isEqualTo("Unable to parse node of type {{someNodeType}} at: someSnippet");
     }
 
     @Test

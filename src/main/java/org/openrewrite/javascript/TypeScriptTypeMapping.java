@@ -550,6 +550,9 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 case "abstract":
                     flags.add(Flag.Abstract);
                     break;
+                case "default":
+                    flags.add(Flag.Default);
+                    break;
                 case "export":
                     // TODO: get input from Gary ... is there any reason to add export as a modifier to the JavaType?
                     break;

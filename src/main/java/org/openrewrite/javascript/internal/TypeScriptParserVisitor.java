@@ -43,7 +43,7 @@ import static java.util.Collections.singletonList;
 import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.tree.Space.EMPTY;
 
-@SuppressWarnings("DataFlowIssue")
+@SuppressWarnings({"DataFlowIssue", "SameParameterValue"})
 public class TypeScriptParserVisitor {
 
     private final TSCNode source;
@@ -450,15 +450,10 @@ public class TypeScriptParserVisitor {
         J.Identifier name = null;
         if (expression.hasProperty("name")) {
             name = visitIdentifier(expression.getNodeProperty("name"), type);
+        } else if (expression.syntaxKind() == TSCSyntaxKind.Identifier) {
+            name = visitIdentifier(expression, type);
         } else if (expression.syntaxKind() == TSCSyntaxKind.SuperKeyword) {
-            name = new J.Identifier(
-                    randomId(),
-                    sourceBefore(TSCSyntaxKind.SuperKeyword),
-                    Markers.EMPTY,
-                    "super",
-                    typeMapping.type(node),
-                    null
-            );
+            name = convertToIdentifier(sourceBefore(TSCSyntaxKind.SuperKeyword), "super");
         } else {
             implementMe(expression);
         }
@@ -523,14 +518,7 @@ public class TypeScriptParserVisitor {
         if (node.hasProperty("name")) {
             name = visitIdentifier(node.getNodeProperty("name"));
         } else {
-            name = new J.Identifier(
-                    randomId(),
-                    EMPTY,
-                    Markers.EMPTY,
-                    "",
-                    null,
-                    null
-            );
+            name = convertToIdentifier(EMPTY, "");
         }
 
         JContainer<J.TypeParameter> typeParams = !node.hasProperty("typeParameters") ? null : mapContainer(
@@ -659,14 +647,7 @@ public class TypeScriptParserVisitor {
 
         Space before = whitespace();
         consumeToken(TSCSyntaxKind.ConstructorKeyword);
-        J.Identifier name = new J.Identifier(
-                randomId(),
-                before,
-                Markers.EMPTY,
-                "constructor",
-                typeMapping.type(node),
-                null
-        );
+        J.Identifier name = convertToIdentifier(before, "constructor");
 
         JContainer<Statement> params = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
@@ -797,14 +778,8 @@ public class TypeScriptParserVisitor {
                     t -> (Expression) visitNode(t)
             ).withMarkers(Markers.build(singletonList(new Braces(randomId()))));
         } else {
-            exports = JContainer.build(sourceBefore(TSCSyntaxKind.AsteriskToken), singletonList(padRight(new J.Identifier(
-                    randomId(),
-                    EMPTY,
-                    Markers.EMPTY,
-                    "*",
-                    null,
-                    null
-            ), EMPTY)), Markers.EMPTY);
+            exports = JContainer.build(sourceBefore(TSCSyntaxKind.AsteriskToken),
+                    singletonList(padRight(convertToIdentifier(EMPTY, "*"), EMPTY)), Markers.EMPTY);
         }
 
         TSCNode moduleSpecifier = node.getOptionalNodeProperty("moduleSpecifier");
@@ -952,7 +927,18 @@ public class TypeScriptParserVisitor {
     }
 
     private J.MethodDeclaration visitFunctionDeclaration(TSCNode node) {
-        Space prefix = sourceBefore(TSCSyntaxKind.FunctionKeyword);
+        implementMe(node, "asteriskToken");
+        implementMe(node, "typeParameters");
+        implementMe(node, "typeArguments");
+        implementMe(node, "type");
+        Space prefix = whitespace();
+
+        List<J.Annotation> annotations = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+
+        Space before = whitespace();
+        consumeToken(TSCSyntaxKind.FunctionKeyword);
+        annotations = mapKeywordToAnnotation(before, "function", annotations);
 
         J.Identifier name;
         JavaType.Method method = typeMapping.methodDeclarationType(node);
@@ -961,7 +947,7 @@ public class TypeScriptParserVisitor {
         } else {
             // FIXME: get input, we can add an anonymous name and prevent printing with a marker.
             // Function expressions do not require a name `function (..)`
-            name = new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "", null, null);
+            name = convertToIdentifier(EMPTY, "");
         }
 
         name = name.withType(method);
@@ -978,9 +964,9 @@ public class TypeScriptParserVisitor {
         return new J.MethodDeclaration(
                 randomId(),
                 prefix,
-                Markers.EMPTY.addIfAbsent(new FunctionDeclaration(randomId())),
-                Collections.emptyList(),
-                Collections.emptyList(),
+                Markers.EMPTY,
+                annotations,
+                modifiers,
                 null,
                 null,
                 new J.MethodDeclaration.IdentifierWithAnnotations(name, Collections.emptyList()),
@@ -1100,14 +1086,7 @@ public class TypeScriptParserVisitor {
 
             // FIXME: imports with namedBindings do not fit into J.Import.
             // This will require a new TS statement that contains the namedBindings, and name.
-            name = new J.Identifier(
-                    randomId(),
-                    namePrefix,
-                    Markers.EMPTY,
-                    sb.toString(),
-                    null,
-                    null
-            );
+            name = convertToIdentifier(namePrefix, sb.toString());
         } else {
             name = (J.Identifier) visitNode(nameNode);
             // FIXME: resolve imports in the TSC node and find a means to attribution types.
@@ -1126,7 +1105,7 @@ public class TypeScriptParserVisitor {
                 fromPrefix,
                 Markers.EMPTY,
                 new J.Empty(randomId(), EMPTY, Markers.EMPTY),
-                padLeft(modulePrefix, new J.Identifier(randomId(), EMPTY, Markers.EMPTY, moduleSpecifier.getText(), null, null)),
+                padLeft(modulePrefix, convertToIdentifier(EMPTY, moduleSpecifier.getText())),
                 null
         );
 
@@ -1276,14 +1255,7 @@ public class TypeScriptParserVisitor {
         TSCNode nameNode = node.getOptionalNodeProperty("name");
         J.Identifier name;
         if (nameNode == null) {
-            name = new J.Identifier(
-                    randomId(),
-                    EMPTY,
-                    Markers.EMPTY,
-                    "",
-                    null,
-                    null
-            );
+            name = convertToIdentifier(EMPTY, "");
         } else {
             name = visitIdentifier(nameNode, methodType);
         }
@@ -1840,7 +1812,7 @@ public class TypeScriptParserVisitor {
                     randomId(),
                     beforeVariableModifier,
                     Markers.build(singletonList(new Keyword(randomId()))),
-                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "const", null, null),
+                    convertToIdentifier(EMPTY, "const"),
                     null)
             );
         } else if (keyword == TSCSyntaxKind.LetKeyword) {
@@ -1848,7 +1820,7 @@ public class TypeScriptParserVisitor {
                     randomId(),
                     beforeVariableModifier,
                     Markers.build(singletonList(new Keyword(randomId()))),
-                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "let", null, null),
+                    convertToIdentifier(EMPTY, "let"),
                     null)
             );
         } else if (keyword == TSCSyntaxKind.VarKeyword) {
@@ -1856,7 +1828,7 @@ public class TypeScriptParserVisitor {
                     randomId(),
                     beforeVariableModifier,
                     Markers.build(singletonList(new Keyword(randomId()))),
-                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "var", null, null),
+                    convertToIdentifier(EMPTY, "var"),
                     null)
             );
         } else {
@@ -1940,7 +1912,7 @@ public class TypeScriptParserVisitor {
                     randomId(),
                     beforeVariableModifier,
                     Markers.build(singletonList(new Keyword(randomId()))),
-                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "const", null, null),
+                    convertToIdentifier(EMPTY, "const"),
                     null)
             );
         } else if (keyword == TSCSyntaxKind.LetKeyword) {
@@ -1948,7 +1920,7 @@ public class TypeScriptParserVisitor {
                     randomId(),
                     beforeVariableModifier,
                     Markers.build(singletonList(new Keyword(randomId()))),
-                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "let", null, null),
+                    convertToIdentifier(EMPTY, "let"),
                     null)
             );
         } else if (keyword == TSCSyntaxKind.VarKeyword) {
@@ -1956,7 +1928,7 @@ public class TypeScriptParserVisitor {
                     randomId(),
                     beforeVariableModifier,
                     Markers.build(singletonList(new Keyword(randomId()))),
-                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "var", null, null),
+                    convertToIdentifier(EMPTY, "var"),
                     null)
             );
         } else {
@@ -2047,7 +2019,7 @@ public class TypeScriptParserVisitor {
                     randomId(),
                     beforeVariableModifier,
                     Markers.build(singletonList(new Keyword(randomId()))),
-                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "const", null, null),
+                    convertToIdentifier(EMPTY, "const"),
                     null)
             );
         } else if (keyword == TSCSyntaxKind.LetKeyword) {
@@ -2055,7 +2027,7 @@ public class TypeScriptParserVisitor {
                     randomId(),
                     beforeVariableModifier,
                     Markers.build(singletonList(new Keyword(randomId()))),
-                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "let", null, null),
+                    convertToIdentifier(EMPTY, "let"),
                     null)
             );
         } else if (keyword == TSCSyntaxKind.VarKeyword) {
@@ -2063,7 +2035,7 @@ public class TypeScriptParserVisitor {
                     randomId(),
                     beforeVariableModifier,
                     Markers.build(singletonList(new Keyword(randomId()))),
-                    new J.Identifier(randomId(), EMPTY, Markers.EMPTY, "var", null, null),
+                    convertToIdentifier(EMPTY, "var"),
                     null)
             );
         } else {
@@ -2157,6 +2129,7 @@ public class TypeScriptParserVisitor {
             case AsyncKeyword:
             case BooleanKeyword:
             case DeclareKeyword:
+            case DefaultKeyword:
             case ExportKeyword:
             case FalseKeyword:
             case NumberKeyword:
@@ -2446,6 +2419,18 @@ public class TypeScriptParserVisitor {
         return converted.isEmpty() ? emptyList() : converted;
     }
 
+    /**
+     * Converts a String that does not require type attribution to a J.Identifier.
+     * Primarily used to convert keywords that do not exist in J to a J.Identifier.
+     * <p>
+     * Note: the cursor must be incremented before the call.
+     * @param simpleName the String to convert.
+     * @return a J.Identifier representing the String.
+     */
+    private J.Identifier convertToIdentifier(Space prefix, String simpleName) {
+        return new J.Identifier(randomId(), prefix, Markers.EMPTY, simpleName, null, null);
+    }
+
     private <T extends J> JContainer<T> mapContainer(TSCSyntaxKind open, List<TSCNode> nodes, @Nullable TSCSyntaxKind delimiter, TSCSyntaxKind close, Function<TSCNode, T> visitFn) {
         Space containerPrefix = sourceBefore(open);
         List<JRightPadded<T>> elements;
@@ -2537,8 +2522,9 @@ public class TypeScriptParserVisitor {
                 }
                 // JS/TS keywords.
                 case DeclareKeyword:
+                case DefaultKeyword:
                 case ExportKeyword: {
-                    annotations = mapKeyword(annotations, node, prefix);
+                    annotations = mapKeywordToAnnotation(prefix, node, annotations);
                     break;
                 }
                 // Keywords that exist in J.
@@ -2582,7 +2568,22 @@ public class TypeScriptParserVisitor {
         return modifiers.isEmpty() ? emptyList() : modifiers;
     }
 
-    private List<J.Annotation> mapKeyword(@Nullable List<J.Annotation> annotations, TSCNode node, Space prefix) {
+    private List<J.Annotation> mapKeywordToAnnotation(Space prefix, String keyword, @Nullable List<J.Annotation> annotations) {
+        J.Annotation annotation = new J.Annotation(
+                randomId(),
+                prefix,
+                Markers.build(singletonList(new Keyword(randomId()))),
+                convertToIdentifier(EMPTY, keyword),
+                null
+        );
+        if (annotations == null) {
+            annotations = new ArrayList<>(1);
+        }
+        annotations.add(annotation);
+        return annotations;
+    }
+
+    private List<J.Annotation> mapKeywordToAnnotation(Space prefix, TSCNode node, @Nullable List<J.Annotation> annotations) {
         J.Annotation annotation = new J.Annotation(
                 randomId(),
                 prefix,

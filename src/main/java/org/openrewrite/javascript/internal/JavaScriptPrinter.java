@@ -32,6 +32,7 @@ import org.openrewrite.marker.Markers;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+@SuppressWarnings("SameParameterValue")
 public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P>> {
 
     private static final UnaryOperator<String> JAVA_SCRIPT_MARKER_WRAPPER =
@@ -259,9 +260,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             beforeSyntax(method, Space.Location.METHOD_DECLARATION_PREFIX, p);
             visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
             visit(method.getLeadingAnnotations(), p);
-            if (method.getMarkers().findFirst(FunctionDeclaration.class).isPresent()) {
-                p.append("function");
-            }
 
             visit(method.getName(), p);
             visitContainer("(", method.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, ",", ")", p);

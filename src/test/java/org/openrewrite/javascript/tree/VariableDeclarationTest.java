@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
-@SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable"})
+@SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable", "TypeScriptCheckImport"})
 public class VariableDeclarationTest extends ParserTest {
 
     @Test
@@ -94,6 +94,18 @@ public class VariableDeclarationTest extends ParserTest {
           javaScript(
             """
               var v : Array < string > = [ 'foo' , 'bar', 'buz' ] ;
+              """
+          )
+        );
+    }
+
+    @Test
+    void methodInvocationInitializer() {
+        rewriteRun(
+          javaScript(
+            """
+              import parseProtocol from './parseProtocol.js';
+              const protocol = parseProtocol("");
               """
           )
         );

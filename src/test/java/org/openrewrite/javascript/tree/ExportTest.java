@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
-@SuppressWarnings({"JSFileReferences", "JSUnusedLocalSymbols"})
+@SuppressWarnings({"JSFileReferences", "JSUnusedLocalSymbols", "TypeScriptCheckImport", "TypeScriptUnresolvedVariable"})
 public class ExportTest extends ParserTest {
 
     @Test
@@ -124,6 +124,18 @@ public class ExportTest extends ParserTest {
               export interface Foo extends Bar {
                   encode ? : Baz ;
                   serialize ? : Buz ;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void exportFunction() {
+        rewriteRun(
+          javaScript(
+            """
+              export default function methodName() {
               }
               """
           )
