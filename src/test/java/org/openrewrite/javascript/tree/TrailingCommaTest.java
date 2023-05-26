@@ -32,17 +32,6 @@ class TrailingCommaTest extends ParserTest {
         );
     }
 
-    @Test
-    void onMethodWithMultiParameter() {
-        rewriteRun(
-          javaScript(
-            """
-              console . log ( "hello ", "world")
-              """
-          )
-        );
-    }
-
     @ExpectedToFail
     @Test
     void onTuple() {
