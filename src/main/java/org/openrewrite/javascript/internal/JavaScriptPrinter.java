@@ -71,6 +71,25 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitArrowFunction(JS.ArrowFunction arrowFunction, PrintOutputCapture<P> p) {
+        beforeSyntax(arrowFunction, JsSpace.Location.ARROW_FUNCTION_PREFIX, p);
+        visit(arrowFunction.getLeadingAnnotations(), p);
+        visit(arrowFunction.getModifiers(), p);
+        if (arrowFunction.getParameters().isParenthesized()) {
+            p.append('(');
+            visitRightPadded(arrowFunction.getParameters().getPadding().getParams(), JRightPadded.Location.LAMBDA_PARAM, ",", p);
+            p.append(')');
+        } else {
+            visitRightPadded(arrowFunction.getParameters().getPadding().getParams(), JRightPadded.Location.LAMBDA_PARAM, ",", p);
+        }
+        visitSpace(arrowFunction.getArrow(), Space.Location.LAMBDA_ARROW_PREFIX, p);
+        p.append("=>");
+        visit(arrowFunction.getBody(), p);
+        afterSyntax(arrowFunction, p);
+        return arrowFunction;
+    }
+
+    @Override
     public J visitDefaultType(JS.DefaultType defaultType, PrintOutputCapture<P> p) {
         beforeSyntax(defaultType, JsSpace.Location.DEFAULT_TYPE_PREFIX, p);
         visit(defaultType.getLeft(), p);

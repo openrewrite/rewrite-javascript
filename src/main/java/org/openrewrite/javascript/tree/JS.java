@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public interface JS extends J {
 
     @Override
@@ -320,6 +321,57 @@ public interface JS extends J {
             public JS.Alias withPropertyName(JRightPadded<J.Identifier> propertyName) {
                 return t.propertyName == propertyName ? t : new JS.Alias(t.id, t.prefix, t.markers, propertyName, t.alias);
             }
+        }
+    }
+
+    /**
+     * A JavaScript `=>` is similar to a Java lambda, but additionally contains annotations, modifiers, type arguments.
+     * The ArrowFunction prevents J.Lambda recipes from transforming the LST because an ArrowFunction
+     * may not be transformed in the same way as a J.Lambda.
+     */
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @Data
+    final class ArrowFunction implements JS, Statement, Expression, TypedTree {
+
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        @With
+        List<J.Annotation> leadingAnnotations;
+
+        @With
+        List<J.Modifier> modifiers;
+
+        @With
+        Lambda.Parameters parameters;
+
+        @With
+        Space arrow;
+
+        @With
+        J body;
+
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitArrowFunction(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
         }
     }
 
@@ -802,7 +854,6 @@ public interface JS extends J {
         Expression expression;
 
         // For backwards compatibility with older ASTs before there was an id field
-        @SuppressWarnings("unused")
         public ExpressionStatement(Expression expression) {
             this.id = Tree.randomId();
             this.expression = expression;

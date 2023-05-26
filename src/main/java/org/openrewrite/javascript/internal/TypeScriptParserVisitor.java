@@ -180,7 +180,45 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitArrowFunction(TSCNode node) {
-        return unknownElement(node);
+        implementMe(node, "modifiers");
+        implementMe(node, "typeParameters");
+        implementMe(node, "type");
+        implementMe(node, "typeArguments");
+
+        Space prefix = whitespace();
+
+        List<J.Annotation> annotations = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+
+        int saveCursor = getCursor();
+        Space before = whitespace();
+        TSCSyntaxKind next = scan();
+        boolean parenthesized = next == TSCSyntaxKind.OpenParenToken;
+        if (!parenthesized) {
+            before = EMPTY;
+            cursor(saveCursor);
+        }
+
+        J.Lambda.Parameters params = new J.Lambda.Parameters(
+                randomId(),
+                before,
+                Markers.EMPTY,
+                parenthesized,
+                convertAll(node.getNodeListProperty("parameters"), commaDelim,
+                        parenthesized ? t -> sourceBefore(TSCSyntaxKind.CloseParenToken) : noDelim)
+        );
+
+        return new JS.ArrowFunction(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                annotations,
+                modifiers,
+                params,
+                sourceBefore(TSCSyntaxKind.EqualsGreaterThanToken),
+                visitBlock(node.getOptionalNodeProperty("body")),
+                typeMapping.type(node)
+        );
     }
 
     private J.NewArray visitArrayLiteralExpression(TSCNode node) {
@@ -1756,6 +1794,7 @@ public class TypeScriptParserVisitor {
                 name,
                 typeMapping.type(node)
         );
+
         return new J.ParameterizedType(
                 randomId(),
                 prefix,
