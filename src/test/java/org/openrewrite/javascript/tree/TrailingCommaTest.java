@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings({"JSLastCommaInArrayLiteral", "JSUnresolvedVariable", "JSUnusedLocalSymbols"})
-public class TrailingCommaTest extends ParserTest {
+class TrailingCommaTest extends ParserTest {
 
     @Test
     void onMethodParameter() {
@@ -27,6 +27,17 @@ public class TrailingCommaTest extends ParserTest {
           javaScript(
             """
               console . log ( "hello world" , )
+              """
+          )
+        );
+    }
+
+    @Test
+    void onMethodWithMultiParameter() {
+        rewriteRun(
+          javaScript(
+            """
+              console . log ( "hello ", "world")
               """
           )
         );

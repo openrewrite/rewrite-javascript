@@ -469,10 +469,9 @@ public class TypeScriptParserVisitor {
             );
             List<JRightPadded<Expression>> elements = jContainer.getPadding().getElements().stream()
                     .map(it -> {
-                        if (!(it.getElement() instanceof Expression) && it.getElement() instanceof Statement) {
-                            return padRight((Expression) new JS.StatementExpression(randomId(), (Statement) it.getElement()), it.getAfter());
-                        }
-                        return padRight((Expression) it.getElement(), it.getAfter());
+                        Expression exp = (!(it.getElement() instanceof Expression) && it.getElement() instanceof Statement) ?
+                            new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
+                        return padRight(exp, it.getAfter(), it.getMarkers());
                     })
                     .collect(Collectors.toList());
             arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
@@ -2412,6 +2411,10 @@ public class TypeScriptParserVisitor {
 
     private <T> JRightPadded<T> padRight(T tree, @Nullable Space right) {
         return new JRightPadded<>(tree, right == null ? EMPTY : right, Markers.EMPTY);
+    }
+
+    private <T> JRightPadded<T> padRight(T tree, @Nullable Space right, Markers markers) {
+        return new JRightPadded<>(tree, right == null ? EMPTY : right, markers);
     }
 
     private <K2 extends J> JRightPadded<K2> maybeSemicolon(K2 k) {

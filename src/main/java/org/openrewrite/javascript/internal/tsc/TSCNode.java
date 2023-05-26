@@ -123,7 +123,7 @@ public class TSCNode implements TSCV8Backed {
                 syntaxKind().name(),
                 getStart(),
                 getEnd(),
-                TSCUtils.preview(getText(), 15)
+                TSCUtils.preview(getText(), 100)
         );
     }
 
