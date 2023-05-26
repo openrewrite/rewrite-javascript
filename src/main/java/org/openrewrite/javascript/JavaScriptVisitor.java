@@ -21,6 +21,9 @@ import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.tree.*;
+import org.openrewrite.marker.Markers;
+
+import java.util.List;
 
 public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
@@ -165,6 +168,51 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         s = s.withPrefix(visitSpace(s.getPrefix(), JsSpace.Location.UNKNOWN_SOURCE_PREFIX, p));
         s = s.withMarkers(visitMarkers(s.getMarkers(), p));
         return s;
+    }
+
+    // TODO: remove me. Requires changes from rewrite-java.
+    @Override
+    public J visitParameterizedType(J.ParameterizedType type, P p) {
+        J.ParameterizedType pt = type;
+        pt = pt.withPrefix(visitSpace(pt.getPrefix(), Space.Location.PARAMETERIZED_TYPE_PREFIX, p));
+        pt = pt.withMarkers(visitMarkers(pt.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(pt, p);
+        if (!(temp instanceof J.ParameterizedType)) {
+            return temp;
+        } else {
+            pt = (J.ParameterizedType) temp;
+        }
+        pt = pt.withClazz(visitAndCast(pt.getClazz(), p));
+        if (pt.getPadding().getTypeParameters() != null) {
+            pt = pt.getPadding().withTypeParameters(visitContainer(pt.getPadding().getTypeParameters(), JContainer.Location.TYPE_PARAMETERS, p));
+        }
+        pt = pt.getPadding().withTypeParameters(visitTypeNames(pt.getPadding().getTypeParameters(), p));
+        pt = pt.withType(visitType(pt.getType(), p));
+        return pt;
+    }
+
+    public <N extends NameTree> N visitTypeName(N nameTree, P p) {
+        return nameTree;
+    }
+
+    @Nullable
+    private <N extends NameTree> JLeftPadded<N> visitTypeName(@Nullable JLeftPadded<N> nameTree, P p) {
+        return nameTree == null ? null : nameTree.withElement(visitTypeName(nameTree.getElement(), p));
+    }
+
+    @Nullable
+    private <N extends NameTree> JRightPadded<N> visitTypeName(@Nullable JRightPadded<N> nameTree, P p) {
+        return nameTree == null ? null : nameTree.withElement(visitTypeName(nameTree.getElement(), p));
+    }
+
+    @Nullable
+    private <J2 extends J> JContainer<J2> visitTypeNames(@Nullable JContainer<J2> nameTrees, P p) {
+        if (nameTrees == null) {
+            return null;
+        }
+        @SuppressWarnings("unchecked") List<JRightPadded<J2>> js = ListUtils.map(nameTrees.getPadding().getElements(),
+                t -> t.getElement() instanceof NameTree ? (JRightPadded<J2>) visitTypeName((JRightPadded<NameTree>) t, p) : t);
+        return js == nameTrees.getPadding().getElements() ? nameTrees : JContainer.build(nameTrees.getBefore(), js, Markers.EMPTY);
     }
 
     public Space visitSpace(Space space, JsSpace.Location loc, P p) {
