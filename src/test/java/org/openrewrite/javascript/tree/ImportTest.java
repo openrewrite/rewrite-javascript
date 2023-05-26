@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("ES6UnusedImports")
-public class ImportTest extends ParserTest {
+class ImportTest extends ParserTest {
 
     @Test
     void importStatement() {

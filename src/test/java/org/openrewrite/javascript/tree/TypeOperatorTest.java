@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
-public class TypeOperatorTest extends ParserTest {
+class TypeOperatorTest extends ParserTest {
 
     @ExpectedToFail
     @Test

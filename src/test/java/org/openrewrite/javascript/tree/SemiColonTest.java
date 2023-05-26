@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"JSUnusedLocalSymbols", "TrailingWhitespacesInTextBlock", "JSUnnecessarySemicolon"})
-public class SemiColonTest extends ParserTest {
+class SemiColonTest extends ParserTest {
 
     @Test
     void semiColon() {

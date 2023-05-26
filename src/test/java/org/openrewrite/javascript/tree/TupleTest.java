@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings({"JSUnresolvedVariable", "JSUnusedLocalSymbols"})
-public class TupleTest extends ParserTest {
+class TupleTest extends ParserTest {
 
     @ExpectedToFail
     @Test

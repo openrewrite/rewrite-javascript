@@ -29,7 +29,7 @@ import java.util.Objects;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class TypeScriptSignatureBuilderTest {
+class TypeScriptSignatureBuilderTest {
 
     @Language("typescript")
     private static final String goat = StringUtils.readFully(TypeScriptSignatureBuilderTest.class.getResourceAsStream("/TypeScriptTypeGoat.ts"));
@@ -41,7 +41,7 @@ public class TypeScriptSignatureBuilderTest {
         runtime.close();
     }
 
-    public TypeScriptSignatureBuilder signatureBuilder() {
+    TypeScriptSignatureBuilder signatureBuilder() {
         return new TypeScriptSignatureBuilder();
     }
 
@@ -188,7 +188,7 @@ public class TypeScriptSignatureBuilderTest {
                 .orElseThrow());
     }
 
-    public String methodSignature(TSCNode node, String methodName) {
+    String methodSignature(TSCNode node, String methodName) {
         return signatureBuilder().methodSignature(node.getNodeListProperty("statements").stream()
                 .filter(it -> it.syntaxKind() == TSCSyntaxKind.ClassDeclaration && it.hasProperty("members"))
                 .flatMap(it -> it.getNodeListProperty("members").stream())
@@ -220,7 +220,7 @@ public class TypeScriptSignatureBuilderTest {
                 .getNodeProperty("type")));
     }
 
-    public String lastClassTypeParameterSignature(TSCNode node) {
+    String lastClassTypeParameterSignature(TSCNode node) {
         List<TSCNode> typeParams = node.getNodeListProperty("statements").get(0).getNodeListProperty("typeParameters");
         return Objects.requireNonNull(signatureBuilder().signature(typeParams.get(typeParams.size() - 1)));
     }

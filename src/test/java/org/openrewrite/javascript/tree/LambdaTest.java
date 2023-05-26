@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"TypeScriptCheckImport", "JSUnusedLocalSymbols"})
-public class LambdaTest extends ParserTest {
+class LambdaTest extends ParserTest {
 
     @Test
     void asMethodParameter() {

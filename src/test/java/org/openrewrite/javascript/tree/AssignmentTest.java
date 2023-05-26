@@ -17,7 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-public class AssignmentTest extends ParserTest {
+class AssignmentTest extends ParserTest {
 
     @Test
     void assignment() {

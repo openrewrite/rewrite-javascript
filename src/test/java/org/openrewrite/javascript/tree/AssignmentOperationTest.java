@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"RedundantConditionalExpressionJS", "EqualityComparisonWithCoercionJS"})
-public class AssignmentOperationTest extends ParserTest {
+class AssignmentOperationTest extends ParserTest {
 
     @Test
     void minusEqual() {

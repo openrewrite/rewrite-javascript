@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("ALL")
-public class NewClassTest extends ParserTest {
+class NewClassTest extends ParserTest {
 
     @Test
     void newClass() {

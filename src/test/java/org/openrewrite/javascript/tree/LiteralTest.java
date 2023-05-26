@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
-public class LiteralTest extends ParserTest {
+class LiteralTest extends ParserTest {
 
     @Test
     void stringLiteral() {

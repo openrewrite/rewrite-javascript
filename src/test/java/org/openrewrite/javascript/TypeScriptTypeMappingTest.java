@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.*;
 
 @SuppressWarnings("DataFlowIssue")
-public class TypeScriptTypeMappingTest {
+class TypeScriptTypeMappingTest {
     private static final String goat = StringUtils.readFully(TypeScriptSignatureBuilderTest.class.getResourceAsStream("/TypeScriptTypeGoat.ts"));
     private static final JS.CompilationUnit cu = JavaScriptParser.builder().build()
             .parse(new InMemoryExecutionContext(), goat)
@@ -201,7 +201,7 @@ public class TypeScriptTypeMappingTest {
         assertThat(clazz.toString()).isEqualTo("Generic{U extends %s.Extension<Generic{U}> & %s.Intersection<Generic{U}>}", sourcePath, sourcePath);
     }
 
-    public JavaType.Method methodType(String methodName) {
+    JavaType.Method methodType(String methodName) {
         JavaType.Method type = goatType.getMethods().stream()
                 .filter(m -> m.getName().equals(methodName))
                 .findFirst()
@@ -210,11 +210,11 @@ public class TypeScriptTypeMappingTest {
         return type;
     }
 
-    public JavaType firstMethodParameter(String methodName) {
+    JavaType firstMethodParameter(String methodName) {
         return methodType(methodName).getParameterTypes().get(0);
     }
 
-    public JavaType.Variable firstField(String fieldName) {
+    JavaType.Variable firstField(String fieldName) {
         JavaType.Variable type = goatType.getMembers().stream()
                 .filter(m -> m.getName().equals(fieldName))
                 .findFirst()
@@ -223,7 +223,7 @@ public class TypeScriptTypeMappingTest {
         return type;
     }
 
-    public JavaType firstClassType(String className) {
+    JavaType firstClassType(String className) {
         return classes.stream().filter(it -> className.equals(it.getClassName())).findFirst().orElseThrow();
     }
 }

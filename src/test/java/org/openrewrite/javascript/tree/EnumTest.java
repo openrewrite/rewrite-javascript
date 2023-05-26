@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
-public class EnumTest extends ParserTest {
+class EnumTest extends ParserTest {
 
     @Test
     void enumDeclaration() {

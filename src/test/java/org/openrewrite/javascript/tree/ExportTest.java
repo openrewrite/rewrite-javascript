@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings({"JSFileReferences", "JSUnusedLocalSymbols", "TypeScriptCheckImport", "TypeScriptUnresolvedVariable"})
-public class ExportTest extends ParserTest {
+class ExportTest extends ParserTest {
 
     @Test
     void exportDeclaration() {
