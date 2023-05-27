@@ -91,6 +91,24 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitBinding(JS.ObjectBindingDeclarations.Binding binding, PrintOutputCapture<P> p) {
+        beforeSyntax(binding, JsSpace.Location.BINDING_PREFIX, p);
+        if (binding.getAfterVararg() != null) {
+            p.append("...");
+            visitSpace(binding.getAfterVararg(), Space.Location.VARARGS, p);
+        }
+        visit(binding.getName(), p);
+        for (JLeftPadded<Space> dimension : binding.getDimensionsAfterName()) {
+            visitSpace(dimension.getBefore(), Space.Location.DIMENSION_PREFIX, p);
+            p.append('[');
+            visitSpace(dimension.getElement(), Space.Location.DIMENSION, p);
+            p.append(']');
+        }
+        afterSyntax(binding, p);
+        return binding;
+    }
+
+    @Override
     public J visitDefaultType(JS.DefaultType defaultType, PrintOutputCapture<P> p) {
         beforeSyntax(defaultType, JsSpace.Location.DEFAULT_TYPE_PREFIX, p);
         visit(defaultType.getLeft(), p);
@@ -180,6 +198,19 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         afterSyntax(operator, p);
         return operator;
+    }
+
+    @Override
+    public J visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, PrintOutputCapture<P> p) {
+        beforeSyntax(objectBindingDeclarations, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
+        visit(objectBindingDeclarations.getLeadingAnnotations(), p);
+        objectBindingDeclarations.getModifiers().forEach(m -> delegate.visitModifier(m, p));
+
+        visit(objectBindingDeclarations.getTypeExpression(), p);
+        visitContainer("{", objectBindingDeclarations.getPadding().getBindings(), JsContainer.Location.BINDING_ELEMENT, ",", "}", p);
+        visitLeftPadded("=", objectBindingDeclarations.getPadding().getInitializer(), JsLeftPadded.Location.BINDING_INITIALIZER, p);
+        afterSyntax(objectBindingDeclarations, p);
+        return objectBindingDeclarations;
     }
 
     @Override
@@ -408,14 +439,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         public J visitVariableDeclarations(J.VariableDeclarations multiVariable, PrintOutputCapture<P> p) {
             beforeSyntax(multiVariable, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
             visit(multiVariable.getLeadingAnnotations(), p);
-            for (J.Modifier m : multiVariable.getModifiers()) {
-                visitModifier(m, p);
-            }
+            multiVariable.getModifiers().forEach(it -> visitModifier(it, p));
 
             List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = multiVariable.getPadding().getVariables();
             for (int i = 0; i < variables.size(); i++) {
                 JRightPadded<J.VariableDeclarations.NamedVariable> variable = variables.get(i);
                 beforeSyntax(variable.getElement(), Space.Location.VARIABLE_PREFIX, p);
+                if (multiVariable.getVarargs() != null) {
+                    visitSpace(multiVariable.getVarargs(), Space.Location.VARARGS, p);
+                    p.append("...");
+                }
                 visit(variable.getElement().getName(), p);
                 PostFixOperator postFixOperator = variable.getElement().getMarkers().findFirst(PostFixOperator.class).orElse(null);
                 if (postFixOperator != null) {
@@ -528,6 +561,17 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         p.append(before);
         visitRightPadded(container.getPadding().getElements(), location.getElementLocation(), suffixBetween, p);
         p.append(after == null ? "" : after);
+    }
+
+    protected void visitLeftPadded(@Nullable String prefix, @Nullable JLeftPadded<? extends J> leftPadded, JsLeftPadded.Location location, PrintOutputCapture<P> p) {
+        if (leftPadded != null) {
+            beforeSyntax(leftPadded.getBefore(), leftPadded.getMarkers(), location.getBeforeLocation(), p);
+            if (prefix != null) {
+                p.append(prefix);
+            }
+            visit(leftPadded.getElement(), p);
+            afterSyntax(leftPadded.getMarkers(), p);
+        }
     }
 
     protected void visitLeftPadded(@Nullable String prefix, @Nullable JLeftPadded<? extends J> leftPadded, JLeftPadded.Location location, PrintOutputCapture<P> p) {

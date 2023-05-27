@@ -482,7 +482,7 @@ public class TypeScriptParserVisitor {
             // Adjust padding.
             implementMe(expression, "questionDotToken");
 
-            select = padRight(visitNameExpression(expression.getNodeProperty("expression")), sourceBefore(TSCSyntaxKind.DotToken));
+            select = padRight((Expression) visitNode(expression.getNodeProperty("expression")), sourceBefore(TSCSyntaxKind.DotToken));
         }
 
         JavaType.Method type = typeMapping.methodInvocationType(node);
@@ -796,7 +796,7 @@ public class TypeScriptParserVisitor {
         return unknownElement(node);
     }
 
-    private J visitExportDeclaration(TSCNode node) {
+    private JS.Export visitExportDeclaration(TSCNode node) {
         implementMe(node, "assertClause");
         implementMe(node, "modifiers");
 
@@ -1097,6 +1097,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    // TODO: convert to JS.Import
     private J visitImportDeclaration(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.ImportKeyword);
         JLeftPadded<Boolean> static_ = padLeft(EMPTY, false);
@@ -1378,7 +1379,7 @@ public class TypeScriptParserVisitor {
         }
     }
 
-    private J visitLiteralType(TSCNode node) {
+    private J.Literal visitLiteralType(TSCNode node) {
         Space prefix = whitespace();
         Object obj = null;
         TSCNode literal = node.getNodeProperty("literal");
@@ -1439,11 +1440,6 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    // FIXME: @Gary
-    private J visitObjectBindingPattern(TSCNode node) {
-        return unknownElement(node);
-    }
-
     private J visitObjectLiteralExpression(TSCNode node) {
         Space prefix = whitespace();
 
@@ -1484,6 +1480,108 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private JS.ObjectBindingDeclarations mapObjectBindingDeclaration(TSCNode node) {
+        Space prefix = whitespace();
+        Markers markers = Markers.EMPTY;
+
+        List<J.Annotation> annotations = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+
+        Space beforeVariableModifier = whitespace();
+        TSCSyntaxKind keyword = scan();
+        if (keyword == TSCSyntaxKind.ConstKeyword) {
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    convertToIdentifier(EMPTY, "const"),
+                    null)
+            );
+        } else if (keyword == TSCSyntaxKind.LetKeyword) {
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    convertToIdentifier(EMPTY, "let"),
+                    null)
+            );
+        } else if (keyword == TSCSyntaxKind.VarKeyword) {
+            annotations.add(new J.Annotation(
+                    randomId(),
+                    beforeVariableModifier,
+                    Markers.build(singletonList(new Keyword(randomId()))),
+                    convertToIdentifier(EMPTY, "var"),
+                    null)
+            );
+        } else {
+            // Unclear if the modifier should be `@Nullable` in the `JSVariableDeclaration`.
+            implementMe(node);
+        }
+
+
+        TSCNode declarationList = node.getOptionalNodeProperty("declarationList");
+        List<TSCNode> declarations = declarationList == null ?
+                emptyList() : declarationList.getNodeListProperty("declarations");
+
+        TypeTree typeTree = null;
+        TSCNode bindingNode = declarations.get(0);
+        TSCNode objectBindingPattern = bindingNode.getNodeProperty("name");
+        implementMe(bindingNode, "exclamationToken");
+        implementMe(bindingNode, "type");
+        List<TSCNode> elements = objectBindingPattern.getNodeListProperty("elements");
+        List<JRightPadded<JS.ObjectBindingDeclarations.Binding>> bindings = new ArrayList<>(elements.size());
+        Space beforeBraces = sourceBefore(TSCSyntaxKind.OpenBraceToken);
+        for (int i = 0; i < elements.size(); i++) {
+            TSCNode binding = elements.get(i);
+            implementMe(binding, "propertyName");
+
+            Space varArg = binding.hasProperty("dotDotDotToken") ? sourceBefore(TSCSyntaxKind.DotDotDotToken) : null;
+
+            Space bindingPrefix = whitespace();
+            J j = visitNode(binding.getNodeProperty("name"));
+            J.Identifier name = null;
+            if (j instanceof J.Identifier) {
+                name = (J.Identifier) j;
+            } else {
+                implementMe(binding);
+            }
+
+            Space after = whitespace();
+            Markers bindingMarkers = Markers.EMPTY;
+            if (i < elements.size() - 1) {
+                consumeToken(TSCSyntaxKind.CommaToken);
+            } else {
+                // check for trailing comma.
+                TSCSyntaxKind kind = scan();
+                if (kind == TSCSyntaxKind.CommaToken) {
+                    bindingMarkers = bindingMarkers.addIfAbsent(new TrailingComma(randomId(), sourceBefore(TSCSyntaxKind.CloseBraceToken)));
+                }
+            }
+
+            JS.ObjectBindingDeclarations.Binding b = new JS.ObjectBindingDeclarations.Binding(
+                    randomId(),
+                    bindingPrefix,
+                    Markers.EMPTY,
+                    name,
+                    emptyList(),
+                    varArg,
+                    null // FIXME: @Gary What is the type of an object binding declaration?
+            );
+            bindings.add(padRight(b, after).withMarkers(bindingMarkers));
+        }
+
+        return new JS.ObjectBindingDeclarations(
+                randomId(),
+                prefix,
+                markers,
+                annotations,
+                modifiers,
+                typeTree,
+                JContainer.build(beforeBraces, bindings, Markers.EMPTY),
+                bindingNode.hasProperty("initializer") ? padLeft(sourceBefore(TSCSyntaxKind.EqualsToken), (Expression) visitNode(bindingNode.getNodeProperty("initializer"))) : null
+        );
+    }
+
     private <J2 extends J> J.Parentheses<J2> visitParenthesizedExpression(TSCNode node) {
         //noinspection unchecked
         return new J.Parentheses<>(
@@ -1519,6 +1617,8 @@ public class TypeScriptParserVisitor {
         List<J.Annotation> leadingAnnotations = new ArrayList<>();
         List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leadingAnnotations);
 
+        TSCNode varArgNode = node.getOptionalNodeProperty("dotDotDotToken");
+        Space varArg = node.hasProperty("dotDotDotToken") ? sourceBefore(varArgNode.syntaxKind()) : null;
         Space variablePrefix = whitespace();
         J j = visitNode(node.getNodeProperty("name"));
         J.Identifier name = null;
@@ -1570,7 +1670,7 @@ public class TypeScriptParserVisitor {
                 leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
                 modifiers,
                 typeTree,
-                null,
+                varArg,
                 dimensions,
                 variables
         );
@@ -2229,59 +2329,58 @@ public class TypeScriptParserVisitor {
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = emptyList();
         TypeTree typeTree = null;
 
-        // TS allows for multiple variable types to be expressed in a single statement.
-        // The count is used to prevent a malformed LST element until multiple variable types are supported.
-        if (node.hasProperty("declarationList")) {
-            TSCNode declarationList = node.getNodeProperty("declarationList");
+        TSCNode declarationList = node.getOptionalNodeProperty("declarationList");
+        List<TSCNode> declarations = declarationList == null ?
+                emptyList() : declarationList.getNodeListProperty("declarations");
 
-            List<TSCNode> declarations = declarationList.getNodeListProperty("declarations");
-            Set<JavaType> types = new HashSet<>(declarations.size());
-            namedVariables = new ArrayList<>(declarations.size());
-            for (int i = 0; i < declarations.size(); i++) {
-                TSCNode declaration = declarations.get(i);
+        Set<JavaType> types = new HashSet<>(declarations.size());
+        namedVariables = new ArrayList<>(declarations.size());
 
-                Space variablePrefix = whitespace();
-                J j = visitNode(declaration.getNodeProperty("name"));
-                J.Identifier name = null;
-                if (j instanceof J.Identifier) {
-                    name = (J.Identifier) j;
-                } else {
-                    implementMe(declaration);
-                }
+        for (int i = 0; i < declarations.size(); i++) {
+            TSCNode declaration = declarations.get(i);
 
-                if (declaration.hasProperty("type")) {
-                    // FIXME: method(x: { suit: string; card: number }[])
-                    Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
-                    if (beforeColon != EMPTY) {
-                        markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
-                    }
-                    TSCNode type = declaration.getNodeProperty("type");
-                    typeTree = (TypeTree) visitNode(type);
-                    if (typeTree.getType() != null) {
-                        types.add(typeTree.getType());
-                        if (types.size() > 1) {
-                            throw new UnsupportedOperationException("Multiple variable types are not supported");
-                        }
-                    }
-                }
-                J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
-                        randomId(),
-                        variablePrefix,
-                        Markers.EMPTY,
-                        name,
-                        emptyList(),
-                        declaration.hasProperty("initializer") ?
-                                padLeft(sourceBefore(TSCSyntaxKind.EqualsToken),
-                                        (Expression) Objects.requireNonNull(visitNode(declaration.getNodeProperty("initializer")))) : null,
-                        typeMapping.variableType(declaration)
-                );
-
-                Space after = whitespace();
-                if (i < declarations.size() - 1) {
-                    consumeToken(TSCSyntaxKind.CommaToken);
-                }
-                namedVariables.add(padRight(variable, after));
+            Space variablePrefix = whitespace();
+            J j = visitNode(declaration.getNodeProperty("name"));
+            J.Identifier name = null;
+            if (j instanceof J.Identifier) {
+                name = (J.Identifier) j;
+            } else {
+                implementMe(declaration);
             }
+
+            if (declaration.hasProperty("type")) {
+                Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
+                if (beforeColon != EMPTY) {
+                    markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
+                }
+                TSCNode type = declaration.getNodeProperty("type");
+                typeTree = (TypeTree) visitNode(type);
+                if (typeTree.getType() != null) {
+                    types.add(typeTree.getType());
+                    // TS allows for multiple variable types to be expressed in a single statement.
+                    // The count is used to prevent a malformed LST element until multiple variable types are supported.
+                    if (types.size() > 1) {
+                        throw new UnsupportedOperationException("Multiple variable types are not supported");
+                    }
+                }
+            }
+            J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
+                    randomId(),
+                    variablePrefix,
+                    Markers.EMPTY,
+                    name,
+                    emptyList(),
+                    declaration.hasProperty("initializer") ?
+                            padLeft(sourceBefore(TSCSyntaxKind.EqualsToken),
+                                    (Expression) Objects.requireNonNull(visitNode(declaration.getNodeProperty("initializer")))) : null,
+                    typeMapping.variableType(declaration)
+            );
+
+            Space after = whitespace();
+            if (i < declarations.size() - 1) {
+                consumeToken(TSCSyntaxKind.CommaToken);
+            }
+            namedVariables.add(padRight(variable, after));
         }
 
         return new J.VariableDeclarations(
@@ -2343,6 +2442,7 @@ public class TypeScriptParserVisitor {
             case MethodSignature:
                 j = visitMethodDeclaration(node);
                 break;
+            case BindingElement:
             case Parameter:
             case PropertyDeclaration:
                 j = visitPropertyDeclaration(node);
@@ -2456,9 +2556,6 @@ public class TypeScriptParserVisitor {
             case NumericLiteral:
                 j = visitNumericLiteral(node);
                 break;
-            case ObjectBindingPattern:
-                j = visitObjectBindingPattern(node);
-                break;
             case ObjectLiteralExpression:
                 j = visitObjectLiteralExpression(node);
                 break;
@@ -2517,7 +2614,7 @@ public class TypeScriptParserVisitor {
                 j = visitVariableDeclarationList(node);
                 break;
             case VariableStatement:
-                j = visitVariableStatement(node);
+                j = mapVariableStatement(node);
                 break;
             default:
                 implementMe(node); // TODO: remove ... temp for velocity.
@@ -2794,6 +2891,24 @@ public class TypeScriptParserVisitor {
         }
         annotations.add(annotation);
         return annotations;
+    }
+
+    private J mapVariableStatement(TSCNode node) {
+        TSCNode declarationList = node.getOptionalNodeProperty("declarationList");
+        List<TSCNode> declarations = declarationList == null ?
+                emptyList() : declarationList.getNodeListProperty("declarations");
+        if (declarationList != null) {
+            for (TSCNode declaration : declarations) {
+                if (declaration.syntaxKind() == TSCSyntaxKind.VariableDeclaration) {
+                    TSCNode name = declaration.getOptionalNodeProperty("name");
+                    if (name != null && name.syntaxKind() == TSCSyntaxKind.ObjectBindingPattern) {
+                        return mapObjectBindingDeclaration(node);
+                    }
+                }
+            }
+        }
+
+        return visitVariableStatement(node);
     }
 
     private Space sourceBefore(TSCSyntaxKind syntaxKind) {

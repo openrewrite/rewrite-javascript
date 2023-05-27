@@ -32,6 +32,7 @@ import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -487,6 +488,68 @@ public interface JS extends J {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @AllArgsConstructor
+    final class ExpressionStatement implements JS, Expression, Statement {
+
+        @With
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Expression expression;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            J j = v.visit(getExpression(), p);
+            if (j instanceof ExpressionStatement) {
+                return j;
+            } else if (j instanceof Expression) {
+                return withExpression((Expression) j);
+            }
+            return j;
+        }
+
+        @Override
+        public <J2 extends J> J2 withPrefix(Space space) {
+            return (J2) withExpression(expression.withPrefix(space));
+        }
+
+        @Override
+        public Space getPrefix() {
+            return expression.getPrefix();
+        }
+
+        @Override
+        public <J2 extends Tree> J2 withMarkers(Markers markers) {
+            return (J2) withExpression(expression.withMarkers(markers));
+        }
+
+        @Override
+        public Markers getMarkers() {
+            return expression.getMarkers();
+        }
+
+        @Override
+        public @Nullable JavaType getType() {
+            return expression.getType();
+        }
+
+        @Override
+        public <T extends J> T withType(@Nullable JavaType type) {
+            return (T) withExpression(expression.withType(type));
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+    }
+
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
@@ -495,7 +558,7 @@ public interface JS extends J {
 
         @Nullable
         @NonFinal
-        transient WeakReference<Padding> padding;
+        transient WeakReference<FunctionType.Padding> padding;
 
         @Getter
         @With
@@ -509,7 +572,6 @@ public interface JS extends J {
         @Getter
         @With
         Markers markers;
-
 
         JContainer<Statement> parameters;
 
@@ -544,15 +606,15 @@ public interface JS extends J {
             return new CoordinateBuilder.Expression(this);
         }
 
-        public Padding getPadding() {
-            Padding p;
+        public FunctionType.Padding getPadding() {
+            FunctionType.Padding p;
             if (this.padding == null) {
-                p = new Padding(this);
+                p = new FunctionType.Padding(this);
                 this.padding = new WeakReference<>(p);
             } else {
                 p = this.padding.get();
                 if (p == null || p.t != this) {
-                    p = new Padding(this);
+                    p = new FunctionType.Padding(this);
                     this.padding = new WeakReference<>(p);
                 }
             }
@@ -752,6 +814,266 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class ObjectBindingDeclarations implements JS, Statement, TypedTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<ObjectBindingDeclarations.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        List<J.Annotation> leadingAnnotations;
+
+        @With
+        @Getter
+        List<J.Modifier> modifiers;
+
+        @With
+        @Nullable
+        @Getter
+        TypeTree typeExpression;
+
+        JContainer<ObjectBindingDeclarations.Binding> bindings;
+
+        public List<ObjectBindingDeclarations.Binding> getBindings() {
+            return bindings.getElements();
+        }
+
+        public ObjectBindingDeclarations withBindings(List<ObjectBindingDeclarations.Binding> bindings) {
+            return getPadding().withBindings(JContainer.withElements(this.bindings, bindings));
+        }
+
+        @Nullable
+        JLeftPadded<Expression> initializer;
+
+        @Nullable
+        public Expression getInitializer() {
+            return initializer == null ? null : initializer.getElement();
+        }
+
+        public ObjectBindingDeclarations withInitializer(@Nullable Expression initializer) {
+            return getPadding().withInitializer(JLeftPadded.withElement(this.initializer, initializer));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitObjectBindingDeclarations(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        // gather annotations from everywhere they may occur
+        public List<J.Annotation> getAllAnnotations() {
+            List<Annotation> allAnnotations = new ArrayList<>(leadingAnnotations);
+            for (J.Modifier modifier : modifiers) {
+                allAnnotations.addAll(modifier.getAnnotations());
+            }
+            if (typeExpression != null && typeExpression instanceof J.AnnotatedType) {
+                allAnnotations.addAll(((J.AnnotatedType) typeExpression).getAnnotations());
+            }
+            return allAnnotations;
+        }
+
+        @Nullable
+        public JavaType.FullyQualified getTypeAsFullyQualified() {
+            return typeExpression == null ? null : TypeUtils.asFullyQualified(typeExpression.getType());
+        }
+
+        @Nullable
+        @Override
+        public JavaType getType() {
+            return typeExpression == null ? null : typeExpression.getType();
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public ObjectBindingDeclarations withType(@Nullable JavaType type) {
+            return typeExpression == null ? this :
+                    withTypeExpression(typeExpression.withType(type));
+        }
+
+        @SuppressWarnings("unchecked")
+        @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+        @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+        @AllArgsConstructor
+        public static final class Binding implements JS, NameTree {
+
+            @With
+            @EqualsAndHashCode.Include
+            @Getter
+            UUID id;
+
+            @With
+            @Getter
+            Space prefix;
+
+            @With
+            @Getter
+            Markers markers;
+
+            @With
+            @Getter
+            Identifier name;
+
+            @With
+            @Getter
+            List<JLeftPadded<Space>> dimensionsAfterName;
+
+            @With
+            @Nullable
+            @Getter
+            Space afterVararg;
+
+            @With
+            @Nullable
+            @Getter
+            JavaType.Variable variableType;
+
+            public JavaType getType() {
+                return variableType != null ? variableType.getType() : null;
+            }
+
+            @SuppressWarnings({"unchecked", "DataFlowIssue"})
+            @Override
+            public ObjectBindingDeclarations.Binding withType(@Nullable JavaType type) {
+                return variableType != null ? withVariableType(variableType.withType(type)) : this;
+            }
+
+            public String getSimpleName() {
+                return name.getSimpleName();
+            }
+
+            @Override
+            public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+                return v.visitBinding(this, p);
+            }
+        }
+
+        public boolean hasModifier(Modifier.Type modifier) {
+            return Modifier.hasModifier(getModifiers(), modifier);
+        }
+
+        public ObjectBindingDeclarations.Padding getPadding() {
+            ObjectBindingDeclarations.Padding p;
+            if (this.padding == null) {
+                p = new ObjectBindingDeclarations.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new ObjectBindingDeclarations.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ObjectBindingDeclarations t;
+
+            public JContainer<ObjectBindingDeclarations.Binding> getBindings() {
+                return t.bindings;
+            }
+
+            public ObjectBindingDeclarations withBindings(JContainer<ObjectBindingDeclarations.Binding> bindings) {
+                return t.bindings == bindings ? t : new ObjectBindingDeclarations(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.typeExpression, bindings, t.initializer);
+            }
+
+            @Nullable
+            public JLeftPadded<Expression> getInitializer() {
+                return t.initializer;
+            }
+
+            public ObjectBindingDeclarations withInitializer(@Nullable JLeftPadded<Expression> initializer) {
+                return t.initializer == initializer ? t : new ObjectBindingDeclarations(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.typeExpression, t.bindings, initializer);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @AllArgsConstructor
+    final class StatementExpression implements JS, Expression, Statement {
+
+        @With
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Statement statement;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            J j = v.visit(getStatement(), p);
+            if (j instanceof StatementExpression) {
+                return j;
+            } else if (j instanceof Statement) {
+                return withStatement((Statement) j);
+            }
+            return j;
+        }
+
+        @Override
+        public <J2 extends J> J2 withPrefix(Space space) {
+            return (J2) withStatement(statement.withPrefix(space));
+        }
+
+        @Override
+        public Space getPrefix() {
+            return statement.getPrefix();
+        }
+
+        @Override
+        public <J2 extends Tree> J2 withMarkers(Markers markers) {
+            return (J2) withStatement(statement.withMarkers(markers));
+        }
+
+        @Override
+        public Markers getMarkers() {
+            return statement.getMarkers();
+        }
+
+        @Override
+        public @Nullable JavaType getType() {
+            return null;
+        }
+
+        @Override
+        public <T extends J> T withType(@Nullable JavaType type) {
+            throw new UnsupportedOperationException("StatementExpression cannot have a type");
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Data
     final class TypeOperator implements JS, Expression, TypedTree, NameTree {
 
@@ -840,74 +1162,6 @@ public interface JS extends J {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
-    @AllArgsConstructor
-    final class ExpressionStatement implements JS, Expression, Statement {
-
-        @With
-        @Getter
-        UUID id;
-
-        @With
-        @Getter
-        Expression expression;
-
-        // For backwards compatibility with older ASTs before there was an id field
-        public ExpressionStatement(Expression expression) {
-            this.id = Tree.randomId();
-            this.expression = expression;
-        }
-
-        @Override
-        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
-            J j = v.visit(getExpression(), p);
-            if(j instanceof ExpressionStatement) {
-                return j;
-            } else if (j instanceof Expression) {
-                return withExpression((Expression) j);
-            }
-            return j;
-        }
-
-        @Override
-        public <J2 extends J> J2 withPrefix(Space space) {
-            return (J2) withExpression(expression.withPrefix(space));
-        }
-
-        @Override
-        public Space getPrefix() {
-            return expression.getPrefix();
-        }
-
-        @Override
-        public <J2 extends Tree> J2 withMarkers(Markers markers) {
-            return (J2) withExpression(expression.withMarkers(markers));
-        }
-
-        @Override
-        public Markers getMarkers() {
-            return expression.getMarkers();
-        }
-
-        @Override
-        public @Nullable JavaType getType() {
-            return expression.getType();
-        }
-
-        @Override
-        public <T extends J> T withType(@Nullable JavaType type) {
-            return (T) withExpression(expression.withType(type));
-        }
-
-        @Transient
-        @Override
-        public CoordinateBuilder.Statement getCoordinates() {
-            return new CoordinateBuilder.Statement(this);
-        }
-    }
-
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
@@ -980,68 +1234,6 @@ public interface JS extends J {
             public JS.Union withTypes(List<JRightPadded<Expression>> types) {
                 return t.types == types ? t : new JS.Union(t.id, t.prefix, t.markers, types, t.type);
             }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
-    @AllArgsConstructor
-    final class StatementExpression implements JS, Expression, Statement {
-
-        @With
-        @Getter
-        UUID id;
-
-        @With
-        @Getter
-        Statement statement;
-
-        @Override
-        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
-            J j = v.visit(getStatement(), p);
-            if (j instanceof StatementExpression) {
-                return j;
-            } else if (j instanceof Statement) {
-                return withStatement((Statement) j);
-            }
-            return j;
-        }
-
-        @Override
-        public <J2 extends J> J2 withPrefix(Space space) {
-            return (J2) withStatement(statement.withPrefix(space));
-        }
-
-        @Override
-        public Space getPrefix() {
-            return statement.getPrefix();
-        }
-
-        @Override
-        public <J2 extends Tree> J2 withMarkers(Markers markers) {
-            return (J2) withStatement(statement.withMarkers(markers));
-        }
-
-        @Override
-        public Markers getMarkers() {
-            return statement.getMarkers();
-        }
-
-        @Override
-        public @Nullable JavaType getType() {
-            return null;
-        }
-
-        @Override
-        public <T extends J> T withType(@Nullable JavaType type) {
-            throw new UnsupportedOperationException("StatementExpression cannot have a type");
-        }
-
-        @Transient
-        @Override
-        public CoordinateBuilder.Statement getCoordinates() {
-            return new CoordinateBuilder.Statement(this);
         }
     }
 

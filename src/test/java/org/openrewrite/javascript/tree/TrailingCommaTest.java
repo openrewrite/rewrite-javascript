@@ -71,4 +71,15 @@ class TrailingCommaTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void objectBindingDeclaration() {
+        rewriteRun(
+          javaScript(
+            """
+              const { o1 , o2 , o3 , } = "" ;
+              """
+          )
+        );
+    }
 }

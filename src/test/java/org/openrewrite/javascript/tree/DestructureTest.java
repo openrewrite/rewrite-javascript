@@ -45,17 +45,4 @@ class DestructureTest extends ParserTest {
           )
         );
     }
-
-    @ExpectedToFail
-    @Test
-    void destructObject() {
-        rewriteRun(
-          javaScript(
-            """
-              const c = { fName : 'Foo' , lName : 'Bar' }
-              const { fName, lName } = c
-              """
-          )
-        );
-    }
 }

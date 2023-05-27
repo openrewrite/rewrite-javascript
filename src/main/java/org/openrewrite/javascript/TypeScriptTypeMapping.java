@@ -646,6 +646,8 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 case Number:
                 case NumberLiteral:
                     return TsType.NUMBER;
+                case Null:
+                    return JavaType.Primitive.Null;
                 case Object:
                     return TsType.ANONYMOUS;
                 case String:

@@ -18,6 +18,7 @@ package org.openrewrite.javascript.tree;
 public class JsLeftPadded {
     public enum Location {
         BINARY_OPERATOR(JsSpace.Location.BINARY_PREFIX),
+        BINDING_INITIALIZER(JsSpace.Location.BINDING_INITIALIZER_PREFIX),
         OPERATOR(JsSpace.Location.OPERATOR_PREFIX),
         TYPE_OPERATOR(JsSpace.Location.TYPE_OPERATOR_PREFIX);
 

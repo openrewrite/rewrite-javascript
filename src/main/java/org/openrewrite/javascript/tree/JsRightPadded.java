@@ -19,6 +19,8 @@ public class JsRightPadded {
     public enum Location {
         ALIAS_PROPERTY_NAME(JsSpace.Location.ALIAS_PROPERTY_NAME_PREFIX),
         ARRAY_LITERAL_ELEMENT_SUFFIX(JsSpace.Location.ARRAY_LITERAL_SUFFIX),
+        BINDING_ELEMENT_SUFFIX(JsSpace.Location.BINDING_SUFFIX),
+        EXPORT_ELEMENT_SUFFIX(JsSpace.Location.EXPORT_ELEMENT_SUFFIX),
         FUNCTION_TYPE_PARAMETER_SUFFIX(JsSpace.Location.FUNCTION_TYPE_SUFFIX),
         UNION_TYPE(JsSpace.Location.UNION_TYPE_SUFFIX);
 

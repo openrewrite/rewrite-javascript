@@ -24,6 +24,7 @@ import org.openrewrite.javascript.tree.*;
 import org.openrewrite.marker.Markers;
 
 import java.util.List;
+import java.util.Objects;
 
 @SuppressWarnings("unused")
 public class JavaScriptVisitor<P> extends JavaVisitor<P> {
@@ -104,6 +105,21 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return a;
     }
 
+    public J visitBinding(JS.ObjectBindingDeclarations.Binding binding, P p) {
+        JS.ObjectBindingDeclarations.Binding b = binding;
+        b = b.withPrefix(visitSpace(b.getPrefix(), JsSpace.Location.BINDING_PREFIX, p));
+        b = b.withMarkers(visitMarkers(b.getMarkers(), p));
+        b = b.withName(visitAndCast(b.getName(), p));
+        b = b.withDimensionsAfterName(
+                ListUtils.map(b.getDimensionsAfterName(),
+                        dim -> dim.withBefore(visitSpace(dim.getBefore(), Space.Location.DIMENSION_PREFIX, p))
+                                .withElement(visitSpace(dim.getElement(), Space.Location.DIMENSION, p))
+                )
+        );
+        b = b.withVariableType((JavaType.Variable) visitType(b.getVariableType(), p));
+        return b;
+    }
+
     public J visitDefaultType(JS.DefaultType defaultType, P p) {
         JS.DefaultType d = defaultType;
         d = d.withPrefix(visitSpace(d.getPrefix(), Space.Location.ASSIGNMENT_PREFIX, p));
@@ -131,7 +147,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             e = (JS.Export) temp;
         }
-        e = e.getPadding().withExports(visitContainer(e.getPadding().getExports(), JContainer.Location.LANGUAGE_EXTENSION, p));
+        e = e.getPadding().withExports(visitContainer(e.getPadding().getExports(), JsContainer.Location.EXPORT_ELEMENT, p));
         if (e.getFrom() != null) {
             e = e.withFrom(visitSpace(e.getFrom(), JsSpace.Location.EXPORT_FROM_PREFIX, p));
         }
@@ -191,6 +207,29 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return o;
     }
 
+    public J visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, P p) {
+        JS.ObjectBindingDeclarations o = objectBindingDeclarations;
+        o = o.withPrefix(visitSpace(o.getPrefix(), JsSpace.Location.OBJECT_BINDING_DECLARATIONS_PREFIX, p));
+        o = o.withMarkers(visitMarkers(o.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(o, p);
+        if (!(temp instanceof JS.ObjectBindingDeclarations)) {
+            return temp;
+        } else {
+            o = (JS.ObjectBindingDeclarations) temp;
+        }
+        o = o.withLeadingAnnotations(ListUtils.map(o.getLeadingAnnotations(), a -> visitAndCast(a, p)));
+        o = o.withModifiers(Objects.requireNonNull(ListUtils.map(o.getModifiers(), e -> visitAndCast(e, p))));
+        o = o.withModifiers(ListUtils.map(o.getModifiers(),
+                mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
+        o = o.withTypeExpression(visitAndCast(o.getTypeExpression(), p));
+        o = o.withTypeExpression(o.getTypeExpression() == null ?
+                null :
+                visitTypeName(o.getTypeExpression(), p));
+        o = o.getPadding().withBindings(visitContainer(o.getPadding().getBindings(), JsContainer.Location.BINDING_ELEMENT, p));
+        o = o.withInitializer(visitAndCast(o.getInitializer(), p));
+        return o;
+    }
+
     public J visitTypeOperator(JS.TypeOperator typeOperator, P p) {
         JS.TypeOperator t = typeOperator;
         t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.TYPE_OPERATOR_PREFIX, p));
@@ -226,6 +265,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         u = u.withPrefix(visitSpace(u.getPrefix(), JsSpace.Location.UNKNOWN_PREFIX, p));
         u = u.withMarkers(visitMarkers(u.getMarkers(), p));
         u = u.withSource(visitAndCast(u.getSource(), p));
+        u = u.withType(visitType(u.getType(), p));
         return u;
     }
 

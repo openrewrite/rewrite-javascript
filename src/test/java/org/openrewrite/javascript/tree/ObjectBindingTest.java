@@ -16,18 +16,39 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS"})
 class ObjectBindingTest extends ParserTest {
 
-    @ExpectedToFail
+    @Test
+    void destructObject() {
+        rewriteRun(
+          javaScript(
+            """
+              const c = { fName : 'Foo' , lName : 'Bar' }
+              const { fName, lName } = c
+              """
+          )
+        );
+    }
+
     @Test
     void binding() {
         rewriteRun(
           javaScript(
             """
-              const { o1, o2, o3 } = "";
+              const { o1 , o2 , o3 } = "" ;
+              """
+          )
+        );
+    }
+
+    @Test
+    void varArg() {
+        rewriteRun(
+          javaScript(
+            """
+              const { o1 , o2 , ... o3 } = "" ;
               """
           )
         );

@@ -335,6 +335,8 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
                 case Number:
                 case NumberLiteral:
                     return TsType.NUMBER.getFullyQualifiedName();
+                case Null:
+                    return JavaType.Primitive.Null.getKeyword();
                 case Object:
                     return TsType.ANONYMOUS.getFullyQualifiedName();
                 case String:

@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"TypeScriptCheckImport", "JSUnusedLocalSymbols"})
-class LambdaTest extends ParserTest {
+class ArrowFunctionTest extends ParserTest {
 
     @Test
     void asMethodParameter() {
@@ -41,6 +41,19 @@ class LambdaTest extends ParserTest {
             """
               let sum = (a, b) => {
                   return a + b;
+              };
+              """
+          )
+        );
+    }
+
+    @Test
+    void varArg() {
+        rewriteRun(
+          javaScript(
+            """
+              let sum = (a, ...b) => {
+                  return a;
               };
               """
           )

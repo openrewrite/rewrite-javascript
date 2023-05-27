@@ -43,6 +43,18 @@ class MethodDeclarationTest extends ParserTest {
         );
     }
 
+    @ExpectedToFail
+    @Test
+    void objectLiteralType() {
+        rewriteRun(
+          javaScript(
+            """
+              function foo ( x : { suit : string , card : number } [ ] ) { }
+              """
+          )
+        );
+    }
+
     @Test
     void decorator() {
         rewriteRun(
