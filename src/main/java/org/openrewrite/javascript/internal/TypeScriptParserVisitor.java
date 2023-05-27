@@ -216,7 +216,7 @@ public class TypeScriptParserVisitor {
                 modifiers,
                 params,
                 sourceBefore(TSCSyntaxKind.EqualsGreaterThanToken),
-                visitBlock(node.getOptionalNodeProperty("body")),
+                visitNode(node.getOptionalNodeProperty("body")),
                 typeMapping.type(node)
         );
     }
@@ -224,13 +224,21 @@ public class TypeScriptParserVisitor {
     private J.NewArray visitArrayLiteralExpression(TSCNode node) {
         Space prefix = whitespace();
 
-        List<TSCNode> elements = node.getNodeListProperty("elements");
-        JContainer<Expression> expression = mapContainer(
-                TSCSyntaxKind.OpenBracketToken,
-                elements,
+        JContainer<J> jContainer = mapContainer(
+                TSCSyntaxKind.OpenParenToken,
+                node.getNodeListProperty("elements"),
                 TSCSyntaxKind.CommaToken,
-                TSCSyntaxKind.CloseBracketToken,
-                t -> (Expression) visitNode(t));
+                TSCSyntaxKind.CloseParenToken,
+                this::visitNode
+        );
+        List<JRightPadded<Expression>> elements = jContainer.getPadding().getElements().stream()
+                .map(it -> {
+                    Expression exp = (!(it.getElement() instanceof Expression) && it.getElement() instanceof Statement) ?
+                            new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
+                    return padRight(exp, it.getAfter(), it.getMarkers());
+                })
+                .collect(Collectors.toList());
+        JContainer<Expression> arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
 
         return new J.NewArray(
                 randomId(),
@@ -238,7 +246,7 @@ public class TypeScriptParserVisitor {
                 Markers.EMPTY,
                 null,
                 emptyList(),
-                expression,
+                arguments,
                 typeMapping.type(node)
         );
     }
@@ -476,13 +484,19 @@ public class TypeScriptParserVisitor {
 
         JRightPadded<Expression> select = null;
         JContainer<Expression> typeParameters = null;
-        TSCNode expression = node.getNodeProperty("expression");
 
+        TSCNode expression = node.getNodeProperty("expression");
         if (expression.hasProperty("expression")) {
             // Adjust padding.
             implementMe(expression, "questionDotToken");
 
-            select = padRight((Expression) visitNode(expression.getNodeProperty("expression")), sourceBefore(TSCSyntaxKind.DotToken));
+            if (expression.syntaxKind() == TSCSyntaxKind.PropertyAccessExpression) {
+                select = padRight((Expression) visitNode(expression.getNodeProperty("expression")), sourceBefore(TSCSyntaxKind.DotToken));
+            } else if (expression.syntaxKind() == TSCSyntaxKind.ParenthesizedExpression) {
+                select = padRight((Expression) visitNode(expression), whitespace());
+            } else {
+                implementMe(expression);
+            }
         }
 
         JavaType.Method type = typeMapping.methodInvocationType(node);
@@ -493,6 +507,13 @@ public class TypeScriptParserVisitor {
             name = visitIdentifier(expression, type);
         } else if (expression.syntaxKind() == TSCSyntaxKind.SuperKeyword) {
             name = convertToIdentifier(sourceBefore(TSCSyntaxKind.SuperKeyword), "super");
+        } else if (expression.syntaxKind() == TSCSyntaxKind.ParenthesizedExpression) {
+            // FIXME. @Gary.
+            //  This block of code means the call expression has multiple names via the select expression.
+            //  It's probably better to add a new JS LST object to represent this to enable JS recipes to detect and handle this case.
+            //  However, there are currently too many unknowns. So, it's added to J via the select `Expression` field.
+            //  Due to type-mapping, method matchers will not detect this code, which will prevent invalid changes.
+            name = convertToIdentifier(EMPTY, "");
         } else {
             implementMe(expression);
         }
@@ -730,13 +751,25 @@ public class TypeScriptParserVisitor {
         implementMe(node, "typeArguments");
         TSCNode callExpression = node.getNodeProperty("expression");
         NameTree name = (NameTree) visitNameExpression(callExpression.getNodeProperty("expression"));
-        JContainer<Expression> arguments = callExpression.hasProperty("arguments") ? mapContainer(
-                TSCSyntaxKind.OpenParenToken,
-                callExpression.getNodeListProperty("arguments"),
-                TSCSyntaxKind.CommaToken,
-                TSCSyntaxKind.CloseParenToken,
-                t -> (Expression) visitNode(t)
-        ) : null;
+        JContainer<Expression> arguments = null;
+        if (callExpression.hasProperty("arguments")) {
+            JContainer<J> jContainer = mapContainer(
+                    TSCSyntaxKind.OpenParenToken,
+                    node.getNodeListProperty("arguments"),
+                    TSCSyntaxKind.CommaToken,
+                    TSCSyntaxKind.CloseParenToken,
+                    this::visitNode
+            );
+
+            List<JRightPadded<Expression>> elements = jContainer.getPadding().getElements().stream()
+                    .map(it -> {
+                        Expression exp = (!(it.getElement() instanceof Expression) && it.getElement() instanceof Statement) ?
+                                new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
+                        return padRight(exp, it.getAfter(), it.getMarkers());
+                    })
+                    .collect(Collectors.toList());
+            arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
+        }
         return new J.Annotation(
                 randomId(),
                 prefix,
@@ -1407,14 +1440,21 @@ public class TypeScriptParserVisitor {
             typeTree = (TypeTree) visitNameExpression(node.getNodeProperty("expression"));
         }
         implementMe(node, "typeArguments");
-        JContainer<Expression> arguments = mapContainer(
+        JContainer<J> jContainer = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
                 node.getNodeListProperty("arguments"),
                 TSCSyntaxKind.CommaToken,
                 TSCSyntaxKind.CloseParenToken,
-                t -> (Expression) visitNode(t)
+                this::visitNode
         );
-
+        List<JRightPadded<Expression>> elements = jContainer.getPadding().getElements().stream()
+                .map(it -> {
+                    Expression exp = (!(it.getElement() instanceof Expression) && it.getElement() instanceof Statement) ?
+                            new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
+                    return padRight(exp, it.getAfter(), it.getMarkers());
+                })
+                .collect(Collectors.toList());
+        JContainer<Expression> arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
         return new J.NewClass(
                 randomId(),
                 EMPTY,
@@ -1690,6 +1730,11 @@ public class TypeScriptParserVisitor {
         J.Identifier name = null;
         if (j instanceof J.Identifier) {
             name = (J.Identifier) j;
+        } else if (j instanceof J.Literal) {
+            // FIXME: covers code like `'Content-Type': undefined`.
+            //  The identifier might be `Content-Type` and only use the `'` to enable `-` in the name.
+            //  If the identifier is `Content-Type`, then use the value instead of the value source and add a marker to represent the `'`.
+            name = convertToIdentifier(j.getPrefix(), ((J.Literal) j).getValueSource());
         } else {
             implementMe(node);
         }
@@ -2326,7 +2371,7 @@ public class TypeScriptParserVisitor {
             implementMe(node);
         }
 
-        List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = emptyList();
+        List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables;
         TypeTree typeTree = null;
 
         TSCNode declarationList = node.getOptionalNodeProperty("declarationList");
@@ -2739,7 +2784,12 @@ public class TypeScriptParserVisitor {
             elements = new ArrayList<>(nodes.size());
             for (int i = 0; i < nodes.size(); i++) {
                 TSCNode node = nodes.get(i);
-                T visited = visitFn.apply(node);
+                T visited = null;
+                try {
+                    visited = visitFn.apply(node);
+                } catch (Exception e) {
+                    implementMe(node);
+                }
                 Markers markers = Markers.EMPTY;
                 Space after;
                 if (i < nodes.size() - 1) {
