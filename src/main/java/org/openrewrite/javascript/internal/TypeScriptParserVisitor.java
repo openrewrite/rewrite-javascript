@@ -979,8 +979,19 @@ public class TypeScriptParserVisitor {
         implementMe(node, "typeArguments");
         implementMe(node, "type");
         Space prefix = whitespace();
-
         List<J.Annotation> annotations = new ArrayList<>();
+
+        TSCSyntaxKind keyword = scan();
+        if (keyword == TSCSyntaxKind.AsyncKeyword) {
+            annotations.add(new J.Annotation(
+                randomId(),
+                prefix,
+                Markers.build(singletonList(new Keyword(randomId()))),
+                convertToIdentifier(EMPTY, "async"),
+                null)
+            );
+        }
+
         List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
 
         Space before = sourceBefore(TSCSyntaxKind.FunctionKeyword);
@@ -2621,7 +2632,8 @@ public class TypeScriptParserVisitor {
                 // JS/TS keywords.
                 case DeclareKeyword:
                 case DefaultKeyword:
-                case ExportKeyword: {
+                case ExportKeyword:
+                case AsyncKeyword: {
                     annotations = mapKeywordToAnnotation(prefix, node, annotations);
                     break;
                 }
@@ -2629,11 +2641,6 @@ public class TypeScriptParserVisitor {
                 case AbstractKeyword:
                     consumeToken(TSCSyntaxKind.AbstractKeyword);
                     modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Abstract, annotations == null ? emptyList() : annotations));
-                    annotations = null;
-                    break;
-                case AsyncKeyword:
-                    consumeToken(TSCSyntaxKind.AsyncKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Async, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 case PublicKeyword:

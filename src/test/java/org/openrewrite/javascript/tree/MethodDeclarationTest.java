@@ -87,4 +87,15 @@ public class MethodDeclarationTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void asyncKeyword() {
+        rewriteRun(
+          javaScript(
+            """
+              async function bar() {}
+              """
+          )
+        );
+    }
 }
