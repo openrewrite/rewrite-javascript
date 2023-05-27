@@ -20,6 +20,7 @@ import org.openrewrite.PrintOutputCapture;
 import org.openrewrite.Tree;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaPrinter;
+import org.openrewrite.java.marker.OmitParentheses;
 import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
@@ -307,6 +308,24 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
+        public J visitNewClass(J.NewClass newClass, PrintOutputCapture<P> p) {
+            beforeSyntax(newClass, Space.Location.NEW_CLASS_PREFIX, p);
+            visitRightPadded(newClass.getPadding().getEnclosing(), JRightPadded.Location.NEW_CLASS_ENCLOSING, ".", p);
+            visitSpace(newClass.getNew(), Space.Location.NEW_PREFIX, p);
+            boolean objectLiteral = newClass.getMarkers().findFirst(ObjectLiteral.class).isPresent();
+            if (!objectLiteral) {
+                p.append("new");
+            }
+            visit(newClass.getClazz(), p);
+            if (!newClass.getPadding().getArguments().getMarkers().findFirst(OmitParentheses.class).isPresent()) {
+                visitContainer(objectLiteral ? "{" : "(", newClass.getPadding().getArguments(), JContainer.Location.NEW_CLASS_ARGUMENTS, ",", objectLiteral ? "}" : ")", p);
+            }
+            visit(newClass.getBody(), p);
+            afterSyntax(newClass, p);
+            return newClass;
+        }
+
+        @Override
         public J visitTypeCast(J.TypeCast typeCast, PrintOutputCapture<P> p) {
             beforeSyntax(typeCast, Space.Location.TYPE_CAST_PREFIX, p);
 
@@ -345,7 +364,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 }
 
                 if (variable.getElement().getInitializer() != null) {
-                    JavaScriptPrinter.this.visitLeftPadded("=", variable.getElement().getPadding().getInitializer(), JLeftPadded.Location.VARIABLE_INITIALIZER, p);
+                    JavaScriptPrinter.this.visitLeftPadded(variable.getElement().getMarkers().findFirst(Colon.class).isPresent() ? ":" : "=",
+                            variable.getElement().getPadding().getInitializer(), JLeftPadded.Location.VARIABLE_INITIALIZER, p);
                 }
 
                 visitSpace(variable.getAfter(), Space.Location.NAMED_VARIABLE_SUFFIX, p);

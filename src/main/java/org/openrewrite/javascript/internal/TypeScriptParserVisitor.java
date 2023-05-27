@@ -1085,7 +1085,7 @@ public class TypeScriptParserVisitor {
 
     private J.Identifier visitIdentifier(TSCNode node, @Nullable JavaType type, @Nullable JavaType.Variable fieldType) {
         Space prefix = whitespace();
-        this.cursorContext.resetScanner(getCursor() + node.getText().length());
+        cursor(getCursor() + node.getText().length());
         // TODO: check on escapedText property.
         return new J.Identifier(
                 randomId(),
@@ -1439,12 +1439,49 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    // FIXME: @Gary
     private J visitObjectBindingPattern(TSCNode node) {
         return unknownElement(node);
     }
 
     private J visitObjectLiteralExpression(TSCNode node) {
-        return unknownElement(node);
+        Space prefix = whitespace();
+
+        List<TSCNode> propertyNodes = node.getOptionalNodeListProperty("properties");
+
+        JContainer<J> jContainer = mapContainer(
+                TSCSyntaxKind.OpenBraceToken,
+                propertyNodes,
+                TSCSyntaxKind.CommaToken,
+                TSCSyntaxKind.CloseBraceToken,
+                this::visitNode
+        );
+
+        JContainer<Expression> arguments;
+        if (jContainer.getElements().isEmpty()) {
+            arguments = JContainer.empty();
+        } else {
+            List<JRightPadded<Expression>> elements = jContainer.getPadding().getElements().stream()
+                    .map(it -> {
+                        Expression exp = (!(it.getElement() instanceof Expression) && it.getElement() instanceof Statement) ?
+                                new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
+                        return padRight(exp, it.getAfter(), it.getMarkers());
+                    })
+                    .collect(Collectors.toList());
+            arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
+        }
+
+        return new J.NewClass(
+                randomId(),
+                prefix,
+                Markers.build(singletonList(new ObjectLiteral(randomId()))),
+                null,
+                EMPTY,
+                null,
+                arguments,
+                null,
+                null // FIXME: @Gary 1. Is an object literal equivalent to a new class? 2. What is the type of an object literal?
+        );
     }
 
     private <J2 extends J> J.Parentheses<J2> visitParenthesizedExpression(TSCNode node) {
@@ -1480,12 +1517,7 @@ public class TypeScriptParserVisitor {
         implementMe(node, "exclamationToken");
 
         List<J.Annotation> leadingAnnotations = new ArrayList<>();
-        List<J.Modifier> modifiers;
-        if (node.hasProperty("modifiers")) {
-            modifiers = mapModifiers(node.getNodeListProperty("modifiers"), leadingAnnotations);
-        } else {
-            modifiers = emptyList();
-        }
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leadingAnnotations);
 
         Space variablePrefix = whitespace();
         J j = visitNode(node.getNodeProperty("name"));
@@ -1535,6 +1567,65 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
+                leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
+                modifiers,
+                typeTree,
+                null,
+                dimensions,
+                variables
+        );
+    }
+
+    private J visitPropertyAssignment(TSCNode node) {
+        Space prefix = whitespace();
+
+        implementMe(node, "questionToken");
+        implementMe(node, "exclamationToken");
+
+        List<J.Annotation> leadingAnnotations = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leadingAnnotations);
+
+        Space variablePrefix = whitespace();
+        J j = visitNode(node.getOptionalNodeProperty("name"));
+        J.Identifier name = null;
+        if (j instanceof J.Identifier) {
+            name = (J.Identifier) j;
+        } else {
+            implementMe(node);
+        }
+
+        TypeTree typeTree = null;
+
+        // The initializer on a property declaration is the type reference.
+        // { x : 1 }
+        JLeftPadded<Expression> initializer;
+        if (node.hasProperty("initializer")) {
+            Space beforeEquals = sourceBefore(TSCSyntaxKind.ColonToken);
+            J init = visitNode(node.getNodeProperty("initializer"));
+            if (init != null && !(init instanceof Expression)) {
+                init = new JS.StatementExpression(randomId(), (Statement) init);
+            }
+            initializer = padLeft(beforeEquals, (Expression) init);
+        } else {
+            initializer = null;
+        }
+
+        List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = new ArrayList<>(1);
+        variables.add(maybeSemicolon(new J.VariableDeclarations.NamedVariable(
+                randomId(),
+                variablePrefix,
+                Markers.build(singletonList(new Colon(randomId()))),
+                name,
+                emptyList(),
+                initializer,
+                typeMapping.variableType(node)
+        )));
+
+        List<JLeftPadded<Space>> dimensions = emptyList();
+        return new J.VariableDeclarations(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
                 leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
                 modifiers,
                 typeTree,
@@ -2206,7 +2297,11 @@ public class TypeScriptParserVisitor {
     }
 
     @Nullable
-    private J visitNode(TSCNode node) {
+    private J visitNode(@Nullable TSCNode node) {
+        if (node == null) {
+            return null;
+        }
+
         J j;
         switch (node.syntaxKind()) {
             // Multi-case statements
@@ -2367,6 +2462,9 @@ public class TypeScriptParserVisitor {
                 break;
             case PropertyAccessExpression:
                 j = visitPropertyAccessExpression(node);
+                break;
+            case PropertyAssignment:
+                j = visitPropertyAssignment(node);
                 break;
             case QualifiedName:
                 j = visitQualifiedName(node);
