@@ -25,8 +25,8 @@ class ContinueTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              for (let i = 0; i < 10; i++) {
-                  if (i % 2)
+              for ( let i = 0 ; i < 10 ; i++ ) {
+                  if ( i % 2 )
                       continue ;
               }
               """

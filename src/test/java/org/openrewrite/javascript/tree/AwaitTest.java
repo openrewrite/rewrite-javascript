@@ -26,8 +26,8 @@ class AwaitTest extends ParserTest {
           javaScript(
             """
               import foo from '../../../index.js';
-              async function name() {
-                  const data = await foo.get('https:..');
+              async function name ( ) {
+                  const data = await foo . get( 'https:..' ) ;
               }
               """
           )

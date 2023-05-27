@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
-@SuppressWarnings({"JSLastCommaInArrayLiteral", "JSUnresolvedVariable", "JSUnusedLocalSymbols"})
+@SuppressWarnings({"JSLastCommaInArrayLiteral", "JSUnresolvedVariable", "JSUnusedLocalSymbols", "TypeScriptUnresolvedVariable"})
 class TrailingCommaTest extends ParserTest {
 
     @Test
@@ -51,6 +51,21 @@ class TrailingCommaTest extends ParserTest {
             """
               enum Foo {
                 Bar , Buz ,
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void multiExport() {
+        rewriteRun(
+          javaScript(
+            """
+              export {
+                  first ,
+                  second ,
+                  third ,
               }
               """
           )

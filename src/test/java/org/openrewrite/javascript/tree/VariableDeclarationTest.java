@@ -71,7 +71,7 @@ class VariableDeclarationTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              let x : number, y : string;
+              let x : number , y : string ;
               """
           )
         );
@@ -82,7 +82,7 @@ class VariableDeclarationTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              declare const name;
+              declare const name ;
               """
           )
         );

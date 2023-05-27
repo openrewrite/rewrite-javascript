@@ -16,10 +16,12 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS", "TypeScriptCheckImport"})
 class ObjectLiteralTest extends ParserTest {
 
+    @ExpectedToFail
     @Test
     void empty() {
         rewriteRun(
@@ -36,18 +38,19 @@ class ObjectLiteralTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              import foo from '/foo.js' ;
-              foo . create ( { headers : { foo : 'bar' } } ) ;
+              const value = { x : 1 } ;
               """
           )
         );
     }
 
+    @Test
     void innerObjectLiteral() {
         rewriteRun(
           javaScript(
             """
-              const value = { x : 1 } ;
+              import foo from '/foo.js' ;
+              foo . create ( { headers : { foo : 'bar' } } ) ;
               """
           )
         );

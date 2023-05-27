@@ -54,8 +54,8 @@ class ExportTest extends ParserTest {
           javaScript(
             """
               export {
-                  first,
-                  second,
+                  first ,
+                  second ,
                   third
               }
               """

@@ -68,11 +68,11 @@ class ClassDeclarationTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              class Foo<T, S extends PT<S> & C> {
+              class Foo < T , S extends PT < S > & C > {
               }
               interface C {
               }
-              interface PT<T> {
+              interface PT < T > {
               }
               """
           )

@@ -39,11 +39,11 @@ class NewClassTest extends ParserTest {
             """
               class Foo {
                   private name : string ;
-                  constructor( theName : string ) {
+                  constructor ( theName : string ) {
                       this . name = theName ;
                   }
               }
-              const foo = new Foo( "foooooo" );
+              const foo = new Foo ( "foooooo" ) ;
               """
           )
         );

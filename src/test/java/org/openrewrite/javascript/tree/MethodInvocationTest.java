@@ -35,9 +35,9 @@ class MethodInvocationTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              export default function (req) {
-                req.on('data', function () {
-                });
+              export default function ( req ) {
+                req . on ( 'data' , function ( ) {
+                } ) ;
               }
               """
           )

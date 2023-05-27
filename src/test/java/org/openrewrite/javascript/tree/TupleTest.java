@@ -39,7 +39,7 @@ class TupleTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              let tuple : [ number , boolean , ] = [ 1, true ]
+              let tuple : [ number , boolean , ] = [ 1 , true ]
               """
           )
         );

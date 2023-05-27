@@ -511,14 +511,14 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         TSCSymbol symbol = node.getTypeChecker().getTypeAtLocation(node).getOptionalSymbolProperty("symbol");
         if (symbol != null) {
             List<TSCNode> declarations = symbol.getDeclarations();
-            if (declarations == null || declarations.isEmpty()) {
-                implementMe(node.syntaxKind());
-            } else if (declarations.size() == 1) {
-                if (declarations.get(0).syntaxKind() != TSCSyntaxKind.VariableDeclaration) {
+            if (declarations != null && !declarations.isEmpty()) {
+                if (declarations.size() == 1) {
                     return type(declarations.get(0));
+                } else {
+                    return TsType.MERGED_INTERFACE;
                 }
             } else {
-                return TsType.MERGED_INTERFACE;
+                implementMe(node.syntaxKind());
             }
         }
         return mapType(node.getTypeChecker().getTypeAtLocation(node));
