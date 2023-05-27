@@ -514,10 +514,9 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             if (declarations == null || declarations.isEmpty()) {
                 implementMe(node.syntaxKind());
             } else if (declarations.size() == 1) {
-                if (declarations.get(0).syntaxKind() == TSCSyntaxKind.VariableDeclaration) {
-                    System.out.println();
+                if (declarations.get(0).syntaxKind() != TSCSyntaxKind.VariableDeclaration) {
+                    return type(declarations.get(0));
                 }
-                return type(declarations.get(0));
             } else {
                 return TsType.MERGED_INTERFACE;
             }
