@@ -104,6 +104,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitSpace(dimension.getElement(), Space.Location.DIMENSION, p);
             p.append(']');
         }
+        visitLeftPadded("=", binding.getPadding().getInitializer(), JsLeftPadded.Location.BINDING_INITIALIZER, p);
         afterSyntax(binding, p);
         return binding;
     }
@@ -322,6 +323,11 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 p.append("function");
             }
 
+            Asterisk asterisk = method.getMarkers().findFirst(Asterisk.class).orElse(null);
+            if (asterisk != null) {
+                visitSpace(asterisk.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+                p.append("*");
+            }
             visit(method.getName(), p);
             visitContainer("(", method.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, ",", ")", p);
             if (method.getReturnTypeExpression() != null) {
@@ -486,6 +492,20 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visit(variable.getName(), p);
             afterSyntax(variable, p);
             return variable;
+        }
+
+        @Override
+        public J visitYield(J.Yield yield, PrintOutputCapture<P> p) {
+            beforeSyntax(yield, Space.Location.YIELD_PREFIX, p);
+            p.append("yield");
+            Asterisk asterisk = yield.getMarkers().findFirst(Asterisk.class).orElse(null);
+            if (asterisk != null) {
+                visitSpace(asterisk.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+                p.append("*");
+            }
+            visit(yield.getValue(), p);
+            afterSyntax(yield, p);
+            return yield;
         }
 
         protected void visitStatement(@Nullable JRightPadded<Statement> paddedStat, JRightPadded.Location location, PrintOutputCapture<P> p) {

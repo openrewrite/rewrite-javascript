@@ -17,54 +17,33 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS"})
-class ObjectBindingTest extends ParserTest {
+@SuppressWarnings({"JSUnusedLocalSymbols", "TypeScriptUnresolvedVariable"})
+class YieldTest extends ParserTest {
 
     @Test
-    void destructObject() {
+    void yield() {
         rewriteRun(
           javaScript(
             """
-              const c = { fName : 'Foo' , lName : 'Bar' }
-              const { fName, lName } = c
+              class Foo {
+                  async * encode ( ) {
+                      yield this . headers;
+                  }
+              }
               """
           )
         );
     }
 
     @Test
-    void binding() {
+    void asteriskPrefix() {
         rewriteRun(
           javaScript(
             """
-              const { o1 , o2 , o3 } = "" ;
-              """
-          )
-        );
-    }
-
-    @Test
-    void varArg() {
-        rewriteRun(
-          javaScript(
-            """
-              const { o1 , o2 , ... o3 } = "" ;
-              """
-          )
-        );
-    }
-
-    @Test
-    void bindingInitializers() {
-        rewriteRun(
-          javaScript(
-            """
-              const formDataToStream = (form, headersHandler, options) => {
-                  const {
-                      tag = 'form-data-boundary',
-                      size = 25,
-                      boundary = tag
-                  } = options || {};
+              class Foo {
+                  async * encode() {
+                      yield * this . headers ;
+                  }
               }
               """
           )

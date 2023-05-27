@@ -16,56 +16,65 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
-@SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS"})
-class ObjectBindingTest extends ParserTest {
+@SuppressWarnings({"JSUnusedLocalSymbols", "TypeScriptCheckImport", "TypeScriptUnresolvedFunction"})
+class TemplateTest extends ParserTest {
 
+    @ExpectedToFail
     @Test
-    void destructObject() {
+    void template() {
         rewriteRun(
           javaScript(
             """
-              const c = { fName : 'Foo' , lName : 'Bar' }
-              const { fName, lName } = c
-              """
-          )
-        );
-    }
-
-    @Test
-    void binding() {
-        rewriteRun(
-          javaScript(
-            """
-              const { o1 , o2 , o3 } = "" ;
-              """
-          )
-        );
-    }
-
-    @Test
-    void varArg() {
-        rewriteRun(
-          javaScript(
-            """
-              const { o1 , o2 , ... o3 } = "" ;
-              """
-          )
-        );
-    }
-
-    @Test
-    void bindingInitializers() {
-        rewriteRun(
-          javaScript(
-            """
-              const formDataToStream = (form, headersHandler, options) => {
-                  const {
-                      tag = 'form-data-boundary',
-                      size = 25,
-                      boundary = tag
-                  } = options || {};
+              import utils from "../utils.js";
+              const CRLF = '\\r\\n';
+              class Foo {
+                  constructor(name, value) {
+                      const {escapeName} = this.constructor;
+                      const isStringValue = utils.isString(value);
+                      let headers = `Content-Disposition: form-data; name="${escapeName(name)}"${
+                          !isStringValue && value.name ? `; filename="${escapeName(value.name)}"` : ''
+                      }${CRLF}`;
+                  }
               }
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail
+    @Test
+    void delete() {
+        rewriteRun(
+          javaScript(
+            """
+              let foo = { bar : 'v1' , buz : 'v2' }
+              delete foo . buz
+              """
+          )
+        );
+    }
+
+    @Test
+    void typeof() {
+        rewriteRun(
+          javaScript(
+            """
+              let s = "hello"
+              let t = typeof s
+              """
+          )
+        );
+    }
+
+    @Test
+    void instanceofOp() {
+        rewriteRun(
+          javaScript(
+            """
+              let arr = [ 1, 2 ]
+              let t = arr instanceof Array
               """
           )
         );

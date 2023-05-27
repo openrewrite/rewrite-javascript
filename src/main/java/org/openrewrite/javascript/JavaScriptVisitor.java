@@ -116,6 +116,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
                                 .withElement(visitSpace(dim.getElement(), Space.Location.DIMENSION, p))
                 )
         );
+        b = b.withInitializer(visitAndCast(b.getInitializer(), p));
         b = b.withVariableType((JavaType.Variable) visitType(b.getVariableType(), p));
         return b;
     }
@@ -265,7 +266,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         u = u.withPrefix(visitSpace(u.getPrefix(), JsSpace.Location.UNKNOWN_PREFIX, p));
         u = u.withMarkers(visitMarkers(u.getMarkers(), p));
         u = u.withSource(visitAndCast(u.getSource(), p));
-        u = u.withType(visitType(u.getType(), p));
         return u;
     }
 

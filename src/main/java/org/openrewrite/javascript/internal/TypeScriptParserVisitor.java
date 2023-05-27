@@ -720,7 +720,7 @@ public class TypeScriptParserVisitor {
         JContainer<Statement> params = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
                 node.getNodeListProperty("parameters"),
-                null,
+                TSCSyntaxKind.CommaToken,
                 TSCSyntaxKind.CloseParenToken,
                 t -> (Statement) visitNode(t));
 
@@ -908,8 +908,8 @@ public class TypeScriptParserVisitor {
         return visitNode(node.getNodeProperty("name"));
     }
 
-    public Expression visitExpressionStatement(TSCNode node) {
-        return (Expression) visitNode(node.getNodeProperty("expression"));
+    public J visitExpressionStatement(TSCNode node) {
+        return visitNode(node.getNodeProperty("expression"));
     }
 
 
@@ -1323,14 +1323,17 @@ public class TypeScriptParserVisitor {
 
     private J.MethodDeclaration visitMethodDeclaration(TSCNode node) {
         Space prefix = whitespace();
+        Markers markers = Markers.EMPTY;
         List<J.Annotation> annotations = new ArrayList<>();
         List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
 
-        implementMe(node, "asteriskToken");
         implementMe(node, "questionToken");
         implementMe(node, "exclamationToken");
         implementMe(node, "typeArguments");
 
+        if (node.hasProperty("asteriskToken")) {
+            markers = markers.addIfAbsent(new Asterisk(randomId(), sourceBefore(TSCSyntaxKind.AsteriskToken)));
+        }
         JavaType.Method methodType = typeMapping.methodDeclarationType(node);
         TSCNode nameNode = node.getOptionalNodeProperty("name");
         J.Identifier name;
@@ -1357,7 +1360,7 @@ public class TypeScriptParserVisitor {
 
         TypeTree returnTypeExpression = null;
         if (node.hasProperty("type")) {
-            Markers markers = Markers.EMPTY.addIfAbsent(new TypeReferencePrefix(randomId(), sourceBefore(TSCSyntaxKind.ColonToken)));
+            markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), sourceBefore(TSCSyntaxKind.ColonToken)));
             returnTypeExpression = visitNode(node.getNodeProperty("type")).withMarkers(markers);
         }
 
@@ -1367,7 +1370,7 @@ public class TypeScriptParserVisitor {
         return new J.MethodDeclaration(
                 randomId(),
                 prefix,
-                Markers.EMPTY,
+                markers,
                 annotations.isEmpty() ? emptyList() : annotations,
                 modifiers,
                 typeParameters,
@@ -1586,6 +1589,12 @@ public class TypeScriptParserVisitor {
                 implementMe(binding);
             }
 
+            TSCNode initializer = binding.getOptionalNodeProperty("initializer");
+            JLeftPadded<Expression> bindingInitializer = null;
+            if (initializer != null) {
+                bindingInitializer = padLeft(sourceBefore(TSCSyntaxKind.EqualsToken), (Expression) visitNode(initializer));
+            }
+
             Space after = whitespace();
             Markers bindingMarkers = Markers.EMPTY;
             if (i < elements.size() - 1) {
@@ -1605,6 +1614,7 @@ public class TypeScriptParserVisitor {
                     name,
                     emptyList(),
                     varArg,
+                    bindingInitializer,
                     null // FIXME: @Gary What is the type of an object binding declaration?
             );
             bindings.add(padRight(b, after).withMarkers(bindingMarkers));
@@ -1844,6 +1854,10 @@ public class TypeScriptParserVisitor {
                 null, // TODO
                 JavaType.Primitive.String
         );
+    }
+
+    private J visitTemplateExpression(TSCNode node) {
+        return unknownElement(node);
     }
 
     private J.Throw visitThrowStatement(TSCNode node) {
@@ -2112,18 +2126,6 @@ public class TypeScriptParserVisitor {
                 Markers.EMPTY,
                 convertAll(node.getNodeListProperty("types"), t -> sourceBefore(TSCSyntaxKind.BarToken), t -> EMPTY),
                 TsType.Union
-        );
-    }
-
-    private J.WhileLoop visitWhileStatement(TSCNode node) {
-        Space prefix = sourceBefore(TSCSyntaxKind.WhileKeyword);
-        J.ControlParentheses<Expression> control = mapControlParentheses(node.getNodeProperty("expression"));
-        return new J.WhileLoop(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                control,
-                maybeSemicolon((Statement) visitNode(node.getNodeProperty("statement")))
         );
     }
 
@@ -2441,6 +2443,36 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J.WhileLoop visitWhileStatement(TSCNode node) {
+        Space prefix = sourceBefore(TSCSyntaxKind.WhileKeyword);
+        J.ControlParentheses<Expression> control = mapControlParentheses(node.getNodeProperty("expression"));
+        return new J.WhileLoop(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                control,
+                maybeSemicolon((Statement) visitNode(node.getNodeProperty("statement")))
+        );
+    }
+
+    private J visitYieldExpression(TSCNode node) {
+        Space prefix = sourceBefore(TSCSyntaxKind.YieldKeyword);
+        Markers markers = Markers.EMPTY;
+        if (node.hasProperty("asteriskToken")) {
+            markers = markers.add(new Asterisk(randomId(), sourceBefore(TSCSyntaxKind.AsteriskToken)));
+        }
+        J j = visitNode(node.getNodeProperty("expression"));
+        Expression expr = (!(j instanceof Expression) && j instanceof Statement) ?
+                new JS.StatementExpression(randomId(), (Statement) j) : (Expression) j;
+        return new J.Yield(
+                randomId(),
+                prefix,
+                markers,
+                false, // FIXME
+                expr
+        );
+    }
+
     @Nullable
     private J visitNode(@Nullable TSCNode node) {
         if (node == null) {
@@ -2625,6 +2657,9 @@ public class TypeScriptParserVisitor {
             case StringLiteral:
                 j = visitStringLiteral(node);
                 break;
+            case TemplateExpression:
+                j = visitTemplateExpression(node);
+                break;
             case ThrowStatement:
                 j = visitThrowStatement(node);
                 break;
@@ -2652,14 +2687,17 @@ public class TypeScriptParserVisitor {
             case UnionType:
                 j = visitUnionType(node);
                 break;
-            case WhileStatement:
-                j = visitWhileStatement(node);
-                break;
             case VariableDeclarationList:
                 j = visitVariableDeclarationList(node);
                 break;
             case VariableStatement:
                 j = mapVariableStatement(node);
+                break;
+            case WhileStatement:
+                j = visitWhileStatement(node);
+                break;
+            case YieldExpression:
+                j = visitYieldExpression(node);
                 break;
             default:
                 implementMe(node); // TODO: remove ... temp for velocity.
@@ -2791,17 +2829,19 @@ public class TypeScriptParserVisitor {
                     implementMe(node);
                 }
                 Markers markers = Markers.EMPTY;
-                Space after;
-                if (i < nodes.size() - 1) {
-                    after = sourceBefore(delimiter);
-                } else if (delimiter == TSCSyntaxKind.CommaToken) {
-                    after = whitespace();
-                    if (source.getText().charAt(getCursor()) == ',') {
-                        consumeToken(delimiter);
-                        markers = markers.addIfAbsent(new TrailingComma(randomId(), whitespace()));
+                Space after = EMPTY;
+                if (delimiter != null) {
+                    if (i < nodes.size() - 1) {
+                        after = sourceBefore(delimiter);
+                    } else if (delimiter == TSCSyntaxKind.CommaToken) {
+                        after = whitespace();
+                        if (source.getText().charAt(getCursor()) == ',') {
+                            consumeToken(delimiter);
+                            markers = markers.addIfAbsent(new TrailingComma(randomId(), whitespace()));
+                        }
+                    } else {
+                        after = whitespace();
                     }
-                } else {
-                    after = whitespace();
                 }
                 elements.add(JRightPadded.build(visited).withAfter(after).withMarkers(markers));
             }

@@ -912,8 +912,13 @@ public interface JS extends J {
         @SuppressWarnings("unchecked")
         @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
         @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
-        @AllArgsConstructor
+        @RequiredArgsConstructor
+        @AllArgsConstructor(access = AccessLevel.PRIVATE)
         public static final class Binding implements JS, NameTree {
+
+            @Nullable
+            @NonFinal
+            transient WeakReference<ObjectBindingDeclarations.Binding.Padding> padding;
 
             @With
             @EqualsAndHashCode.Include
@@ -941,6 +946,18 @@ public interface JS extends J {
             @Getter
             Space afterVararg;
 
+            @Nullable
+            JLeftPadded<Expression> initializer;
+
+            @Nullable
+            public Expression getInitializer() {
+                return initializer == null ? null : initializer.getElement();
+            }
+
+            public ObjectBindingDeclarations.Binding withInitializer(@Nullable Expression initializer) {
+                return getPadding().withInitializer(JLeftPadded.withElement(this.initializer, initializer));
+            }
+
             @With
             @Nullable
             @Getter
@@ -963,6 +980,35 @@ public interface JS extends J {
             @Override
             public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
                 return v.visitBinding(this, p);
+            }
+
+            public ObjectBindingDeclarations.Binding.Padding getPadding() {
+                ObjectBindingDeclarations.Binding.Padding p;
+                if (this.padding == null) {
+                    p = new ObjectBindingDeclarations.Binding.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                } else {
+                    p = this.padding.get();
+                    if (p == null || p.t != this) {
+                        p = new ObjectBindingDeclarations.Binding.Padding(this);
+                        this.padding = new WeakReference<>(p);
+                    }
+                }
+                return p;
+            }
+
+            @RequiredArgsConstructor
+            public static class Padding {
+                private final ObjectBindingDeclarations.Binding t;
+
+                @Nullable
+                public JLeftPadded<Expression> getInitializer() {
+                    return t.initializer;
+                }
+
+                public ObjectBindingDeclarations.Binding withInitializer(@Nullable JLeftPadded<Expression> initializer) {
+                    return t.initializer == initializer ? t : new ObjectBindingDeclarations.Binding(t.id, t.prefix, t.markers, t.name, t.dimensionsAfterName, t.afterVararg, initializer, t.variableType);
+                }
             }
         }
 
