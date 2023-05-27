@@ -48,12 +48,12 @@ class FieldAccessTest extends ParserTest {
                       this . id = theId ;
                   }
               }
-              
+                            
               class Test extends Super {
                   constructor ( name : string ) {
                       super ( name ) ;
                   }
-              
+                            
                   getId ( ) : string {
                       return super . id
                   }
@@ -72,7 +72,7 @@ class FieldAccessTest extends ParserTest {
               class Test {
                   property : number = 42
               }
-              
+                            
               const t = new Test ( )
               const p = t ?. property
               """

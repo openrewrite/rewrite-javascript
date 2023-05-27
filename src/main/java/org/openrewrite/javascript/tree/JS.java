@@ -713,6 +713,7 @@ public interface JS extends J {
         }
 
         public enum Type {
+            Await,
             Delete,
             In,
             TypeOf

@@ -17,32 +17,17 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("ExceptionCaughtLocallyJS")
-class TryCatchTest extends ParserTest {
+@SuppressWarnings({"JSUnusedLocalSymbols", "TypeScriptCheckImport"})
+class AwaitTest extends ParserTest {
 
     @Test
-    void tryCatch() {
+    void await() {
         rewriteRun(
           javaScript(
             """
-              try {
-                throw new Error ( 'err' ) ;
-              } catch ( e ) {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void tryCatchFinally() {
-        rewriteRun(
-          javaScript(
-            """
-              try {
-                throw new Error ( 'err' ) ;
-              } catch ( e ) {
-              } finally {
+              import foo from '../../../index.js';
+              async function name() {
+                  const data = await foo.get('https:..');
               }
               """
           )

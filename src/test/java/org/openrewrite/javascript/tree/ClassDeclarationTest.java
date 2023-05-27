@@ -23,43 +23,43 @@ class ClassDeclarationTest extends ParserTest {
     @Test
     void classDeclaration() {
         rewriteRun(
-            javaScript(
-              "class Foo { }"
-            )
+          javaScript(
+            "class Foo { }"
+          )
         );
     }
 
     @Test
     void abstractClass() {
         rewriteRun(
-            javaScript(
-              "abstract class Foo { }"
-            )
+          javaScript(
+            "abstract class Foo { }"
+          )
         );
     }
 
     @Test
     void interfaceDeclaration() {
         rewriteRun(
-            javaScript(
-              "interface Foo { }"
-            )
+          javaScript(
+            "interface Foo { }"
+          )
         );
     }
 
     @Test
     void withConstructor() {
         rewriteRun(
-           javaScript(
-             """
-               class Foo {
-                   private name : string ;
-                   constructor ( theName : string ) {
-                       this . name = theName ;
-                   }
-               }
-               """
-           )
+          javaScript(
+            """
+              class Foo {
+                  private name : string ;
+                  constructor ( theName : string ) {
+                      this . name = theName ;
+                  }
+              }
+              """
+          )
         );
     }
 
@@ -86,9 +86,9 @@ class ClassDeclarationTest extends ParserTest {
             """
               class Foo {
               }
-              
-              
-              
+                            
+                            
+                            
               """
           )
         );

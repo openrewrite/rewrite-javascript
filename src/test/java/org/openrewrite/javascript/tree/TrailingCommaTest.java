@@ -47,13 +47,13 @@ class TrailingCommaTest extends ParserTest {
     @Test
     void onEnum() {
         rewriteRun(
-            javaScript(
+          javaScript(
+            """
+              enum Foo {
+                Bar , Buz ,
+              }
               """
-                enum Foo {
-                  Bar , Buz ,
-                }
-                """
-            )
+          )
         );
     }
 }

@@ -984,7 +984,7 @@ public class TypeScriptParserVisitor {
         List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
 
         Space before = sourceBefore(TSCSyntaxKind.FunctionKeyword);
-        annotations = mapKeywordToAnnotation(before, "function", annotations);
+        Markers markers = Markers.build(singletonList(new FunctionKeyword(randomId(), before)));
 
         J.Identifier name;
         JavaType.Method method = typeMapping.methodDeclarationType(node);
@@ -1010,7 +1010,7 @@ public class TypeScriptParserVisitor {
         return new J.MethodDeclaration(
                 randomId(),
                 prefix,
-                Markers.EMPTY,
+                markers,
                 annotations,
                 modifiers,
                 null,
@@ -1791,13 +1791,14 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Expression left = null; // placeholder for 'bar' in foo. Remove left expression if it is unnecessary.
         JLeftPadded<JS.JsOperator.Type> op = null;
-        Expression right = null;
-        if (node.syntaxKind() == TSCSyntaxKind.TypeOfExpression) {
+        if (node.syntaxKind() == TSCSyntaxKind.AwaitExpression) {
+            op = padLeft(sourceBefore(TSCSyntaxKind.AwaitKeyword), JS.JsOperator.Type.Await);
+        } else if (node.syntaxKind() == TSCSyntaxKind.TypeOfExpression) {
             op = padLeft(sourceBefore(TSCSyntaxKind.TypeOfKeyword), JS.JsOperator.Type.TypeOf);
-            right = (Expression) visitNode(node.getNodeProperty("expression"));
         } else {
             implementMe(node);
         }
+        Expression right = (Expression) visitNode(node.getNodeProperty("expression"));
         return new JS.JsOperator(
                 randomId(),
                 prefix,
@@ -2346,6 +2347,10 @@ public class TypeScriptParserVisitor {
             case PropertyDeclaration:
                 j = visitPropertyDeclaration(node);
                 break;
+            case AwaitExpression:
+            case TypeOfExpression:
+                j = visitTsOperator(node);
+                break;
             case PostfixUnaryExpression:
             case PrefixUnaryExpression:
                 j = visitUnaryExpression(node);
@@ -2489,9 +2494,6 @@ public class TypeScriptParserVisitor {
                 break;
             case TypeAliasDeclaration:
                 j = visitTypeAliasDeclaration(node);
-                break;
-            case TypeOfExpression:
-                j = visitTsOperator(node);
                 break;
             case TypeOperator:
                 j = visitTypeOperator(node);

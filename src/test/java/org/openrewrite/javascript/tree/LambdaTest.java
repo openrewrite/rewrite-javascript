@@ -23,14 +23,14 @@ class LambdaTest extends ParserTest {
     @Test
     void asMethodParameter() {
         rewriteRun(
-            javaScript(
+          javaScript(
+            """
+              import foo from './index.js';
+              const bar = foo.map(protocol => {
+                return protocol + ':';
+              });
               """
-                import foo from './index.js';
-                const bar = foo.map(protocol => {
-                  return protocol + ':';
-                });
-                """
-            )
+          )
         );
     }
 

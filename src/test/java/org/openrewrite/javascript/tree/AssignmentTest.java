@@ -22,12 +22,12 @@ class AssignmentTest extends ParserTest {
     @Test
     void assignment() {
         rewriteRun(
-            javaScript(
+          javaScript(
+            """
+              var b = 1
+              b = 2
               """
-                var b = 1
-                b = 2
-                """
-            )
+          )
         );
     }
 }

@@ -25,20 +25,20 @@ class AnnotationTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-            function enumerable ( value : boolean ) {
-                return function ( target : any ,
-                        propertyKey : string,
-                        descriptor : PropertyDescriptor ) {
-                    descriptor . enumerable = value ;
-                } ;
-            }
-            @enumerable ( false )
-            class Foo {
-                foo ( ) {
-                    return "hello"
-                }
-            }
-            """
+              function enumerable ( value : boolean ) {
+                  return function ( target : any ,
+                          propertyKey : string,
+                          descriptor : PropertyDescriptor ) {
+                      descriptor . enumerable = value ;
+                  } ;
+              }
+              @enumerable ( false )
+              class Foo {
+                  foo ( ) {
+                      return "hello"
+                  }
+              }
+              """
           )
         );
     }
@@ -48,20 +48,20 @@ class AnnotationTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-            function enumerable ( value : boolean ) {
-                return function ( target : any ,
-                        propertyKey : string,
-                        descriptor : PropertyDescriptor ) {
-                    descriptor . enumerable = value ;
-                } ;
-            }
-            class Foo {
-                @enumerable ( false )
-                foo ( ) {
-                    return "hello"
-                }
-            }
-            """
+              function enumerable ( value : boolean ) {
+                  return function ( target : any ,
+                          propertyKey : string,
+                          descriptor : PropertyDescriptor ) {
+                      descriptor . enumerable = value ;
+                  } ;
+              }
+              class Foo {
+                  @enumerable ( false )
+                  foo ( ) {
+                      return "hello"
+                  }
+              }
+              """
           )
         );
     }
@@ -71,18 +71,18 @@ class AnnotationTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-            function enumerable ( value : boolean ) {
-                return function ( target : any ,
-                        propertyKey : string,
-                        descriptor : PropertyDescriptor ) {
-                    descriptor . enumerable = value ;
-                } ;
-            }
-            class Foo {
-                @enumerable ( false )
-                foo: String = "hello";
-            }
-            """
+              function enumerable ( value : boolean ) {
+                  return function ( target : any ,
+                          propertyKey : string,
+                          descriptor : PropertyDescriptor ) {
+                      descriptor . enumerable = value ;
+                  } ;
+              }
+              class Foo {
+                  @enumerable ( false )
+                  foo: String = "hello";
+              }
+              """
           )
         );
     }

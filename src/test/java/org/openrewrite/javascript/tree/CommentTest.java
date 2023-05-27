@@ -66,7 +66,7 @@ class CommentTest extends ParserTest {
           javaScript(
             """
               var s ;
-              
+                            
               /**
                * @param {string} p1
                * @param {string} p2

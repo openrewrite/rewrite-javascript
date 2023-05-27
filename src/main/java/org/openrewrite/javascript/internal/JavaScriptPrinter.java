@@ -159,6 +159,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(operator.getLeft(), p);
         String keyword = "";
         switch (operator.getOperator()) {
+            case Await:
+                keyword = "await";
+                break;
             case Delete:
                 keyword = "delete";
                 break;
@@ -280,6 +283,13 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             beforeSyntax(method, Space.Location.METHOD_DECLARATION_PREFIX, p);
             visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
             visit(method.getLeadingAnnotations(), p);
+            method.getModifiers().forEach(it -> visitModifier(it, p));
+
+            FunctionKeyword functionKeyword = method.getMarkers().findFirst(FunctionKeyword.class).orElse(null);
+            if (functionKeyword != null) {
+                visitSpace(functionKeyword.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+                p.append("function");
+            }
 
             visit(method.getName(), p);
             visitContainer("(", method.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, ",", ")", p);
@@ -295,6 +305,62 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visit(method.getBody(), p);
             afterSyntax(method, p);
             return method;
+        }
+
+        @Override
+        public void visitModifier(J.Modifier mod, PrintOutputCapture<P> p) {
+            visit(mod.getAnnotations(), p);
+            String keyword = "";
+            switch (mod.getType()) {
+                case Default:
+                    keyword = "default";
+                    break;
+                case Public:
+                    keyword = "public";
+                    break;
+                case Protected:
+                    keyword = "protected";
+                    break;
+                case Private:
+                    keyword = "private";
+                    break;
+                case Abstract:
+                    keyword = "abstract";
+                    break;
+                case Async:
+                    keyword = "async";
+                    break;
+                case Static:
+                    keyword = "static";
+                    break;
+                case Final:
+                    keyword = "final";
+                    break;
+                case Native:
+                    keyword = "native";
+                    break;
+                case NonSealed:
+                    keyword = "non-sealed";
+                    break;
+                case Sealed:
+                    keyword = "sealed";
+                    break;
+                case Strictfp:
+                    keyword = "strictfp";
+                    break;
+                case Synchronized:
+                    keyword = "synchronized";
+                    break;
+                case Transient:
+                    keyword = "transient";
+                    break;
+                case Volatile:
+                    keyword = "volatile";
+                    break;
+            }
+            beforeSyntax(mod, Space.Location.MODIFIER_PREFIX, p);
+            p.append(keyword);
+            afterSyntax(mod, p);
         }
 
         @Override

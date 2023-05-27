@@ -13,27 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript.tree;
+package org.openrewrite.javascript.markers;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import lombok.Value;
+import lombok.With;
+import org.openrewrite.java.tree.Space;
+import org.openrewrite.marker.Marker;
 
-class PrimitiveTest extends ParserTest {
+import java.util.UUID;
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-      "true",
-      "false",
-      "0",
-      "'c'",
-    })
-    void primitives(String arg) {
-        rewriteRun(
-          javaScript(
-            """
-              var a = %s
-              """.formatted(arg)
-          )
-        );
-    }
+@Value
+@With
+public class FunctionKeyword implements Marker {
+    UUID id;
+    Space prefix;
 }

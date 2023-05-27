@@ -109,8 +109,8 @@ class BinaryTest extends ParserTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "===",
-            "!==",
+      "===",
+      "!==",
     })
     void identityEquals(String arg) {
         rewriteRun(
