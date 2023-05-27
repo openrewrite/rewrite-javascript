@@ -90,7 +90,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             case TypeQuery:
                 return mapReference(node, signature);
             case UnionType:
-                return TsType.UNION;
+                return TsType.Union;
             case PropertyDeclaration:
             case VariableDeclaration:
                 return variableType(node, signature);
@@ -392,7 +392,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                     implementMe(node.syntaxKind());
                 }
             } else {
-                resolvedDeclaringType = TsType.MISSING_SYMBOL;
+                resolvedDeclaringType = TsType.MissingSymbol;
             }
         }
 
@@ -515,7 +515,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                 if (declarations.size() == 1) {
                     return type(declarations.get(0));
                 } else {
-                    return TsType.MERGED_INTERFACE;
+                    return TsType.MergedInterface;
                 }
             } else {
                 implementMe(node.syntaxKind());
@@ -639,28 +639,126 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         if (flag != null) {
             switch (flag) {
                 case Any:
-                    return TsType.ANY;
+                    return TsType.Any;
                 case Boolean:
                 case BooleanLiteral:
                     return JavaType.Primitive.Boolean;
                 case Number:
                 case NumberLiteral:
-                    return TsType.NUMBER;
+                    return TsType.Number;
                 case Null:
                     return JavaType.Primitive.Null;
                 case Object:
-                    return TsType.ANONYMOUS;
+                    return TsType.Anonymous;
                 case String:
                 case StringLiteral:
                     return JavaType.Primitive.String;
                 case Undefined:
-                    return TsType.UNDEFINED;
+                    return TsType.Undefined;
                 case Union:
-                    return TsType.UNION;
+                    return TsType.Union;
+                case Unit:
+                    return TsType.Unit;
                 case Unknown:
-                    return TsType.UNKNOWN;
+                    return TsType.Unknown;
                 case Void:
                     return JavaType.Primitive.Void;
+                case Enum:
+                    return TsType.Enum;
+                case EnumLiteral:
+                    return TsType.EnumLiteral;
+                case BigInt:
+                    return TsType.BigInt;
+                case BigIntLiteral:
+                    return TsType.BigIntLiteral;
+                case ESSymbol:
+                    return TsType.ESSymbol;
+                case UniqueESSymbol:
+                    return TsType.UniqueESSymbol;
+                case Never:
+                    return TsType.Never;
+                case TypeParameter:
+                    return TsType.TypeParameter;
+                case Intersection:
+                    return TsType.Intersection;
+                case Index:
+                    return TsType.Index;
+                case IndexedAccess:
+                    return TsType.IndexedAccess;
+                case Conditional:
+                    return TsType.Conditional;
+                case Substitution:
+                    return TsType.Substitution;
+                case NonPrimitive:
+                    return TsType.NonPrimitive;
+                case TemplateLiteral:
+                    return TsType.TemplateLiteral;
+                case StringMapping:
+                    return TsType.StringMapping;
+                case AnyOrUnknown:
+                    return TsType.AnyOrUnknown;
+                case Nullable:
+                    return TsType.Nullable;
+                case Literal:
+                    return TsType.Literal;
+                case Freshable:
+                    return TsType.Freshable;
+                case StringOrNumberLiteral:
+                    return TsType.StringOrNumberLiteral;
+                case StringOrNumberLiteralOrUnique:
+                    return TsType.StringOrNumberLiteralOrUnique;
+                case DefinitelyFalsy:
+                    return TsType.DefinitelyFalsy;
+                case PossiblyFalsy:
+                    return TsType.PossiblyFalsy;
+                case Intrinsic:
+                    return TsType.Intrinsic;
+                case Primitive:
+                    return TsType.Primitive;
+                case StringLike:
+                    return TsType.StringLike;
+                case NumberLike:
+                    return TsType.NumberLike;
+                case BigIntLike:
+                    return TsType.BigIntLike;
+                case BooleanLike:
+                    return TsType.BooleanLike;
+                case EnumLike:
+                    return TsType.EnumLike;
+                case ESSymbolLike:
+                    return TsType.ESSymbolLike;
+                case VoidLike:
+                    return TsType.VoidLike;
+                case DefinitelyNonNullable:
+                    return TsType.DefinitelyNonNullable;
+                case DisjointDomains:
+                    return TsType.DisjointDomains;
+                case UnionOrIntersection:
+                    return TsType.UnionOrIntersection;
+                case StructuredType:
+                    return TsType.StructuredType;
+                case TypeVariable:
+                    return TsType.TypeVariable;
+                case InstantiableNonPrimitive:
+                    return TsType.InstantiableNonPrimitive;
+                case InstantiablePrimitive:
+                    return TsType.InstantiablePrimitive;
+                case Instantiable:
+                    return TsType.Instantiable;
+                case StructuredOrInstantiable:
+                    return TsType.StructuredOrInstantiable;
+                case ObjectFlagsType:
+                    return TsType.ObjectFlagsType;
+                case Simplifiable:
+                    return TsType.Simplifiable;
+                case Singleton:
+                    return TsType.Singleton;
+                case Narrowable:
+                    return TsType.Narrowable;
+                case IncludesMask:
+                    return TsType.IncludesMask;
+                case NotPrimitiveUnion:
+                    return TsType.NotPrimitiveUnion;
                 default:
                     implementMe(type);
                     break;
@@ -668,7 +766,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         } else {
             TSCObjectFlag objectFlag = TSCObjectFlag.fromMaskExact(type.getObjectFlags());
             if (objectFlag == TSCObjectFlag.PrimitiveUnion) {
-                return TsType.PRIMITIVE_UNION;
+                return TsType.PrimitiveUnion;
             } else {
                 implementMe(type);
             }

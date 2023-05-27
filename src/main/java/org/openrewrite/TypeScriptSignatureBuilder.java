@@ -76,7 +76,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
             case TypeQuery:
                 return mapTypeReference(node);
             case UnionType:
-                return TsType.UNION.getFullyQualifiedName();
+                return TsType.Union.getFullyQualifiedName();
             case PropertyDeclaration:
             case VariableDeclaration:
                 return variableSignature(node);
@@ -282,7 +282,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
                 if (declarations.size() == 1) {
                     return signature(declarations.get(0));
                 } else {
-                    return TsType.MERGED_INTERFACE.getFullyQualifiedName();
+                    return TsType.MergedInterface.getFullyQualifiedName();
                 }
             } else {
                 implementMe(node.syntaxKind());
@@ -328,28 +328,126 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         if (flag != null) {
             switch (flag) {
                 case Any:
-                    return TsType.ANY.getFullyQualifiedName();
+                    return TsType.Any.getFullyQualifiedName();
                 case Boolean:
                 case BooleanLiteral:
                     return JavaType.Primitive.Boolean.getKeyword();
                 case Number:
                 case NumberLiteral:
-                    return TsType.NUMBER.getFullyQualifiedName();
+                    return TsType.Number.getFullyQualifiedName();
                 case Null:
                     return JavaType.Primitive.Null.getKeyword();
                 case Object:
-                    return TsType.ANONYMOUS.getFullyQualifiedName();
+                    return TsType.Anonymous.getFullyQualifiedName();
                 case String:
                 case StringLiteral:
                     return JavaType.Primitive.String.getKeyword();
                 case Undefined:
-                    return TsType.UNDEFINED.getFullyQualifiedName();
+                    return TsType.Undefined.getFullyQualifiedName();
                 case Union:
-                    return TsType.UNION.getFullyQualifiedName();
+                    return TsType.Union.getFullyQualifiedName();
+                case Unit:
+                    return TsType.Unit.getFullyQualifiedName();
                 case Unknown:
-                    return TsType.UNKNOWN.getFullyQualifiedName();
+                    return TsType.Unknown.getFullyQualifiedName();
                 case Void:
                     return JavaType.Primitive.Void.getKeyword();
+                case Enum:
+                    return TsType.Enum.getFullyQualifiedName();
+                case EnumLiteral:
+                    return TsType.EnumLiteral.getFullyQualifiedName();
+                case BigInt:
+                    return TsType.BigInt.getFullyQualifiedName();
+                case BigIntLiteral:
+                    return TsType.BigIntLiteral.getFullyQualifiedName();
+                case ESSymbol:
+                    return TsType.ESSymbol.getFullyQualifiedName();
+                case UniqueESSymbol:
+                    return TsType.UniqueESSymbol.getFullyQualifiedName();
+                case Never:
+                    return TsType.Never.getFullyQualifiedName();
+                case TypeParameter:
+                    return TsType.TypeParameter.getFullyQualifiedName();
+                case Intersection:
+                    return TsType.Intersection.getFullyQualifiedName();
+                case Index:
+                    return TsType.Index.getFullyQualifiedName();
+                case IndexedAccess:
+                    return TsType.IndexedAccess.getFullyQualifiedName();
+                case Conditional:
+                    return TsType.Conditional.getFullyQualifiedName();
+                case Substitution:
+                    return TsType.Substitution.getFullyQualifiedName();
+                case NonPrimitive:
+                    return TsType.NonPrimitive.getFullyQualifiedName();
+                case TemplateLiteral:
+                    return TsType.TemplateLiteral.getFullyQualifiedName();
+                case StringMapping:
+                    return TsType.StringMapping.getFullyQualifiedName();
+                case AnyOrUnknown:
+                    return TsType.AnyOrUnknown.getFullyQualifiedName();
+                case Nullable:
+                    return TsType.Nullable.getFullyQualifiedName();
+                case Literal:
+                    return TsType.Literal.getFullyQualifiedName();
+                case Freshable:
+                    return TsType.Freshable.getFullyQualifiedName();
+                case StringOrNumberLiteral:
+                    return TsType.StringOrNumberLiteral.getFullyQualifiedName();
+                case StringOrNumberLiteralOrUnique:
+                    return TsType.StringOrNumberLiteralOrUnique.getFullyQualifiedName();
+                case DefinitelyFalsy:
+                    return TsType.DefinitelyFalsy.getFullyQualifiedName();
+                case PossiblyFalsy:
+                    return TsType.PossiblyFalsy.getFullyQualifiedName();
+                case Intrinsic:
+                    return TsType.Intrinsic.getFullyQualifiedName();
+                case Primitive:
+                    return TsType.Primitive.getFullyQualifiedName();
+                case StringLike:
+                    return TsType.StringLike.getFullyQualifiedName();
+                case NumberLike:
+                    return TsType.NumberLike.getFullyQualifiedName();
+                case BigIntLike:
+                    return TsType.BigIntLike.getFullyQualifiedName();
+                case BooleanLike:
+                    return TsType.BooleanLike.getFullyQualifiedName();
+                case EnumLike:
+                    return TsType.EnumLike.getFullyQualifiedName();
+                case ESSymbolLike:
+                    return TsType.ESSymbolLike.getFullyQualifiedName();
+                case VoidLike:
+                    return TsType.VoidLike.getFullyQualifiedName();
+                case DefinitelyNonNullable:
+                    return TsType.DefinitelyNonNullable.getFullyQualifiedName();
+                case DisjointDomains:
+                    return TsType.DisjointDomains.getFullyQualifiedName();
+                case UnionOrIntersection:
+                    return TsType.UnionOrIntersection.getFullyQualifiedName();
+                case StructuredType:
+                    return TsType.StructuredType.getFullyQualifiedName();
+                case TypeVariable:
+                    return TsType.TypeVariable.getFullyQualifiedName();
+                case InstantiableNonPrimitive:
+                    return TsType.InstantiableNonPrimitive.getFullyQualifiedName();
+                case InstantiablePrimitive:
+                    return TsType.InstantiablePrimitive.getFullyQualifiedName();
+                case Instantiable:
+                    return TsType.Instantiable.getFullyQualifiedName();
+                case StructuredOrInstantiable:
+                    return TsType.StructuredOrInstantiable.getFullyQualifiedName();
+                case ObjectFlagsType:
+                    return TsType.ObjectFlagsType.getFullyQualifiedName();
+                case Simplifiable:
+                    return TsType.Simplifiable.getFullyQualifiedName();
+                case Singleton:
+                    return TsType.Singleton.getFullyQualifiedName();
+                case Narrowable:
+                    return TsType.Narrowable.getFullyQualifiedName();
+                case IncludesMask:
+                    return TsType.IncludesMask.getFullyQualifiedName();
+                case NotPrimitiveUnion:
+                    return TsType.NotPrimitiveUnion.getFullyQualifiedName();
                 default:
                     implementMe(type);
                     break;
@@ -357,7 +455,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         } else {
             TSCObjectFlag objectFlag = TSCObjectFlag.fromMaskExact(type.getObjectFlags());
             if (objectFlag == TSCObjectFlag.PrimitiveUnion) {
-                return TsType.PRIMITIVE_UNION.getFullyQualifiedName();
+                return TsType.PrimitiveUnion.getFullyQualifiedName();
             } else {
                 implementMe(type);
             }

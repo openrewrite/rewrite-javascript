@@ -225,10 +225,10 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
 
         JContainer<J> jContainer = mapContainer(
-                TSCSyntaxKind.OpenParenToken,
+                TSCSyntaxKind.OpenBracketToken,
                 node.getNodeListProperty("elements"),
                 TSCSyntaxKind.CommaToken,
-                TSCSyntaxKind.CloseParenToken,
+                TSCSyntaxKind.CloseBracketToken,
                 this::visitNode
         );
         List<JRightPadded<Expression>> elements = jContainer.getPadding().getElements().stream()
@@ -755,7 +755,7 @@ public class TypeScriptParserVisitor {
         if (callExpression.hasProperty("arguments")) {
             JContainer<J> jContainer = mapContainer(
                     TSCSyntaxKind.OpenParenToken,
-                    node.getNodeListProperty("arguments"),
+                    callExpression.getNodeListProperty("arguments"),
                     TSCSyntaxKind.CommaToken,
                     TSCSyntaxKind.CloseParenToken,
                     this::visitNode
@@ -2111,7 +2111,7 @@ public class TypeScriptParserVisitor {
                 prefix,
                 Markers.EMPTY,
                 convertAll(node.getNodeListProperty("types"), t -> sourceBefore(TSCSyntaxKind.BarToken), t -> EMPTY),
-                TsType.UNION
+                TsType.Union
         );
     }
 
