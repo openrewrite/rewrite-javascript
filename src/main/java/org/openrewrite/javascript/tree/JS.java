@@ -355,6 +355,11 @@ public interface JS extends J {
         Lambda.Parameters parameters;
 
         @With
+        @Getter
+        @Nullable
+        TypeTree returnTypeExpression;
+
+        @With
         Space arrow;
 
         @With

@@ -45,7 +45,7 @@ class MethodDeclarationTest extends ParserTest {
 
     @ExpectedToFail
     @Test
-    void objectLiteralType() {
+    void typeLiteral() {
         rewriteRun(
           javaScript(
             """
@@ -86,7 +86,6 @@ class MethodDeclarationTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void arrowDeclaration() {
         rewriteRun(
@@ -94,6 +93,22 @@ class MethodDeclarationTest extends ParserTest {
             """
               let sum = ( a : number , b : number ) : number => {
                   return a + b ;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void typeArguments() {
+        rewriteRun(
+          javaScript(
+            """
+              class User {
+              }
+              
+              function foo < T > ( arg : T ) : T {
+                  return arg ;
               }
               """
           )

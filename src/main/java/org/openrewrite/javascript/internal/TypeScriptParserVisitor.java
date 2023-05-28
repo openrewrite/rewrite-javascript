@@ -182,10 +182,10 @@ public class TypeScriptParserVisitor {
     private J visitArrowFunction(TSCNode node) {
         implementMe(node, "modifiers");
         implementMe(node, "typeParameters");
-        implementMe(node, "type");
         implementMe(node, "typeArguments");
 
         Space prefix = whitespace();
+        Markers markers = Markers.EMPTY;
 
         List<J.Annotation> annotations = new ArrayList<>();
         List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
@@ -208,13 +208,24 @@ public class TypeScriptParserVisitor {
                         parenthesized ? t -> sourceBefore(TSCSyntaxKind.CloseParenToken) : noDelim)
         );
 
+        TSCNode typeNode = node.getOptionalNodeProperty("type");
+        TypeTree returnTypeExpression = null;
+        if (typeNode != null) {
+            Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
+            if (beforeColon != EMPTY) {
+                markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
+            }
+            returnTypeExpression = (TypeTree) visitNode(typeNode);
+        }
+
         return new JS.ArrowFunction(
                 randomId(),
                 prefix,
-                Markers.EMPTY,
+                markers,
                 annotations,
                 modifiers,
                 params,
+                returnTypeExpression,
                 sourceBefore(TSCSyntaxKind.EqualsGreaterThanToken),
                 visitNode(node.getOptionalNodeProperty("body")),
                 typeMapping.type(node)
@@ -478,13 +489,12 @@ public class TypeScriptParserVisitor {
     }
 
     private J.MethodInvocation visitCallExpression(TSCNode node) {
-        Space prefix = whitespace();
         implementMe(node, "questionDotToken");
         implementMe(node, "typeArguments");
 
-        JRightPadded<Expression> select = null;
-        JContainer<Expression> typeParameters = null;
+        Space prefix = whitespace();
 
+        JRightPadded<Expression> select = null;
         TSCNode expression = node.getNodeProperty("expression");
         if (expression.hasProperty("expression")) {
             // Adjust padding.
@@ -517,6 +527,29 @@ public class TypeScriptParserVisitor {
         } else {
             implementMe(expression);
         }
+
+        JContainer<Expression> typeParameters = null;
+
+        List<TSCNode> tpNodes = node.getOptionalNodeListProperty("typeParameters");
+        if (tpNodes != null) {
+            JContainer<J> jContainer = mapContainer(
+                    TSCSyntaxKind.LessThanToken,
+                    tpNodes,
+                    TSCSyntaxKind.CommaToken,
+                    TSCSyntaxKind.GreaterThanToken,
+                    this::visitNode
+            );
+
+            List<JRightPadded<Expression>> typeParams = jContainer.getPadding().getElements().stream()
+                    .map(it -> {
+                        Expression exp = (!(it.getElement() instanceof Expression) && it.getElement() instanceof Statement) ?
+                                new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
+                        return padRight(exp, it.getAfter(), it.getMarkers());
+                    })
+                    .collect(Collectors.toList());
+            typeParameters = JContainer.build(jContainer.getBefore(), typeParams, jContainer.getMarkers());
+        }
+
         JContainer<Expression> arguments = null;
         if (node.hasProperty("arguments")) {
             JContainer<J> jContainer = mapContainer(
@@ -704,6 +737,9 @@ public class TypeScriptParserVisitor {
     }
 
     private J.MethodDeclaration visitConstructor(TSCNode node) {
+        implementMe(node, "type");
+        implementMe(node, "typeArguments");
+
         Space prefix = whitespace();
         List<J.Modifier> modifiers;
         List<J.Annotation> leadingAnnotations = new ArrayList<>();
@@ -716,6 +752,7 @@ public class TypeScriptParserVisitor {
         Space before = whitespace();
         consumeToken(TSCSyntaxKind.ConstructorKeyword);
         J.Identifier name = convertToIdentifier(before, "constructor");
+        J.TypeParameters typeParameters = mapTypeParameters(node.getOptionalNodeListProperty("typeParameters"));
 
         JContainer<Statement> params = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
@@ -725,16 +762,14 @@ public class TypeScriptParserVisitor {
                 t -> (Statement) visitNode(t));
 
         J.Block body = (J.Block) visitNode(node.getNodeProperty("body"));
-        implementMe(node, "typeParameters");
-        implementMe(node, "type");
-        implementMe(node, "typeArguments");
+
         return new J.MethodDeclaration(
                 randomId(),
                 prefix,
                 Markers.EMPTY,
                 leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
                 modifiers,
-                null,
+                typeParameters,
                 null,
                 new J.MethodDeclaration.IdentifierWithAnnotations(name, Collections.emptyList()),
                 params,
@@ -1008,9 +1043,8 @@ public class TypeScriptParserVisitor {
 
     private J.MethodDeclaration visitFunctionDeclaration(TSCNode node) {
         implementMe(node, "asteriskToken");
-        implementMe(node, "typeParameters");
         implementMe(node, "typeArguments");
-        implementMe(node, "type");
+
         Space prefix = whitespace();
 
         List<J.Annotation> annotations = new ArrayList<>();
@@ -1030,6 +1064,8 @@ public class TypeScriptParserVisitor {
         }
 
         name = name.withType(method);
+
+        J.TypeParameters typeParameters = mapTypeParameters(node.getOptionalNodeListProperty("typeParameters"));
         JContainer<Statement> parameters = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
                 node.getNodeListProperty("parameters"),
@@ -1037,6 +1073,16 @@ public class TypeScriptParserVisitor {
                 TSCSyntaxKind.CloseParenToken,
                 this::visitFunctionParameter
         );
+
+        TSCNode typeNode = node.getOptionalNodeProperty("type");
+        TypeTree returnTypeExpression = null;
+        if (typeNode != null) {
+            Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
+            if (beforeColon != EMPTY) {
+                markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
+            }
+            returnTypeExpression = (TypeTree) visitNode(typeNode);
+        }
 
         J.Block block = visitBlock(node.getOptionalNodeProperty("body"));
 
@@ -1046,8 +1092,8 @@ public class TypeScriptParserVisitor {
                 markers,
                 annotations,
                 modifiers,
-                null,
-                null,
+                typeParameters,
+                returnTypeExpression,
                 new J.MethodDeclaration.IdentifierWithAnnotations(name, Collections.emptyList()),
                 parameters,
                 null,
@@ -1275,10 +1321,11 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitFunctionType(TSCNode node) {
-        implementMe(node, "typeParameters");
-        implementMe(node, "modifiers");
-        implementMe(node, "typeArguments");
-        implementMe(node, "asteriskToken");
+//        implementMe(node, "typeParameters");
+//        implementMe(node, "modifiers");
+//        implementMe(node, "typeArguments");
+//        implementMe(node, "asteriskToken");
+
 //        Space prefix = whitespace();
 //
 //        List<TSCNode> params = node.getOptionalNodeListProperty("parameters");
@@ -1322,14 +1369,14 @@ public class TypeScriptParserVisitor {
     }
 
     private J.MethodDeclaration visitMethodDeclaration(TSCNode node) {
+        implementMe(node, "questionToken");
+        implementMe(node, "exclamationToken");
+        implementMe(node, "typeArguments");
+
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
         List<J.Annotation> annotations = new ArrayList<>();
         List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
-
-        implementMe(node, "questionToken");
-        implementMe(node, "exclamationToken");
-        implementMe(node, "typeArguments");
 
         if (node.hasProperty("asteriskToken")) {
             markers = markers.addIfAbsent(new Asterisk(randomId(), sourceBefore(TSCSyntaxKind.AsteriskToken)));
@@ -1343,10 +1390,7 @@ public class TypeScriptParserVisitor {
             name = visitIdentifier(nameNode, methodType);
         }
 
-        J.TypeParameters typeParameters = node.hasProperty("typeParameters") ?
-                new J.TypeParameters(randomId(), sourceBefore(TSCSyntaxKind.LessThanToken), Markers.EMPTY,
-                            emptyList(),
-                            convertAll(node.getNodeListProperty("typeParameters"), commaDelim, t -> sourceBefore(TSCSyntaxKind.GreaterThanToken))) : null;
+        J.TypeParameters typeParameters = mapTypeParameters(node.getOptionalNodeListProperty("typeParameters"));
 
         JContainer<Statement> parameters = mapContainer(
                 TSCSyntaxKind.OpenParenToken,
@@ -1361,7 +1405,7 @@ public class TypeScriptParserVisitor {
         TypeTree returnTypeExpression = null;
         if (node.hasProperty("type")) {
             markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), sourceBefore(TSCSyntaxKind.ColonToken)));
-            returnTypeExpression = visitNode(node.getNodeProperty("type")).withMarkers(markers);
+            returnTypeExpression = (TypeTree) visitNode(node.getNodeProperty("type"));
         }
 
         J.Block body = visitBlock(node.getOptionalNodeProperty("body"));
@@ -1967,6 +2011,10 @@ public class TypeScriptParserVisitor {
                 right,
                 typeMapping.type(node)
         );
+    }
+
+    private J visitTypeLiteral(TSCNode node) {
+        return unknownElement(node);
     }
 
     private JS.TypeOperator visitTypeOperator(TSCNode node) {
@@ -2672,6 +2720,9 @@ public class TypeScriptParserVisitor {
             case TypeAliasDeclaration:
                 j = visitTypeAliasDeclaration(node);
                 break;
+            case TypeLiteral:
+                j = visitTypeLiteral(node);
+                break;
             case TypeOperator:
                 j = visitTypeOperator(node);
                 break;
@@ -2981,6 +3032,13 @@ public class TypeScriptParserVisitor {
         }
         annotations.add(annotation);
         return annotations;
+    }
+
+    @Nullable
+    private J.TypeParameters mapTypeParameters(@Nullable List<TSCNode> typeParameters) {
+        return typeParameters == null ? null : new J.TypeParameters(randomId(), sourceBefore(TSCSyntaxKind.LessThanToken), Markers.EMPTY,
+                        emptyList(),
+                        convertAll(typeParameters, commaDelim, t -> sourceBefore(TSCSyntaxKind.GreaterThanToken)));
     }
 
     private J mapVariableStatement(TSCNode node) {

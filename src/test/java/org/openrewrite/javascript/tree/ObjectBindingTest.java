@@ -17,7 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS"})
+@SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS", "ES6UnusedImports"})
 class ObjectBindingTest extends ParserTest {
 
     @Test
@@ -59,12 +59,7 @@ class ObjectBindingTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              const formDataToStream = (form, headersHandler, options) => {
-                  const {
-                      tag = 'form-data-boundary',
-                      size = 25,
-                      boundary = tag
-                  } = options || {};
+              class User {
               }
               """
           )

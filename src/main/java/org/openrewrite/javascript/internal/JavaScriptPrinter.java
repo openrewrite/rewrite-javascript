@@ -83,6 +83,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         } else {
             visitRightPadded(arrowFunction.getParameters().getPadding().getParams(), JRightPadded.Location.LAMBDA_PARAM, ",", p);
         }
+
+        if (arrowFunction.getReturnTypeExpression() != null) {
+            TypeReferencePrefix typeReferencePrefix = arrowFunction.getMarkers().findFirst(TypeReferencePrefix.class).orElse(null);
+            if (typeReferencePrefix != null) {
+                visitSpace(typeReferencePrefix.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+                p.append(":");
+            }
+            visit(arrowFunction.getReturnTypeExpression(), p);
+        }
+
         visitSpace(arrowFunction.getArrow(), Space.Location.LAMBDA_ARROW_PREFIX, p);
         p.append("=>");
         visit(arrowFunction.getBody(), p);
@@ -329,9 +339,20 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 p.append("*");
             }
             visit(method.getName(), p);
+
+            J.TypeParameters typeParameters = method.getAnnotations().getTypeParameters();
+            if (typeParameters != null) {
+                visit(typeParameters.getAnnotations(), p);
+                visitSpace(typeParameters.getPrefix(), Space.Location.TYPE_PARAMETERS, p);
+                visitMarkers(typeParameters.getMarkers(), p);
+                p.append("<");
+                visitRightPadded(typeParameters.getPadding().getTypeParameters(), JRightPadded.Location.TYPE_PARAMETER, ",", p);
+                p.append(">");
+            }
+
             visitContainer("(", method.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, ",", ")", p);
             if (method.getReturnTypeExpression() != null) {
-                TypeReferencePrefix typeReferencePrefix = method.getReturnTypeExpression().getMarkers().findFirst(TypeReferencePrefix.class).orElse(null);
+                TypeReferencePrefix typeReferencePrefix = method.getMarkers().findFirst(TypeReferencePrefix.class).orElse(null);
                 if (typeReferencePrefix != null) {
                     visitSpace(typeReferencePrefix.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
                     p.append(":");

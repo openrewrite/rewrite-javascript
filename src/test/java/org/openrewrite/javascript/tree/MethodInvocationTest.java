@@ -17,6 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("JSUnusedLocalSymbols")
 class MethodInvocationTest extends ParserTest {
 
     @Test
@@ -39,6 +40,24 @@ class MethodInvocationTest extends ParserTest {
                 req . on ( 'data' , function ( ) {
                 } ) ;
               }
+              """
+          )
+        );
+    }
+
+    @Test
+    void typeArguments() {
+        rewriteRun(
+          javaScript(
+            """
+              class User {
+              }
+              
+              function foo < T > ( arg : T ) : T {
+                  return arg ;
+              }
+              
+              const bar = foo < User > ( new User ( ) ) ;
               """
           )
         );

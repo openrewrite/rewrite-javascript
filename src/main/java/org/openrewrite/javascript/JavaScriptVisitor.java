@@ -99,6 +99,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
                 )
         );
         a = a.withParameters(visitAndCast(a.getParameters(), p));
+        a = a.withReturnTypeExpression(visitAndCast(a.getReturnTypeExpression(), p));
         a = a.withArrow(visitSpace(a.getArrow(), Space.Location.LAMBDA_ARROW_PREFIX, p));
         a = a.withBody(visitAndCast(a.getBody(), p));
         a = a.withType(visitType(a.getType(), p));
