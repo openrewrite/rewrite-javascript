@@ -1915,7 +1915,75 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitTemplateExpression(TSCNode node) {
-        return unknownElement(node);
+        Space prefix = whitespace();
+        TSCNode head = node.getNodeProperty("head");
+        String text = head.getStringProperty("text");
+        String rawText = head.getStringProperty("rawText");
+        String delimiter = String.valueOf(head.getText().charAt(0));
+        boolean isEnclosedInBraces = head.getText().endsWith("{");
+
+        cursor(getCursor() + delimiter.length());
+
+        List<TSCNode> spans = node.getNodeListProperty("templateSpans");
+        List<J> elements = new ArrayList<>(spans.size() * 2 + 1);
+        if (!rawText.isEmpty()) {
+            cursor(getCursor() + rawText.length());
+            elements.add(new J.Literal(
+                    randomId(),
+                    EMPTY,
+                    Markers.EMPTY,
+                    text,
+                    rawText,
+                    null,
+                    JavaType.Primitive.String
+            ));
+        }
+
+        for (TSCNode span : spans) {
+            // Skip past the ${ characters.
+            cursor(getCursor() + (isEnclosedInBraces ? 2 : 1));
+
+            elements.add(new JS.TemplateExpression.Value(
+                    randomId(),
+                    EMPTY,
+                    Markers.EMPTY,
+                    visitNode(span.getNodeProperty("expression")),
+                    EMPTY,
+                    isEnclosedInBraces
+            ));
+            consumeToken(TSCSyntaxKind.CloseBraceToken);
+
+            TSCNode literal = span.getNodeProperty("literal");
+            String snapText = literal.getStringProperty("text");
+            String spanRawText = literal.getStringProperty("rawText");
+            if (!rawText.isEmpty()) {
+                cursor(getCursor() + spanRawText.length());
+                elements.add(new J.Literal(
+                        randomId(),
+                        EMPTY,
+                        Markers.EMPTY,
+                        snapText,
+                        spanRawText,
+                        null,
+                        JavaType.Primitive.String
+                ));
+            }
+
+            if (literal.syntaxKind() == TSCSyntaxKind.TemplateTail) {
+                cursor(getCursor() + delimiter.length());
+            } else {
+                isEnclosedInBraces = literal.getText().endsWith("{");
+            }
+        }
+
+        return new JS.TemplateExpression(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                delimiter,
+                elements,
+                typeMapping.type(node)
+        );
     }
 
     private J.Throw visitThrowStatement(TSCNode node) {

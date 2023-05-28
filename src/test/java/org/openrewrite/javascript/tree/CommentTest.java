@@ -16,6 +16,7 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
 class CommentTest extends ParserTest {
@@ -72,6 +73,35 @@ class CommentTest extends ParserTest {
                * @param {string} p2
                */
               function f ( p1 , p2 ) {
+              }
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail
+    @Test
+    void leadingComment() {
+        rewriteRun(
+          javaScript(
+            """
+              /*
+               *
+               */
+              class Foo {}
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail
+    @Test
+    void stringTemplateSingleSpanWithHead() {
+        rewriteRun(
+          javaScript(
+            """
+              function foo ( group : string) {
+                  console . log ( `group: ${ /* C1 */ group /* C2 */ }` )
               }
               """
           )

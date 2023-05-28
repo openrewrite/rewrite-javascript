@@ -233,6 +233,30 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return o;
     }
 
+    public J visitTemplateExpression(JS.TemplateExpression templateExpression, P p) {
+        JS.TemplateExpression s = templateExpression;
+        s = s.withPrefix(visitSpace(s.getPrefix(), JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p));
+        s = s.withMarkers(visitMarkers(s.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(s, p);
+        if (!(temp instanceof JS.TemplateExpression)) {
+            return temp;
+        } else {
+            s = (JS.TemplateExpression) temp;
+        }
+        s = s.withStrings(ListUtils.map(s.getStrings(), e -> visitAndCast(e, p)));
+        s = s.withType(visitType(s.getType(), p));
+        return s;
+    }
+
+    public J visitTemplateExpressionValue(JS.TemplateExpression.Value value, P p) {
+        JS.TemplateExpression.Value s = value;
+        s = s.withPrefix(visitSpace(s.getPrefix(), JsSpace.Location.TEMPLATE_EXPRESSION_VALUE_PREFIX, p));
+        s = s.withMarkers(visitMarkers(s.getMarkers(), p));
+        s = s.withTree(visit(s.getTree(), p));
+        s = s.withAfter(visitSpace(s.getAfter(), JsSpace.Location.TEMPLATE_EXPRESSION_VALUE_SUFFIX, p));
+        return s;
+    }
+
     public J visitTypeOperator(JS.TypeOperator typeOperator, P p) {
         JS.TypeOperator t = typeOperator;
         t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.TYPE_OPERATOR_PREFIX, p));

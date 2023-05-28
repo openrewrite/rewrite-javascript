@@ -16,6 +16,7 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
 class LiteralTest extends ParserTest {
@@ -60,8 +61,8 @@ class LiteralTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              let c1 : Character = '\uD800'
-              let c2 : Character = '\uDfFf'
+              let c1 = '\uD800'
+              let c2 = '\uDfFf'
               """
           )
         );
@@ -74,6 +75,72 @@ class LiteralTest extends ParserTest {
             """
               let s1 : String = "\uD800"
               let s2 : String = "\uDfFf"
+              """
+          )
+        );
+    }
+
+    @Test
+    void stringTemplateSingleSpan() {
+        rewriteRun(
+          javaScript(
+            """
+              function foo ( group : string) {
+                  console . log ( `${group}` )
+              }
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail
+    @Test
+    void whitespaceBetween() {
+        rewriteRun(
+          javaScript(
+            """
+              function foo ( group : string) {
+                  console . log ( `${ group }` )
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void stringTemplateSingleSpanWithHead() {
+        rewriteRun(
+          javaScript(
+            """
+              function foo ( group : string) {
+                  console . log ( `group: ${group}` )
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void stringTemplateSingleSpanWithTail() {
+        rewriteRun(
+          javaScript(
+            """
+              function foo ( group : string) {
+                  console . log ( `group: ${group} after` )
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void stringTemplateWithMiddleSpan() {
+        rewriteRun(
+          javaScript(
+            """
+              function foo ( group : string , version : string ) {
+                  console . log ( `group: ${group} version: ${version} after` )
+              }
               """
           )
         );

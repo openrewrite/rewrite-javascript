@@ -229,6 +229,34 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitTemplateExpression(JS.TemplateExpression templateExpression, PrintOutputCapture<P> p) {
+        beforeSyntax(templateExpression, JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p);
+        String delimiter = templateExpression.getDelimiter();
+        p.append(delimiter);
+        visit(templateExpression.getStrings(), p);
+        p.append(delimiter);
+        afterSyntax(templateExpression, p);
+        return templateExpression;
+    }
+
+    @Override
+    public J visitTemplateExpressionValue(JS.TemplateExpression.Value value, PrintOutputCapture<P> p) {
+        beforeSyntax(value, JsSpace.Location.TEMPLATE_EXPRESSION_VALUE_PREFIX, p);
+        if (value.isEnclosedInBraces()) {
+            p.append("${");
+        } else {
+            p.append("$");
+        }
+        visit(value.getTree(), p);
+        visitSpace(value.getAfter(), JsSpace.Location.TEMPLATE_EXPRESSION_VALUE_SUFFIX, p);
+        if (value.isEnclosedInBraces()) {
+            p.append('}');
+        }
+        afterSyntax(value, p);
+        return value;
+    }
+
+    @Override
     public J visitTypeOperator(JS.TypeOperator typeOperator, PrintOutputCapture<P> p) {
         beforeSyntax(typeOperator, JsSpace.Location.BINARY_PREFIX, p);
 

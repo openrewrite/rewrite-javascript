@@ -1144,6 +1144,50 @@ public interface JS extends J {
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @Data
+    @With
+    final class TemplateExpression implements JS, Statement, Expression {
+        UUID id;
+        Space prefix;
+        Markers markers;
+        String delimiter;
+        List<J> strings;
+
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTemplateExpression(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+        @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+        @Data
+        @With
+        public static final class Value implements JS {
+            UUID id;
+            Space prefix;
+            Markers markers;
+            J tree;
+            Space after;
+            boolean enclosedInBraces;
+
+            @Override
+            public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+                return v.visitTemplateExpressionValue(this, p);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Data
