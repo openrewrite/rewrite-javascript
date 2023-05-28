@@ -110,6 +110,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         JS.ObjectBindingDeclarations.Binding b = binding;
         b = b.withPrefix(visitSpace(b.getPrefix(), JsSpace.Location.BINDING_PREFIX, p));
         b = b.withMarkers(visitMarkers(b.getMarkers(), p));
+        b = b.withPropertyName(visitAndCast(b.getPropertyName(), p));
         b = b.withName(visitAndCast(b.getName(), p));
         b = b.withDimensionsAfterName(
                 ListUtils.map(b.getDimensionsAfterName(),

@@ -17,7 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS", "ES6UnusedImports"})
+@SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS", "ES6UnusedImports", "TypeScriptCheckImport"})
 class ObjectBindingTest extends ParserTest {
 
     @Test
@@ -55,11 +55,29 @@ class ObjectBindingTest extends ParserTest {
     }
 
     @Test
+    void propertyNames() {
+        rewriteRun(
+          javaScript(
+            """
+              import followRedirects from 'follow-redirects';
+              
+              const { http : httpFollow , https : httpsFollow } = followRedirects ;
+              """
+          )
+        );
+    }
+
+    @Test
     void bindingInitializers() {
         rewriteRun(
           javaScript(
             """
-              class User {
+              const formDataToStream = (form, headersHandler, options) => {
+                  const {
+                      tag = 'form-data-boundary',
+                      size = 25,
+                      boundary = tag
+                  } = options || {};
               }
               """
           )

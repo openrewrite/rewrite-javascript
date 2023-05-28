@@ -1620,17 +1620,30 @@ public class TypeScriptParserVisitor {
         Space beforeBraces = sourceBefore(TSCSyntaxKind.OpenBraceToken);
         for (int i = 0; i < elements.size(); i++) {
             TSCNode binding = elements.get(i);
-            implementMe(binding, "propertyName");
+            Space bindingPrefix = whitespace();
 
             Space varArg = binding.hasProperty("dotDotDotToken") ? sourceBefore(TSCSyntaxKind.DotDotDotToken) : null;
 
-            Space bindingPrefix = whitespace();
-            J j = visitNode(binding.getNodeProperty("name"));
+            JRightPadded<J.Identifier> propertyName = null;
+            TSCNode propertyNameNode = binding.getOptionalNodeProperty("propertyName");
+            if (propertyNameNode != null) {
+                J j = visitNode(propertyNameNode);
+                J.Identifier name = null;
+                if (j instanceof J.Identifier) {
+                    name = (J.Identifier) j;
+                } else {
+                    implementMe(propertyNameNode);
+                }
+                propertyName = padRight(name, sourceBefore(TSCSyntaxKind.ColonToken));
+            }
+
+            TSCNode nameNode = binding.getNodeProperty("name");
+            J j = visitNode(nameNode);
             J.Identifier name = null;
             if (j instanceof J.Identifier) {
                 name = (J.Identifier) j;
             } else {
-                implementMe(binding);
+                implementMe(nameNode);
             }
 
             TSCNode initializer = binding.getOptionalNodeProperty("initializer");
@@ -1655,6 +1668,7 @@ public class TypeScriptParserVisitor {
                     randomId(),
                     bindingPrefix,
                     Markers.EMPTY,
+                    propertyName,
                     name,
                     emptyList(),
                     varArg,

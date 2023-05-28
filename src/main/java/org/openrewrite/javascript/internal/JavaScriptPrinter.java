@@ -107,6 +107,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             p.append("...");
             visitSpace(binding.getAfterVararg(), Space.Location.VARARGS, p);
         }
+        if (binding.getPropertyName() != null) {
+            visitRightPadded(binding.getPadding().getPropertyName(), JsRightPadded.Location.BINDING_PROPERTY_NAME_SUFFIX, p);
+            p.append(":");
+        }
         visit(binding.getName(), p);
         for (JLeftPadded<Space> dimension : binding.getDimensionsAfterName()) {
             visitSpace(dimension.getBefore(), Space.Location.DIMENSION_PREFIX, p);

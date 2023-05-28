@@ -938,6 +938,18 @@ public interface JS extends J {
             @Getter
             Markers markers;
 
+            @Nullable
+            JRightPadded<J.Identifier> propertyName;
+
+            @Nullable
+            public J.Identifier getPropertyName() {
+                return propertyName == null ? null : propertyName.getElement();
+            }
+
+            public ObjectBindingDeclarations.Binding withPropertyName(@Nullable J.Identifier propertyName) {
+                return getPadding().withPropertyName(JRightPadded.withElement(this.propertyName, propertyName));
+            }
+
             @With
             @Getter
             Identifier name;
@@ -1007,12 +1019,21 @@ public interface JS extends J {
                 private final ObjectBindingDeclarations.Binding t;
 
                 @Nullable
+                public JRightPadded<J.Identifier> getPropertyName() {
+                    return t.propertyName;
+                }
+
+                public ObjectBindingDeclarations.Binding withPropertyName(@Nullable JRightPadded<J.Identifier> propertyName) {
+                    return t.propertyName == propertyName ? t : new ObjectBindingDeclarations.Binding(t.id, t.prefix, t.markers, propertyName, t.name, t.dimensionsAfterName, t.afterVararg, t.initializer, t.variableType);
+                }
+
+                @Nullable
                 public JLeftPadded<Expression> getInitializer() {
                     return t.initializer;
                 }
 
                 public ObjectBindingDeclarations.Binding withInitializer(@Nullable JLeftPadded<Expression> initializer) {
-                    return t.initializer == initializer ? t : new ObjectBindingDeclarations.Binding(t.id, t.prefix, t.markers, t.name, t.dimensionsAfterName, t.afterVararg, initializer, t.variableType);
+                    return t.initializer == initializer ? t : new ObjectBindingDeclarations.Binding(t.id, t.prefix, t.markers, t.propertyName, t.name, t.dimensionsAfterName, t.afterVararg, initializer, t.variableType);
                 }
             }
         }
