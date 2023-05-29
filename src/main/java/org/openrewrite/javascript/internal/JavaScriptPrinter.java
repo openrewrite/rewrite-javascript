@@ -398,6 +398,18 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
+        public J visitMethodInvocation(J.MethodInvocation method, PrintOutputCapture<P> p) {
+            beforeSyntax(method, Space.Location.METHOD_INVOCATION_PREFIX, p);
+            String suffix = method.getMarkers().findFirst(OmitDot.class).isPresent() ? "" : ".";
+            visitRightPadded(method.getPadding().getSelect(), JRightPadded.Location.METHOD_SELECT, suffix, p);
+            visitContainer("<", method.getPadding().getTypeParameters(), JContainer.Location.TYPE_PARAMETERS, ",", ">", p);
+            visit(method.getName(), p);
+            visitContainer("(", method.getPadding().getArguments(), JContainer.Location.METHOD_INVOCATION_ARGUMENTS, ",", ")", p);
+            afterSyntax(method, p);
+            return method;
+        }
+
+        @Override
         public void visitModifier(J.Modifier mod, PrintOutputCapture<P> p) {
             visit(mod.getAnnotations(), p);
             String keyword = "";

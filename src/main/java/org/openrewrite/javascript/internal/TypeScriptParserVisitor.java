@@ -203,13 +203,14 @@ public class TypeScriptParserVisitor {
             cursor(saveCursor);
         }
 
+        List<TSCNode> paramNodes = node.getNodeListProperty("parameters");
         J.Lambda.Parameters params = new J.Lambda.Parameters(
                 randomId(),
                 before,
                 Markers.EMPTY,
                 parenthesized,
-                convertAll(node.getNodeListProperty("parameters"), commaDelim,
-                        parenthesized ? t -> sourceBefore(")") : noDelim)
+                paramNodes.isEmpty() ? singletonList(padRight(new J.Empty(randomId(), EMPTY, Markers.EMPTY), parenthesized ? sourceBefore(")") : EMPTY)) :
+                        convertAll(node.getNodeListProperty("parameters"), commaDelim, parenthesized ? t -> sourceBefore(")") : noDelim)
         );
 
         TSCNode typeNode = node.getOptionalNodeProperty("type");
@@ -493,6 +494,7 @@ public class TypeScriptParserVisitor {
         implementMe(node, "typeArguments");
 
         Space prefix = whitespace();
+        Markers markers = Markers.EMPTY;
 
         JRightPadded<Expression> select = null;
         TSCNode expression = node.getNodeProperty("expression");
@@ -503,6 +505,7 @@ public class TypeScriptParserVisitor {
             if (expression.syntaxKind() == TSCSyntaxKind.PropertyAccessExpression) {
                 select = padRight((Expression) visitNode(expression.getNodeProperty("expression")), sourceBefore("."));
             } else if (expression.syntaxKind() == TSCSyntaxKind.ParenthesizedExpression) {
+                markers = markers.addIfAbsent(new OmitDot(randomId()));
                 select = padRight((Expression) visitNode(expression), whitespace());
             } else {
                 implementMe(expression);
@@ -572,7 +575,7 @@ public class TypeScriptParserVisitor {
         return new J.MethodInvocation(
                 randomId(),
                 prefix,
-                Markers.EMPTY,
+                markers,
                 select,
                 typeParameters,
                 name,
@@ -2903,6 +2906,7 @@ public class TypeScriptParserVisitor {
     private <J2 extends J> List<JRightPadded<J2>> convertAll(List<TSCNode> elements,
                                                              Function<TSCNode, Space> innerSuffix,
                                                              Function<TSCNode, Space> suffix) {
+
         if (elements.isEmpty()) {
             return emptyList();
         }

@@ -62,4 +62,21 @@ class MethodInvocationTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void parenthesizedSelect() {
+        rewriteRun(
+          javaScript(
+            """
+              class Foo {
+                  constructor( x : any ) { }
+              }
+              
+              ( ( ) => {
+                  const headers = new Foo( { x : 1 } ) ;
+              } ) ( ) ;
+              """
+          )
+        );
+    }
 }
