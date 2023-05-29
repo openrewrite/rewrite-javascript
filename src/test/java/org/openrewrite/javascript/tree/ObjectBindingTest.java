@@ -72,12 +72,12 @@ class ObjectBindingTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              const formDataToStream = (form, headersHandler, options) => {
+              const formDataToStream = ( form , headersHandler , options ) => {
                   const {
-                      tag = 'form-data-boundary',
-                      size = 25,
+                      tag = 'form-data-boundary' ,
+                      size = 25 ,
                       boundary = tag
-                  } = options || {};
+                  } = options || { } ;
               }
               """
           )
