@@ -164,4 +164,15 @@ class LiteralTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void multipleSpansWithRawTextBetween() {
+        rewriteRun(
+          javaScript(
+            """
+              const fn1 = ( a : number , b : number , c : number ) => `${a}-${b}-${c}` ;
+              """
+          )
+        );
+    }
 }

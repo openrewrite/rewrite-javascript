@@ -1957,12 +1957,13 @@ public class TypeScriptParserVisitor {
                     whitespace(),
                     isEnclosedInBraces
             ));
+
             skip("}");
 
             TSCNode literal = span.getNodeProperty("literal");
             String snapText = literal.getStringProperty("text");
             String spanRawText = literal.getStringProperty("rawText");
-            if (!rawText.isEmpty()) {
+            if (!spanRawText.isEmpty()) {
                 skip(spanRawText);
                 elements.add(new J.Literal(
                         randomId(),
