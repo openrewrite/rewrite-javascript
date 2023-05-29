@@ -19,7 +19,6 @@ import lombok.Value;
 import org.openrewrite.Parser;
 import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.tree.ParsingExecutionContextView;
@@ -88,6 +87,7 @@ public abstract class TSCMapper implements AutoCloseable {
                     final SourceWrapper source = this.sourcesByRelativePath.get(context.getRelativeSourcePath());
                     final TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
                             node,
+                            source.getSourceText(),
                             context,
                             source.getSourcePath(),
                             new JavaScriptTypeCache(),

@@ -505,7 +505,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 JRightPadded<J.VariableDeclarations.NamedVariable> variable = variables.get(i);
                 beforeSyntax(variable.getElement(), Space.Location.VARIABLE_PREFIX, p);
                 if (multiVariable.getVarargs() != null) {
-                    visitSpace(multiVariable.getVarargs(), Space.Location.VARARGS, p);
                     p.append("...");
                 }
                 visit(variable.getElement().getName(), p);

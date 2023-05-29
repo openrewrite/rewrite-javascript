@@ -792,7 +792,10 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
     private JavaType resolveNode(TSCNode node) {
         TSCSymbol symbol = node.getTypeChecker().getTypeAtLocation(node).getOptionalSymbolProperty("symbol");
         if (symbol != null) {
-            return type(symbol.getValueDeclaration());
+            try {
+                return type(symbol.getValueDeclaration());
+            } catch (Exception ignored) {
+            }
         }
         return mapType(node.getTypeChecker().getTypeAtLocation(node));
     }

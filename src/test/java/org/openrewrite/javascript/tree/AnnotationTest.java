@@ -73,14 +73,14 @@ class AnnotationTest extends ParserTest {
             """
               function enumerable ( value : boolean ) {
                   return function ( target : any ,
-                          propertyKey : string,
+                          propertyKey : string ,
                           descriptor : PropertyDescriptor ) {
                       descriptor . enumerable = value ;
                   } ;
               }
               class Foo {
                   @enumerable ( false )
-                  foo: String = "hello";
+                  foo : String = "hello" ;
               }
               """
           )

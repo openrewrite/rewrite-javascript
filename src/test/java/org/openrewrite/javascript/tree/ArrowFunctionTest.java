@@ -39,8 +39,8 @@ class ArrowFunctionTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              let sum = (a, b) => {
-                  return a + b;
+              let sum = ( a , b ) => {
+                  return a + b ;
               };
               """
           )
@@ -52,9 +52,9 @@ class ArrowFunctionTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              let sum = (a, ...b) => {
-                  return a;
-              };
+              let sum = ( a , ... b ) => {
+                  return a ;
+              } ;
               """
           )
         );

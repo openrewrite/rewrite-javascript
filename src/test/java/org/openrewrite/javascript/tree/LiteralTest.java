@@ -16,9 +16,8 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
-@SuppressWarnings("JSUnusedLocalSymbols")
+@SuppressWarnings({"JSUnusedLocalSymbols", "TypeScriptCheckImport", "TypeScriptUnresolvedFunction"})
 class LiteralTest extends ParserTest {
 
     @Test
@@ -85,7 +84,7 @@ class LiteralTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              function foo ( group : string) {
+              function foo ( group : string ) {
                   console . log ( `${group}` )
               }
               """
@@ -93,13 +92,12 @@ class LiteralTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void whitespaceBetween() {
         rewriteRun(
           javaScript(
             """
-              function foo ( group : string) {
+              function foo ( group : string ) {
                   console . log ( `${ group }` )
               }
               """
@@ -112,8 +110,8 @@ class LiteralTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              function foo ( group : string) {
-                  console . log ( `group: ${group}` )
+              function foo ( group : string ) {
+                  console . log ( `group: ${ group }` )
               }
               """
           )
@@ -125,8 +123,8 @@ class LiteralTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              function foo ( group : string) {
-                  console . log ( `group: ${group} after` )
+              function foo ( group : string ) {
+                  console . log ( `group: ${ group } after` )
               }
               """
           )
@@ -139,7 +137,28 @@ class LiteralTest extends ParserTest {
           javaScript(
             """
               function foo ( group : string , version : string ) {
-                  console . log ( `group: ${group} version: ${version} after` )
+                  console . log ( `group: ${ group } version: ${ version } after` )
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void template() {
+        rewriteRun(
+          javaScript(
+            """
+              import utils from "../utils.js" ;
+              const CRLF = '\\r\\n' ;
+              class Foo {
+                  constructor ( name , value ) {
+                      const { escapeName } = this . constructor ;
+                      const isStringValue = utils . isString ( value ) ;
+                      let headers = `Content-Disposition: form-data; name=" ${ escapeName (name ) }" ${
+                          ! isStringValue && value . name ? `; filename=" ${ escapeName ( value . name ) } "` : ''
+                      } ${ CRLF }` ;
+                  }
               }
               """
           )
