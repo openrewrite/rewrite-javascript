@@ -16,11 +16,12 @@
 package org.openrewrite.javascript.tree;
 
 import org.intellij.lang.annotations.Language;
-import org.openrewrite.ParseExceptionResult;
+import org.junit.jupiter.api.Test;
+import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
+import org.openrewrite.javascript.JavaScriptIsoVisitor;
 import org.openrewrite.javascript.JavaScriptParser;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.test.RewriteTest;
@@ -38,8 +39,15 @@ public class ParserTest implements RewriteTest {
         });
     }
 
-    public static SourceSpecs javaScript(@Language("typescript") @Nullable String before, Consumer<SourceSpec<JS.CompilationUnit>> spec) {
-        SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, null);
+    static void customizeExecutionContext(ExecutionContext ctx) {
+    }
+
+    public static SourceSpecs javaScript(@Language("typescript") @Nullable String before,
+                                         Consumer<SourceSpec<JS.CompilationUnit>> spec) {
+        SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(
+                JS.CompilationUnit.class, null, JavaScriptParser.builder(), before,
+                SourceSpec.EachResult.noop,
+                ParserTest::customizeExecutionContext);
         acceptSpec(spec, js);
         return js;
     }
@@ -51,7 +59,10 @@ public class ParserTest implements RewriteTest {
 
     public static SourceSpecs javaScript(@Language("typescript") @Nullable String before, @Language("typescript") String after,
                                          Consumer<SourceSpec<JS.CompilationUnit>> spec) {
-        SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(JS.CompilationUnit.class, null, JavaScriptParser.builder(), before, s -> after);
+        SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(
+                JS.CompilationUnit.class, null, JavaScriptParser.builder(), before,
+                SourceSpec.EachResult.noop,
+                ParserTest::customizeExecutionContext).after(s -> after);
         acceptSpec(spec, js);
         return js;
     }
@@ -64,13 +75,14 @@ public class ParserTest implements RewriteTest {
 
     public static Consumer<SourceSpec<JS.CompilationUnit>> isFullyParsed() {
         return spec -> spec.afterRecipe(cu -> {
-            new JavaVisitor<Integer>() {
+            new JavaScriptIsoVisitor<Integer>() {
                 @Override
                 public Space visitSpace(Space space, Space.Location loc, Integer integer) {
                     assertThat(space.getWhitespace().trim()).isEmpty();
                     return super.visitSpace(space, loc, integer);
                 }
             }.visit(cu, 0);
+
             new JavaScriptVisitor<Integer>() {
                 @Override
                 public @Nullable J preVisit(J tree, Integer integer) {
@@ -82,5 +94,15 @@ public class ParserTest implements RewriteTest {
                 }
             }.visit(cu, 0);
         });
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-javascript/issues/57")
+    @Test
+    void preservesOrder() {
+        rewriteRun(
+          javaScript("class A {}", s -> s.path("A.js")),
+          javaScript("class B {}", s -> s.path("B.js")),
+          javaScript("class C {}", s -> s.path("C.js"))
+        );
     }
 }
