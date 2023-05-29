@@ -25,10 +25,7 @@ import org.openrewrite.tree.ParsingExecutionContextView;
 
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class TSCMapper implements AutoCloseable {
 
@@ -47,7 +44,7 @@ public abstract class TSCMapper implements AutoCloseable {
     private final Path relativeTo;
 
     private final ParsingExecutionContextView pctx;
-    private final Map<Path, SourceWrapper> sourcesByRelativePath = new HashMap<>();
+    private final Map<Path, SourceWrapper> sourcesByRelativePath = new LinkedHashMap<>();
 
     public TSCMapper(@Nullable Path relativeTo, ParsingExecutionContextView pctx) {
         JavetNativeBridge.init();
@@ -76,7 +73,7 @@ public abstract class TSCMapper implements AutoCloseable {
     public List<JS.CompilationUnit> build() {
         List<JS.CompilationUnit> compilationUnits = new ArrayList<>(sourcesByRelativePath.size());
 
-        Map<Path, String> sourceTextsForTSC = new HashMap<>();
+        Map<Path, String> sourceTextsForTSC = new LinkedHashMap<>();
         this.sourcesByRelativePath.forEach((relativePath, sourceText) -> {
             sourceTextsForTSC.put(relativePath, sourceText.sourceText);
         });
