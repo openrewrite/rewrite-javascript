@@ -49,6 +49,17 @@ class ExportTest extends ParserTest {
     }
 
     @Test
+    void exportAssignment() {
+        rewriteRun(
+          javaScript(
+            """
+              export default null;
+              """
+          )
+        );
+    }
+
+    @Test
     void multiExport() {
         rewriteRun(
           javaScript(

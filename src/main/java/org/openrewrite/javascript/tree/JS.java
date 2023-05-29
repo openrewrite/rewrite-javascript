@@ -434,14 +434,16 @@ public interface JS extends J {
         @With
         Markers markers;
 
+        @Nullable
         JContainer<Expression> exports;
 
+        @Nullable
         public List<Expression> getExports() {
-            return exports.getElements();
+            return exports == null ? null : exports.getElements();
         }
 
         public Export withExports(List<Expression> exports) {
-            return getPadding().withExports(JContainer.withElements(this.exports, exports));
+            return getPadding().withExports(JContainer.withElementsNullable(this.exports, exports));
         }
 
         @Getter
@@ -453,6 +455,18 @@ public interface JS extends J {
         @With
         @Nullable
         J.Literal target;
+
+        @Nullable
+        JLeftPadded<Expression> initializer;
+
+        @Nullable
+        public Expression getInitializer() {
+            return initializer == null ? null : initializer.getElement();
+        }
+
+        public Export withInitializer(@Nullable Expression initializer) {
+            return getPadding().withInitializer(JLeftPadded.withElement(this.initializer, initializer));
+        }
 
         @Override
         public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
@@ -483,12 +497,22 @@ public interface JS extends J {
         public static class Padding {
             private final Export t;
 
+            @Nullable
             public JContainer<Expression> getExports() {
                 return t.exports;
             }
 
-            public Export withExports(JContainer<Expression> exports) {
-                return t.exports == exports ? t : new Export(t.id, t.prefix, t.markers, exports, t.from, t.target);
+            public Export withExports(@Nullable JContainer<Expression> exports) {
+                return t.exports == exports ? t : new Export(t.id, t.prefix, t.markers, exports, t.from, t.target, t.initializer);
+            }
+
+            @Nullable
+            public JLeftPadded<Expression> getInitializer() {
+                return t.initializer;
+            }
+
+            public Export withInitializer(@Nullable JLeftPadded<Expression> initializer) {
+                return t.initializer == initializer ? t : new Export(t.id, t.prefix, t.markers, t.exports, t.from, t.target, initializer);
             }
         }
     }
@@ -636,6 +660,133 @@ public interface JS extends J {
 
             public FunctionType withParameters(JContainer<Statement> parameters) {
                 return t.parameters == parameters ? t : new FunctionType(t.id, t.prefix, t.markers, parameters, t.arrow, t.returnType, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    class JsImport implements JS, Statement {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<JsImport.Padding> padding;
+
+        @Getter
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @Getter
+        @With
+        Space prefix;
+
+        @Getter
+        @With
+        Markers markers;
+
+        @Nullable
+        JRightPadded<J.Identifier> name;
+
+        @Nullable
+        public J.Identifier getName() {
+            return name == null ? null : name.getElement();
+        }
+
+        public JsImport withName(@Nullable J.Identifier name) {
+            return getPadding().withName(JRightPadded.withElement(this.name, name));
+        }
+
+        @Nullable
+        JContainer<Expression> imports;
+
+        @Nullable
+        public List<Expression> getImports() {
+            return imports == null ? null : imports.getElements();
+        }
+
+        public JsImport withImports(List<Expression> imports) {
+            return getPadding().withImports(JContainer.withElementsNullable(this.imports, imports));
+        }
+
+        @Getter
+        @With
+        @Nullable
+        Space from;
+
+        @Getter
+        @With
+        @Nullable
+        J.Literal target;
+
+        @Nullable
+        JLeftPadded<Expression> initializer;
+
+        @Nullable
+        public Expression getInitializer() {
+            return initializer == null ? null : initializer.getElement();
+        }
+
+        public JS.JsImport withInitializer(@Nullable Expression initializer) {
+            return getPadding().withInitializer(JLeftPadded.withElement(this.initializer, initializer));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJsImport(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public JsImport.Padding getPadding() {
+            JsImport.Padding p;
+            if (this.padding == null) {
+                p = new JsImport.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JsImport.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JsImport t;
+
+            @Nullable
+            public JRightPadded<J.Identifier> getName() {
+                return t.name;
+            }
+
+            public JsImport withName(@Nullable JRightPadded<J.Identifier> name) {
+                return t.name == name ? t : new JsImport(t.id, t.prefix, t.markers, name, t.imports, t.from, t.target, t.initializer);
+            }
+
+            @Nullable
+            public JContainer<Expression> getImports() {
+                return t.imports;
+            }
+
+            public JsImport withImports(@Nullable JContainer<Expression> imports) {
+                return t.imports == imports ? t : new JsImport(t.id, t.prefix, t.markers, t.name, imports, t.from, t.target, t.initializer);
+            }
+
+            @Nullable
+            public JLeftPadded<Expression> getInitializer() {
+                return t.initializer;
+            }
+
+            public JsImport withInitializer(@Nullable JLeftPadded<Expression> initializer) {
+                return t.initializer == initializer ? t : new JsImport(t.id, t.prefix, t.markers, t.name, t.imports, t.from, t.target, initializer);
             }
         }
     }

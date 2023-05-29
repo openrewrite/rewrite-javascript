@@ -863,8 +863,18 @@ public class TypeScriptParserVisitor {
                 null);
     }
 
-    private J visitExportAssignment(TSCNode node) {
-        return unknownElement(node);
+    private JS.Export visitExportAssignment(TSCNode node) {
+        Space prefix = sourceBefore("export");
+        implementMe(node, "isExportEquals");
+        return new JS.Export(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                null,
+                null,
+                null,
+                padLeft(sourceBefore("default"), (Expression) visitNode(node.getNodeProperty("expression")))
+        );
     }
 
     private JS.Export visitExportDeclaration(TSCNode node) {
@@ -923,7 +933,8 @@ public class TypeScriptParserVisitor {
                 Markers.EMPTY,
                 exports,
                 beforeFrom,
-                target
+                target,
+                null
         );
     }
 
@@ -1116,12 +1127,13 @@ public class TypeScriptParserVisitor {
         Space variablePrefix = whitespace();
         J.Identifier name = visitIdentifier(node.getNodeProperty("name"));
 
-        implementMe(node, "questionToken");
-
         TypeTree typeTree = null;
         TSCNode type = node.getOptionalNodeProperty("type");
         if (type != null) {
-            // FIXME: method(x: { suit: string; card: number }[])
+            TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
+            if (questionToken != null) {
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+            }
             Space beforeColon = sourceBefore(":");
             if (beforeColon != EMPTY) {
                 markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
@@ -1157,6 +1169,30 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J visitExternalModuleReference(TSCNode node) {
+        Space prefix = whitespace();
+
+        skip("require");
+        J.Identifier name = convertToIdentifier(EMPTY, "require");
+
+        return new J.MethodInvocation(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                null,
+                null,
+                name,
+                mapContainer(
+                        "(",
+                        singletonList(node.getNodeProperty("expression")),
+                        ",",
+                        ")",
+                        t -> (Expression) visitNode(t)
+                ),
+                null
+        );
+    }
+
     private J.Identifier visitIdentifier(TSCNode node) {
         return visitIdentifier(node, null, null);
     }
@@ -1180,72 +1216,76 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    // TODO: convert to JS.Import
     private J visitImportDeclaration(TSCNode node) {
+        implementMe(node, "assertClause");
+        implementMe(node, "modifiers");
+
         Space prefix = sourceBefore("import");
-        JLeftPadded<Boolean> static_ = padLeft(EMPTY, false);
 
-        TSCNode target = node.getOptionalNodeProperty("importClause");
-        boolean isTypeOnly = target.getBooleanProperty("isTypeOnly");
-        if (isTypeOnly) {
-            implementMe(target, "isTypeOnly");
-        }
+        TSCNode importClause = node.getOptionalNodeProperty("importClause");
+        JRightPadded<J.Identifier> name = null;
+        JContainer<Expression> imports = null;
+        if (importClause != null) {
+            boolean isTypeOnly = importClause.getBooleanProperty("isTypeOnly");
+            if (isTypeOnly) {
+                implementMe(importClause, "isTypeOnly");
+            }
 
-        TSCNode nameNode = target.getOptionalNodeProperty("name");
-        TSCNode namedBindingsNode = target.getOptionalNodeProperty("namedBindings");
-        J.Identifier name;
-        if (namedBindingsNode != null) {
-            Space namePrefix = whitespace();
-            List<TSCNode> nodes = new ArrayList<>(1 + (nameNode != null ? 1 : 0));
+            TSCNode nameNode = importClause.getOptionalNodeProperty("name");
             if (nameNode != null) {
-                nodes.add(nameNode);
+                name = padRight((J.Identifier) visitNode(nameNode), whitespace());
             }
-            nodes.add(namedBindingsNode);
 
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < nodes.size(); i++) {
-                TSCNode n = nodes.get(i);
-                if (i > 0) {
-                    String sourceBetween = source.substring(getCursor(), n.getStart());
-                    sb.append(sourceBetween);
-                    skip(sourceBetween);
+            TSCNode namedBindings = importClause.getOptionalNodeProperty("namedBindings");
+            if (namedBindings != null) {
+                if (name != null) {
+                    skip(",");
                 }
-                sb.append(n.getText());
-                skip(n.getText());
-            }
 
-            // FIXME: imports with namedBindings do not fit into J.Import.
-            // This will require a new TS statement that contains the namedBindings, and name.
-            name = convertToIdentifier(namePrefix, sb.toString());
-        } else {
-            name = (J.Identifier) visitNode(nameNode);
-            // FIXME: resolve imports in the TSC node and find a means to attribution types.
-            name = name.withType(null);
-            name = name.withFieldType(null);
+                imports = mapContainer(
+                        "{",
+                        namedBindings.getNodeListProperty("elements"),
+                        ",",
+                        "}",
+                        t -> (Expression) visitNode(t)
+                ).withMarkers(Markers.build(singletonList(new Braces(randomId()))));
+            }
         }
 
-        // JS/TS does not have a concept of FQNs. The qualifier is a String literal that refers to a module, which does not work in Java.
-        // Example: '../../../index.js'
-        Space fromPrefix = sourceBefore("from");
-        Space modulePrefix = whitespace();
-        TSCNode moduleSpecifier = node.getNodeProperty("moduleSpecifier");
-        skip(moduleSpecifier.getText());
-        J.FieldAccess qualid = new J.FieldAccess(
-                randomId(),
-                fromPrefix,
-                Markers.EMPTY,
-                new J.Empty(randomId(), EMPTY, Markers.EMPTY),
-                padLeft(modulePrefix, convertToIdentifier(EMPTY, moduleSpecifier.getText())),
-                null
-        );
+        TSCNode moduleSpecifier = node.getOptionalNodeProperty("moduleSpecifier");
+        Space beforeFrom = moduleSpecifier == null ? null : sourceBefore("from");
+        J.Literal target = null;
+        if (moduleSpecifier != null) {
+            Space before = whitespace();
+            String nodeText = moduleSpecifier.getText();
+            skip(nodeText);
+            target = new J.Literal(
+                    randomId(),
+                    before,
+                    Markers.EMPTY,
+                    moduleSpecifier.getStringProperty("text"),
+                    nodeText,
+                    null,
+                    JavaType.Primitive.None
+            );
+        }
 
-        return new J.Import(
+        JLeftPadded<Expression> initializer = null;
+        TSCNode moduleReference = node.getOptionalNodeProperty("moduleReference");
+        if (moduleReference != null) {
+            name = padRight((J.Identifier) visitNode(node.getNodeProperty("name")), whitespace());
+            initializer = padLeft(sourceBefore("="), (Expression) visitNode(moduleReference));
+        }
+
+        return new JS.JsImport(
                 randomId(),
                 prefix,
                 Markers.EMPTY,
-                static_,
-                qualid,
-                padLeft(EMPTY, name)
+                name,
+                imports,
+                beforeFrom,
+                target,
+                initializer
         );
     }
 
@@ -1707,13 +1747,17 @@ public class TypeScriptParserVisitor {
 
     private J.FieldAccess visitPropertyAccessExpression(TSCNode node) {
         Space prefix = whitespace();
-        implementMe(node, "questionDotToken");
+        Markers markers = Markers.EMPTY;
 
         Expression nameExpression = (Expression) visitNode(node.getNodeProperty("expression"));
+        TSCNode questionToken = node.getOptionalNodeProperty("questionDotToken");
+        if (questionToken != null) {
+            markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+        }
         return new J.FieldAccess(
                 randomId(),
                 prefix,
-                Markers.EMPTY,
+                markers,
                 nameExpression,
                 padLeft(sourceBefore("."), visitIdentifier(node.getNodeProperty("name"))),
                 typeMapping.type(node)
@@ -1723,9 +1767,6 @@ public class TypeScriptParserVisitor {
     private J.VariableDeclarations visitPropertyDeclaration(TSCNode node) {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
-
-        implementMe(node, "questionToken");
-        implementMe(node, "exclamationToken");
 
         List<J.Annotation> leadingAnnotations = new ArrayList<>();
         List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leadingAnnotations);
@@ -1742,11 +1783,19 @@ public class TypeScriptParserVisitor {
 
         TypeTree typeTree = null;
         if (node.hasProperty("type")) {
-            // FIXME: method(x: { suit: string; card: number }[])
+            TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
+            TSCNode exclamationToken = node.getOptionalNodeProperty("exclamationToken");
+            if (questionToken != null) {
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+            } else if (exclamationToken != null) {
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.ExclamationMark));
+            }
+
             Space beforeColon = sourceBefore(":");
             if (beforeColon != EMPTY) {
                 markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
             }
+
             TSCNode type = node.getNodeProperty("type");
             typeTree = (TypeTree) visitNode(type);
             name = name.withType(typeMapping.type(type));
@@ -1790,9 +1839,7 @@ public class TypeScriptParserVisitor {
 
     private J visitPropertyAssignment(TSCNode node) {
         Space prefix = whitespace();
-
-        implementMe(node, "questionToken");
-        implementMe(node, "exclamationToken");
+        Markers markers = Markers.EMPTY;
 
         List<J.Annotation> leadingAnnotations = new ArrayList<>();
         List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leadingAnnotations);
@@ -1817,6 +1864,14 @@ public class TypeScriptParserVisitor {
         // { x : 1 }
         JLeftPadded<Expression> initializer;
         if (node.hasProperty("initializer")) {
+            TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
+            TSCNode exclamationToken = node.getOptionalNodeProperty("exclamationToken");
+            if (questionToken != null) {
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+            } else if (exclamationToken != null) {
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.ExclamationMark));
+            }
+
             Space beforeEquals = sourceBefore(":");
             J init = visitNode(node.getNodeProperty("initializer"));
             if (init != null && !(init instanceof Expression)) {
@@ -1842,7 +1897,7 @@ public class TypeScriptParserVisitor {
         return new J.VariableDeclarations(
                 randomId(),
                 prefix,
-                Markers.EMPTY,
+                markers,
                 leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
                 modifiers,
                 typeTree,
@@ -2317,26 +2372,15 @@ public class TypeScriptParserVisitor {
         }
 
         Markers variableMarker = Markers.EMPTY;
-        TSCNode exclamationToken = node.getOptionalNodeProperty("exclamationToken");
-        if (exclamationToken != null) {
-            variableMarker = variableMarker.addIfAbsent(new PostFixOperator(
-                    randomId(),
-                    sourceBefore("!"),
-                    PostFixOperator.Operator.ExclamationMark)
-            );
-            implementMe(exclamationToken);
-        }
-
-        TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
-        if (questionToken != null) {
-            variableMarker = variableMarker.addIfAbsent(new PostFixOperator(
-                    randomId(),
-                    sourceBefore("?"),
-                    PostFixOperator.Operator.QuestionMark)
-            );
-        }
-
         if (node.hasProperty("type")) {
+            TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
+            TSCNode exclamationToken = node.getOptionalNodeProperty("exclamationToken");
+            if (questionToken != null) {
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+            } else if (exclamationToken != null) {
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.ExclamationMark));
+            }
+
             Space beforeColon = sourceBefore(":");
             if (beforeColon != EMPTY) {
                 markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
@@ -2414,7 +2458,6 @@ public class TypeScriptParserVisitor {
             namedVariables = new ArrayList<>(declarations.size());
             for (int i = 0; i < declarations.size(); i++) {
                 TSCNode declaration = declarations.get(i);
-                implementMe(declaration, "exclamationToken");
 
                 Space variablePrefix = whitespace();
                 J j = visitNode(declaration.getNodeProperty("name"));
@@ -2426,7 +2469,14 @@ public class TypeScriptParserVisitor {
                 }
 
                 if (declaration.hasProperty("type")) {
-                    // FIXME: method(x: { suit: string; card: number }[])
+                    TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
+                    TSCNode exclamationToken = node.getOptionalNodeProperty("exclamationToken");
+                    if (questionToken != null) {
+                        markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+                    } else if (exclamationToken != null) {
+                        markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.ExclamationMark));
+                    }
+
                     Space beforeColon = sourceBefore(":");
                     if (beforeColon != EMPTY) {
                         markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
@@ -2654,6 +2704,14 @@ public class TypeScriptParserVisitor {
             case FunctionExpression:
                 j = visitFunctionDeclaration(node);
                 break;
+            case ExportSpecifier:
+            case ImportSpecifier:
+                j = visitExportSpecifier(node);
+                break;
+            case ImportEqualsDeclaration:
+            case ImportDeclaration:
+                j = visitImportDeclaration(node);
+                break;
             case CallSignature:
             case MethodDeclaration:
             case MethodSignature:
@@ -2734,23 +2792,20 @@ public class TypeScriptParserVisitor {
             case ExportDeclaration:
                 j = visitExportDeclaration(node);
                 break;
-            case ExportSpecifier:
-                j = visitExportSpecifier(node);
-                break;
             case ExpressionStatement:
                 j = visitExpressionStatement(node);
                 break;
             case ExpressionWithTypeArguments:
                 j = visitExpressionWithTypeArguments(node);
                 break;
+            case ExternalModuleReference:
+                j = visitExternalModuleReference(node);
+                break;
             case Identifier:
                 j = visitIdentifier(node);
                 break;
             case IfStatement:
                 j = visitIfStatement(node);
-                break;
-            case ImportDeclaration:
-                j = visitImportDeclaration(node);
                 break;
             case IndexedAccessType:
                 j = visitIndexedAccessType(node);

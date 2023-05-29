@@ -17,7 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("ES6UnusedImports")
+@SuppressWarnings({"ES6UnusedImports", "TypeScriptCheckImport"})
 class ImportTest extends ParserTest {
 
     @Test
@@ -26,6 +26,17 @@ class ImportTest extends ParserTest {
           javaScript(
             """
               import num from "./file"
+              """
+          )
+        );
+    }
+
+    @Test
+    void importAssignment() {
+        rewriteRun(
+          javaScript(
+            """
+              import axios = require ( 'foo' ) ;
               """
           )
         );

@@ -150,11 +150,14 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             e = (JS.Export) temp;
         }
-        e = e.getPadding().withExports(visitContainer(e.getPadding().getExports(), JsContainer.Location.EXPORT_ELEMENT, p));
+        if (e.getPadding().getExports() != null) {
+            e = e.getPadding().withExports(visitContainer(e.getPadding().getExports(), JsContainer.Location.EXPORT_ELEMENT, p));
+        }
         if (e.getFrom() != null) {
             e = e.withFrom(visitSpace(e.getFrom(), JsSpace.Location.EXPORT_FROM_PREFIX, p));
         }
         e = e.withTarget(visitAndCast(e.getTarget(), p));
+        e = e.withInitializer(visitAndCast(e.getInitializer(), p));
         return e;
     }
 
@@ -193,6 +196,27 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return b;
     }
 
+    public J visitJsImport(JS.JsImport jsImport, P p) {
+        JS.JsImport i = jsImport;
+        i = i.withPrefix(visitSpace(i.getPrefix(), JsSpace.Location.IMPORT_PREFIX, p));
+        i = i.withMarkers(visitMarkers(i.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(i, p);
+        if (!(temp instanceof JS.JsImport)) {
+            return temp;
+        } else {
+            i = (JS.JsImport) temp;
+        }
+        visit(i.getName(), p);
+        if (i.getPadding().getImports() != null) {
+            i = i.getPadding().withImports(visitContainer(i.getPadding().getImports(), JsContainer.Location.IMPORT_ELEMENT, p));
+        }
+        if (i.getFrom() != null) {
+            i = i.withFrom(visitSpace(i.getFrom(), JsSpace.Location.IMPORT_FROM_PREFIX, p));
+        }
+        i = i.withTarget(visitAndCast(i.getTarget(), p));
+        i = i.withInitializer(visitAndCast(i.getInitializer(), p));
+        return i;
+    }
     public J visitJsOperator(JS.JsOperator operator, P p) {
         JS.JsOperator o = operator;
         o = o.withPrefix(visitSpace(o.getPrefix(), JsSpace.Location.OPERATOR_PREFIX, p));

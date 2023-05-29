@@ -139,13 +139,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         beforeSyntax(export, JsSpace.Location.EXPORT_PREFIX, p);
         p.append("export");
 
-        boolean printBrackets = export.getPadding().getExports().getMarkers().findFirst(Braces.class).isPresent();
+        boolean printBrackets = export.getPadding().getExports() != null && export.getPadding().getExports().getMarkers().findFirst(Braces.class).isPresent();
         visitContainer(printBrackets ? "{" : "", export.getPadding().getExports(), JsContainer.Location.FUNCTION_TYPE_PARAMETER, ",", printBrackets ? "}" : "", p);
+
         if (export.getFrom() != null) {
             visitSpace(export.getFrom(), Space.Location.LANGUAGE_EXTENSION, p);
             p.append("from");
         }
+
         visit(export.getTarget(), p);
+        visitLeftPadded("default", export.getPadding().getInitializer(), JsLeftPadded.Location.IMPORT_INITIALIZER, p);
         afterSyntax(export, p);
         return export;
     }
@@ -159,6 +162,31 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(functionType.getReturnType(), p);
         afterSyntax(functionType, p);
         return functionType;
+    }
+
+    @Override
+    public J visitJsImport(JS.JsImport jsImport, PrintOutputCapture<P> p) {
+        beforeSyntax(jsImport, JsSpace.Location.EXPORT_PREFIX, p);
+        p.append("import");
+
+        visitRightPadded(jsImport.getPadding().getName(), JsRightPadded.Location.IMPORT_NAME_SUFFIX, p);
+
+        if (jsImport.getName() != null && jsImport.getImports() != null) {
+            p.append(",");
+        }
+
+        boolean printBrackets = jsImport.getPadding().getImports() != null && jsImport.getPadding().getImports().getMarkers().findFirst(Braces.class).isPresent();
+        visitContainer(printBrackets ? "{" : "", jsImport.getPadding().getImports(), JsContainer.Location.FUNCTION_TYPE_PARAMETER, ",", printBrackets ? "}" : "", p);
+
+        if (jsImport.getFrom() != null) {
+            visitSpace(jsImport.getFrom(), Space.Location.LANGUAGE_EXTENSION, p);
+            p.append("from");
+            visit(jsImport.getTarget(), p);
+        }
+
+        visitLeftPadded("=", jsImport.getPadding().getInitializer(), JsLeftPadded.Location.IMPORT_INITIALIZER, p);
+        afterSyntax(jsImport, p);
+        return jsImport;
     }
 
     @Override
@@ -321,6 +349,21 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitContainer("(", annotation.getPadding().getArguments(), JContainer.Location.ANNOTATION_ARGUMENTS, ",", ")", p);
             afterSyntax(annotation, p);
             return annotation;
+        }
+
+        @Override
+        public J visitFieldAccess(J.FieldAccess fieldAccess, PrintOutputCapture<P> p) {
+            beforeSyntax(fieldAccess, Space.Location.FIELD_ACCESS_PREFIX, p);
+            visit(fieldAccess.getTarget(), p);
+            PostFixOperator postFixOperator = fieldAccess.getMarkers().findFirst(PostFixOperator.class).orElse(null);
+            if (postFixOperator != null) {
+                visitSpace(postFixOperator.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+                p.append(postFixOperator.getOperator().getValue());
+            }
+
+            visitLeftPadded(".", fieldAccess.getPadding().getName(), JLeftPadded.Location.FIELD_ACCESS_NAME, p);
+            afterSyntax(fieldAccess, p);
+            return fieldAccess;
         }
 
         @Override
@@ -520,7 +563,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                     p.append("...");
                 }
                 visit(variable.getElement().getName(), p);
-                PostFixOperator postFixOperator = variable.getElement().getMarkers().findFirst(PostFixOperator.class).orElse(null);
+                PostFixOperator postFixOperator = multiVariable.getMarkers().findFirst(PostFixOperator.class).orElse(null);
                 if (postFixOperator != null) {
                     visitSpace(postFixOperator.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
                     p.append(postFixOperator.getOperator().getValue());

@@ -237,7 +237,10 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
 
         TSCSymbol symbol = node.getTypeChecker().getTypeAtLocation(node).getOptionalSymbolProperty("symbol");
         if (symbol != null) {
-            return signature(symbol.getValueDeclaration());
+            try {
+                return signature(symbol.getValueDeclaration());
+            } catch (Exception ignored) {
+            }
         }
         return mapType(node.getTypeChecker().getTypeAtLocation(node));
     }

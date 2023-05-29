@@ -18,7 +18,7 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
-@SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable", "TypeScriptCheckImport"})
+@SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable", "TypeScriptCheckImport", "TypeScriptUnresolvedVariable"})
 class VariableDeclarationTest extends ParserTest {
 
     @Test
@@ -117,6 +117,22 @@ class VariableDeclarationTest extends ParserTest {
           javaScript(
             """
               type Value = string | string[] | number | boolean | null;
+              """
+          )
+        );
+    }
+
+    @Test
+    void optionalProperty() {
+        rewriteRun(
+          javaScript(
+            """
+              import foo from 'foo' ;
+              const config : foo . Bar = {
+                  params : {
+                      param : ( value : Record < string , any > , options ? : foo.Options ) => String ( value )
+                  }
+              }
               """
           )
         );
