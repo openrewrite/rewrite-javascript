@@ -137,4 +137,17 @@ class VariableDeclarationTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void methodDeclarationInitializer() {
+        rewriteRun(
+          javaScript(
+            """
+              let a = function all(promises) {
+                  return Promise.all(promises);
+              };
+              """
+          )
+        );
+    }
 }

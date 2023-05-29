@@ -130,13 +130,16 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Expression left = (Expression) visitNode(node.getNodeProperty("left"));
         Space before = sourceBefore("=");
-        Expression right = (Expression) visitNode(node.getNodeProperty("right"));
+        J j = visitNode(node.getNodeProperty("right"));
+        if (!(j instanceof Expression) && j instanceof Statement) {
+            j = new JS.StatementExpression(randomId(), (Statement) j);
+        }
         return new J.Assignment(
                 randomId(),
                 prefix,
                 Markers.EMPTY,
                 left,
-                padLeft(before, right),
+                padLeft(before, (Expression) j),
                 typeMapping.type(node)
         );
     }
@@ -491,7 +494,10 @@ public class TypeScriptParserVisitor {
 
     private J.MethodInvocation visitCallExpression(TSCNode node) {
         implementMe(node, "questionDotToken");
-        implementMe(node, "typeArguments");
+        List<TSCNode> typeArgs = node.getOptionalNodeListProperty("typeArguments");
+        if (typeArgs != null) {
+            System.out.println();
+        }
 
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
@@ -1936,12 +1942,11 @@ public class TypeScriptParserVisitor {
     private J.Return visitReturnStatement(TSCNode node) {
         Space prefix = sourceBefore("return");
         Expression expression = null;
-        J j = !node.hasProperty("expression") ? null : visitNode(node.getNodeProperty("expression"));
-        if (j != null) {
-            expression = j instanceof Expression ? (Expression) j : new JS.StatementExpression(
-                    randomId(),
-                    (Statement) j
-            );
+        TSCNode expressionNode = node.getOptionalNodeProperty("expression");
+        if (expressionNode != null) {
+            J j = visitNode(expressionNode);
+            expression = !(j instanceof Expression) && j instanceof Statement ?
+                    new JS.StatementExpression(randomId(), (Statement) j) : (Expression) j;
         }
         return new J.Return(
                 randomId(),
@@ -2601,15 +2606,26 @@ public class TypeScriptParserVisitor {
                     }
                 }
             }
+            JLeftPadded<Expression> initializer = null;
+            TSCNode init = declaration.getOptionalNodeProperty("initializer");
+            if (init != null) {
+                Space before = sourceBefore("=");
+                J element = visitNode(init);
+                if (!(element instanceof Expression) && element instanceof Statement) {
+                    initializer = padLeft(before, new JS.StatementExpression(randomId(), (Statement) element));
+                } else if (element instanceof Expression) {
+                    initializer = padLeft(before, (Expression) element);
+                } else {
+                    implementMe(init);
+                }
+            }
             J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
                     randomId(),
                     variablePrefix,
                     Markers.EMPTY,
                     name,
                     emptyList(),
-                    declaration.hasProperty("initializer") ?
-                            padLeft(sourceBefore("="),
-                                    (Expression) Objects.requireNonNull(visitNode(declaration.getNodeProperty("initializer")))) : null,
+                    initializer,
                     typeMapping.variableType(declaration)
             );
 
@@ -3269,14 +3285,16 @@ public class TypeScriptParserVisitor {
 
     private JS.UnknownElement unknownElement(TSCNode node) {
         Space prefix = whitespace();
-        String text = node.getText();
-        skip(text);
+
         ParseExceptionResult result = new ParseExceptionResult(
                 randomId(),
                 ParseExceptionAnalysis.getAnalysisMessage(node.syntaxKind().name(),
                         getCursor() + 20 < source.length() ? source.substring(getCursor(), getCursor() + 20) :
                                 source.substring(getCursor()))
         );
+
+        String text = node.getText();
+        skip(text);
         return new JS.UnknownElement(
                 randomId(),
                 prefix,

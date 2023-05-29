@@ -17,6 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("JSUnusedLocalSymbols")
 class AssignmentTest extends ParserTest {
 
     @Test
@@ -24,8 +25,22 @@ class AssignmentTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              var b = 1
+              let b = 1
               b = 2
+              """
+          )
+        );
+    }
+
+    @Test
+    void methodDeclarationAssignment() {
+        rewriteRun(
+          javaScript(
+            """
+              let a = null
+              a = function all(promises) {
+                  return Promise.all(promises);
+              };
               """
           )
         );
