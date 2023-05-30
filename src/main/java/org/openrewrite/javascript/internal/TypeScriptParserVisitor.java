@@ -19,6 +19,7 @@ import org.openrewrite.FileAttributes;
 import org.openrewrite.ParseExceptionResult;
 import org.openrewrite.internal.ExceptionUtils;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
@@ -57,7 +58,7 @@ public class TypeScriptParserVisitor {
     private final String charset;
     private final boolean isCharsetBomMarked;
 
-    public TypeScriptParserVisitor(TSCNode sourceNode, String source, TSCSourceFileContext sourceContext, Path sourcePath, JavaScriptTypeCache typeCache, String charset, boolean isCharsetBomMarked) {
+    public TypeScriptParserVisitor(TSCNode sourceNode, String source, TSCSourceFileContext sourceContext, Path sourcePath, JavaTypeCache typeCache, String charset, boolean isCharsetBomMarked) {
         this.sourceNode = sourceNode;
         this.source = source;
         this.cursorContext = sourceContext;
@@ -2154,8 +2155,6 @@ public class TypeScriptParserVisitor {
 
         Space before = sourceBefore("type");
         annotations = mapKeywordToAnnotation(before, "type", annotations);
-
-        List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = new ArrayList<>(1);
 
         TSCNode nameNode = node.getNodeProperty("name");
         J.Identifier name = (J.Identifier) visitNode(nameNode);
