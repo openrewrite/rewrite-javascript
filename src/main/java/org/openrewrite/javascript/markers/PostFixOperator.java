@@ -29,10 +29,10 @@ public class PostFixOperator implements Marker {
     Space prefix;
     Operator operator;
 
-    // TODO: @Gary: rename operators to match JS/TS
     public enum Operator {
-        ExclamationMark("!"),
-        QuestionMark("?");
+        Exclamation("!"),
+        QuestionDot("?."),
+        Question("?");
 
         private final String value;
 

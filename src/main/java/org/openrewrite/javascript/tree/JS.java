@@ -882,7 +882,7 @@ public interface JS extends J {
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Data
-    final class JsOperator implements JS, Expression, TypedTree, NameTree {
+    final class JsOperator implements JS, Statement, Expression, TypedTree, NameTree {
 
         @Nullable
         @NonFinal
@@ -926,8 +926,8 @@ public interface JS extends J {
 
         @Transient
         @Override
-        public CoordinateBuilder.Expression getCoordinates() {
-            return new CoordinateBuilder.Expression(this);
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
         }
 
         public enum Type {
@@ -1295,15 +1295,43 @@ public interface JS extends J {
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Data
-    @With
     final class TemplateExpression implements JS, Statement, Expression {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<TemplateExpression.Padding> padding;
+
+        @With
         UUID id;
+
+        @With
         Space prefix;
+
+        @With
         Markers markers;
+
+        @With
         String delimiter;
+
+        @Nullable
+        JRightPadded<Expression> tag;
+
+        @Nullable
+        public Expression getTag() {
+            return tag == null ? null : tag.getElement();
+        }
+
+        public TemplateExpression withTag(@Nullable Expression tag) {
+            return getPadding().withTag(JRightPadded.withElement(this.tag, tag));
+        }
+
+        @With
         List<J> strings;
 
+        @With
         @Nullable
         JavaType type;
 
@@ -1335,6 +1363,35 @@ public interface JS extends J {
                 return v.visitTemplateExpressionValue(this, p);
             }
         }
+
+        public TemplateExpression.Padding getPadding() {
+            TemplateExpression.Padding p;
+            if (this.padding == null) {
+                p = new TemplateExpression.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new TemplateExpression.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final TemplateExpression t;
+
+            @Nullable
+            public JRightPadded<Expression> getTag() {
+                return t.tag;
+            }
+
+            public TemplateExpression withTag(@Nullable JRightPadded<Expression> tag) {
+                return t.tag == tag ? t : new TemplateExpression(t.id, t.prefix, t.markers, t.delimiter, tag, t.strings, t.type);
+            }
+        }
     }
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -1363,9 +1420,6 @@ public interface JS extends J {
 
         JLeftPadded<Expression> expression;
 
-        @Nullable
-        JavaType type;
-
         public Expression getExpression() {
             return expression.getElement();
         }
@@ -1373,6 +1427,9 @@ public interface JS extends J {
         public JS.TypeOperator withExpression(Expression expression) {
             return getPadding().withExpression(this.expression.withElement(expression));
         }
+
+        @Nullable
+        JavaType type;
 
         @Override
         public @Nullable JavaType getType() {

@@ -59,4 +59,16 @@ class ArrowFunctionTest extends ParserTest {
           )
         );
     }
+
+    @Test
+    void modifier() {
+        rewriteRun(
+          javaScript(
+            """
+              const c = async ( ) => {
+              }
+              """
+          )
+        );
+    }
 }

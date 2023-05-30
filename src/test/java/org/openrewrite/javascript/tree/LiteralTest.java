@@ -80,7 +80,7 @@ class LiteralTest extends ParserTest {
     }
 
     @Test
-    void stringTemplateSingleSpan() {
+    void templateSingleSpan() {
         rewriteRun(
           javaScript(
             """
@@ -106,7 +106,7 @@ class LiteralTest extends ParserTest {
     }
 
     @Test
-    void stringTemplateSingleSpanWithHead() {
+    void templateSingleSpanWithHead() {
         rewriteRun(
           javaScript(
             """
@@ -119,7 +119,7 @@ class LiteralTest extends ParserTest {
     }
 
     @Test
-    void stringTemplateSingleSpanWithTail() {
+    void templateSingleSpanWithTail() {
         rewriteRun(
           javaScript(
             """
@@ -132,12 +132,39 @@ class LiteralTest extends ParserTest {
     }
 
     @Test
-    void stringTemplateWithMiddleSpan() {
+    void templateWithMiddleSpan() {
         rewriteRun(
           javaScript(
             """
               function foo ( group : string , version : string ) {
                   console . log ( `group: ${ group } version: ${ version } after` )
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void templateWithTag() {
+        rewriteRun(
+          javaScript(
+            """
+              function foo ( ) {
+                  const c = ""
+                  console . log ( colorize ( ) `[${c}]: ✓ OK` ) ;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void templateWithNoSpans() {
+        rewriteRun(
+          javaScript(
+            """
+              function foo ( ) {
+                  console . log ( `template` )
               }
               """
           )

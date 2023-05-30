@@ -75,8 +75,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     public J visitArrowFunction(JS.ArrowFunction arrowFunction, PrintOutputCapture<P> p) {
         beforeSyntax(arrowFunction, JsSpace.Location.ARROW_FUNCTION_PREFIX, p);
         visit(arrowFunction.getLeadingAnnotations(), p);
-        visit(arrowFunction.getModifiers(), p);
+        arrowFunction.getModifiers().forEach(m -> delegate.visitModifier(m, p));
         if (arrowFunction.getParameters().isParenthesized()) {
+            visitSpace(arrowFunction.getParameters().getPrefix(), Space.Location.LAMBDA_PARAMETERS_PREFIX, p);
             p.append('(');
             visitRightPadded(arrowFunction.getParameters().getPadding().getParams(), JRightPadded.Location.LAMBDA_PARAM, ",", p);
             p.append(')');
@@ -260,6 +261,12 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     public J visitTemplateExpression(JS.TemplateExpression templateExpression, PrintOutputCapture<P> p) {
         beforeSyntax(templateExpression, JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p);
         String delimiter = templateExpression.getDelimiter();
+        visitRightPadded(templateExpression.getPadding().getTag(), JsRightPadded.Location.TAG, p);
+        PostFixOperator postFixOperator = templateExpression.getMarkers().findFirst(PostFixOperator.class).orElse(null);
+        if (postFixOperator != null) {
+            visitSpace(postFixOperator.getPrefix(), Space.Location.LAMBDA_PARAMETERS_PREFIX, p);
+            p.append(postFixOperator.getOperator().getValue());
+        }
         p.append(delimiter);
         visit(templateExpression.getStrings(), p);
         p.append(delimiter);

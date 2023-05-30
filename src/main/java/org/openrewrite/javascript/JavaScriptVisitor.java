@@ -267,6 +267,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             s = (JS.TemplateExpression) temp;
         }
+        s = s.getPadding().withTag(visitRightPadded(s.getPadding().getTag(), JsRightPadded.Location.ALIAS_PROPERTY_NAME, p));
         s = s.withStrings(ListUtils.map(s.getStrings(), e -> visitAndCast(e, p)));
         s = s.withType(visitType(s.getType(), p));
         return s;

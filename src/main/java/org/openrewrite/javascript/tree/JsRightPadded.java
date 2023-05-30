@@ -25,6 +25,7 @@ public class JsRightPadded {
         FUNCTION_TYPE_PARAMETER_SUFFIX(JsSpace.Location.FUNCTION_TYPE_SUFFIX),
         IMPORT_ELEMENT_SUFFIX(JsSpace.Location.IMPORT_ELEMENT_SUFFIX),
         IMPORT_NAME_SUFFIX(JsSpace.Location.IMPORT_NAME_SUFFIX),
+        TAG(JsSpace.Location.TAG_SUFFIX),
         UNION_TYPE(JsSpace.Location.UNION_TYPE_SUFFIX);
 
         private final JsSpace.Location afterLocation;

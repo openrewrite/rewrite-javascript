@@ -17,7 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("JSUnusedLocalSymbols")
+@SuppressWarnings({"JSUnusedLocalSymbols", "TypeScriptCheckImport", "TypeScriptUnresolvedFunction"})
 class AssignmentTest extends ParserTest {
 
     @Test
@@ -41,6 +41,20 @@ class AssignmentTest extends ParserTest {
               a = function all(promises) {
                   return Promise.all(promises);
               };
+              """
+          )
+        );
+    }
+
+    @Test
+    void metaProperty() {
+        rewriteRun(
+          javaScript(
+            """
+              import path from 'path';
+              import {fileURLToPath} from "url";
+              
+              const __dirname = path.dirname(fileURLToPath(import.meta.url));
               """
           )
         );

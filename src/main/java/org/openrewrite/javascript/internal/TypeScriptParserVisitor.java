@@ -187,7 +187,6 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitArrowFunction(TSCNode node) {
-        implementMe(node, "modifiers");
         implementMe(node, "typeParameters");
         implementMe(node, "typeArguments");
 
@@ -1138,7 +1137,7 @@ public class TypeScriptParserVisitor {
         if (type != null) {
             TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
             if (questionToken != null) {
-                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.Question));
             }
             Space beforeColon = sourceBefore(":");
             if (beforeColon != EMPTY) {
@@ -1528,6 +1527,29 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J visitMetaProperty(TSCNode node) {
+        Space prefix = whitespace();
+        Markers markers = Markers.EMPTY;
+
+        Integer keywordToken = node.getOptionalIntProperty("keywordToken");
+        TSCSyntaxKind syntaxKind = TSCSyntaxKind.fromCode(keywordToken);
+        Expression nameExpression = null;
+        if (syntaxKind == TSCSyntaxKind.ImportKeyword) {
+            skip("import");
+            nameExpression = convertToIdentifier(EMPTY, "import");
+        } else {
+            implementMe(node);
+        }
+        return new J.FieldAccess(
+                randomId(),
+                prefix,
+                markers,
+                nameExpression,
+                padLeft(sourceBefore("."), visitIdentifier(node.getNodeProperty("name"))),
+                typeMapping.type(node)
+        );
+    }
+
     private J.NewClass visitNewExpression(TSCNode node) {
         Space prefix = sourceBefore("new");
         TypeTree typeTree = null;
@@ -1758,7 +1780,7 @@ public class TypeScriptParserVisitor {
         Expression nameExpression = (Expression) visitNode(node.getNodeProperty("expression"));
         TSCNode questionToken = node.getOptionalNodeProperty("questionDotToken");
         if (questionToken != null) {
-            markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+            markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.Question));
         }
         return new J.FieldAccess(
                 randomId(),
@@ -1792,9 +1814,9 @@ public class TypeScriptParserVisitor {
             TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
             TSCNode exclamationToken = node.getOptionalNodeProperty("exclamationToken");
             if (questionToken != null) {
-                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.Question));
             } else if (exclamationToken != null) {
-                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.ExclamationMark));
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.Exclamation));
             }
 
             Space beforeColon = sourceBefore(":");
@@ -1873,9 +1895,9 @@ public class TypeScriptParserVisitor {
             TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
             TSCNode exclamationToken = node.getOptionalNodeProperty("exclamationToken");
             if (questionToken != null) {
-                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.Question));
             } else if (exclamationToken != null) {
-                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.ExclamationMark));
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.Exclamation));
             }
 
             Space beforeEquals = sourceBefore(":");
@@ -1985,7 +2007,28 @@ public class TypeScriptParserVisitor {
 
     private J visitTemplateExpression(TSCNode node) {
         Space prefix = whitespace();
-        TSCNode head = node.getNodeProperty("head");
+        Markers markers = Markers.EMPTY;
+        JRightPadded<Expression> tag = null;
+        TSCNode templateExpression;
+        if (node.syntaxKind() == TSCSyntaxKind.TaggedTemplateExpression) {
+            J j = visitNode(node.getNodeProperty("tag"));
+            tag = padRight(!(j instanceof Expression) && j instanceof Statement ?
+                    new JS.StatementExpression(randomId(), (Statement) j) : (Expression) j, whitespace());
+            if (node.hasProperty("questionDotToken")) {
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?."), PostFixOperator.Operator.QuestionDot));
+            }
+            templateExpression = node.getNodeProperty("template");
+        } else {
+            templateExpression = node;
+        }
+
+        TSCNode head;
+        if (templateExpression.syntaxKind() == TSCSyntaxKind.NoSubstitutionTemplateLiteral) {
+            head = node;
+        } else {
+            head = templateExpression.getNodeProperty("head");
+        }
+
         String text = head.getStringProperty("text");
         String rawText = head.getStringProperty("rawText");
         String delimiter = String.valueOf(head.getText().charAt(0));
@@ -1993,7 +2036,8 @@ public class TypeScriptParserVisitor {
 
         skip(delimiter);
 
-        List<TSCNode> spans = node.getNodeListProperty("templateSpans");
+        List<TSCNode> spans = templateExpression.syntaxKind() == TSCSyntaxKind.NoSubstitutionTemplateLiteral ? emptyList() :
+                templateExpression.getNodeListProperty("templateSpans");
         List<J> elements = new ArrayList<>(spans.size() * 2 + 1);
         if (!rawText.isEmpty()) {
             skip(rawText);
@@ -2046,11 +2090,15 @@ public class TypeScriptParserVisitor {
             }
         }
 
+        if (templateExpression.syntaxKind() == TSCSyntaxKind.NoSubstitutionTemplateLiteral) {
+            skip(delimiter);
+        }
         return new JS.TemplateExpression(
                 randomId(),
                 prefix,
-                Markers.EMPTY,
+                markers,
                 delimiter,
+                tag,
                 elements,
                 typeMapping.type(node)
         );
@@ -2381,9 +2429,9 @@ public class TypeScriptParserVisitor {
             TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
             TSCNode exclamationToken = node.getOptionalNodeProperty("exclamationToken");
             if (questionToken != null) {
-                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.Question));
             } else if (exclamationToken != null) {
-                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.ExclamationMark));
+                markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.Exclamation));
             }
 
             Space beforeColon = sourceBefore(":");
@@ -2477,9 +2525,9 @@ public class TypeScriptParserVisitor {
                     TSCNode questionToken = node.getOptionalNodeProperty("questionToken");
                     TSCNode exclamationToken = node.getOptionalNodeProperty("exclamationToken");
                     if (questionToken != null) {
-                        markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.QuestionMark));
+                        markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("?"), PostFixOperator.Operator.Question));
                     } else if (exclamationToken != null) {
-                        markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.ExclamationMark));
+                        markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore("!"), PostFixOperator.Operator.Exclamation));
                     }
 
                     Space beforeColon = sourceBefore(":");
@@ -2738,6 +2786,11 @@ public class TypeScriptParserVisitor {
             case PropertyDeclaration:
                 j = visitPropertyDeclaration(node);
                 break;
+            case NoSubstitutionTemplateLiteral:
+            case TaggedTemplateExpression:
+            case TemplateExpression:
+                j = visitTemplateExpression(node);
+                break;
             case AwaitExpression:
             case TypeOfExpression:
                 j = visitTsOperator(node);
@@ -2838,6 +2891,9 @@ public class TypeScriptParserVisitor {
             case LiteralType:
                 j = visitLiteralType(node);
                 break;
+            case MetaProperty:
+                j = visitMetaProperty(node);
+                break;
             case NewExpression:
                 j = visitNewExpression(node);
                 break;
@@ -2867,9 +2923,6 @@ public class TypeScriptParserVisitor {
                 break;
             case StringLiteral:
                 j = visitStringLiteral(node);
-                break;
-            case TemplateExpression:
-                j = visitTemplateExpression(node);
                 break;
             case ThrowStatement:
                 j = visitThrowStatement(node);
