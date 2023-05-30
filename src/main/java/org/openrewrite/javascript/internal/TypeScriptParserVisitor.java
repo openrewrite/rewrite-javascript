@@ -2147,7 +2147,6 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitTypeAliasDeclaration(TSCNode node) {
-        implementMe(node, "typeParameters");
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
@@ -2157,36 +2156,28 @@ public class TypeScriptParserVisitor {
         Space before = sourceBefore("type");
         annotations = mapKeywordToAnnotation(before, "type", annotations);
 
-        TypeTree typeTree = null;
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> namedVariables = new ArrayList<>(1);
 
         TSCNode nameNode = node.getNodeProperty("name");
         J.Identifier name = (J.Identifier) visitNode(nameNode);
         name = name.withType(typeMapping.type(nameNode));
+        J.TypeParameters typeParameters = mapTypeParameters(node.getOptionalNodeListProperty("typeParameters"));
 
-        J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
-                randomId(),
-                EMPTY,
-                Markers.EMPTY,
-                name,
-                emptyList(),
-                padLeft(sourceBefore("="),
-                        (Expression) Objects.requireNonNull(visitNode(node.getNodeProperty("type")))),
-                typeMapping.variableType(node)
-        );
+        Space beforeEquals = sourceBefore("=");
+        J j = visitNode(node.getNodeProperty("type"));
+        JLeftPadded<Expression> initializer = padLeft(beforeEquals, !(j instanceof Expression) && j instanceof Statement ?
+                new JS.StatementExpression(randomId(), (Statement) j) : (Expression) j);
 
-        namedVariables.add(padRight(variable, EMPTY));
-
-        return new J.VariableDeclarations(
+        return new JS.TypeDeclaration(
                 randomId(),
                 prefix,
                 markers,
                 annotations,
                 modifiers,
-                typeTree,
-                null,
-                emptyList(),
-                namedVariables
+                name,
+                typeParameters,
+                initializer,
+                typeMapping.type(node)
         );
     }
 

@@ -292,6 +292,26 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitTypeDeclaration(JS.TypeDeclaration typeDeclaration, PrintOutputCapture<P> p) {
+        beforeSyntax(typeDeclaration, JsSpace.Location.TYPE_DECLARATION_PREFIX, p);
+        visit(typeDeclaration.getLeadingAnnotations(), p);
+        visit(typeDeclaration.getModifiers(), p);
+        visit(typeDeclaration.getName(), p);
+        J.TypeParameters typeParameters = typeDeclaration.getTypeParameters();
+        if (typeParameters != null) {
+            visit(typeParameters.getAnnotations(), p);
+            visitSpace(typeParameters.getPrefix(), Space.Location.TYPE_PARAMETERS, p);
+            visitMarkers(typeParameters.getMarkers(), p);
+            p.append("<");
+            visitRightPadded(typeParameters.getPadding().getTypeParameters(), JRightPadded.Location.TYPE_PARAMETER, ",", p);
+            p.append(">");
+        }
+        visitLeftPadded("=", typeDeclaration.getPadding().getInitializer(), JsLeftPadded.Location.TYPE_DECLARATION_INITIALIZER, p);
+        afterSyntax(typeDeclaration, p);
+        return typeDeclaration;
+    }
+
+    @Override
     public J visitTypeOperator(JS.TypeOperator typeOperator, PrintOutputCapture<P> p) {
         beforeSyntax(typeOperator, JsSpace.Location.BINARY_PREFIX, p);
 

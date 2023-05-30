@@ -123,6 +123,18 @@ class VariableDeclarationTest extends ParserTest {
     }
 
     @Test
+    void typeDeclarationWithParameters() {
+        rewriteRun(
+          javaScript(
+            """
+              import Foo from 'foo' ;
+              type Other < T = unknown , D = any > = Foo < T , D > ;
+              """
+          )
+        );
+    }
+
+    @Test
     void optionalProperty() {
         rewriteRun(
           javaScript(

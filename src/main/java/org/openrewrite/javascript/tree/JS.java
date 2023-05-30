@@ -1304,6 +1304,7 @@ public interface JS extends J {
         @NonFinal
         transient WeakReference<TemplateExpression.Padding> padding;
 
+        @EqualsAndHashCode.Include
         @With
         UUID id;
 
@@ -1390,6 +1391,106 @@ public interface JS extends J {
 
             public TemplateExpression withTag(@Nullable JRightPadded<Expression> tag) {
                 return t.tag == tag ? t : new TemplateExpression(t.id, t.prefix, t.markers, t.delimiter, tag, t.strings, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Data
+    final class TypeDeclaration implements JS, Statement, TypedTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<TypeDeclaration.Padding> padding;
+
+        @EqualsAndHashCode.Include
+        @With
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        @With
+        List<Annotation> leadingAnnotations;
+
+        @With
+        List<Modifier> modifiers;
+
+        @With
+        J.Identifier name;
+
+        @Nullable
+        @With
+        J.TypeParameters typeParameters;
+
+        JLeftPadded<Expression> initializer;
+
+        public Expression getInitializer() {
+            return initializer.getElement();
+        }
+
+        public TypeDeclaration withInitializer(Expression initializer) {
+            return getPadding().withInitializer(JLeftPadded.withElement(this.initializer, initializer));
+        }
+
+        @Nullable
+        @With
+        JavaType javaType;
+
+        @Nullable
+        @Override
+        public JavaType getType() {
+            return javaType;
+        }
+
+        @Override
+        public <T extends J> T withType(@Nullable JavaType javaType) {
+            //noinspection unchecked
+            return (T) (this.javaType == javaType ? this : withJavaType(javaType));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTypeDeclaration(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public TypeDeclaration.Padding getPadding() {
+            TypeDeclaration.Padding p;
+            if (this.padding == null) {
+                p = new TypeDeclaration.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new TypeDeclaration.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final TypeDeclaration t;
+
+            public JLeftPadded<Expression> getInitializer() {
+                return t.initializer;
+            }
+
+            public TypeDeclaration withInitializer(JLeftPadded<Expression> initializer) {
+                return t.initializer == initializer ? t : new TypeDeclaration(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.name, t.typeParameters, initializer, t.javaType);
             }
         }
     }
