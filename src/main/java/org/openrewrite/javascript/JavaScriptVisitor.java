@@ -73,7 +73,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
         a = a.getPadding().withPropertyName(visitRightPadded(a.getPadding().getPropertyName(), JsRightPadded.Location.ALIAS_PROPERTY_NAME, p));
         a = a.withAlias(visitAndCast(a.getAlias(), p));
-        a = a.withType(visitType(a.getType(), p));
         return a;
     }
 
@@ -335,7 +334,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
             t = (JS.TypeOperator) temp;
         }
         t = t.getPadding().withExpression(visitLeftPadded(t.getPadding().getExpression(), JsLeftPadded.Location.TYPE_OPERATOR, p));
-        t = t.withType(visitType(t.getType(), p));
         return t;
     }
 

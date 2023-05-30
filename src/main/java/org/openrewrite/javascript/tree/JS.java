@@ -1532,9 +1532,6 @@ public interface JS extends J {
         }
 
         @Nullable
-        JavaType type;
-
-        @Nullable
         @Override
         public JavaType getType() {
             return expression.getElement().getType();
@@ -1585,7 +1582,7 @@ public interface JS extends J {
             }
 
             public JS.TypeOperator withExpression(JLeftPadded<Expression> expression) {
-                return t.expression == expression ? t : new JS.TypeOperator(t.id, t.prefix, t.markers, t.operator, expression, t.type);
+                return t.expression == expression ? t : new JS.TypeOperator(t.id, t.prefix, t.markers, t.operator, expression);
             }
         }
     }

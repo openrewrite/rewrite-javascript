@@ -2225,8 +2225,7 @@ public class TypeScriptParserVisitor {
                 prefix,
                 Markers.EMPTY,
                 operator,
-                padLeft(before, (Expression) visitNode(node.getNodeProperty("type"))),
-                null
+                padLeft(before, (Expression) visitNode(node.getNodeProperty("type")))
         );
     }
 
