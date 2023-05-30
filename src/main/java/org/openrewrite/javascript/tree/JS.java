@@ -279,15 +279,16 @@ public interface JS extends J {
             return v.visitAlias(this, p);
         }
 
+        @Nullable
         @Override
-        public @Nullable JavaType getType() {
+        public JavaType getType() {
             return propertyName.getElement().getType();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public <T extends J> T withType(@Nullable JavaType type) {
-            //noinspection unchecked
-            return (T) withPropertyName(propertyName.getElement().withType(type));
+        public Alias withType(@Nullable JavaType type) {
+            return withPropertyName(propertyName.getElement().withType(type));
         }
 
         @Transient
@@ -562,14 +563,15 @@ public interface JS extends J {
             return expression.getMarkers();
         }
 
+        @Nullable
         @Override
-        public @Nullable JavaType getType() {
+        public JavaType getType() {
             return expression.getType();
         }
 
         @Override
-        public <T extends J> T withType(@Nullable JavaType type) {
-            return (T) withExpression(expression.withType(type));
+        public ExpressionStatement withType(@Nullable JavaType type) {
+            return withExpression(expression.withType(type));
         }
 
         @Transient
@@ -711,14 +713,14 @@ public interface JS extends J {
             return getPadding().withImports(JContainer.withElementsNullable(this.imports, imports));
         }
 
+        @Nullable
         @Getter
         @With
-        @Nullable
         Space from;
 
+        @Nullable
         @Getter
         @With
-        @Nullable
         J.Literal target;
 
         @Nullable
@@ -1276,14 +1278,15 @@ public interface JS extends J {
             return statement.getMarkers();
         }
 
+        @Nullable
         @Override
-        public @Nullable JavaType getType() {
+        public JavaType getType() {
             return null;
         }
 
         @Override
-        public <T extends J> T withType(@Nullable JavaType type) {
-            throw new UnsupportedOperationException("StatementExpression cannot have a type");
+        public StatementExpression withType(@Nullable JavaType type) {
+            return this;
         }
 
         @Transient
@@ -1440,7 +1443,6 @@ public interface JS extends J {
         }
 
         @Nullable
-        @With
         JavaType javaType;
 
         @Nullable
@@ -1449,10 +1451,10 @@ public interface JS extends J {
             return javaType;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public <T extends J> T withType(@Nullable JavaType javaType) {
-            //noinspection unchecked
-            return (T) (this.javaType == javaType ? this : withJavaType(javaType));
+        public TypeDeclaration withType(@Nullable JavaType javaType) {
+            return this.javaType == javaType ? this : new TypeDeclaration(id, prefix, markers, leadingAnnotations, modifiers, name, typeParameters, initializer, javaType);
         }
 
         @Override
@@ -1532,15 +1534,16 @@ public interface JS extends J {
         @Nullable
         JavaType type;
 
+        @Nullable
         @Override
-        public @Nullable JavaType getType() {
+        public JavaType getType() {
             return expression.getElement().getType();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public <T extends J> T withType(@Nullable JavaType type) {
-            //noinspection unchecked
-            return (T) getPadding().withExpression(this.expression.withElement(this.expression.getElement().withType(type)));
+        public TypeOperator withType(@Nullable JavaType type) {
+            return type == getType() ? this : getPadding().withExpression(this.expression.withElement(this.expression.getElement().withType(type)));
         }
 
         @Override
@@ -1681,15 +1684,16 @@ public interface JS extends J {
             return v.visitUnknownElement(this, p);
         }
 
+        @Nullable
         @Override
-        public @Nullable JavaType getType() {
+        public JavaType getType() {
             return null;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public <T extends J> T withType(@Nullable JavaType type) {
-            //noinspection unchecked
-            return (T) this;
+        public UnknownElement withType(@Nullable JavaType type) {
+            return this;
         }
 
         @Override

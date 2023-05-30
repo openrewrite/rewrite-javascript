@@ -63,6 +63,14 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         JS.Alias a = alias;
         a = a.withPrefix(visitSpace(a.getPrefix(), JsSpace.Location.ALIAS_PREFIX, p));
         a = a.withMarkers(visitMarkers(a.getMarkers(), p));
+
+        Expression temp = (Expression) visitExpression(a, p);
+        if (!(temp instanceof JS.Alias)) {
+            return temp;
+        } else {
+            a = (JS.Alias) temp;
+        }
+
         a = a.getPadding().withPropertyName(visitRightPadded(a.getPadding().getPropertyName(), JsRightPadded.Location.ALIAS_PROPERTY_NAME, p));
         a = a.withAlias(visitAndCast(a.getAlias(), p));
         a = a.withType(visitType(a.getType(), p));
