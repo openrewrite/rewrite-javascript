@@ -495,7 +495,7 @@ public class TypeScriptParserVisitor {
         implementMe(node, "questionDotToken");
         List<TSCNode> typeArgs = node.getOptionalNodeListProperty("typeArguments");
         if (typeArgs != null) {
-            System.out.println();
+            implementMe(node, "typeArguments");
         }
 
         Space prefix = whitespace();
@@ -2963,7 +2963,6 @@ public class TypeScriptParserVisitor {
                 break;
             default:
                 implementMe(node); // TODO: remove ... temp for velocity.
-                System.err.println("unsupported syntax kind: " + node.syntaxKind());
                 j = null;
         }
         return j;
@@ -3262,7 +3261,7 @@ public class TypeScriptParserVisitor {
     }
 
     private void skip(String word) {
-        cursor(getCursor() + word.length());
+        cursor(Math.min(getCursor() + word.length(), source.length() - 1));
     }
 
     private int positionOfNext(String untilDelim) {
@@ -3327,7 +3326,7 @@ public class TypeScriptParserVisitor {
     }
 
     private Space whitespace() {
-        String prefix = source.substring(getCursor(), indexOfNextNonWhitespace(getCursor(), source));
+        String prefix = source.substring(getCursor(), Math.min(source.length() - 1, indexOfNextNonWhitespace(getCursor(), source)));
         skip(prefix);
         return format(prefix);
     }
