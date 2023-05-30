@@ -171,7 +171,7 @@ class ExportTest extends ParserTest {
         rewriteRun(
           javaScript(
             """
-              export function spread < T , R > ( callback : ( ... args : T [ ] ) => R ) : ( array : T [ ] ) => R ;
+              export function spread < T , R > ( t : T , r : R ) { }
               """
           )
         );

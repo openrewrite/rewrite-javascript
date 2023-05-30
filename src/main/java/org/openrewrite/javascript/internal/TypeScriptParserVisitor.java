@@ -3260,7 +3260,7 @@ public class TypeScriptParserVisitor {
     }
 
     private void skip(String word) {
-        cursor(Math.min(getCursor() + word.length(), (source.length() - 1 == -1 ? 0 : source.length() - 1)));
+        cursor(getCursor() + word.length());
     }
 
     private int positionOfNext(String untilDelim) {
@@ -3325,7 +3325,7 @@ public class TypeScriptParserVisitor {
     }
 
     private Space whitespace() {
-        String prefix = source.substring(getCursor(), Math.min((source.length() - 1 == -1 ? 0 : source.length() - 1), indexOfNextNonWhitespace(getCursor(), source)));
+        String prefix = source.substring(getCursor(), indexOfNextNonWhitespace(getCursor(), source));
         skip(prefix);
         return format(prefix);
     }
