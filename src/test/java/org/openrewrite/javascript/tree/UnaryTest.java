@@ -22,20 +22,34 @@ class UnaryTest extends ParserTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-      "! n",
-      "- n",
-      "+ n",
       "++ n",
       "-- n",
       "n ++",
       "n --",
     })
-    void unaryOps(String arg) {
+    void incrementAndDecrement(String arg) {
         rewriteRun(
           javaScript(
             """
               var n = 1
               %s
+              """.formatted(arg)
+          )
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+      "! n",
+      "- n",
+      "+ n",
+    })
+    void unaryMinusAndPlus(String arg) {
+        rewriteRun(
+          javaScript(
+            """
+              const n1 = 1
+              const n2 = %s
               """.formatted(arg)
           )
         );

@@ -1367,39 +1367,40 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitFunctionType(TSCNode node) {
-        implementMe(node, "typeParameters");
-        implementMe(node, "modifiers");
-        implementMe(node, "typeArguments");
-        implementMe(node, "asteriskToken");
-
-        Space prefix = whitespace();
-
-        List<TSCNode> params = node.getOptionalNodeListProperty("parameters");
-        if (params == null) {
-            implementMe(node);
-        }
-        JContainer<Statement> parameters = mapContainer(
-                "(",
-                params,
-                ",",
-                ")",
-                t -> (Statement) visitNode(t)
-        );
-
-        TSCNode type = node.getOptionalNodeProperty("type");
-        if (type == null) {
-            implementMe(node);
-        }
-
-        return new JS.FunctionType(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                parameters,
-                sourceBefore("=>"),
-                (Expression) visitNode(type),
-                typeMapping.type(type)
-        );
+//        implementMe(node, "typeParameters");
+//        implementMe(node, "modifiers");
+//        implementMe(node, "typeArguments");
+//        implementMe(node, "asteriskToken");
+//
+//        Space prefix = whitespace();
+//
+//        List<TSCNode> params = node.getOptionalNodeListProperty("parameters");
+//        if (params == null) {
+//            implementMe(node);
+//        }
+//        JContainer<Statement> parameters = mapContainer(
+//                "(",
+//                params,
+//                ",",
+//                ")",
+//                t -> (Statement) visitNode(t)
+//        );
+//
+//        TSCNode type = node.getOptionalNodeProperty("type");
+//        if (type == null) {
+//            implementMe(node);
+//        }
+//
+//        return new JS.FunctionType(
+//                randomId(),
+//                prefix,
+//                Markers.EMPTY,
+//                parameters,
+//                sourceBefore("=>"),
+//                (Expression) visitNode(type),
+//                typeMapping.type(type)
+//        );
+        return unknownElement(node);
     }
 
     private J.Label visitLabelledStatement(TSCNode node) {
@@ -2330,6 +2331,10 @@ public class TypeScriptParserVisitor {
                 op = padLeft(sourceBefore("--"), J.Unary.Type.PreDecrement);
             } else if (opKind == TSCSyntaxKind.PlusPlusToken) {
                 op = padLeft(sourceBefore("++"), J.Unary.Type.PreIncrement);
+            } else if (opKind == TSCSyntaxKind.MinusToken) {
+                op = padLeft(sourceBefore("-"), J.Unary.Type.Negative);
+            } else if (opKind == TSCSyntaxKind.PlusToken) {
+                op = padLeft(sourceBefore("+"), J.Unary.Type.Positive);
             } else {
                 implementMe(node);
             }
