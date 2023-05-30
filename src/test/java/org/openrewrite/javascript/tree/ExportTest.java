@@ -142,12 +142,36 @@ class ExportTest extends ParserTest {
     }
 
     @Test
+    void readOnlyProperty() {
+        rewriteRun(
+          javaScript(
+            """
+              export interface Foo {
+                  readonly encode ? : string ;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void exportFunction() {
         rewriteRun(
           javaScript(
             """
               export default function methodName() {
               }
+              """
+          )
+        );
+    }
+
+    @Test
+    void functionWithTypeParameter() {
+        rewriteRun(
+          javaScript(
+            """
+              export function spread < T , R > ( callback : ( ... args : T [ ] ) => R ) : ( array : T [ ] ) => R ;
               """
           )
         );

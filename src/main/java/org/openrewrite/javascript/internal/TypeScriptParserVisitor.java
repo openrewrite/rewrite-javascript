@@ -1367,41 +1367,39 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitFunctionType(TSCNode node) {
-//        implementMe(node, "typeParameters");
-//        implementMe(node, "modifiers");
-//        implementMe(node, "typeArguments");
-//        implementMe(node, "asteriskToken");
+        implementMe(node, "typeParameters");
+        implementMe(node, "modifiers");
+        implementMe(node, "typeArguments");
+        implementMe(node, "asteriskToken");
 
-//        Space prefix = whitespace();
-//
-//        List<TSCNode> params = node.getOptionalNodeListProperty("parameters");
-//        if (params == null) {
-//            implementMe(node);
-//        }
-//        JContainer<Statement> parameters = mapContainer(
-//                "(",
-//                params,
-//                ",",
-//                ")",
-//                t -> (Statement) visitNode(t)
-//        );
-//
-//        TSCNode type = node.getOptionalNodeProperty("type");
-//        if (type == null) {
-//            implementMe(node);
-//        }
+        Space prefix = whitespace();
 
-        // FIXME: does not deserialize due to double visit.
-//        return new JS.FunctionType(
-//                randomId(),
-//                prefix,
-//                Markers.EMPTY,
-//                parameters,
-//                sourceBefore(">="),
-//                (Expression) visitNode(type),
-//                typeMapping.type(node)
-//        );
-        return unknownElement(node);
+        List<TSCNode> params = node.getOptionalNodeListProperty("parameters");
+        if (params == null) {
+            implementMe(node);
+        }
+        JContainer<Statement> parameters = mapContainer(
+                "(",
+                params,
+                ",",
+                ")",
+                t -> (Statement) visitNode(t)
+        );
+
+        TSCNode type = node.getOptionalNodeProperty("type");
+        if (type == null) {
+            implementMe(node);
+        }
+
+        return new JS.FunctionType(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                parameters,
+                sourceBefore("=>"),
+                (Expression) visitNode(type),
+                typeMapping.type(type)
+        );
     }
 
     private J.Label visitLabelledStatement(TSCNode node) {
@@ -2372,10 +2370,11 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
+        List<J.Annotation> annotations = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
         int saveCursor = getCursor();
         Space beforeVariableModifier = whitespace();
         TSCSyntaxKind keyword = scan();
-        List<J.Annotation> annotations = new ArrayList<>();
         if (keyword == TSCSyntaxKind.ConstKeyword) {
             annotations.add(new J.Annotation(
                     randomId(),
@@ -2450,7 +2449,7 @@ public class TypeScriptParserVisitor {
                 prefix,
                 markers,
                 annotations,
-                emptyList(),
+                modifiers,
                 typeTree,
                 null,
                 emptyList(),
@@ -2742,6 +2741,7 @@ public class TypeScriptParserVisitor {
             case FalseKeyword:
             case NumberKeyword:
             case NullKeyword:
+            case ReadonlyKeyword:
             case StringKeyword:
             case SuperKeyword:
             case ThisKeyword:
@@ -3156,7 +3156,8 @@ public class TypeScriptParserVisitor {
                 // JS/TS keywords.
                 case DeclareKeyword:
                 case DefaultKeyword:
-                case ExportKeyword: {
+                case ExportKeyword:
+                case ReadonlyKeyword: {
                     annotations = mapKeywordToAnnotation(prefix, node, annotations);
                     break;
                 }
