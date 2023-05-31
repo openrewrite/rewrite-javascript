@@ -383,12 +383,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             beforeSyntax(fieldAccess, Space.Location.FIELD_ACCESS_PREFIX, p);
             visit(fieldAccess.getTarget(), p);
             PostFixOperator postFixOperator = fieldAccess.getMarkers().findFirst(PostFixOperator.class).orElse(null);
-            if (postFixOperator != null) {
-                visitSpace(postFixOperator.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-                p.append(postFixOperator.getOperator().getValue());
-            }
 
-            visitLeftPadded(".", fieldAccess.getPadding().getName(), JLeftPadded.Location.FIELD_ACCESS_NAME, p);
+            visitLeftPadded(postFixOperator != null ? "?." : ".", fieldAccess.getPadding().getName(), JLeftPadded.Location.FIELD_ACCESS_NAME, p);
             afterSyntax(fieldAccess, p);
             return fieldAccess;
         }

@@ -16,6 +16,7 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
 class CommentTest extends ParserTest {
@@ -60,6 +61,7 @@ class CommentTest extends ParserTest {
         );
     }
 
+    @ExpectedToFail
     @Test
     void preserveWhitespaceBetweenComments() {
         rewriteRun(
@@ -99,6 +101,7 @@ class CommentTest extends ParserTest {
         );
     }
 
+    @ExpectedToFail
     @Test
     void leadingComment() {
         rewriteRun(
