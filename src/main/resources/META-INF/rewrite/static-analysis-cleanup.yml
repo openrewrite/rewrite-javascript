@@ -28,6 +28,7 @@ recipeList:
   - org.openrewrite.java.cleanup.InlineVariable
   - org.openrewrite.java.cleanup.MethodNameCasing
   - org.openrewrite.java.cleanup.MinimumSwitchCases
+  - org.openrewrite.java.cleanup.MultipleVariableDeclarations
   - org.openrewrite.java.cleanup.NeedBraces
   - org.openrewrite.java.cleanup.RemoveExtraSemicolons
   - org.openrewrite.java.cleanup.SimplifyBooleanExpression
