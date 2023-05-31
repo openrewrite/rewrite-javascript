@@ -15,12 +15,11 @@
  */
 package org.openrewrite.javascript.search;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
-import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.javascript.JavaScriptIsoVisitor;
 import org.openrewrite.javascript.table.ParseExceptionAnalysis;
 import org.openrewrite.marker.SearchResult;
 
@@ -36,7 +35,7 @@ import java.util.*;
 @Incubating(since = "0.0")
 @Value
 @EqualsAndHashCode(callSuper = true)
-public class FindParseExceptionAnalysis extends Recipe {
+public class FindParseExceptionAnalysis extends ScanningRecipe<FindParseExceptionAnalysis.Accumulator> {
     transient ParseExceptionAnalysis report = new ParseExceptionAnalysis(this);
 
     @Option(displayName = "Mark source files",
@@ -62,31 +61,45 @@ public class FindParseExceptionAnalysis extends Recipe {
                 "This recipe is an iteration of `FindParseFailures` that uses `ParseExceptionAnalysis` to identify parser exceptions on a per-node basis.";
     }
 
-    @Override
-    protected List<SourceFile> visit(List<SourceFile> before, ExecutionContext ctx) {
+    @Data
+    static class Accumulator {
         Map<String, Map<String, Integer>> counts = new HashMap<>();
-        JavaScriptIsoVisitor<Integer> target = new JavaScriptIsoVisitor<>();
-        if (Boolean.TRUE.equals(markFailures)) {
-            List<SourceFile> after = ListUtils.map(before, it -> target.isAcceptable(it, 0) ? (SourceFile) new AnalysisVisitor(it, counts, markFailures, nodeType).visit(it, ctx) : it);
-            return analyzeResults(after, ctx, counts);
-        } else {
-            for (SourceFile sourceFile : before) {
-                if (target.isAcceptable(sourceFile, 0)) {
-                    new AnalysisVisitor(sourceFile, counts, markFailures, nodeType).visit(sourceFile, ctx);
-                }
-            }
-
-            return analyzeResults(before, ctx, counts);
-        }
+        List<SourceFile> results = new ArrayList<>();
     }
 
-    private List<SourceFile> analyzeResults(List<SourceFile> before, ExecutionContext ctx, Map<String, Map<String, Integer>> counts) {
-        for (Map.Entry<String, Map<String, Integer>> fileExtensionEntries : counts.entrySet()) {
+    @Override
+    public Accumulator getInitialValue(ExecutionContext ctx) {
+        return new Accumulator();
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+        return new TreeVisitor<Tree, ExecutionContext>() {
+            @Override
+            public Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
+                if (!(tree instanceof SourceFile)) {
+                    return tree;
+                }
+
+                SourceFile s = (SourceFile) tree;
+                if (Boolean.TRUE.equals(markFailures)) {
+                    acc.results.add((SourceFile) new AnalysisVisitor(s, acc.getCounts(), markFailures, nodeType).visit(s, ctx));
+                } else {
+                    new AnalysisVisitor(s, acc.getCounts(), markFailures, nodeType).visit(s, ctx);
+                }
+                return s;
+            }
+        };
+    }
+
+    @Override
+    public Collection<? extends SourceFile> generate(Accumulator acc, ExecutionContext ctx) {
+        for (Map.Entry<String, Map<String, Integer>> fileExtensionEntries : acc.getCounts().entrySet()) {
             for (Map.Entry<String, Integer> nodeTypeCounts : fileExtensionEntries.getValue().entrySet()) {
                 report.insertRow(ctx, new ParseExceptionAnalysis.Row(fileExtensionEntries.getKey(), nodeTypeCounts.getKey(), nodeTypeCounts.getValue()));
             }
         }
-        return before;
+        return acc.results;
     }
 
     private static class AnalysisVisitor extends TreeVisitor<Tree, ExecutionContext> {
@@ -107,8 +120,9 @@ public class FindParseExceptionAnalysis extends Recipe {
             this.extension = source.getSourcePath().toString().substring(source.getSourcePath().toString().lastIndexOf(".") + 1);
         }
 
+        @Nullable
         @Override
-        public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
+        public Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
             if (tree == null) {
                 return null;
             }

@@ -18,6 +18,7 @@ package org.openrewrite.javascript.search;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.javascript.table.JavaScriptSourceFile;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.quark.Quark;
@@ -43,32 +44,36 @@ public class FindJavaScriptSources extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new TreeVisitor<Tree, ExecutionContext>() {
             final Set<String> jsExtensions = new HashSet<>(Arrays.asList(".js", ".jsx", ".mjs", ".cjs"));
             final Set<String> tsExtensions = new HashSet<>(Arrays.asList(".ts", ".tsx", ".mts", ".cts"));
 
             @Override
-            public Tree visitSourceFile(SourceFile sourceFile, ExecutionContext ctx) {
-                JavaScriptSourceFile.SourceFileType sourceFileType = null;
-                if (sourceFile instanceof Quark) {
-                    sourceFileType = JavaScriptSourceFile.SourceFileType.Quark;
-                } else if (sourceFile instanceof PlainText) {
-                    sourceFileType = JavaScriptSourceFile.SourceFileType.PlainText;
-                } else {
-                    String extension = sourceFile.getSourcePath().toString().substring(sourceFile.getSourcePath().toString().lastIndexOf("."));
-                    if (jsExtensions.contains(extension)) {
+            public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext executionContext) {
+                if (!(tree instanceof SourceFile)) {
+                    return tree;
+                }
+                SourceFile s = (SourceFile) tree;
+                String extension = s.getSourcePath().toString().substring(s.getSourcePath().toString().lastIndexOf("."));
+                if (jsExtensions.contains(extension) || tsExtensions.contains(extension)) {
+                    JavaScriptSourceFile.SourceFileType sourceFileType = null;
+                    if (s instanceof Quark) {
+                        sourceFileType = JavaScriptSourceFile.SourceFileType.Quark;
+                    } else if (s instanceof PlainText) {
+                        sourceFileType = JavaScriptSourceFile.SourceFileType.PlainText;
+                    } else if (jsExtensions.contains(extension)) {
                         sourceFileType = JavaScriptSourceFile.SourceFileType.JavaScript;
                     } else if (tsExtensions.contains(extension)) {
                         sourceFileType = JavaScriptSourceFile.SourceFileType.TypeScript;
                     }
-                }
 
-                if (sourceFileType != null) {
-                    javaScriptSourceFile.insertRow(ctx, new JavaScriptSourceFile.Row(sourceFile.getSourcePath().toString(), sourceFileType));
-                    return SearchResult.found(sourceFile);
+                    if (sourceFileType != null) {
+                        javaScriptSourceFile.insertRow(executionContext, new JavaScriptSourceFile.Row(s.getSourcePath().toString(), sourceFileType));
+                        return SearchResult.found(s);
+                    }
                 }
-                return sourceFile;
+                return super.visit(tree, executionContext);
             }
         };
     }

@@ -2804,18 +2804,20 @@ public class TypeScriptParserVisitor {
             case DeclareKeyword:
             case DefaultKeyword:
             case ExportKeyword:
-            case FalseKeyword:
             case NumberKeyword:
             case NullKeyword:
             case ReadonlyKeyword:
             case StringKeyword:
             case SuperKeyword:
             case ThisKeyword:
-            case TrueKeyword:
             case UndefinedKeyword:
             case UnknownKeyword:
             case VoidKeyword:
                 j = visitKeyword(node);
+                break;
+            case FalseKeyword:
+            case TrueKeyword:
+                j = mapKeywordToLiteralType(node);
                 break;
             case ForOfStatement:
             case ForInStatement:
@@ -3140,6 +3142,25 @@ public class TypeScriptParserVisitor {
      */
     private J.Identifier convertToIdentifier(Space prefix, String simpleName) {
         return new J.Identifier(randomId(), prefix, Markers.EMPTY, simpleName, null, null);
+    }
+
+    private J.Literal mapKeywordToLiteralType(TSCNode node) {
+        Space prefix = sourceBefore(node.syntaxKind());
+        Object value;
+        String valueSource;
+        JavaType.Primitive primitiveType;
+        if (node.syntaxKind() == TSCSyntaxKind.TrueKeyword) {
+            value = true;
+            valueSource = "true";
+            primitiveType = JavaType.Primitive.Boolean;
+        } else if (node.syntaxKind() == TSCSyntaxKind.FalseKeyword) {
+            value = false;
+            valueSource = "false";
+            primitiveType = JavaType.Primitive.Boolean;
+        } else {
+            throw new IllegalArgumentException("Cannot convert node to literal type: " + node.syntaxKind());
+        }
+        return new J.Literal(randomId(), prefix, Markers.EMPTY, value, valueSource, null, primitiveType);
     }
 
     private <T extends J> JContainer<T> mapContainer(TSCSyntaxKind open, List<TSCNode> nodes, @Nullable TSCSyntaxKind delimiter, TSCSyntaxKind close, Function<TSCNode, T> visitFn) {

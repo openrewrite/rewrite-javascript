@@ -34,12 +34,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class JavaScriptParser implements Parser<JS.CompilationUnit> {
 
     @Override
-    public List<JS.CompilationUnit> parse(@NonNull String... sources) {
+    public Stream<JS.CompilationUnit> parse(@NonNull String... sources) {
         List<Input> inputs = new ArrayList<>(sources.length);
         for (int i = 0; i < sources.length; i++) {
             Path path = Paths.get("f" + i + ".js");
@@ -59,7 +60,7 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
     }
 
     @Override
-    public List<JS.CompilationUnit> parseInputs(Iterable<Input> inputs, @Nullable Path relativeTo, ExecutionContext ctx) {
+    public Stream<JS.CompilationUnit> parseInputs(Iterable<Input> sources, @Nullable Path relativeTo, ExecutionContext ctx) {
         ParsingExecutionContextView pctx = ParsingExecutionContextView.view(ctx);
         List<JS.CompilationUnit> outputs;
         try (TSCMapper mapper = new TSCMapper(relativeTo, pctx) {
@@ -70,13 +71,13 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
             }
         }) {
 
-            for (Input input : inputs) {
-                mapper.add(input);
+            for (Input source : sources) {
+                mapper.add(source);
             }
 
             outputs = mapper.build();
         }
-        return outputs;
+        return outputs.stream();
     }
 
     private final static List<String> EXTENSIONS = Collections.unmodifiableList(Arrays.asList(

@@ -4,8 +4,7 @@ plugins {
 group = "org.openrewrite"
 description = "Rewrite JavaScript"
 
-//val latest = rewriteRecipe.rewriteVersion.get()
-val latest = "latest.release"
+val latest = rewriteRecipe.rewriteVersion.get()
 dependencies {
     compileOnly("org.openrewrite:rewrite-test")
 

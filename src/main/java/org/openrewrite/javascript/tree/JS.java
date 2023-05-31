@@ -164,7 +164,7 @@ public interface JS extends J {
 
         @Override
         public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
-            return v.visitJavaSourceFile(this, p);
+            return v.visitCompilationUnit(this, p);
         }
 
         @Override

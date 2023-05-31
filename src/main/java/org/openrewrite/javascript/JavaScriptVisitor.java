@@ -40,11 +40,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
     }
 
     @Override
-    public J visitJavaSourceFile(JavaSourceFile cu, P p) {
-        return cu instanceof JS.CompilationUnit ? visitCompilationUnit((JS.CompilationUnit) cu, p) : cu;
-    }
-
-    @Override
     public J visitCompilationUnit(J.CompilationUnit cu, P p) {
         throw new UnsupportedOperationException("JS has a different structure for its compilation unit. See JS.CompilationUnit.");
     }

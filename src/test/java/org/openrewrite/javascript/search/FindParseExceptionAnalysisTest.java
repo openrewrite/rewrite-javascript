@@ -37,7 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.javascript.Assertions.javaScript;
 import static org.openrewrite.test.RewriteTest.toRecipe;
 
-@SuppressWarnings({"JSDuplicatedDeclaration", "JSUnusedLocalSymbols"})
+@SuppressWarnings({"JSDuplicatedDeclaration", "JSUnusedLocalSymbols", "JSUnresolvedVariable", "JSUndeclaredVariable"})
 public class FindParseExceptionAnalysisTest implements RewriteTest {
 
     private final JavaScriptPrinter<Integer> printer = new JavaScriptPrinter<>();
@@ -97,7 +97,11 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
               }
               """,
             spec -> spec.afterRecipe(cu -> {
-                JS.CompilationUnit after = (JS.CompilationUnit) new FindParseExceptionAnalysis(true, "someNodeType1").visit(Collections.singletonList(cu), new InMemoryExecutionContext()).get(0);
+                ExecutionContext ctx = new InMemoryExecutionContext();
+                FindParseExceptionAnalysis recipe = new FindParseExceptionAnalysis(true, "someNodeType1");
+                FindParseExceptionAnalysis.Accumulator acc = recipe.getInitialValue(ctx);
+                recipe.getScanner(acc).visit(cu, ctx);
+                JS.CompilationUnit after = (JS.CompilationUnit) acc.results.get(0);
                 PrintOutputCapture<Integer> output = new PrintOutputCapture<>(0);
                 printer.visit(after, output);
                 assertThat(output.getOut()).isEqualTo(StringUtils.trimIndent(
@@ -133,7 +137,11 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
               }
               """,
             spec -> spec.afterRecipe(cu -> {
-                JS.CompilationUnit after = (JS.CompilationUnit) new FindParseExceptionAnalysis(true, null).visit(Collections.singletonList(cu), new InMemoryExecutionContext()).get(0);
+                ExecutionContext ctx = new InMemoryExecutionContext();
+                FindParseExceptionAnalysis recipe = new FindParseExceptionAnalysis(true, null);
+                FindParseExceptionAnalysis.Accumulator acc = recipe.getInitialValue(ctx);
+                recipe.getScanner(acc).visit(cu, ctx);
+                JS.CompilationUnit after = (JS.CompilationUnit) acc.results.get(0);
                 PrintOutputCapture<Integer> output = new PrintOutputCapture<>(0);
                 printer.visit(after, output);
                 assertThat(output.getOut()).isEqualTo(StringUtils.trimIndent(
@@ -193,7 +201,11 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
               """,
             spec -> spec.afterRecipe(cu -> {
                 ExecutionContext ctx = new InMemoryExecutionContext();
-                new FindParseExceptionAnalysis(null, null).visit(Collections.singletonList(cu), ctx).get(0);
+                FindParseExceptionAnalysis recipe = new FindParseExceptionAnalysis(null, null);
+                FindParseExceptionAnalysis.Accumulator acc = recipe.getInitialValue(ctx);
+                recipe.getScanner(acc).visit(cu, ctx);
+                recipe.generate(acc, ctx);
+
                 Map<ParseExceptionAnalysis, List<ParseExceptionAnalysis.Row>> map = ctx.getMessage("org.openrewrite.dataTables");
                 assertThat(map).isNotNull();
 
@@ -224,12 +236,20 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
               }
               """,
             spec -> spec.afterRecipe(cu -> {
-                JS.CompilationUnit cu1 = cu.withId(Tree.randomId());
-                JS.CompilationUnit cu2 = cu.withId(Tree.randomId());
-                JS.CompilationUnit cu3 = cu.withId(Tree.randomId());
-
                 ExecutionContext ctx = new InMemoryExecutionContext();
-                new FindParseExceptionAnalysis(null, null).visit(Arrays.asList(cu1, cu2, cu3), ctx);
+                FindParseExceptionAnalysis recipe = new FindParseExceptionAnalysis(null, null);
+                FindParseExceptionAnalysis.Accumulator acc = recipe.getInitialValue(ctx);
+
+                JS.CompilationUnit cu1 = cu.withId(Tree.randomId());
+                recipe.getScanner(acc).visit(cu1, ctx);
+
+                JS.CompilationUnit cu2 = cu.withId(Tree.randomId());
+                recipe.getScanner(acc).visit(cu2, ctx);
+
+                JS.CompilationUnit cu3 = cu.withId(Tree.randomId());
+                recipe.getScanner(acc).visit(cu3, ctx);
+
+                recipe.generate(acc, ctx);
 
                 Map<ParseExceptionAnalysis, List<ParseExceptionAnalysis.Row>> map = ctx.getMessage("org.openrewrite.dataTables");
                 assertThat(map).isNotNull();
@@ -261,11 +281,19 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
               }
               """,
             spec -> spec.afterRecipe(cu -> {
-                JS.CompilationUnit jsx = cu.withSourcePath(Path.of(cu.getSourcePath().toString().replace(".js", ".jsx")));
-                JS.CompilationUnit ts = cu.withSourcePath(Path.of(cu.getSourcePath().toString().replace(".js", ".ts")));
-
                 ExecutionContext ctx = new InMemoryExecutionContext();
-                new FindParseExceptionAnalysis(null, null).visit(Arrays.asList(cu, jsx, ts), ctx);
+                FindParseExceptionAnalysis recipe = new FindParseExceptionAnalysis(null, null);
+                FindParseExceptionAnalysis.Accumulator acc = recipe.getInitialValue(ctx);
+
+                recipe.getScanner(acc).visit(cu, ctx);
+
+                JS.CompilationUnit jsx = cu.withSourcePath(Path.of(cu.getSourcePath().toString().replace(".js", ".jsx")));
+                recipe.getScanner(acc).visit(jsx, ctx);
+
+                JS.CompilationUnit ts = cu.withSourcePath(Path.of(cu.getSourcePath().toString().replace(".js", ".ts")));
+                recipe.getScanner(acc).visit(ts, ctx);
+
+                recipe.generate(acc, ctx);
 
                 Map<ParseExceptionAnalysis, List<ParseExceptionAnalysis.Row>> map = ctx.getMessage("org.openrewrite.dataTables");
                 assertThat(map).isNotNull();
