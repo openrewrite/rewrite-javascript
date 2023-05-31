@@ -26,11 +26,12 @@ import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.javascript.tree.JS;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.*;
 
-@SuppressWarnings("DataFlowIssue")
+@SuppressWarnings({"DataFlowIssue", "SimplifyStreamApiCallChains", "SameParameterValue"})
 class TypeScriptTypeMappingTest {
     private static final String goat = StringUtils.readFully(TypeScriptSignatureBuilderTest.class.getResourceAsStream("/TypeScriptTypeGoat.ts"));
     private static final JS.CompilationUnit cu = JavaScriptParser.builder().build()
@@ -42,7 +43,7 @@ class TypeScriptTypeMappingTest {
             .filter(it -> it instanceof J.ClassDeclaration)
             .map(it -> (J.ClassDeclaration) it)
             .map(J.ClassDeclaration::getType)
-            .toList();
+            .collect(Collectors.toList());
     private static final JavaType.Parameterized goatType = TypeUtils.asParameterized(classes.get(0));
 
     // TODO: add methods to access methods via name.
@@ -184,7 +185,7 @@ class TypeScriptTypeMappingTest {
 
         List<JavaType.Variable> enumConstants = clazz.getMembers().stream()
                 .filter(m -> m instanceof JavaType.Variable)
-                .toList();
+                .collect(Collectors.toList());
         assertThat(enumConstants).hasSize(2);
         assertThat(enumConstants.get(0).getName()).isEqualTo("FOO");
         assertThat(TypeUtils.asFullyQualified(enumConstants.get(0).getOwner()).getFullyQualifiedName()).isEqualTo("%s.EnumTypeA", sourcePath);
