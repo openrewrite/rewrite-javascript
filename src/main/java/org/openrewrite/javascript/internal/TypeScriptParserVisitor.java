@@ -38,10 +38,10 @@ import org.openrewrite.marker.Markers;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.tree.Space.EMPTY;
 
@@ -253,7 +253,7 @@ public class TypeScriptParserVisitor {
                             new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
                     return padRight(exp, it.getAfter(), it.getMarkers());
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
         JContainer<Expression> arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
 
         return new J.NewArray(
@@ -556,7 +556,7 @@ public class TypeScriptParserVisitor {
                                 new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
                         return padRight(exp, it.getAfter(), it.getMarkers());
                     })
-                    .collect(Collectors.toList());
+                    .collect(toList());
             typeParameters = JContainer.build(jContainer.getBefore(), typeParams, jContainer.getMarkers());
         }
 
@@ -575,7 +575,7 @@ public class TypeScriptParserVisitor {
                             new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
                         return padRight(exp, it.getAfter(), it.getMarkers());
                     })
-                    .collect(Collectors.toList());
+                    .collect(toList());
             arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
         }
 
@@ -725,6 +725,31 @@ public class TypeScriptParserVisitor {
                 (JavaType.FullyQualified) typeMapping.type(node));
     }
 
+    private J visitCaseClause(TSCNode node) {
+        TSCNode expression = node.getOptionalNodeProperty("expression");
+        List<TSCNode> statements = node.getNodeListProperty("statements");
+        return new J.Case(
+                randomId(),
+                whitespace(),
+                Markers.EMPTY,
+                J.Case.Type.Statement,
+                null,
+                JContainer.build(
+                        expression == null ? EMPTY : sourceBefore(TSCSyntaxKind.CaseKeyword),
+                        singletonList(JRightPadded.build((Expression) visitNode(expression))),
+                        Markers.EMPTY
+                ),
+                JContainer.build(
+                        sourceBefore(TSCSyntaxKind.ColonToken),
+                        statements.stream()
+                                .map(it -> maybeSemicolon((Statement) visitNode(it)))
+                                .collect(toList()),
+                        Markers.EMPTY
+                ),
+                null
+        );
+    }
+
     private J.Ternary visitConditionalExpression(TSCNode node) {
         return new J.Ternary(
                 randomId(),
@@ -811,7 +836,7 @@ public class TypeScriptParserVisitor {
                                 new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
                         return padRight(exp, it.getAfter(), it.getMarkers());
                     })
-                    .collect(Collectors.toList());
+                    .collect(toList());
             arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
         }
         return new J.Annotation(
@@ -820,6 +845,30 @@ public class TypeScriptParserVisitor {
                 Markers.EMPTY,
                 name,
                 arguments
+        );
+    }
+
+    private J visitDefaultClause(TSCNode node) {
+        List<TSCNode> statements = node.getNodeListProperty("statements");
+        return new J.Case(
+                randomId(),
+                whitespace(),
+                Markers.EMPTY,
+                J.Case.Type.Statement,
+                null,
+                JContainer.build(
+                        EMPTY,
+                        singletonList(JRightPadded.build(new J.Identifier(randomId(), sourceBefore(TSCSyntaxKind.DefaultKeyword), Markers.EMPTY, "default", null, null))),
+                        Markers.EMPTY
+                ),
+                JContainer.build(
+                        sourceBefore(TSCSyntaxKind.ColonToken),
+                        statements.stream()
+                                .map(it -> maybeSemicolon((Statement) visitNode(it)))
+                                .collect(toList()),
+                        Markers.EMPTY
+                ),
+                null
         );
     }
 
@@ -1568,7 +1617,7 @@ public class TypeScriptParserVisitor {
                             new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
                     return padRight(exp, it.getAfter(), it.getMarkers());
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
         JContainer<Expression> arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
         return new J.NewClass(
                 randomId(),
@@ -1618,7 +1667,7 @@ public class TypeScriptParserVisitor {
                                 new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
                         return padRight(exp, it.getAfter(), it.getMarkers());
                     })
-                    .collect(Collectors.toList());
+                    .collect(toList());
             arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
         }
 
@@ -2092,6 +2141,29 @@ public class TypeScriptParserVisitor {
                 tag,
                 elements,
                 typeMapping.type(node)
+        );
+    }
+
+    private J visitSwitchStatement(TSCNode node) {
+        Space prefix = sourceBefore(TSCSyntaxKind.SwitchKeyword);
+
+        Space before = sourceBefore(TSCSyntaxKind.OpenParenToken);
+        J j = visitNode(node.getNodeProperty("expression"));
+        J.ControlParentheses<Expression> selector = new J.ControlParentheses<>(
+                randomId(),
+                before,
+                Markers.EMPTY,
+                padRight(!(j instanceof Expression) && j instanceof Statement ?
+                        new JS.StatementExpression(randomId(), (Statement) j) : (Expression) j, sourceBefore(TSCSyntaxKind.CloseParenToken))
+        );
+        TSCNode caseBlock = node.getNodeProperty("caseBlock");
+        return new J.Switch(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                selector,
+                new J.Block(randomId(), sourceBefore(TSCSyntaxKind.OpenBraceToken), Markers.EMPTY, new JRightPadded<>(false, EMPTY, Markers.EMPTY),
+                        convertAll(caseBlock.getNodeListProperty("clauses"), noDelim, noDelim), sourceBefore(TSCSyntaxKind.CloseBraceToken))
         );
     }
 
@@ -2816,6 +2888,9 @@ public class TypeScriptParserVisitor {
             case CallExpression:
                 j = visitCallExpression(node);
                 break;
+            case CaseClause:
+                j = visitCaseClause(node);
+                break;
             case ConditionalExpression:
                 j = visitConditionalExpression(node);
                 break;
@@ -2827,6 +2902,9 @@ public class TypeScriptParserVisitor {
                 break;
             case Decorator:
                 j = visitDecorator(node);
+                break;
+            case DefaultClause:
+                j = visitDefaultClause(node);
                 break;
             case DoStatement:
                 j = visitDoStatement(node);
@@ -2908,6 +2986,9 @@ public class TypeScriptParserVisitor {
                 break;
             case StringLiteral:
                 j = visitStringLiteral(node);
+                break;
+            case SwitchStatement:
+                j = visitSwitchStatement(node);
                 break;
             case ThrowStatement:
                 j = visitThrowStatement(node);
