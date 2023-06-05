@@ -19,17 +19,17 @@ name: org.openrewrite.javascript.StaticAnalysis
 displayName: JavaScript Common static analysis issues
 description: Static analysis fixes for JavaScript sources.
 recipeList:
-  - org.openrewrite.java.cleanup.BooleanChecksNotInverted
-  - org.openrewrite.java.cleanup.CatchClauseOnlyRethrows
-  - org.openrewrite.java.cleanup.DefaultComesLast
-  - org.openrewrite.java.cleanup.EmptyBlock
-  - org.openrewrite.java.cleanup.EqualsAvoidsNull
-  - org.openrewrite.java.cleanup.FallThrough
-  - org.openrewrite.java.cleanup.InlineVariable
-  - org.openrewrite.java.cleanup.MethodNameCasing
-  - org.openrewrite.java.cleanup.MinimumSwitchCases
-  - org.openrewrite.java.cleanup.MultipleVariableDeclarations
-  - org.openrewrite.java.cleanup.NeedBraces
-  - org.openrewrite.java.cleanup.RemoveExtraSemicolons
-  - org.openrewrite.java.cleanup.SimplifyBooleanExpression
-  - org.openrewrite.java.cleanup.SimplifyBooleanReturn
+  - org.openrewrite.staticanalysis.BooleanChecksNotInverted
+  - org.openrewrite.staticanalysis.CatchClauseOnlyRethrows
+  - org.openrewrite.staticanalysis.DefaultComesLast
+  - org.openrewrite.staticanalysis.EmptyBlock
+  - org.openrewrite.staticanalysis.EqualsAvoidsNull
+  - org.openrewrite.staticanalysis.FallThrough
+  - org.openrewrite.staticanalysis.InlineVariable
+  - org.openrewrite.staticanalysis.MethodNameCasing
+  - org.openrewrite.staticanalysis.MinimumSwitchCases
+  - org.openrewrite.staticanalysis.MultipleVariableDeclarations
+  - org.openrewrite.staticanalysis.NeedBraces
+  - org.openrewrite.staticanalysis.RemoveExtraSemicolons
+  - org.openrewrite.staticanalysis.SimplifyBooleanExpression
+  - org.openrewrite.staticanalysis.SimplifyBooleanReturn
