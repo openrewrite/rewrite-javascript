@@ -31,5 +31,3 @@ recipeList:
   - org.openrewrite.staticanalysis.MultipleVariableDeclarations
   - org.openrewrite.staticanalysis.NeedBraces
   - org.openrewrite.staticanalysis.RemoveExtraSemicolons
-  - org.openrewrite.staticanalysis.SimplifyBooleanExpression
-  - org.openrewrite.staticanalysis.SimplifyBooleanReturn
