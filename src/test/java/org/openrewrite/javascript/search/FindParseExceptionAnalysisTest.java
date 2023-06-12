@@ -26,6 +26,7 @@ import org.openrewrite.javascript.internal.JavaScriptPrinter;
 import org.openrewrite.javascript.table.ParseExceptionAnalysis;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.scheduling.WatchableExecutionContext;
 import org.openrewrite.test.AdHocRecipe;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -58,7 +59,10 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
                 count++;
                 final ParseExceptionResult result = new ParseExceptionResult(
                   UUID.randomUUID(),
-                  ParseExceptionAnalysis.getAnalysisMessage("someNodeType" + count)
+                  "javascript", // TODO
+                  "UnknownElement", // TODO
+                  ParseExceptionAnalysis.getAnalysisMessage("someNodeType" + count),
+                  null // TODO
                 );
                 PrintOutputCapture<Integer> output = new PrintOutputCapture<>(0);
                 printer.visit(s, output);
@@ -200,7 +204,8 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
               }
               """,
             spec -> spec.afterRecipe(cu -> {
-                ExecutionContext ctx = new InMemoryExecutionContext();
+                WatchableExecutionContext ctx = new WatchableExecutionContext(new InMemoryExecutionContext());
+                ctx.putCycle(0);
                 FindParseExceptionAnalysis recipe = new FindParseExceptionAnalysis(null, null);
                 FindParseExceptionAnalysis.Accumulator acc = recipe.getInitialValue(ctx);
                 recipe.getScanner(acc).visit(cu, ctx);
@@ -236,7 +241,8 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
               }
               """,
             spec -> spec.afterRecipe(cu -> {
-                ExecutionContext ctx = new InMemoryExecutionContext();
+                WatchableExecutionContext ctx = new WatchableExecutionContext(new InMemoryExecutionContext());
+                ctx.putCycle(0);
                 FindParseExceptionAnalysis recipe = new FindParseExceptionAnalysis(null, null);
                 FindParseExceptionAnalysis.Accumulator acc = recipe.getInitialValue(ctx);
 
@@ -281,7 +287,8 @@ public class FindParseExceptionAnalysisTest implements RewriteTest {
               }
               """,
             spec -> spec.afterRecipe(cu -> {
-                ExecutionContext ctx = new InMemoryExecutionContext();
+                WatchableExecutionContext ctx = new WatchableExecutionContext(new InMemoryExecutionContext());
+                ctx.putCycle(0);
                 FindParseExceptionAnalysis recipe = new FindParseExceptionAnalysis(null, null);
                 FindParseExceptionAnalysis.Accumulator acc = recipe.getInitialValue(ctx);
 

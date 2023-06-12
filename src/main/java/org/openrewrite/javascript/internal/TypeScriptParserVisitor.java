@@ -24,6 +24,7 @@ import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
+import org.openrewrite.javascript.JavaScriptParser;
 import org.openrewrite.javascript.TypeScriptTypeMapping;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCNodeList;
@@ -77,9 +78,7 @@ public class TypeScriptParserVisitor {
             } catch (Throwable t) {
                 cursor(saveCursor);
                 JS.UnknownElement element = unknownElement(child);
-                ParseExceptionResult parseExceptionResult = new ParseExceptionResult(
-                        UUID.randomUUID(),
-                        ExceptionUtils.sanitizeStackTrace(t, TypeScriptParserVisitor.class));
+                ParseExceptionResult parseExceptionResult = ParseExceptionResult.build(JavaScriptParser.class, t); // TODO
                 element = element.withSource(element.getSource().withMarkers(Markers.EMPTY.withMarkers(singletonList(parseExceptionResult))));
                 visited = element;
                 if (markers == null) {
@@ -3424,11 +3423,15 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         String text = node.getText();
         cursor(getCursor() + text.length());
+
         ParseExceptionResult result = new ParseExceptionResult(
                 randomId(),
+                "TypeScript", // TODO
+                "UnknownElement", // TODO
                 ParseExceptionAnalysis.getAnalysisMessage(node.syntaxKind().name(),
                         getCursor() + 20 < source.getText().length() ? source.getText().substring(getCursor(), getCursor() + 20) :
-                                source.getText().substring(getCursor()))
+                                source.getText().substring(getCursor())),
+                "TSCNode" // TODO
         );
         return new JS.UnknownElement(
                 randomId(),

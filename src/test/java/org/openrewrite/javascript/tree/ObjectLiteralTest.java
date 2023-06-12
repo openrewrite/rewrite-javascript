@@ -21,7 +21,7 @@ import org.junitpioneer.jupiter.ExpectedToFail;
 @SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS", "TypeScriptCheckImport"})
 class ObjectLiteralTest extends ParserTest {
 
-    @ExpectedToFail
+    //@ExpectedToFail
     @Test
     void empty() {
         rewriteRun(
