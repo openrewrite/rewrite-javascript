@@ -36,6 +36,7 @@ class TypeScriptTypeMappingTest {
     private static final String goat = StringUtils.readFully(TypeScriptSignatureBuilderTest.class.getResourceAsStream("/TypeScriptTypeGoat.ts"));
     private static final JS.CompilationUnit cu = JavaScriptParser.builder().build()
             .parse(new InMemoryExecutionContext(), goat)
+            .map(s -> (JS.CompilationUnit) s)
             .collect(Collectors.toList())
             .get(0);
     private static final List<JavaType.FullyQualified> classes = cu

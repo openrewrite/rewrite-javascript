@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
+import org.openrewrite.SourceFile;
 import org.openrewrite.internal.lang.NonNull;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.javascript.internal.TSCMapper;
@@ -37,10 +38,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class JavaScriptParser implements Parser<JS.CompilationUnit> {
+public class JavaScriptParser implements Parser {
 
     @Override
-    public Stream<JS.CompilationUnit> parse(@NonNull String... sources) {
+    public Stream<SourceFile> parse(@NonNull String... sources) {
         List<Input> inputs = new ArrayList<>(sources.length);
         for (int i = 0; i < sources.length; i++) {
             Path path = Paths.get("f" + i + ".js");
@@ -60,17 +61,15 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
     }
 
     @Override
-    public Stream<JS.CompilationUnit> parseInputs(Iterable<Input> sources, @Nullable Path relativeTo, ExecutionContext ctx) {
+    public Stream<SourceFile> parseInputs(Iterable<Input> sources, @Nullable Path relativeTo, ExecutionContext ctx) {
         ParsingExecutionContextView pctx = ParsingExecutionContextView.view(ctx);
-        List<JS.CompilationUnit> outputs;
+        List<SourceFile> outputs;
         try (TSCMapper mapper = new TSCMapper(relativeTo, pctx) {
             @Override
             protected void onParseFailure(Input input, Throwable error) {
-                pctx.parseFailure(input, relativeTo, JavaScriptParser.this, error);
                 ctx.getOnError().accept(error);
             }
         }) {
-
             for (Input source : sources) {
                 mapper.add(source);
             }

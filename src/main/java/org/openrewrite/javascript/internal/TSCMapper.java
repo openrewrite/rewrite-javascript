@@ -17,6 +17,7 @@ package org.openrewrite.javascript.internal;
 
 import lombok.Value;
 import org.openrewrite.Parser;
+import org.openrewrite.SourceFile;
 import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
@@ -71,8 +72,8 @@ public abstract class TSCMapper implements AutoCloseable {
 
     protected abstract void onParseFailure(Parser.Input input, Throwable error);
 
-    public List<JS.CompilationUnit> build() {
-        List<JS.CompilationUnit> compilationUnits = new ArrayList<>(sourcesByRelativePath.size());
+    public List<SourceFile> build() {
+        List<SourceFile> compilationUnits = new ArrayList<>(sourcesByRelativePath.size());
 
         Map<Path, String> sourceTextsForTSC = new LinkedHashMap<>();
         this.sourcesByRelativePath.forEach((relativePath, sourceText) -> {
