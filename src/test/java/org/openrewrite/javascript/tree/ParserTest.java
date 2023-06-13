@@ -86,8 +86,8 @@ public class ParserTest implements RewriteTest {
             new JavaScriptVisitor<Integer>() {
                 @Override
                 public @Nullable J preVisit(J tree, Integer integer) {
-                    if (tree instanceof JS.UnknownElement) {
-                        ((JS.UnknownElement) tree).getSource().getMarkers().findFirst(ParseExceptionResult.class)
+                    if (tree instanceof J.Unknown) {
+                        ((J.Unknown) tree).getSource().getMarkers().findFirst(ParseExceptionResult.class)
                           .ifPresent(result -> assertThat(result.getMessage()).isEqualTo(""));
                     }
                     return super.preVisit(tree, integer);
