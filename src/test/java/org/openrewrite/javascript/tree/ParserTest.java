@@ -70,7 +70,7 @@ public class ParserTest implements RewriteTest {
     private static void acceptSpec(Consumer<SourceSpec<JS.CompilationUnit>> spec, SourceSpec<JS.CompilationUnit> javaScript) {
         Consumer<JS.CompilationUnit> userSuppliedAfterRecipe = javaScript.getAfterRecipe();
         javaScript.afterRecipe(userSuppliedAfterRecipe::accept);
-        spec.andThen(isFullyParsed()).accept(javaScript);
+        isFullyParsed().andThen(spec).accept(javaScript);
     }
 
     public static Consumer<SourceSpec<JS.CompilationUnit>> isFullyParsed() {
