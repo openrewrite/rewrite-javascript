@@ -200,7 +200,7 @@ public class TypeScriptParserVisitor {
                 Markers.EMPTY,
                 parenthesized,
                 paramNodes.isEmpty() ? singletonList(padRight(new J.Empty(randomId(), EMPTY, Markers.EMPTY), parenthesized ? sourceBefore(TSCSyntaxKind.CloseParenToken) : EMPTY)) :
-                        convertAll(node.getNodeListProperty("parameters"), commaDelim, parenthesized ? t -> sourceBefore(TSCSyntaxKind.CloseParenToken) : noDelim)
+                        convertAll(node.getNodeListProperty("parameters"), commaDelim, parenthesized ? t -> sourceBefore(TSCSyntaxKind.CloseParenToken) : noDelim, true)
         );
 
         TSCNode typeNode = node.getOptionalNodeProperty("type");
@@ -2165,7 +2165,7 @@ public class TypeScriptParserVisitor {
                 Markers.EMPTY,
                 selector,
                 new J.Block(randomId(), sourceBefore(TSCSyntaxKind.OpenBraceToken), Markers.EMPTY, new JRightPadded<>(false, EMPTY, Markers.EMPTY),
-                        convertAll(caseBlock.getNodeListProperty("clauses"), noDelim, noDelim), sourceBefore(TSCSyntaxKind.CloseBraceToken))
+                        convertAll(caseBlock.getNodeListProperty("clauses"), noDelim, noDelim, true), sourceBefore(TSCSyntaxKind.CloseBraceToken))
         );
     }
 
@@ -2318,7 +2318,7 @@ public class TypeScriptParserVisitor {
                         sourceBefore(TSCSyntaxKind.ExtendsKeyword),
                         convertAll(node.getNodeProperty("constraint").syntaxKind() == TSCSyntaxKind.IntersectionType ?
                                 node.getNodeProperty("constraint").getNodeListProperty("types") :
-                                singletonList(node.getNodeProperty("constraint")), t -> sourceBefore(TSCSyntaxKind.AmpersandToken), noDelim),
+                                singletonList(node.getNodeProperty("constraint")), t -> sourceBefore(TSCSyntaxKind.AmpersandToken), noDelim, true),
                         Markers.EMPTY);
 
         return new J.TypeParameter(
@@ -2431,7 +2431,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 Markers.EMPTY,
-                convertAll(node.getNodeListProperty("types"), t -> sourceBefore(TSCSyntaxKind.BarToken), t -> EMPTY),
+                convertAll(node.getNodeListProperty("types"), t -> sourceBefore(TSCSyntaxKind.BarToken), t -> EMPTY, true),
                 TsType.Union
         );
     }
@@ -3122,6 +3122,13 @@ public class TypeScriptParserVisitor {
     private <J2 extends J> List<JRightPadded<J2>> convertAll(List<TSCNode> elements,
                                                              Function<TSCNode, Space> innerSuffix,
                                                              Function<TSCNode, Space> suffix) {
+        return convertAll(elements, innerSuffix, suffix, false);
+    }
+
+    private <J2 extends J> List<JRightPadded<J2>> convertAll(List<TSCNode> elements,
+                                                             Function<TSCNode, Space> innerSuffix,
+                                                             Function<TSCNode, Space> suffix,
+                                                             boolean enableParseErrorRecovery) {
 
         if (elements.isEmpty()) {
             return emptyList();
@@ -3136,6 +3143,10 @@ public class TypeScriptParserVisitor {
                 //noinspection unchecked
                 j = (J2) visitNode(element);
             } catch (Exception e) {
+                if (!enableParseErrorRecovery) {
+                    throw new JavaScriptParsingException("Unable to parse JavaScript", e);
+                }
+
                 cursor(saveCursor);
                 Space prefix = whitespace();
                 String text = element.getText();
