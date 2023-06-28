@@ -363,6 +363,77 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
+        public J visitBinary(J.Binary binary, PrintOutputCapture<P> p) {
+            String keyword = "";
+            switch (binary.getOperator()) {
+                case Addition:
+                    keyword = "+";
+                    break;
+                case Subtraction:
+                    keyword = "-";
+                    break;
+                case Multiplication:
+                    keyword = "*";
+                    break;
+                case Division:
+                    keyword = "/";
+                    break;
+                case Modulo:
+                    keyword = "%";
+                    break;
+                case LessThan:
+                    keyword = "<";
+                    break;
+                case GreaterThan:
+                    keyword = ">";
+                    break;
+                case LessThanOrEqual:
+                    keyword = "<=";
+                    break;
+                case GreaterThanOrEqual:
+                    keyword = ">=";
+                    break;
+                case Equal:
+                    keyword = "==";
+                    break;
+                case NotEqual:
+                    keyword = "!=";
+                    break;
+                case BitAnd:
+                    keyword = "&";
+                    break;
+                case BitOr:
+                    keyword = "|";
+                    break;
+                case BitXor:
+                    keyword = "^";
+                    break;
+                case LeftShift:
+                    keyword = "<<";
+                    break;
+                case RightShift:
+                    keyword = ">>";
+                    break;
+                case UnsignedRightShift:
+                    keyword = ">>>";
+                    break;
+                case Or:
+                    keyword = binary.getMarkers().findFirst(Comma.class).isPresent() ? "," : "||";
+                    break;
+                case And:
+                    keyword = "&&";
+                    break;
+            }
+            beforeSyntax(binary, Space.Location.BINARY_PREFIX, p);
+            visit(binary.getLeft(), p);
+            visitSpace(binary.getPadding().getOperator().getBefore(), Space.Location.BINARY_OPERATOR, p);
+            p.append(keyword);
+            visit(binary.getRight(), p);
+            afterSyntax(binary, p);
+            return binary;
+        }
+
+        @Override
         public J visitFieldAccess(J.FieldAccess fieldAccess, PrintOutputCapture<P> p) {
             beforeSyntax(fieldAccess, Space.Location.FIELD_ACCESS_PREFIX, p);
             visit(fieldAccess.getTarget(), p);

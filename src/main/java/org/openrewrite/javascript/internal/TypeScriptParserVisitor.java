@@ -282,6 +282,7 @@ public class TypeScriptParserVisitor {
 
     private J.Binary visitBinary(TSCNode node) {
         Space prefix = whitespace();
+        Markers markers = Markers.EMPTY;
         Expression left = (Expression) visitNode(node.getNodeProperty("left"));
 
         Space opPrefix = whitespace();
@@ -314,6 +315,11 @@ public class TypeScriptParserVisitor {
             case AmpersandAmpersandToken:
                 consumeToken(TSCSyntaxKind.AmpersandAmpersandToken);
                 op = padLeft(opPrefix, J.Binary.Type.And);
+                break;
+            case CommaToken:
+                markers = markers.addIfAbsent(new Comma(randomId()));
+                consumeToken(TSCSyntaxKind.CommaToken);
+                op = padLeft(opPrefix, J.Binary.Type.Or);
                 break;
             case BarBarToken:
                 consumeToken(TSCSyntaxKind.BarBarToken);
@@ -379,7 +385,7 @@ public class TypeScriptParserVisitor {
         return new J.Binary(
                 randomId(),
                 prefix,
-                Markers.EMPTY,
+                markers,
                 left,
                 op,
                 right,
@@ -405,6 +411,7 @@ public class TypeScriptParserVisitor {
             case BarToken:
             case BarBarToken:
             case CaretToken:
+            case CommaToken:
             case EqualsEqualsToken:
             case ExclamationEqualsToken:
             case GreaterThanToken:
