@@ -206,10 +206,7 @@ public class TypeScriptParserVisitor {
         TSCNode typeNode = node.getOptionalNodeProperty("type");
         TypeTree returnTypeExpression = null;
         if (typeNode != null) {
-            Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
-            if (beforeColon != EMPTY) {
-                markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
-            }
+            markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), sourceBefore(TSCSyntaxKind.ColonToken)));
             returnTypeExpression = (TypeTree) visitNode(typeNode);
         }
 
@@ -1150,10 +1147,7 @@ public class TypeScriptParserVisitor {
         TSCNode typeNode = node.getOptionalNodeProperty("type");
         TypeTree returnTypeExpression = null;
         if (typeNode != null) {
-            Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
-            if (beforeColon != EMPTY) {
-                markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
-            }
+            markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), sourceBefore(TSCSyntaxKind.ColonToken)));
             returnTypeExpression = (TypeTree) visitNode(typeNode);
         }
 

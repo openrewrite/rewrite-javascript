@@ -15,7 +15,9 @@
  */
 package org.openrewrite.javascript;
 
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Statement;
 import org.openrewrite.javascript.tree.JS;
 
 public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
@@ -24,6 +26,81 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     @Override
     public JS.CompilationUnit visitCompilationUnit(JS.CompilationUnit cu, P p) {
         return (JS.CompilationUnit) super.visitCompilationUnit(cu, p);
+    }
+
+    @Override
+    public JS.Alias visitAlias(JS.Alias alias, P p) {
+        return (JS.Alias) super.visitAlias(alias, p);
+    }
+
+    @Override
+    public JS.ArrowFunction visitArrowFunction(JS.ArrowFunction arrowFunction, P p) {
+        return (JS.ArrowFunction) super.visitArrowFunction(arrowFunction, p);
+    }
+
+    @Override
+    public JS.ObjectBindingDeclarations.Binding visitBinding(JS.ObjectBindingDeclarations.Binding binding, P p) {
+        return (JS.ObjectBindingDeclarations.Binding) super.visitBinding(binding, p);
+    }
+
+    @Override
+    public JS.DefaultType visitDefaultType(JS.DefaultType defaultType, P p) {
+        return (JS.DefaultType) super.visitDefaultType(defaultType, p);
+    }
+
+    @Override
+    public JS.Export visitExport(JS.Export export, P p) {
+        return (JS.Export) super.visitExport(export, p);
+    }
+
+    @Override
+    public JS.FunctionType visitFunctionType(JS.FunctionType functionType, P p) {
+        return (JS.FunctionType) super.visitFunctionType(functionType, p);
+    }
+
+    @Override
+    public JS.JsBinary visitJsBinary(JS.JsBinary binary, P p) {
+        return (JS.JsBinary) super.visitJsBinary(binary, p);
+    }
+
+    @Override
+    public JS.JsImport visitJsImport(JS.JsImport jsImport, P p) {
+        return (JS.JsImport) super.visitJsImport(jsImport, p);
+    }
+
+    @Override
+    public JS.JsOperator visitJsOperator(JS.JsOperator operator, P p) {
+        return (JS.JsOperator) super.visitJsOperator(operator, p);
+    }
+
+    @Override
+    public JS.ObjectBindingDeclarations visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, P p) {
+        return (JS.ObjectBindingDeclarations) super.visitObjectBindingDeclarations(objectBindingDeclarations, p);
+    }
+
+    @Override
+    public JS.TemplateExpression visitTemplateExpression(JS.TemplateExpression templateExpression, P p) {
+        return (JS.TemplateExpression) super.visitTemplateExpression(templateExpression, p);
+    }
+
+    @Override
+    public JS.TemplateExpression.Value visitTemplateExpressionValue(JS.TemplateExpression.Value value, P p) {
+        return (JS.TemplateExpression.Value) super.visitTemplateExpressionValue(value, p);
+    }
+
+    @Override
+    public JS.TypeDeclaration visitTypeDeclaration(JS.TypeDeclaration typeDeclaration, P p) {
+        return (JS.TypeDeclaration) super.visitTypeDeclaration(typeDeclaration, p);
+    }
+
+    @Override
+    public JS.TypeOperator visitTypeOperator(JS.TypeOperator typeOperator, P p) {
+        return (JS.TypeOperator) super.visitTypeOperator(typeOperator, p);
+    }
+
+    @Override
+    public JS.Union visitUnion(JS.Union union, P p) {
+        return (JS.Union) super.visitUnion(union, p);
     }
 
     // J overrides.
