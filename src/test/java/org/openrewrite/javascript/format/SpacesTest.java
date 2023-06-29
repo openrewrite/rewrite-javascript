@@ -68,23 +68,6 @@ class SpacesTest implements RewriteTest {
     }
 
     @Test
-    void beforeParensFunctionDeclarationTrueWithComment() {
-        rewriteRun(
-          spaces(style -> style.withBeforeParentheses(style.getBeforeParentheses().withFunctionDeclarationParentheses(true))),
-          javaScript(
-            """
-              function method1    /*comment*/() {
-              }
-              """,
-            """
-              function method1    /*comment*/ () {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     void beforeParensFunctionDeclarationFalse() {
         rewriteRun(
           spaces(style -> style.withBeforeParentheses(style.getBeforeParentheses().withFunctionDeclarationParentheses(false))),
@@ -103,6 +86,23 @@ class SpacesTest implements RewriteTest {
               function method2() {
               }
               function method3() {
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void beforeParensFunctionDeclarationTrueWithComment() {
+        rewriteRun(
+          spaces(style -> style.withBeforeParentheses(style.getBeforeParentheses().withFunctionDeclarationParentheses(true))),
+          javaScript(
+            """
+              function method1    /*comment*/() {
+              }
+              """,
+            """
+              function method1    /*comment*/ () {
               }
               """
           )
@@ -187,23 +187,6 @@ class SpacesTest implements RewriteTest {
     }
 
     @Test
-    void beforeLeftBraceFunctionLeftBraceFalse() {
-        rewriteRun(
-          spaces(style -> style.withBeforeLeftBrace(style.getBeforeLeftBrace().withFunctionLeftBrace(false))),
-          javaScript(
-            """
-              function foo() {
-              }
-              """,
-            """
-              function foo(){
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     void beforeLeftBraceFunctionLeftBraceTrue() {
         rewriteRun(
           spaces(style -> style.withBeforeLeftBrace(style.getBeforeLeftBrace().withFunctionLeftBrace(true))),
@@ -214,6 +197,23 @@ class SpacesTest implements RewriteTest {
               """,
             """
               function foo() {
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void beforeLeftBraceFunctionLeftBraceFalse() {
+        rewriteRun(
+          spaces(style -> style.withBeforeLeftBrace(style.getBeforeLeftBrace().withFunctionLeftBrace(false))),
+          javaScript(
+            """
+              function foo() {
+              }
+              """,
+            """
+              function foo(){
               }
               """
           )
@@ -235,6 +235,23 @@ class SpacesTest implements RewriteTest {
               function foo( x: number ) {
               }
               function bar( y: number ) {
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void withinFunctionDeclarationParenthesesFalse() {
+        rewriteRun(
+          spaces(style -> style.withWithin(style.getWithin().withFunctionDeclarationParentheses(false))),
+          javaScript(
+            """
+              function foo( x: number ) {
+              }
+              """,
+            """
+              function foo(x: number) {
               }
               """
           )
@@ -294,23 +311,6 @@ class SpacesTest implements RewriteTest {
               function foo(
                   x: number
               ) {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void withinFunctionDeclarationParenthesesFalse() {
-        rewriteRun(
-          spaces(style -> style.withWithin(style.getWithin().withFunctionDeclarationParentheses(false))),
-          javaScript(
-            """
-              function foo( x: number ) {
-              }
-              """,
-            """
-              function foo(x: number) {
               }
               """
           )
@@ -398,23 +398,6 @@ class SpacesTest implements RewriteTest {
     }
 
     @Test
-    void otherAfterCommaFalseFunctionDeclArgs() {
-        rewriteRun(
-          spaces(style -> style.withOther(style.getOther().withAfterComma(false))),
-          javaScript(
-            """
-              function bar(x: number, y: number) {
-              }
-              """,
-            """
-              function bar(x: number,y: number) {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     void otherAfterCommaTrueFunctionDeclArgs() {
         rewriteRun(
           spaces(style -> style.withOther(style.getOther().withAfterComma(true))),
@@ -425,6 +408,23 @@ class SpacesTest implements RewriteTest {
               """,
             """
               function bar(x: number, y: number) {
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void otherAfterCommaFalseFunctionDeclArgs() {
+        rewriteRun(
+          spaces(style -> style.withOther(style.getOther().withAfterComma(false))),
+          javaScript(
+            """
+              function bar(x: number, y: number) {
+              }
+              """,
+            """
+              function bar(x: number,y: number) {
               }
               """
           )
@@ -478,29 +478,6 @@ class SpacesTest implements RewriteTest {
     }
 
     @Test
-    void otherAfterCommaFalseFunctionInvocationParams() {
-        rewriteRun(
-          spaces(style -> style.withOther(style.getOther().withAfterComma(false))),
-          javaScript(
-            """
-              function foo() {
-                  bar(1, 2);
-              }
-              function bar(x: number, y: number) {
-              }
-              """,
-            """
-              function foo() {
-                  bar(1,2);
-              }
-              function bar(x: number,y: number) {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     void otherAfterCommaTrueFunctionInvocationParams() {
         rewriteRun(
           spaces(style -> style.withOther(style.getOther().withAfterComma(true))),
@@ -517,6 +494,29 @@ class SpacesTest implements RewriteTest {
                   bar(1, 2);
               }
               function bar(x: number, y: number) {
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void otherAfterCommaFalseFunctionInvocationParams() {
+        rewriteRun(
+          spaces(style -> style.withOther(style.getOther().withAfterComma(false))),
+          javaScript(
+            """
+              function foo() {
+                  bar(1, 2);
+              }
+              function bar(x: number, y: number) {
+              }
+              """,
+            """
+              function foo() {
+                  bar(1,2);
+              }
+              function bar(x: number,y: number) {
               }
               """
           )
@@ -594,41 +594,6 @@ class SpacesTest implements RewriteTest {
     }
 
     @Test
-    void otherAfterCommaFalseNewClassArgs() {
-        rewriteRun(
-          spaces(style -> style.withOther(style.getOther().withAfterComma(false))),
-          javaScript(
-            """
-              function foo() {
-                  new A("hello", 1);
-              }
-              class A {
-                  private s: string
-                  private i: number
-                  constructor(s: string, i: number) {
-                      this.s = s
-                      this.i = i
-                  }
-              }
-              """,
-            """
-              function foo() {
-                  new A("hello",1);
-              }
-              class A {
-                  private s: string
-                  private i: number
-                  constructor(s: string,i: number) {
-                      this.s = s
-                      this.i = i
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     void otherAfterCommaTrueNewClassArgs() {
         rewriteRun(
           spaces(style -> style.withOther(style.getOther().withAfterComma(true))),
@@ -664,18 +629,34 @@ class SpacesTest implements RewriteTest {
     }
 
     @Test
-    void otherBeforeTypeReferenceColonFalse() {
+    void otherAfterCommaFalseNewClassArgs() {
         rewriteRun(
-          spaces(style -> style.withOther(style.getOther().withBeforeTypeReferenceColon(false))),
+          spaces(style -> style.withOther(style.getOther().withAfterComma(false))),
           javaScript(
             """
-              function foo() : boolean {
-                  return true
+              function foo() {
+                  new A("hello", 1);
+              }
+              class A {
+                  private s: string
+                  private i: number
+                  constructor(s: string, i: number) {
+                      this.s = s
+                      this.i = i
+                  }
               }
               """,
             """
-              function foo(): boolean {
-                  return true
+              function foo() {
+                  new A("hello",1);
+              }
+              class A {
+                  private s: string
+                  private i: number
+                  constructor(s: string,i: number) {
+                      this.s = s
+                      this.i = i
+                  }
               }
               """
           )
@@ -702,17 +683,17 @@ class SpacesTest implements RewriteTest {
     }
 
     @Test
-    void otherAfterTypeReferenceColonFalse() {
+    void otherBeforeTypeReferenceColonFalse() {
         rewriteRun(
-          spaces(style -> style.withOther(style.getOther().withAfterTypeReferenceColon(false))),
+          spaces(style -> style.withOther(style.getOther().withBeforeTypeReferenceColon(false))),
           javaScript(
             """
-              function foo(): boolean {
+              function foo() : boolean {
                   return true
               }
               """,
             """
-              function foo():boolean {
+              function foo(): boolean {
                   return true
               }
               """
@@ -740,16 +721,18 @@ class SpacesTest implements RewriteTest {
     }
 
     @Test
-    void otherBeforePropertyNameValueColonFalse() {
+    void otherAfterTypeReferenceColonFalse() {
         rewriteRun(
-          spaces(style -> style.withOther(style.getOther().withBeforePropertyNameValueSeparator(false))),
+          spaces(style -> style.withOther(style.getOther().withAfterTypeReferenceColon(false))),
           javaScript(
             """
-              function foo(x : boolean) {
+              function foo(): boolean {
+                  return true
               }
               """,
             """
-              function foo(x: boolean) {
+              function foo():boolean {
+                  return true
               }
               """
           )
@@ -774,16 +757,16 @@ class SpacesTest implements RewriteTest {
     }
 
     @Test
-    void otherAfterPropertyNameValueColonFalse() {
+    void otherBeforePropertyNameValueColonFalse() {
         rewriteRun(
-          spaces(style -> style.withOther(style.getOther().withAfterPropertyNameValueSeparator(false))),
+          spaces(style -> style.withOther(style.getOther().withBeforePropertyNameValueSeparator(false))),
           javaScript(
             """
-              function foo(x: boolean) {
+              function foo(x : boolean) {
               }
               """,
             """
-              function foo(x:boolean) {
+              function foo(x: boolean) {
               }
               """
           )
@@ -801,6 +784,23 @@ class SpacesTest implements RewriteTest {
               """,
             """
               function foo(x: boolean) {
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void otherAfterPropertyNameValueColonFalse() {
+        rewriteRun(
+          spaces(style -> style.withOther(style.getOther().withAfterPropertyNameValueSeparator(false))),
+          javaScript(
+            """
+              function foo(x: boolean) {
+              }
+              """,
+            """
+              function foo(x:boolean) {
               }
               """
           )
