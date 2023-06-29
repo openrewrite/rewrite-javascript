@@ -23,6 +23,7 @@ import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.style.NamedStyles;
 import org.openrewrite.tree.ParsingExecutionContextView;
 
 import java.nio.charset.Charset;
@@ -45,13 +46,16 @@ public abstract class TSCMapper implements AutoCloseable {
     @Nullable
     private final Path relativeTo;
 
+    private final Collection<NamedStyles> styles;
+
     private final ParsingExecutionContextView pctx;
     private final Map<Path, SourceWrapper> sourcesByRelativePath = new LinkedHashMap<>();
 
-    public TSCMapper(@Nullable Path relativeTo, ParsingExecutionContextView pctx) {
+    public TSCMapper(@Nullable Path relativeTo, Collection<NamedStyles> styles, ParsingExecutionContextView pctx) {
         JavetNativeBridge.init();
         this.runtime = TSCRuntime.init();
         this.relativeTo = relativeTo;
+        this.styles = styles;
         this.pctx = pctx;
     }
 
@@ -90,7 +94,8 @@ public abstract class TSCMapper implements AutoCloseable {
                             source.getSourcePath(),
                             new JavaTypeCache(),
                             source.getCharset().toString(),
-                            source.isCharsetBomMarked()
+                            source.isCharsetBomMarked(),
+                            styles
                     );
                     JS.CompilationUnit cu = fileMapper.visitSourceFile();
                     pctx.getParsingListener().parsed(source.getInput(), cu);

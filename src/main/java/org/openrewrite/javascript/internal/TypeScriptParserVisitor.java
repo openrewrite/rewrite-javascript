@@ -33,6 +33,7 @@ import org.openrewrite.javascript.markers.*;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.javascript.tree.TsType;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.style.NamedStyles;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -54,13 +55,15 @@ public class TypeScriptParserVisitor {
 
     private final String charset;
     private final boolean isCharsetBomMarked;
+    private final Collection<NamedStyles> styles;
 
-    public TypeScriptParserVisitor(TSCNode source, TSCSourceFileContext sourceContext, Path sourcePath, JavaTypeCache typeCache, String charset, boolean isCharsetBomMarked) {
+    public TypeScriptParserVisitor(TSCNode source, TSCSourceFileContext sourceContext, Path sourcePath, JavaTypeCache typeCache, String charset, boolean isCharsetBomMarked, Collection<NamedStyles> styles) {
         this.source = source;
         this.cursorContext = sourceContext;
         this.sourcePath = sourcePath;
         this.charset = charset;
         this.isCharsetBomMarked = isCharsetBomMarked;
+        this.styles = styles;
         this.typeMapping = new TypeScriptTypeMapping(typeCache);
     }
 
@@ -103,7 +106,7 @@ public class TypeScriptParserVisitor {
         return new JS.CompilationUnit(
                 randomId(),
                 prefix,
-                Markers.EMPTY,
+                Markers.build(styles),
                 sourcePath,
                 FileAttributes.fromPath(sourcePath),
                 charset,
@@ -1188,9 +1191,7 @@ public class TypeScriptParserVisitor {
                 markers = markers.addIfAbsent(new PostFixOperator(randomId(), sourceBefore(TSCSyntaxKind.QuestionToken), PostFixOperator.Operator.Question));
             }
             Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
-            if (beforeColon != EMPTY) {
-                markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
-            }
+            markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
             typeTree = (TypeTree) visitNode(type);
         }
         List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = new ArrayList<>(1);
@@ -1870,9 +1871,7 @@ public class TypeScriptParserVisitor {
             }
 
             Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
-            if (beforeColon != EMPTY) {
-                markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
-            }
+            markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
 
             TSCNode type = node.getNodeProperty("type");
             typeTree = (TypeTree) visitNode(type);
@@ -2496,9 +2495,7 @@ public class TypeScriptParserVisitor {
             }
 
             Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
-            if (beforeColon != EMPTY) {
-                markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
-            }
+            markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
             typeTree = (TypeTree) visitNode(node.getNodeProperty("type"));
         }
         J.VariableDeclarations.NamedVariable variable = new J.VariableDeclarations.NamedVariable(
@@ -2592,9 +2589,7 @@ public class TypeScriptParserVisitor {
                     }
 
                     Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
-                    if (beforeColon != EMPTY) {
-                        markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
-                    }
+                    markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
                     TSCNode type = declaration.getNodeProperty("type");
                     typeTree = (TypeTree) visitNode(type);
                     if (typeTree.getType() != null) {
@@ -2701,9 +2696,7 @@ public class TypeScriptParserVisitor {
 
             if (declaration.hasProperty("type")) {
                 Space beforeColon = sourceBefore(TSCSyntaxKind.ColonToken);
-                if (beforeColon != EMPTY) {
-                    markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
-                }
+                markers = markers.addIfAbsent(new TypeReferencePrefix(randomId(), beforeColon));
                 TSCNode type = declaration.getNodeProperty("type");
                 typeTree = (TypeTree) visitNode(type);
                 if (typeTree.getType() != null) {

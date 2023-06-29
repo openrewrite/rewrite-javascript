@@ -25,20 +25,23 @@ import org.openrewrite.internal.lang.NonNull;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.javascript.internal.TSCMapper;
 import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.style.NamedStyles;
 import org.openrewrite.tree.ParsingExecutionContextView;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class JavaScriptParser implements Parser {
+
+    private final Collection<NamedStyles> styles;
+
+    private JavaScriptParser(Collection<NamedStyles> styles) {
+        this.styles = styles;
+    }
 
     @Override
     public Stream<SourceFile> parse(@NonNull String... sources) {
@@ -64,7 +67,7 @@ public class JavaScriptParser implements Parser {
     public Stream<SourceFile> parseInputs(Iterable<Input> sources, @Nullable Path relativeTo, ExecutionContext ctx) {
         ParsingExecutionContextView pctx = ParsingExecutionContextView.view(ctx);
         List<SourceFile> outputs;
-        try (TSCMapper mapper = new TSCMapper(relativeTo, pctx) {
+        try (TSCMapper mapper = new TSCMapper(relativeTo, styles, pctx) {
             @Override
             protected void onParseFailure(Input input, Throwable error) {
                 ctx.getOnError().accept(error);
@@ -111,13 +114,21 @@ public class JavaScriptParser implements Parser {
 
     public static class Builder extends Parser.Builder {
         // FIXME add logCompilationWarningsAndErrors.
+        Collection<NamedStyles> styles = new ArrayList<>();
 
         public Builder() {
             super(JS.CompilationUnit.class);
         }
 
+        public Builder styles(Iterable<? extends NamedStyles> styles) {
+            for (NamedStyles style : styles) {
+                this.styles.add(style);
+            }
+            return this;
+        }
+
         public JavaScriptParser build() {
-            return new JavaScriptParser();
+            return new JavaScriptParser(styles);
         }
 
         @Override
