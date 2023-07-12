@@ -16,14 +16,17 @@
 package org.openrewrite.javascript.internal;
 
 import lombok.Value;
+import org.openrewrite.ExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.SourceFile;
 import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
+import org.openrewrite.javascript.JavaScriptParser;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;
-import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.style.NamedStyles;
+import org.openrewrite.tree.ParseError;
+import org.openrewrite.tree.ParsingEventListener;
 import org.openrewrite.tree.ParsingExecutionContextView;
 
 import java.nio.charset.Charset;
@@ -48,19 +51,19 @@ public abstract class TSCMapper implements AutoCloseable {
 
     private final Collection<NamedStyles> styles;
 
-    private final ParsingExecutionContextView pctx;
+    private final ExecutionContext ctx;
     private final Map<Path, SourceWrapper> sourcesByRelativePath = new LinkedHashMap<>();
 
-    public TSCMapper(@Nullable Path relativeTo, Collection<NamedStyles> styles, ParsingExecutionContextView pctx) {
+    public TSCMapper(@Nullable Path relativeTo, Collection<NamedStyles> styles, ExecutionContext ctx) {
         JavetNativeBridge.init();
         this.runtime = TSCRuntime.init();
         this.relativeTo = relativeTo;
         this.styles = styles;
-        this.pctx = pctx;
+        this.ctx = ctx;
     }
 
     public void add(Parser.Input input) {
-        final EncodingDetectingInputStream is = input.getSource(pctx);
+        final EncodingDetectingInputStream is = input.getSource(ctx);
         final String inputSourceText = is.readFully();
         final Path relativePath = input.getRelativePath(relativeTo);
 
@@ -74,11 +77,9 @@ public abstract class TSCMapper implements AutoCloseable {
         sourcesByRelativePath.put(relativePath, source);
     }
 
-    protected abstract void onParseFailure(Parser.Input input, Throwable error);
-
     public List<SourceFile> build() {
         List<SourceFile> compilationUnits = new ArrayList<>(sourcesByRelativePath.size());
-
+        ParsingEventListener parsingListener = ParsingExecutionContextView.view(ctx).getParsingListener();
         Map<Path, String> sourceTextsForTSC = new LinkedHashMap<>();
         this.sourcesByRelativePath.forEach((relativePath, sourceText) -> {
             sourceTextsForTSC.put(relativePath, sourceText.sourceText);
@@ -97,8 +98,14 @@ public abstract class TSCMapper implements AutoCloseable {
                             source.isCharsetBomMarked(),
                             styles
                     );
-                    JS.CompilationUnit cu = fileMapper.visitSourceFile();
-                    pctx.getParsingListener().parsed(source.getInput(), cu);
+                    SourceFile cu;
+                    try {
+                        cu = fileMapper.visitSourceFile();
+                        parsingListener.parsed(source.getInput(), cu);
+                    } catch (Throwable t) {
+                        ctx.getOnError().accept(t);
+                        cu = ParseError.build(JavaScriptParser.builder().build(), source.getInput(), relativeTo, ctx, t);
+                    }
                     compilationUnits.add(cu);
                 }
         );

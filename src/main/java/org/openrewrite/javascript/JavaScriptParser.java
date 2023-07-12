@@ -15,8 +15,6 @@
  */
 package org.openrewrite.javascript;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
@@ -67,12 +65,7 @@ public class JavaScriptParser implements Parser {
     public Stream<SourceFile> parseInputs(Iterable<Input> sources, @Nullable Path relativeTo, ExecutionContext ctx) {
         ParsingExecutionContextView pctx = ParsingExecutionContextView.view(ctx);
         List<SourceFile> outputs;
-        try (TSCMapper mapper = new TSCMapper(relativeTo, styles, pctx) {
-            @Override
-            protected void onParseFailure(Input input, Throwable error) {
-                ctx.getOnError().accept(error);
-            }
-        }) {
+        try (TSCMapper mapper = new TSCMapper(relativeTo, styles, pctx) {}) {
             for (Input source : sources) {
                 mapper.add(source);
             }
