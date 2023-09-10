@@ -15,6 +15,7 @@
  */
 package org.openrewrite.javascript.internal;
 
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Parser;
@@ -33,16 +34,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.*;
 
+@RequiredArgsConstructor
 public abstract class TSCMapper implements AutoCloseable {
-
-    @Value
-    private static class SourceWrapper {
-        Parser.Input input;
-        Path sourcePath;
-        Charset charset;
-        boolean isCharsetBomMarked;
-        String sourceText;
-    }
 
     private final TSCRuntime runtime;
 
@@ -54,20 +47,12 @@ public abstract class TSCMapper implements AutoCloseable {
     private final ExecutionContext ctx;
     private final Map<Path, SourceWrapper> sourcesByRelativePath = new LinkedHashMap<>();
 
-    public TSCMapper(@Nullable Path relativeTo, Collection<NamedStyles> styles, ExecutionContext ctx) {
-        JavetNativeBridge.init();
-        this.runtime = TSCRuntime.init();
-        this.relativeTo = relativeTo;
-        this.styles = styles;
-        this.ctx = ctx;
-    }
-
     public void add(Parser.Input input) {
-        final EncodingDetectingInputStream is = input.getSource(ctx);
-        final String inputSourceText = is.readFully();
-        final Path relativePath = input.getRelativePath(relativeTo);
+        EncodingDetectingInputStream is = input.getSource(ctx);
+        String inputSourceText = is.readFully();
+        Path relativePath = input.getRelativePath(relativeTo);
 
-        final SourceWrapper source = new SourceWrapper(
+        SourceWrapper source = new SourceWrapper(
                 input,
                 relativePath,
                 is.getCharset(),
@@ -81,15 +66,16 @@ public abstract class TSCMapper implements AutoCloseable {
         List<SourceFile> compilationUnits = new ArrayList<>(sourcesByRelativePath.size());
         ParsingEventListener parsingListener = ParsingExecutionContextView.view(ctx).getParsingListener();
         Map<Path, String> sourceTextsForTSC = new LinkedHashMap<>();
-        this.sourcesByRelativePath.forEach((relativePath, sourceText) -> {
+        sourcesByRelativePath.forEach((relativePath, sourceText) -> {
             sourceTextsForTSC.put(relativePath, sourceText.sourceText);
         });
 
-        this.runtime.parseSourceTexts(
+        runtime.parseSourceTexts(
                 sourceTextsForTSC,
                 (node, context) -> {
-                    final SourceWrapper source = this.sourcesByRelativePath.get(context.getRelativeSourcePath());
-                    final TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
+                    SourceWrapper source = sourcesByRelativePath.get(context.getRelativeSourcePath());
+                    parsingListener.startedParsing(source.getInput());
+                    TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
                             node,
                             context,
                             source.getSourcePath(),
@@ -109,6 +95,7 @@ public abstract class TSCMapper implements AutoCloseable {
                     compilationUnits.add(cu);
                 }
         );
+
         return compilationUnits;
     }
 
@@ -117,4 +104,12 @@ public abstract class TSCMapper implements AutoCloseable {
         this.runtime.close();
     }
 
+    @Value
+    private static class SourceWrapper {
+        Parser.Input input;
+        Path sourcePath;
+        Charset charset;
+        boolean isCharsetBomMarked;
+        String sourceText;
+    }
 }

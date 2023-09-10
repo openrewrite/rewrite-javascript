@@ -75,7 +75,6 @@ public class TSCRuntime implements AutoCloseable {
                 JavetException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public TSCRuntime setCompilerOptionOverride(String key, Object value) {

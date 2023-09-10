@@ -69,7 +69,6 @@ public class JavaScriptParser implements Parser {
             for (Input source : sources) {
                 mapper.add(source);
             }
-
             outputs = mapper.build();
         }
         return outputs.stream();
