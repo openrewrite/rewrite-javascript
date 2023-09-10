@@ -16,7 +16,7 @@
 package org.openrewrite.javascript.recipe;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.java.cleanup.SimplifyBooleanExpression;
+import org.openrewrite.staticanalysis.SimplifyBooleanExpression;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
