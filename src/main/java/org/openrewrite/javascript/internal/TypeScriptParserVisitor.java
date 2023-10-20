@@ -859,7 +859,7 @@ public class TypeScriptParserVisitor {
                 null,
                 JContainer.build(
                         EMPTY,
-                        singletonList(JRightPadded.build(new J.Identifier(randomId(), sourceBefore(TSCSyntaxKind.DefaultKeyword), Markers.EMPTY, "default", null, null))),
+                        singletonList(JRightPadded.build(new J.Identifier(randomId(), sourceBefore(TSCSyntaxKind.DefaultKeyword), Markers.EMPTY, emptyList(), "default", null, null))),
                         Markers.EMPTY
                 ),
                 JContainer.build(
@@ -1264,6 +1264,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 Markers.EMPTY,
+                emptyList(),
                 node.getText(),
                 type == null ? typeMapping.type(node) : type,
                 fieldType
@@ -3180,7 +3181,7 @@ public class TypeScriptParserVisitor {
      * @return a J.Identifier representing the String.
      */
     private J.Identifier convertToIdentifier(Space prefix, String simpleName) {
-        return new J.Identifier(randomId(), prefix, Markers.EMPTY, simpleName, null, null);
+        return new J.Identifier(randomId(), prefix, Markers.EMPTY, emptyList(), simpleName, null, null);
     }
 
     private J.Literal mapKeywordToLiteralType(TSCNode node) {
@@ -3332,32 +3333,32 @@ public class TypeScriptParserVisitor {
                 // Keywords that exist in J.
                 case AbstractKeyword:
                     consumeToken(TSCSyntaxKind.AbstractKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Abstract, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Abstract, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 case AsyncKeyword:
                     consumeToken(TSCSyntaxKind.AsyncKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Async, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Async, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 case PublicKeyword:
                     consumeToken(TSCSyntaxKind.PublicKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Public, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Public, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 case PrivateKeyword:
                     consumeToken(TSCSyntaxKind.PrivateKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Private, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Private, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 case ProtectedKeyword:
                     consumeToken(TSCSyntaxKind.ProtectedKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Protected, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Protected, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 case StaticKeyword:
                     consumeToken(TSCSyntaxKind.StaticKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Static, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Static, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 default:
@@ -3437,7 +3438,7 @@ public class TypeScriptParserVisitor {
      * whitespace and comments.
      */
     private Space whitespace() {
-        String initialSpace = "";
+        StringBuilder initialSpace = new StringBuilder();
         List<Comment> comments = Collections.emptyList();
         TSCSyntaxKind kind;
         boolean done = false;
@@ -3447,7 +3448,7 @@ public class TypeScriptParserVisitor {
                 case WhitespaceTrivia:
                 case NewLineTrivia: {
                     if (comments.isEmpty()) {
-                        initialSpace += lastToken();
+                        initialSpace.append(lastToken());
                     } else {
                         comments = ListUtils.map(
                                 comments,
@@ -3479,7 +3480,7 @@ public class TypeScriptParserVisitor {
                     break;
             }
         } while (!done);
-        return Space.build(initialSpace, comments);
+        return Space.build(initialSpace.toString(), comments);
     }
 
     private J unknown(TSCNode node) {

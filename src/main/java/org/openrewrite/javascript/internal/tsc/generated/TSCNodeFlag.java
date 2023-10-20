@@ -25,41 +25,44 @@ public enum TSCNodeFlag {
     None(0),
     Let(1),
     Const(2),
-    NestedNamespace(4),
-    Synthesized(8),
-    Namespace(16),
-    OptionalChain(32),
-    ExportContext(64),
+    Using(4),
+    /** Also includes Constant */
+    AwaitUsing(6),
+    NestedNamespace(8),
+    Synthesized(16),
+    Namespace(32),
+    OptionalChain(64),
+    ExportContext(128),
     /** Also includes IdentifierHasExtendedUnicodeEscape */
-    ContainsThis(128),
-    HasImplicitReturn(256),
-    HasExplicitReturn(512),
-    GlobalAugmentation(1024),
+    ContainsThis(256),
+    HasImplicitReturn(512),
+    HasExplicitReturn(1024),
+    GlobalAugmentation(2048),
     /** Also includes IdentifierIsInJSDocNamespace */
-    HasAsyncFunctions(2048),
-    DisallowInContext(4096),
-    YieldContext(8192),
-    DecoratorContext(16384),
-    AwaitContext(32768),
-    DisallowConditionalTypesContext(65536),
-    ThisNodeHasError(131072),
-    JavaScriptFile(262144),
-    ThisNodeOrAnySubNodesHasError(524288),
-    HasAggregatedChildData(1048576),
-    PossiblyContainsDynamicImport(2097152),
-    PossiblyContainsImportMeta(4194304),
-    JSDoc(8388608),
-    Ambient(16777216),
-    InWithStatement(33554432),
-    JsonFile(67108864),
-    TypeCached(134217728),
-    Deprecated(268435456),
-    BlockScoped(3),
-    ReachabilityCheckFlags(768),
-    ReachabilityAndEmitFlags(2816),
-    ContextFlags(50720768),
-    TypeExcludesFlags(40960),
-    PermanentlySetIncrementalFlags(6291456);
+    HasAsyncFunctions(4096),
+    DisallowInContext(8192),
+    YieldContext(16384),
+    DecoratorContext(32768),
+    AwaitContext(65536),
+    DisallowConditionalTypesContext(131072),
+    ThisNodeHasError(262144),
+    JavaScriptFile(524288),
+    ThisNodeOrAnySubNodesHasError(1048576),
+    HasAggregatedChildData(2097152),
+    PossiblyContainsDynamicImport(4194304),
+    PossiblyContainsImportMeta(8388608),
+    JSDoc(16777216),
+    Ambient(33554432),
+    InWithStatement(67108864),
+    JsonFile(134217728),
+    TypeCached(268435456),
+    Deprecated(536870912),
+    BlockScoped(7),
+    ReachabilityCheckFlags(1536),
+    ReachabilityAndEmitFlags(5632),
+    ContextFlags(101441536),
+    TypeExcludesFlags(81920),
+    PermanentlySetIncrementalFlags(12582912);
 
 
     public final int code;
@@ -77,70 +80,74 @@ public enum TSCNodeFlag {
             case 2:
                 return TSCNodeFlag.Const;
             case 4:
-                return TSCNodeFlag.NestedNamespace;
+                return TSCNodeFlag.Using;
+            case 6:
+                return TSCNodeFlag.AwaitUsing;
             case 8:
-                return TSCNodeFlag.Synthesized;
+                return TSCNodeFlag.NestedNamespace;
             case 16:
-                return TSCNodeFlag.Namespace;
+                return TSCNodeFlag.Synthesized;
             case 32:
-                return TSCNodeFlag.OptionalChain;
+                return TSCNodeFlag.Namespace;
             case 64:
-                return TSCNodeFlag.ExportContext;
+                return TSCNodeFlag.OptionalChain;
             case 128:
-                return TSCNodeFlag.ContainsThis;
+                return TSCNodeFlag.ExportContext;
             case 256:
-                return TSCNodeFlag.HasImplicitReturn;
+                return TSCNodeFlag.ContainsThis;
             case 512:
-                return TSCNodeFlag.HasExplicitReturn;
+                return TSCNodeFlag.HasImplicitReturn;
             case 1024:
-                return TSCNodeFlag.GlobalAugmentation;
+                return TSCNodeFlag.HasExplicitReturn;
             case 2048:
-                return TSCNodeFlag.HasAsyncFunctions;
+                return TSCNodeFlag.GlobalAugmentation;
             case 4096:
-                return TSCNodeFlag.DisallowInContext;
+                return TSCNodeFlag.HasAsyncFunctions;
             case 8192:
-                return TSCNodeFlag.YieldContext;
+                return TSCNodeFlag.DisallowInContext;
             case 16384:
-                return TSCNodeFlag.DecoratorContext;
+                return TSCNodeFlag.YieldContext;
             case 32768:
-                return TSCNodeFlag.AwaitContext;
+                return TSCNodeFlag.DecoratorContext;
             case 65536:
-                return TSCNodeFlag.DisallowConditionalTypesContext;
+                return TSCNodeFlag.AwaitContext;
             case 131072:
-                return TSCNodeFlag.ThisNodeHasError;
+                return TSCNodeFlag.DisallowConditionalTypesContext;
             case 262144:
-                return TSCNodeFlag.JavaScriptFile;
+                return TSCNodeFlag.ThisNodeHasError;
             case 524288:
-                return TSCNodeFlag.ThisNodeOrAnySubNodesHasError;
+                return TSCNodeFlag.JavaScriptFile;
             case 1048576:
-                return TSCNodeFlag.HasAggregatedChildData;
+                return TSCNodeFlag.ThisNodeOrAnySubNodesHasError;
             case 2097152:
-                return TSCNodeFlag.PossiblyContainsDynamicImport;
+                return TSCNodeFlag.HasAggregatedChildData;
             case 4194304:
-                return TSCNodeFlag.PossiblyContainsImportMeta;
+                return TSCNodeFlag.PossiblyContainsDynamicImport;
             case 8388608:
-                return TSCNodeFlag.JSDoc;
+                return TSCNodeFlag.PossiblyContainsImportMeta;
             case 16777216:
-                return TSCNodeFlag.Ambient;
+                return TSCNodeFlag.JSDoc;
             case 33554432:
-                return TSCNodeFlag.InWithStatement;
+                return TSCNodeFlag.Ambient;
             case 67108864:
-                return TSCNodeFlag.JsonFile;
+                return TSCNodeFlag.InWithStatement;
             case 134217728:
-                return TSCNodeFlag.TypeCached;
+                return TSCNodeFlag.JsonFile;
             case 268435456:
+                return TSCNodeFlag.TypeCached;
+            case 536870912:
                 return TSCNodeFlag.Deprecated;
-            case 3:
+            case 7:
                 return TSCNodeFlag.BlockScoped;
-            case 768:
+            case 1536:
                 return TSCNodeFlag.ReachabilityCheckFlags;
-            case 2816:
+            case 5632:
                 return TSCNodeFlag.ReachabilityAndEmitFlags;
-            case 50720768:
+            case 101441536:
                 return TSCNodeFlag.ContextFlags;
-            case 40960:
+            case 81920:
                 return TSCNodeFlag.TypeExcludesFlags;
-            case 6291456:
+            case 12582912:
                 return TSCNodeFlag.PermanentlySetIncrementalFlags;
             default:
                 throw new IllegalArgumentException("unknown TSCNodeFlag code: " + code);
