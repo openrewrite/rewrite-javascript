@@ -26,10 +26,7 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 import org.openrewrite.javascript.tree.TsType;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 import static org.openrewrite.javascript.internal.tsc.TSCProgramContext.CompilerBridgeSourceKind.ApplicationCode;
 
@@ -39,6 +36,8 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
     @Nullable
     Set<String> typeVariableNameStack;
 
+    Map<TSCNode, String> signatures = new IdentityHashMap<>();
+
     @Override
     public String signature(@Nullable Object object) {
         if (object == null) {
@@ -46,40 +45,63 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         }
 
         TSCNode node = (TSCNode) object;
+        String cached = signatures.get(node);
+        if (cached != null) {
+            return cached;
+        }
+
         switch (node.syntaxKind()) {
             case SourceFile:
-                return mapSourceFileFqn((TSCNode.SourceFile) node);
+                cached = mapSourceFileFqn((TSCNode.SourceFile) node);
+                break;
             case ClassDeclaration:
             case EnumDeclaration:
             case InterfaceDeclaration:
-                return node.hasProperty("typeParameters") && !node.getNodeListProperty("typeParameters").isEmpty() ?
+                cached = node.hasProperty("typeParameters") && !node.getNodeListProperty("typeParameters").isEmpty() ?
                         parameterizedSignature(node) : classSignature(node);
+                break;
             case ArrayType:
-                return arraySignature(node);
+                cached = arraySignature(node);
+                break;
             case EnumMember:
-                return mapEnumMember(node);
+                cached = mapEnumMember(node);
+                break;
             case Identifier:
-                return mapIdentifier(node);
+                cached = mapIdentifier(node);
+                break;
             case Parameter:
-                return mapParameter(node);
+                cached = mapParameter(node);
+                break;
             case QualifiedName:
-                return mapQualifiedName(node);
+                cached = mapQualifiedName(node);
+                break;
             case ThisKeyword:
-                return mapThis(node);
+                cached = mapThis(node);
+                break;
             case TypeOperator:
-                return mapTypeOperator(node);
+                cached = mapTypeOperator(node);
+                break;
             case TypeParameter:
-                return genericSignature(node);
+                cached = genericSignature(node);
+                break;
             case ExpressionWithTypeArguments:
             case TypeReference:
             case TypeQuery:
-                return mapTypeReference(node);
+                cached = mapTypeReference(node);
+                break;
             case UnionType:
-                return TsType.Union.getFullyQualifiedName();
+                cached = TsType.Union.getFullyQualifiedName();
+                break;
             case PropertyDeclaration:
             case VariableDeclaration:
-                return variableSignature(node);
+                cached = variableSignature(node);
+                break;
         }
+        if (cached != null) {
+            signatures.put(node, cached);
+            return cached;
+        }
+
         TSCType type = node.getTypeChecker().getTypeAtLocation(node);
         return mapType(type);
     }
