@@ -22,12 +22,14 @@ import org.junitpioneer.jupiter.ExpectedToFail;
 class CommentTest extends ParserTest {
 
     @Test
-    void singleLineComment() {
+    void singleLineComments() {
         rewriteRun(
           javaScript(
             """
               class Test {
                   // C1
+                  // C2
+                  // C3
               }
               """
           )

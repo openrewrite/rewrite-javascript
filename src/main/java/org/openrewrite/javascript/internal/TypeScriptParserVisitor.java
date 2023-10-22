@@ -3449,7 +3449,7 @@ public class TypeScriptParserVisitor {
                     if (comments.isEmpty()) {
                         initialSpace += lastToken();
                     } else {
-                        comments = ListUtils.map(
+                        comments = ListUtils.mapLast(
                                 comments,
                                 comment -> comment.withSuffix(comment.getSuffix() + lastToken())
                         );
@@ -3467,9 +3467,10 @@ public class TypeScriptParserVisitor {
                             Markers.EMPTY
                     );
                     if (comments.isEmpty()) {
-                        comments = Collections.singletonList(comment);
+                        comments = new ArrayList<>(1);
+                        comments.add(comment);
                     } else {
-                        comments = ListUtils.concat(comments, comment);
+                        comments.add(comment);
                     }
                     break;
                 }
