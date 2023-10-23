@@ -61,7 +61,6 @@ class CommentTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void preserveWhitespaceBetweenComments() {
         rewriteRun(

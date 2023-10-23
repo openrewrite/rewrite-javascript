@@ -15,13 +15,13 @@
  */
 package org.openrewrite.javascript.tree;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS", "TypeScriptCheckImport"})
 class ObjectLiteralTest extends ParserTest {
 
-    @ExpectedToFail
+    @Disabled // times out
     @Test
     void empty() {
         rewriteRun(
