@@ -873,6 +873,17 @@ public class TypeScriptParserVisitor {
         );
     }
 
+    private J visitDeleteExpression(TSCNode node) {
+        Space prefix = sourceBefore(TSCSyntaxKind.DeleteKeyword);
+        return new JS.Delete(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                (Expression) visitNode(node.getNodeProperty("expression")),
+                typeMapping.type(node)
+        );
+    }
+
     private J.DoWhileLoop visitDoStatement(TSCNode node) {
         Space prefix = sourceBefore(TSCSyntaxKind.DoKeyword);
         JRightPadded<Statement> body = maybeSemicolon((Statement) visitNode(node.getNodeProperty("statement")));
@@ -2905,6 +2916,9 @@ public class TypeScriptParserVisitor {
                 break;
             case DefaultClause:
                 j = visitDefaultClause(node);
+                break;
+            case DeleteExpression:
+                j = visitDeleteExpression(node);
                 break;
             case DoStatement:
                 j = visitDoStatement(node);
