@@ -572,7 +572,7 @@ public class TypeScriptParserVisitor {
             List<JRightPadded<Expression>> elements = jContainer.getPadding().getElements().stream()
                     .map(it -> {
                         Expression exp = (!(it.getElement() instanceof Expression) && it.getElement() instanceof Statement) ?
-                            new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
+                                new JS.StatementExpression(randomId(), (Statement) it.getElement()) : (Expression)  it.getElement();
                         return padRight(exp, it.getAfter(), it.getMarkers());
                     })
                     .collect(toList());
@@ -870,6 +870,17 @@ public class TypeScriptParserVisitor {
                         Markers.EMPTY
                 ),
                 null
+        );
+    }
+
+    private J visitDeleteExpression(TSCNode node) {
+        Space prefix = sourceBefore(TSCSyntaxKind.DeleteKeyword);
+        return new JS.Delete(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                (Expression) visitNode(node.getNodeProperty("expression")),
+                typeMapping.type(node)
         );
     }
 
@@ -2907,6 +2918,9 @@ public class TypeScriptParserVisitor {
             case DefaultClause:
                 j = visitDefaultClause(node);
                 break;
+            case DeleteExpression:
+                j = visitDeleteExpression(node);
+                break;
             case DoStatement:
                 j = visitDoStatement(node);
                 break;
@@ -3404,8 +3418,8 @@ public class TypeScriptParserVisitor {
     @Nullable
     private J.TypeParameters mapTypeParameters(@Nullable List<TSCNode> typeParameters) {
         return typeParameters == null ? null : new J.TypeParameters(randomId(), sourceBefore(TSCSyntaxKind.LessThanToken), Markers.EMPTY,
-                        emptyList(),
-                        convertAll(typeParameters, commaDelim, t -> sourceBefore(TSCSyntaxKind.GreaterThanToken)));
+                emptyList(),
+                convertAll(typeParameters, commaDelim, t -> sourceBefore(TSCSyntaxKind.GreaterThanToken)));
     }
 
     private J mapVariableStatement(TSCNode node) {
@@ -3450,7 +3464,7 @@ public class TypeScriptParserVisitor {
                     if (comments.isEmpty()) {
                         initialSpace.append(lastToken());
                     } else {
-                        comments = ListUtils.map(
+                        comments = ListUtils.mapLast(
                                 comments,
                                 comment -> comment.withSuffix(comment.getSuffix() + lastToken())
                         );
@@ -3468,9 +3482,10 @@ public class TypeScriptParserVisitor {
                             Markers.EMPTY
                     );
                     if (comments.isEmpty()) {
-                        comments = Collections.singletonList(comment);
+                        comments = new ArrayList<>(1);
+                        comments.add(comment);
                     } else {
-                        comments = ListUtils.concat(comments, comment);
+                        comments.add(comment);
                     }
                     break;
                 }

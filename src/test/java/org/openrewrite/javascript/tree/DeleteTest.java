@@ -15,44 +15,20 @@
  */
 package org.openrewrite.javascript.tree;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS", "TypeScriptCheckImport"})
-class ObjectLiteralTest extends ParserTest {
+@SuppressWarnings({"JSUnusedLocalSymbols", "JSUnresolvedVariable"})
+class DeleteTest extends ParserTest {
 
-    @Disabled // times out
     @Test
-    void empty() {
+    void delete() {
         rewriteRun(
           javaScript(
             """
-              const value = { } ;
+              delete console.log(1)
               """
           )
         );
     }
 
-    @Test
-    void objectLiteralWithType() {
-        rewriteRun(
-          javaScript(
-            """
-              const value = { x : 1 } ;
-              """
-          )
-        );
-    }
-
-    @Test
-    void innerObjectLiteral() {
-        rewriteRun(
-          javaScript(
-            """
-              import foo from '/foo.js' ;
-              foo . create ( { headers : { foo : 'bar' } } ) ;
-              """
-          )
-        );
-    }
 }

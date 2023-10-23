@@ -179,13 +179,14 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                             member.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
                             member.syntaxKind() == TSCSyntaxKind.FunctionDeclaration ||
                             member.syntaxKind() == TSCSyntaxKind.MethodDeclaration ||
-                            member.syntaxKind() == TSCSyntaxKind.MethodSignature) {
+                            member.syntaxKind() == TSCSyntaxKind.MethodSignature ||
+                            // TODO: possibly not the appropriate way to map indexed access
+                            member.syntaxKind() == TSCSyntaxKind.IndexSignature) {
                         if (methodNodes == null) {
                             methodNodes = new ArrayList<>(1);
                         }
                         methodNodes.add(member);
-                    } else if (member.syntaxKind() == TSCSyntaxKind.EnumMember ||
-                            member.syntaxKind() == TSCSyntaxKind.PropertyDeclaration ||
+                    } else if (member.syntaxKind() == TSCSyntaxKind.PropertyDeclaration ||
                             member.syntaxKind() == TSCSyntaxKind.PropertySignature) {
                         if (propertyNodes == null) {
                             propertyNodes = new ArrayList<>(1);

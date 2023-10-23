@@ -26,10 +26,7 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 import org.openrewrite.javascript.tree.TsType;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 import static org.openrewrite.javascript.internal.tsc.TSCProgramContext.CompilerBridgeSourceKind.ApplicationCode;
 
@@ -39,6 +36,8 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
     @Nullable
     Set<String> typeVariableNameStack;
 
+    Map<TSCNode, String> signatures = new IdentityHashMap<>();
+
     @Override
     public String signature(@Nullable Object object) {
         if (object == null) {
@@ -46,16 +45,23 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         }
 
         TSCNode node = (TSCNode) object;
+        String cached = signatures.get(node);
+        if (cached != null) {
+            return cached;
+        }
+
         switch (node.syntaxKind()) {
             case SourceFile:
-                return mapSourceFileFqn((TSCNode.SourceFile) node);
+                cached = mapSourceFileFqn((TSCNode.SourceFile) node);
+                break;
             case ClassDeclaration:
             case EnumDeclaration:
             case InterfaceDeclaration:
                 return node.hasProperty("typeParameters") && !node.getNodeListProperty("typeParameters").isEmpty() ?
                         parameterizedSignature(node) : classSignature(node);
             case ArrayType:
-                return arraySignature(node);
+                cached = arraySignature(node);
+                break;
             case EnumMember:
                 return mapEnumMember(node);
             case Identifier:
@@ -69,7 +75,8 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
             case TypeOperator:
                 return mapTypeOperator(node);
             case TypeParameter:
-                return genericSignature(node);
+                cached = genericSignature(node);
+                break;
             case ExpressionWithTypeArguments:
             case TypeReference:
             case TypeQuery:
@@ -78,8 +85,14 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
                 return TsType.Union.getFullyQualifiedName();
             case PropertyDeclaration:
             case VariableDeclaration:
-                return variableSignature(node);
+                cached = variableSignature(node);
+                break;
         }
+        if (cached != null) {
+            signatures.put(node, cached);
+            return cached;
+        }
+
         TSCType type = node.getTypeChecker().getTypeAtLocation(node);
         return mapType(type);
     }
@@ -299,8 +312,9 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
 
     private String mapQualifiedName(TSCNode node) {
         String left = signature(node.getNodeProperty("left"));
-        if (left.contains("<")) {
-            left = left.substring(0, left.indexOf('<'));
+        int index = left.indexOf('<');
+        if (index != -1) {
+            left = left.substring(0, index);
         }
         return left + "$" + node.getNodeProperty("right").getText();
     }

@@ -136,6 +136,15 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitDelete(JS.Delete delete, PrintOutputCapture<P> p) {
+        beforeSyntax(delete, JsSpace.Location.DELETE_PREFIX, p);
+        p.append("delete");
+        visit(delete.getExpression(), p);
+        afterSyntax(delete, p);
+        return delete;
+    }
+
+    @Override
     public J visitExport(JS.Export export, PrintOutputCapture<P> p) {
         beforeSyntax(export, JsSpace.Location.EXPORT_PREFIX, p);
         p.append("export");

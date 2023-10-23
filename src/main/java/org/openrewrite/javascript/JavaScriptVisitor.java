@@ -145,6 +145,20 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return d;
     }
 
+    public J visitDelete(JS.Delete delete, P p) {
+        JS.Delete d = delete;
+        d = d.withPrefix(visitSpace(d.getPrefix(), JsSpace.Location.DELETE_PREFIX, p));
+        d = d.withMarkers(visitMarkers(d.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(d, p);
+        if (!(temp instanceof JS.Delete)) {
+            return temp;
+        } else {
+            d = (JS.Delete) temp;
+        }
+        d = d.withType(visitType(d.getType(), p));
+        return d;
+    }
+
     public J visitExport(JS.Export export, P p) {
         JS.Export e = export;
         e = e.withPrefix(visitSpace(e.getPrefix(), JsSpace.Location.EXPORT_PREFIX, p));

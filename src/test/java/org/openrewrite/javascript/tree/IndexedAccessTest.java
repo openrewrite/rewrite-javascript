@@ -16,55 +16,17 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
-class TypeOperatorTest extends ParserTest {
+class IndexedAccessTest extends ParserTest {
 
-    @ExpectedToFail
     @Test
-    void in() {
+    void indexedAccess() {
         rewriteRun(
           javaScript(
             """
-              let foo = { bar : 'v1' , buz : 'v2' }
-              v = 'bar' in foo
-              """
-          )
-        );
-    }
-
-    @Test
-    void delete() {
-        rewriteRun(
-          javaScript(
-            """
-              let foo = { bar : 'v1' , buz : 'v2' }
-              delete foo . buz
-              """
-          )
-        );
-    }
-
-    @Test
-    void typeof() {
-        rewriteRun(
-          javaScript(
-            """
-              let s = "hello"
-              let t = typeof s
-              """
-          )
-        );
-    }
-
-    @Test
-    void instanceofOp() {
-        rewriteRun(
-          javaScript(
-            """
-              let arr = [ 1, 2 ]
-              let t = arr instanceof Array
+              let args : IArguments
+              const a0 = args[0]
               """
           )
         );
