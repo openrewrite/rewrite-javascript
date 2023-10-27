@@ -859,7 +859,7 @@ public class TypeScriptParserVisitor {
                 null,
                 JContainer.build(
                         EMPTY,
-                        singletonList(JRightPadded.build(new J.Identifier(randomId(), sourceBefore(TSCSyntaxKind.DefaultKeyword), Markers.EMPTY, "default", null, null))),
+                        singletonList(JRightPadded.build(new J.Identifier(randomId(), sourceBefore(TSCSyntaxKind.DefaultKeyword), Markers.EMPTY, emptyList(), "default", null, null))),
                         Markers.EMPTY
                 ),
                 JContainer.build(
@@ -1275,6 +1275,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 Markers.EMPTY,
+                emptyList(),
                 node.getText(),
                 type == null ? typeMapping.type(node) : type,
                 fieldType
@@ -3194,7 +3195,7 @@ public class TypeScriptParserVisitor {
      * @return a J.Identifier representing the String.
      */
     private J.Identifier convertToIdentifier(Space prefix, String simpleName) {
-        return new J.Identifier(randomId(), prefix, Markers.EMPTY, simpleName, null, null);
+        return new J.Identifier(randomId(), prefix, Markers.EMPTY, emptyList(), simpleName, null, null);
     }
 
     private J.Literal mapKeywordToLiteralType(TSCNode node) {
