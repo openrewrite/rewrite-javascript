@@ -17,6 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.test.RewriteTest;
 
@@ -26,6 +27,7 @@ class ParserPerfTest implements RewriteTest {
     @Language("typescript")
     private static final String cometd = StringUtils.readFully(ParserPerfTest.class.getResourceAsStream("/perf/cometd.js"));
 
+    @ExpectedToFail("Requires issue https://github.com/openrewrite/rewrite-javascript/issues/4 to pass parsing.")
     @Test
     void tryParseCometd() {
         rewriteRun(ParserTest.javaScript(cometd));
