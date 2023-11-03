@@ -46,7 +46,7 @@ public class ParserTest implements RewriteTest {
                                          Consumer<SourceSpec<JS.CompilationUnit>> spec) {
         SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(
                 JS.CompilationUnit.class, null, JavaScriptParser.builder(), before,
-                SourceSpec.EachResult.noop,
+                SourceSpec.ValidateSource.noop,
                 ParserTest::customizeExecutionContext);
         acceptSpec(spec, js);
         return js;
@@ -61,7 +61,7 @@ public class ParserTest implements RewriteTest {
                                          Consumer<SourceSpec<JS.CompilationUnit>> spec) {
         SourceSpec<JS.CompilationUnit> js = new SourceSpec<>(
                 JS.CompilationUnit.class, null, JavaScriptParser.builder(), before,
-                SourceSpec.EachResult.noop,
+                SourceSpec.ValidateSource.noop,
                 ParserTest::customizeExecutionContext).after(s -> after);
         acceptSpec(spec, js);
         return js;

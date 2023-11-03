@@ -79,6 +79,11 @@ public class JavaScriptParser implements Parser {
             ".ts", ".tsx", ".mts", ".cts"
     ));
 
+    // Exclude Yarn's Plug'n'Play loader files (https://yarnpkg.com/features/pnp)
+    private final static List<String> EXCLUSIONS = Collections.unmodifiableList(Arrays.asList(
+            ".pnp.cjs", ".pnp.loader.mjs"
+    ));
+
     @Override
     public boolean accept(Path path) {
         if (path.toString().contains("/dist/")) {
@@ -88,7 +93,7 @@ public class JavaScriptParser implements Parser {
 
         final String filename = path.getFileName().toString().toLowerCase();
         for (String ext : EXTENSIONS) {
-            if (filename.endsWith(ext)) {
+            if (filename.endsWith(ext) && !EXCLUSIONS.contains(filename)) {
                 return true;
             }
         }
