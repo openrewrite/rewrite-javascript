@@ -34,10 +34,16 @@ public enum TSCTokenFlag {
     OctalSpecifier(256),
     ContainsSeparator(512),
     UnicodeEscape(1024),
-    /** Also includes TemplateLiteralLikeFlags */
     ContainsInvalidEscape(2048),
+    HexEscape(4096),
+    ContainsLeadingZero(8192),
+    ContainsInvalidSeparator(16384),
     BinaryOrOctalSpecifier(384),
-    NumericLiteralFlags(1008);
+    WithSpecifier(448),
+    /** Also includes TemplateLiteralLikeFlags */
+    StringLiteralFlags(7176),
+    NumericLiteralFlags(25584),
+    IsInvalid(26656);
 
 
     public final int code;
@@ -74,10 +80,22 @@ public enum TSCTokenFlag {
                 return TSCTokenFlag.UnicodeEscape;
             case 2048:
                 return TSCTokenFlag.ContainsInvalidEscape;
+            case 4096:
+                return TSCTokenFlag.HexEscape;
+            case 8192:
+                return TSCTokenFlag.ContainsLeadingZero;
+            case 16384:
+                return TSCTokenFlag.ContainsInvalidSeparator;
             case 384:
                 return TSCTokenFlag.BinaryOrOctalSpecifier;
-            case 1008:
+            case 448:
+                return TSCTokenFlag.WithSpecifier;
+            case 7176:
+                return TSCTokenFlag.StringLiteralFlags;
+            case 25584:
                 return TSCTokenFlag.NumericLiteralFlags;
+            case 26656:
+                return TSCTokenFlag.IsInvalid;
             default:
                 throw new IllegalArgumentException("unknown TSCTokenFlag code: " + code);
         }

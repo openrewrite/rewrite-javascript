@@ -3347,32 +3347,32 @@ public class TypeScriptParserVisitor {
                 // Keywords that exist in J.
                 case AbstractKeyword:
                     consumeToken(TSCSyntaxKind.AbstractKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Abstract, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Abstract, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 case AsyncKeyword:
                     consumeToken(TSCSyntaxKind.AsyncKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Async, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Async, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 case PublicKeyword:
                     consumeToken(TSCSyntaxKind.PublicKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Public, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Public, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 case PrivateKeyword:
                     consumeToken(TSCSyntaxKind.PrivateKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Private, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Private, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 case ProtectedKeyword:
                     consumeToken(TSCSyntaxKind.ProtectedKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Protected, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Protected, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 case StaticKeyword:
                     consumeToken(TSCSyntaxKind.StaticKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, J.Modifier.Type.Static, annotations == null ? emptyList() : annotations));
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Static, annotations == null ? emptyList() : annotations));
                     annotations = null;
                     break;
                 default:
@@ -3452,7 +3452,7 @@ public class TypeScriptParserVisitor {
      * whitespace and comments.
      */
     private Space whitespace() {
-        String initialSpace = "";
+        StringBuilder initialSpace = new StringBuilder();
         List<Comment> comments = Collections.emptyList();
         TSCSyntaxKind kind;
         boolean done = false;
@@ -3462,7 +3462,7 @@ public class TypeScriptParserVisitor {
                 case WhitespaceTrivia:
                 case NewLineTrivia: {
                     if (comments.isEmpty()) {
-                        initialSpace += lastToken();
+                        initialSpace.append(lastToken());
                     } else {
                         comments = ListUtils.mapLast(
                                 comments,
@@ -3495,7 +3495,7 @@ public class TypeScriptParserVisitor {
                     break;
             }
         } while (!done);
-        return Space.build(initialSpace, comments);
+        return Space.build(initialSpace.toString(), comments);
     }
 
     private J unknown(TSCNode node) {

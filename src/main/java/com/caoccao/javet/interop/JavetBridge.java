@@ -30,9 +30,7 @@ public final class JavetBridge {
     private JavetBridge() {}
 
     public static Map<Long, IV8ValueReference> getReferenceMapSnapshot(V8Runtime runtime) {
-        synchronized (runtime.referenceLock) {
-            return new HashMap<>(runtime.referenceMap);
-        }
+        return new HashMap<>(runtime.referenceMap);
     }
 
     public static V8Runtime makeWrappedV8Runtime() {
