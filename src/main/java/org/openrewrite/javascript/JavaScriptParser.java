@@ -102,7 +102,7 @@ public class JavaScriptParser implements Parser {
 
     @Override
     public Path sourcePathFromSourceText(Path prefix, String sourceCode) {
-        return prefix.resolve("file.js");
+        return prefix.resolve("file.ts");
     }
 
     public static Builder builder() {
