@@ -16,14 +16,12 @@
 package org.openrewrite.javascript.internal;
 
 import org.openrewrite.FileAttributes;
-import org.openrewrite.ParseExceptionResult;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
-import org.openrewrite.javascript.JavaScriptParser;
 import org.openrewrite.javascript.TypeScriptTypeMapping;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCNodeList;
@@ -80,8 +78,6 @@ public class TypeScriptParserVisitor {
                 Space childPrefix = whitespace();
                 String text = child.getText();
                 skip(text);
-                Markers childMarkers = Markers.build(singletonList(ParseExceptionResult.build(JavaScriptParser.class, t)
-                        .withTreeType(child.syntaxKind().name())));
                 visited = new J.Unknown(
                         randomId(),
                         childPrefix,
@@ -89,7 +85,7 @@ public class TypeScriptParserVisitor {
                         new J.Unknown.Source(
                                 randomId(),
                                 EMPTY,
-                                childMarkers,
+                                Markers.EMPTY,
                                 text));
             }
 
@@ -3168,8 +3164,7 @@ public class TypeScriptParserVisitor {
                         new J.Unknown.Source(
                                 randomId(),
                                 EMPTY,
-                                Markers.build(singletonList(ParseExceptionResult.build(JavaScriptParser.class, e)
-                                        .withTreeType(element.syntaxKind().name()))),
+                                Markers.EMPTY,
                                 text));
             }
             Space after = i == elements.size() - 1 ? suffix.apply(element) : innerSuffix.apply(element);
@@ -3252,8 +3247,7 @@ public class TypeScriptParserVisitor {
                                 new J.Unknown.Source(
                                         randomId(),
                                         EMPTY,
-                                        Markers.build(singletonList(ParseExceptionResult.build(JavaScriptParser.class, e)
-                                                .withTreeType(node.syntaxKind().name()))),
+                                        Markers.EMPTY,
                                         text));
                     } else {
                         throw e;
@@ -3509,8 +3503,7 @@ public class TypeScriptParserVisitor {
                 new J.Unknown.Source(
                         randomId(),
                         EMPTY,
-                        Markers.build(singletonList(ParseExceptionResult.build(JavaScriptParser.class, new UnsupportedOperationException(node.syntaxKind().name() + " not implemented"))
-                                .withTreeType(node.syntaxKind().name()))),
+                        Markers.EMPTY,
                         text));
     }
 

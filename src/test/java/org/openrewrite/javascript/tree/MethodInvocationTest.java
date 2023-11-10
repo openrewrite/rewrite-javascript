@@ -53,11 +53,11 @@ class MethodInvocationTest extends ParserTest {
               class User {
               }
               
-              function foo < T > ( arg : T ) : T {
-                  return arg ;
+              function foo < T > () : User {
+                  return new User() ;
               }
               
-              const bar = foo < User > ( new User ( ) ) ;
+              const bar = foo<User>();
               """
           )
         );
