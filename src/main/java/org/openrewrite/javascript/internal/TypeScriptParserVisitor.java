@@ -3069,7 +3069,9 @@ public class TypeScriptParserVisitor {
      * Consume the provided text if it matches the current cursor position.
      */
     private void skip(String text) {
-        if (source.getText().startsWith(text, getCursor())) {
+        if (source.hasProperty("text") && source.getStringProperty("text").startsWith(text, getCursor())) {
+            cursor(getCursor() + text.length());
+        } else if (source.getText().startsWith(text, getCursor())) {
             cursor(getCursor() + text.length());
         }
     }

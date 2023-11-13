@@ -163,7 +163,7 @@ public class TSCRuntime implements AutoCloseable {
                     }
 
                     V8ValueObject sourceFileV8 = (V8ValueObject) maybeSourceFileV8;
-                    String sourceText = sourceFileV8.invokeString("getText");
+                    String sourceText = sourceFileV8.getPropertyString("text");
                     Path filePath = Paths.get(filePathV8.getValue());
                     try (TSCSourceFileContext sourceFileContext = new TSCSourceFileContext(programContext, sourceText, filePath)) {
                         TSCNode node = programContext.tscNode(sourceFileV8);
