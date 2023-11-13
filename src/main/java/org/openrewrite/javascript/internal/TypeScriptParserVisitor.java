@@ -102,7 +102,14 @@ public class TypeScriptParserVisitor {
         }
 
         Space eof = whitespace();
-        eof = eof.withWhitespace(eof.getWhitespace() + (getCursor() < source.getText().length() ? source.getText().substring(getCursor()) : ""));
+        String remainingWhitespace = "";
+        if (source.hasProperty("text") && getCursor() < source.getStringProperty("text").length()) {
+            remainingWhitespace = source.getStringProperty("text").substring(getCursor());
+        } else if (getCursor() < source.getText().length()) {
+            remainingWhitespace = source.getText().substring(getCursor());
+        }
+
+        eof = eof.withWhitespace(eof.getWhitespace() + remainingWhitespace);
         return new JS.CompilationUnit(
                 randomId(),
                 prefix,
@@ -448,9 +455,9 @@ public class TypeScriptParserVisitor {
         }
         Statement r = (Statement) visitNode(incrementor.getNodeProperty("right"));
         Space after = whitespace();
-        if (source.getText().charAt(getCursor()) == ',') {
+        if (sourceStartsWithAtCursor(",")) {
             consumeToken(TSCSyntaxKind.CommaToken);
-        } else if (source.getText().charAt(getCursor()) == ')') {
+        } else if (sourceStartsWithAtCursor(")")) {
             consumeToken(TSCSyntaxKind.CloseParenToken);
         }
         updates.add(padRight(r, after));
@@ -3069,9 +3076,7 @@ public class TypeScriptParserVisitor {
      * Consume the provided text if it matches the current cursor position.
      */
     private void skip(String text) {
-        if (source.hasProperty("text") && source.getStringProperty("text").startsWith(text, getCursor())) {
-            cursor(getCursor() + text.length());
-        } else if (source.getText().startsWith(text, getCursor())) {
+        if (sourceStartsWithAtCursor(text)) {
             cursor(getCursor() + text.length());
         }
     }
@@ -3099,7 +3104,7 @@ public class TypeScriptParserVisitor {
         int saveCursor = getCursor();
         Space beforeSemi = whitespace();
         Semicolon semicolon = null;
-        if (getCursor() < source.getText().length() && source.getText().charAt(getCursor()) == ';') {
+        if (sourceStartsWithAtCursor(";")) {
             semicolon = new Semicolon(randomId());
             consumeToken(TSCSyntaxKind.SemicolonToken);
         } else {
@@ -3268,7 +3273,7 @@ public class TypeScriptParserVisitor {
                         after = sourceBefore(delimiter);
                     } else if (delimiter == TSCSyntaxKind.CommaToken) {
                         after = whitespace();
-                        if (source.getText().charAt(getCursor()) == ',') {
+                        if (sourceStartsWithAtCursor(",")) {
                             consumeToken(delimiter);
                             markers = markers.addIfAbsent(new TrailingComma(randomId(), whitespace()));
                         }
@@ -3440,6 +3445,11 @@ public class TypeScriptParserVisitor {
         }
 
         return visitVariableStatement(node);
+    }
+
+    private boolean sourceStartsWithAtCursor(String text) {
+        return source.hasProperty("text") && source.getStringProperty("text").length() > source.getText().length() ?
+                source.getStringProperty("text").startsWith(text, getCursor()) : source.getText().startsWith(text, getCursor());
     }
 
     private Space sourceBefore(TSCSyntaxKind syntaxKind) {
