@@ -49,6 +49,11 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
+    public JS.Delete visitDelete(JS.Delete delete, P p) {
+        return (JS.Delete) super.visitDelete(delete, p);
+    }
+
+    @Override
     public JS.Export visitExport(JS.Export export, P p) {
         return (JS.Export) super.visitExport(export, p);
     }
