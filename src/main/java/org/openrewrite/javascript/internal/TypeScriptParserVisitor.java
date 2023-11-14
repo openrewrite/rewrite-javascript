@@ -103,10 +103,9 @@ public class TypeScriptParserVisitor {
 
         Space eof = whitespace();
         String remainingWhitespace = "";
-        if (source.hasProperty("text") && getCursor() < source.getStringProperty("text").length()) {
-            remainingWhitespace = source.getStringProperty("text").substring(getCursor());
-        } else if (getCursor() < source.getText().length()) {
-            remainingWhitespace = source.getText().substring(getCursor());
+        String sourceText = source.getStringProperty("text");
+        if (getCursor() < sourceText.length()) {
+            remainingWhitespace = sourceText.substring(getCursor());
         }
 
         eof = eof.withWhitespace(eof.getWhitespace() + remainingWhitespace);
