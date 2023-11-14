@@ -71,17 +71,17 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             case ArrayType:
                 return array(node, signature);
             case EnumMember:
-                return mapEnumMember(node);
+                return mapEnumMember(node, signature);
             case Identifier:
-                return mapIdentifier(node);
+                return mapIdentifier(node, signature);
             case Parameter:
-                return mapParameter(node);
+                return mapParameter(node, signature);
             case QualifiedName:
-                return mapQualifiedName(node);
+                return mapQualifiedName(node, signature);
             case ThisKeyword:
-                return mapThis(node);
+                return mapThis(node, signature);
             case TypeOperator:
-                return mapTypeOperator(node);
+                return mapTypeOperator(node, signature);
             case TypeParameter:
                 return generic(node, signature);
             case ExpressionWithTypeArguments:
@@ -503,25 +503,32 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return annotations.isEmpty() ? null : annotations;
     }
 
-    private JavaType mapEnumMember(TSCNode node) {
-        return type(node.getParent());
+    private JavaType mapEnumMember(TSCNode node, String signature) {
+        JavaType type = type(node.getParent());
+        typeCache.put(signature, type);
+        return type;
     }
 
-    private JavaType mapIdentifier(TSCNode node) {
+    private JavaType mapIdentifier(TSCNode node, String signature) {
         TSCSymbol symbol = node.getTypeChecker().getTypeAtLocation(node).getOptionalSymbolProperty("symbol");
+        JavaType type = null;
         if (symbol != null) {
             List<TSCNode> declarations = symbol.getDeclarations();
             if (declarations != null && !declarations.isEmpty()) {
                 if (declarations.size() == 1) {
-                    return type(declarations.get(0));
+                    type = type(declarations.get(0));
                 } else {
-                    return TsType.MergedInterface;
+                    type = TsType.MergedInterface;
                 }
             } else {
                 implementMe(node.syntaxKind());
             }
+        } else {
+            type = mapType(node.getTypeChecker().getTypeAtLocation(node));
         }
-        return mapType(node.getTypeChecker().getTypeAtLocation(node));
+
+        typeCache.put(signature, type);
+        return type;
     }
 
     private long mapModifiers(@Nullable List<TSCNode> modifiers) {
@@ -568,12 +575,16 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return Flag.flagsToBitMap(flags);
     }
 
-    private JavaType mapParameter(TSCNode node) {
-        return resolveNode(node);
+    private JavaType mapParameter(TSCNode node, String signature) {
+        JavaType type = resolveNode(node);
+        typeCache.put(signature, type);
+        return type;
     }
 
-    private JavaType mapQualifiedName(TSCNode node) {
-        return resolveNode(node);
+    private JavaType mapQualifiedName(TSCNode node, String signature) {
+        JavaType type = resolveNode(node);
+        typeCache.put(signature, type);
+        return type;
     }
 
     private JavaType mapReference(TSCNode node, String signature) {
@@ -621,12 +632,16 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return sourceClass;
     }
 
-    private JavaType mapThis(TSCNode node) {
-        return resolveNode(node);
+    private JavaType mapThis(TSCNode node, String signature) {
+        JavaType type = resolveNode(node);
+        typeCache.put(signature, type);
+        return type;
     }
 
-    private JavaType mapTypeOperator(TSCNode node) {
-        return type(node.getNodeProperty("type"));
+    private JavaType mapTypeOperator(TSCNode node, String signature) {
+        JavaType type = type(node.getNodeProperty("type"));
+        typeCache.put(signature, type);
+        return type;
     }
 
     private JavaType mapType(TSCType type) {
