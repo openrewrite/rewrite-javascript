@@ -241,6 +241,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
                     typeParams.add(type(paramNode));
                 }
                 pt.unsafeSet(clazz, typeParams);
+                return pt;
             } else if (!(jt instanceof JavaType.Parameterized)) {
                 throw new UnsupportedOperationException("this should not have happened.");
             }
