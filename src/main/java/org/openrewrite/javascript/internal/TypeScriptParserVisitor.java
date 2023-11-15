@@ -733,24 +733,27 @@ public class TypeScriptParserVisitor {
     private J visitCaseClause(TSCNode node) {
         TSCNode expression = node.getOptionalNodeProperty("expression");
         List<TSCNode> statements = node.getNodeListProperty("statements");
-        List<JRightPadded<Statement>> list = new ArrayList<>();
+        Space prefix = whitespace();
+        JContainer<Expression> expressions = JContainer.build(
+                expression == null ? EMPTY : sourceBefore(TSCSyntaxKind.CaseKeyword),
+                singletonList(JRightPadded.build((Expression) visitNode(expression))),
+                Markers.EMPTY
+        );
+        List<JRightPadded<Statement>> list = new ArrayList<>(statements.size());
+        Space before = sourceBefore(TSCSyntaxKind.ColonToken);
         for (TSCNode it : statements) {
             JRightPadded<Statement> statementJRightPadded = maybeSemicolon((Statement) visitNode(it));
             list.add(statementJRightPadded);
         }
         return new J.Case(
                 randomId(),
-                whitespace(),
+                prefix,
                 Markers.EMPTY,
                 J.Case.Type.Statement,
                 null,
+                expressions,
                 JContainer.build(
-                        expression == null ? EMPTY : sourceBefore(TSCSyntaxKind.CaseKeyword),
-                        singletonList(JRightPadded.build((Expression) visitNode(expression))),
-                        Markers.EMPTY
-                ),
-                JContainer.build(
-                        sourceBefore(TSCSyntaxKind.ColonToken),
+                        before,
                         list,
                         Markers.EMPTY
                 ),
@@ -859,24 +862,27 @@ public class TypeScriptParserVisitor {
 
     private J visitDefaultClause(TSCNode node) {
         List<TSCNode> statements = node.getNodeListProperty("statements");
-        List<JRightPadded<Statement>> list = new ArrayList<>();
+        Space prefix = whitespace();
+        JContainer<Expression> expressions = JContainer.build(
+                EMPTY,
+                singletonList(JRightPadded.build(new J.Identifier(randomId(), sourceBefore(TSCSyntaxKind.DefaultKeyword), Markers.EMPTY, emptyList(), "default", null, null))),
+                Markers.EMPTY
+        );
+        Space before = sourceBefore(TSCSyntaxKind.ColonToken);
+        List<JRightPadded<Statement>> list = new ArrayList<>(statements.size());
         for (TSCNode it : statements) {
             JRightPadded<Statement> statementJRightPadded = maybeSemicolon((Statement) visitNode(it));
             list.add(statementJRightPadded);
         }
         return new J.Case(
                 randomId(),
-                whitespace(),
+                prefix,
                 Markers.EMPTY,
                 J.Case.Type.Statement,
                 null,
+                expressions,
                 JContainer.build(
-                        EMPTY,
-                        singletonList(JRightPadded.build(new J.Identifier(randomId(), sourceBefore(TSCSyntaxKind.DefaultKeyword), Markers.EMPTY, emptyList(), "default", null, null))),
-                        Markers.EMPTY
-                ),
-                JContainer.build(
-                        sourceBefore(TSCSyntaxKind.ColonToken),
+                        before,
                         list,
                         Markers.EMPTY
                 ),
