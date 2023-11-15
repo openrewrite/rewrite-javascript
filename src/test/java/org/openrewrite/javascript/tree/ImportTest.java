@@ -16,9 +16,12 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.javascript.Assertions.javaScript;
 
 @SuppressWarnings({"ES6UnusedImports", "TypeScriptCheckImport"})
-class ImportTest extends ParserTest {
+class ImportTest implements RewriteTest {
 
     @Test
     void importStatement() {

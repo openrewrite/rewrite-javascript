@@ -17,8 +17,11 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.openrewrite.test.RewriteTest;
 
-class PrimitiveTest extends ParserTest {
+import static org.openrewrite.javascript.Assertions.javaScript;
+
+class PrimitiveTest implements RewriteTest {
 
     @ParameterizedTest
     @ValueSource(strings = {

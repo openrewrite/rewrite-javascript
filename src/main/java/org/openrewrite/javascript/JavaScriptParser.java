@@ -15,18 +15,25 @@
  */
 package org.openrewrite.javascript;
 
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.SourceFile;
-import org.openrewrite.internal.lang.NonNull;
+import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.javascript.internal.TSCMapper;
+import org.openrewrite.java.internal.JavaTypeCache;
+import org.openrewrite.javascript.internal.JavetNativeBridge;
+import org.openrewrite.javascript.internal.TypeScriptParserVisitor;
+import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.style.NamedStyles;
+import org.openrewrite.tree.ParseError;
+import org.openrewrite.tree.ParsingEventListener;
 import org.openrewrite.tree.ParsingExecutionContextView;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,6 +42,28 @@ import java.util.stream.Stream;
 
 public class JavaScriptParser implements Parser {
 
+    private static final TSCRuntime RUNTIME;
+
+    static {
+        JavetNativeBridge.init();
+        RUNTIME = TSCRuntime.init();
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                RUNTIME.close();
+            }
+        });
+    }
+
+    @Value
+    private static class SourceWrapper {
+        Parser.Input input;
+        Path sourcePath;
+        Charset charset;
+        boolean isCharsetBomMarked;
+        String sourceText;
+    }
+
     private final Collection<NamedStyles> styles;
 
     private JavaScriptParser(Collection<NamedStyles> styles) {
@@ -42,7 +71,7 @@ public class JavaScriptParser implements Parser {
     }
 
     @Override
-    public Stream<SourceFile> parse(@NonNull String... sources) {
+    public Stream<SourceFile> parse(String... sources) {
         List<Input> inputs = new ArrayList<>(sources.length);
         for (int i = 0; i < sources.length; i++) {
             Path path = Paths.get("f" + i + ".js");
@@ -64,14 +93,56 @@ public class JavaScriptParser implements Parser {
     @Override
     public Stream<SourceFile> parseInputs(Iterable<Input> sources, @Nullable Path relativeTo, ExecutionContext ctx) {
         ParsingExecutionContextView pctx = ParsingExecutionContextView.view(ctx);
-        List<SourceFile> outputs;
-        try (TSCMapper mapper = new TSCMapper(relativeTo, styles, pctx) {}) {
-            for (Input source : sources) {
-                mapper.add(source);
-            }
-            outputs = mapper.build();
+        Map<Path, SourceWrapper> sourcesByRelativePath = new LinkedHashMap<>();
+
+        for (Input input : sources) {
+            EncodingDetectingInputStream is = input.getSource(pctx);
+            String inputSourceText = is.readFully();
+            Path relativePath = input.getRelativePath(relativeTo);
+
+            SourceWrapper source = new SourceWrapper(
+                    input,
+                    relativePath,
+                    is.getCharset(),
+                    is.isCharsetBomMarked(),
+                    inputSourceText
+            );
+            sourcesByRelativePath.put(relativePath, source);
         }
-        return outputs.stream();
+
+        List<SourceFile> compilationUnits = new ArrayList<>(sourcesByRelativePath.size());
+        ParsingEventListener parsingListener = ParsingExecutionContextView.view(pctx).getParsingListener();
+        Map<Path, String> sourceTextsForTSC = new LinkedHashMap<>();
+        sourcesByRelativePath.forEach((relativePath, sourceText) -> {
+            sourceTextsForTSC.put(relativePath, sourceText.sourceText);
+        });
+
+        RUNTIME.parseSourceTexts(
+                sourceTextsForTSC,
+                (node, context) -> {
+                    SourceWrapper source = sourcesByRelativePath.get(context.getRelativeSourcePath());
+                    parsingListener.startedParsing(source.getInput());
+                    TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
+                            node,
+                            context,
+                            source.getSourcePath(),
+                            new JavaTypeCache(),
+                            source.getCharset().toString(),
+                            source.isCharsetBomMarked(),
+                            styles
+                    );
+                    SourceFile cu;
+                    try {
+                        cu = fileMapper.visitSourceFile();
+                        parsingListener.parsed(source.getInput(), cu);
+                    } catch (Throwable t) {
+                        ((ExecutionContext) pctx).getOnError().accept(t);
+                        cu = ParseError.build(JavaScriptParser.builder().build(), source.getInput(), relativeTo, pctx, t);
+                    }
+                    compilationUnits.add(cu);
+                }
+        );
+        return compilationUnits.stream();
     }
 
     private final static List<String> EXTENSIONS = Collections.unmodifiableList(Arrays.asList(

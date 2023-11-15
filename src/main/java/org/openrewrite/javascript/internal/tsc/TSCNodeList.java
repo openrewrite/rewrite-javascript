@@ -19,11 +19,8 @@ import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueObject;
-import org.openrewrite.internal.lang.NonNull;
 
 import java.util.*;
-
-import static org.openrewrite.javascript.internal.tsc.TSCConversions.NODE;
 
 public class TSCNodeList implements TSCV8Backed, List<TSCNode> {
 
@@ -71,13 +68,11 @@ public class TSCNodeList implements TSCV8Backed, List<TSCNode> {
         return indexOf(o) >= 0;
     }
 
-    @NonNull
     @Override
     public Iterator<TSCNode> iterator() {
         return listIterator();
     }
 
-    @NonNull
     @Override
     public Object[] toArray() {
         int size = size();
@@ -88,9 +83,8 @@ public class TSCNodeList implements TSCV8Backed, List<TSCNode> {
         return array;
     }
 
-    @NonNull
     @Override
-    public <T2> T2[] toArray(@NonNull T2[] array) {
+    public <T2> T2[] toArray(T2[] array) {
         int size = size();
         if (array.length < size) {
             array = Arrays.copyOf(array, size);
@@ -112,7 +106,7 @@ public class TSCNodeList implements TSCV8Backed, List<TSCNode> {
     }
 
     @Override
-    public boolean containsAll(@NonNull Collection<?> args) {
+    public boolean containsAll(Collection<?> args) {
         for (Object arg : args) {
             if (!contains(arg)) {
                 return false;
@@ -122,22 +116,22 @@ public class TSCNodeList implements TSCV8Backed, List<TSCNode> {
     }
 
     @Override
-    public boolean addAll(@NonNull Collection<? extends TSCNode> c) {
+    public boolean addAll(Collection<? extends TSCNode> c) {
         throw new UnsupportedOperationException("node list is not modifiable");
     }
 
     @Override
-    public boolean addAll(int index, @NonNull Collection<? extends TSCNode> c) {
+    public boolean addAll(int index, Collection<? extends TSCNode> c) {
         throw new UnsupportedOperationException("node list is not modifiable");
     }
 
     @Override
-    public boolean removeAll(@NonNull Collection<?> c) {
+    public boolean removeAll(Collection<?> c) {
         throw new UnsupportedOperationException("node list is not modifiable");
     }
 
     @Override
-    public boolean retainAll(@NonNull Collection<?> c) {
+    public boolean retainAll(Collection<?> c) {
         throw new UnsupportedOperationException("node list is not modifiable");
     }
 
@@ -200,13 +194,11 @@ public class TSCNodeList implements TSCV8Backed, List<TSCNode> {
         return -1;
     }
 
-    @NonNull
     @Override
     public ListIterator<TSCNode> listIterator() {
         return listIterator(0);
     }
 
-    @NonNull
     @Override
     public ListIterator<TSCNode> listIterator(int startIndex) {
         return new ListIterator<TSCNode>() {
@@ -261,7 +253,6 @@ public class TSCNodeList implements TSCV8Backed, List<TSCNode> {
         };
     }
 
-    @NonNull
     @Override
     public List<TSCNode> subList(int fromIndex, int toIndex) {
         ArrayList<TSCNode> result = new ArrayList<>(toIndex - fromIndex);
