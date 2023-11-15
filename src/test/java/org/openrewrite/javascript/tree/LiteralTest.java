@@ -16,9 +16,12 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.javascript.Assertions.javaScript;
 
 @SuppressWarnings({"JSUnusedLocalSymbols", "TypeScriptCheckImport", "TypeScriptUnresolvedFunction"})
-class LiteralTest extends ParserTest {
+class LiteralTest implements RewriteTest {
 
     @Test
     void stringLiteral() {

@@ -79,14 +79,16 @@ public class TSCRuntime implements AutoCloseable {
 
     public TSCRuntime setCompilerOptionOverride(String key, Object value) {
         try {
-            V8Value compilerOptions = this.parseOptionsV8.get("compilerOptions");
+            this.close();
+            TSCRuntime runtime = init(false);
+            V8Value compilerOptions = runtime.parseOptionsV8.get("compilerOptions");
             if (compilerOptions.isNullOrUndefined()) {
-                compilerOptions = this.v8Runtime.createV8ValueObject();
-                this.parseOptionsV8.set("compilerOptions", compilerOptions);
+                compilerOptions = runtime.v8Runtime.createV8ValueObject();
+                runtime.parseOptionsV8.set("compilerOptions", compilerOptions);
             }
             ((V8ValueObject) compilerOptions).setWeak();
             ((V8ValueObject) compilerOptions).set(key, value);
-            return this;
+            return runtime;
         } catch (JavetException e) {
             throw new RuntimeException(e);
         }

@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.javascript.Assertions.javaScript;
+
 class ParserPerfTest implements RewriteTest {
 
     // from https://github.com/apache/camel/blob/main/components/camel-cometd/src/test/resources/webapp/dojo/org/cometd.js
@@ -28,6 +30,6 @@ class ParserPerfTest implements RewriteTest {
 
     @Test
     void tryParseCometd() {
-        rewriteRun(ParserTest.javaScript(cometd));
+        rewriteRun(javaScript(cometd));
     }
 }

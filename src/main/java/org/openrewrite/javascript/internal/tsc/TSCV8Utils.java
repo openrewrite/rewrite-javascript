@@ -41,7 +41,7 @@ public class TSCV8Utils {
 
     public static V8ValueFunction makeFunction(
             V8Runtime runtime,
-            @Language("javascript") String innerCode,
+            @Language("typescript") String innerCode,
             IV8ValueObject variables
     ) {
         final List<String> varNames;

@@ -17,9 +17,12 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.javascript.Assertions.javaScript;
 
 @SuppressWarnings({"JSUnusedLocalSymbols", "LoopStatementThatDoesntLoopJS", "TypeScriptCheckImport"})
-class ObjectLiteralTest extends ParserTest {
+class ObjectLiteralTest implements RewriteTest {
 
     @Disabled // times out
     @Test

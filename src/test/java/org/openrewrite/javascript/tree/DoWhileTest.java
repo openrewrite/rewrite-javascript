@@ -16,8 +16,11 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.test.RewriteTest;
 
-class DoWhileTest extends ParserTest {
+import static org.openrewrite.javascript.Assertions.javaScript;
+
+class DoWhileTest implements RewriteTest {
 
     @Test
     void doWhileLoop() {

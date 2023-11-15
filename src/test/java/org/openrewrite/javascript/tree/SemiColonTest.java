@@ -16,9 +16,12 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.javascript.Assertions.javaScript;
 
 @SuppressWarnings({"JSUnusedLocalSymbols", "TrailingWhitespacesInTextBlock", "JSUnnecessarySemicolon"})
-class SemiColonTest extends ParserTest {
+class SemiColonTest implements RewriteTest {
 
     @Test
     void semiColon() {

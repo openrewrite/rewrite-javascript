@@ -16,9 +16,12 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.javascript.Assertions.javaScript;
 
 @SuppressWarnings("ExceptionCaughtLocallyJS")
-class TryCatchTest extends ParserTest {
+class TryCatchTest implements RewriteTest {
 
     @Test
     void tryCatch() {
