@@ -18,7 +18,6 @@ package org.openrewrite.javascript;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.openrewrite.TypeScriptSignatureBuilder;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;

@@ -16,7 +16,6 @@
 package org.openrewrite.javascript;
 
 import org.openrewrite.Incubating;
-import org.openrewrite.TypeScriptSignatureBuilder;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeMapping;
 import org.openrewrite.java.internal.JavaTypeCache;
@@ -35,7 +34,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
-import static org.openrewrite.TypeScriptSignatureBuilder.mapFqn;
+import static org.openrewrite.javascript.TypeScriptSignatureBuilder.mapFqn;
 import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.*;
 
 @Incubating(since = "0.0")

@@ -21,9 +21,11 @@ import lombok.experimental.NonFinal;
 import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.TypesInUse;
+import org.openrewrite.java.service.ImportService;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.internal.JavaScriptPrinter;
+import org.openrewrite.javascript.service.JavaScriptImportService;
 import org.openrewrite.marker.Markers;
 
 import java.beans.Transient;
@@ -197,6 +199,17 @@ public interface JS extends J {
         @Override
         public JavaSourceFile withPackageDeclaration(Package pkg) {
             throw new IllegalStateException("JavaScript does not support package declarations");
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <S> S service(Class<S> service) {
+            String serviceName =  service.getName();
+            if (ImportService.class.getName().equals(serviceName) ||
+                JavaScriptImportService.class.getName().equals(serviceName)) {
+                return (S) new JavaScriptImportService();
+            }
+            return JavaSourceFile.super.service(service);
         }
 
         public Padding getPadding() {
