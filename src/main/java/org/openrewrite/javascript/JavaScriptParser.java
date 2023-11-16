@@ -42,17 +42,16 @@ import java.util.stream.Stream;
 
 public class JavaScriptParser implements Parser {
 
-    private static final TSCRuntime RUNTIME;
+    @Nullable
+    private static TSCRuntime RUNTIME;
 
-    static {
-        JavetNativeBridge.init();
-        RUNTIME = TSCRuntime.init();
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                RUNTIME.close();
-            }
-        });
+    private static TSCRuntime runtime() {
+        if (RUNTIME == null) {
+            JavetNativeBridge.init();
+            RUNTIME = TSCRuntime.init();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> RUNTIME.close()));
+        }
+        return RUNTIME;
     }
 
     @Value
@@ -117,7 +116,8 @@ public class JavaScriptParser implements Parser {
             sourceTextsForTSC.put(relativePath, sourceText.sourceText);
         });
 
-        RUNTIME.parseSourceTexts(
+        //noinspection resource
+        runtime().parseSourceTexts(
                 sourceTextsForTSC,
                 (node, context) -> {
                     SourceWrapper source = sourcesByRelativePath.get(context.getRelativeSourcePath());
