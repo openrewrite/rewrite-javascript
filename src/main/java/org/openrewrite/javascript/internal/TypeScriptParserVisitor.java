@@ -2355,6 +2355,7 @@ public class TypeScriptParserVisitor {
                 prefix,
                 Markers.EMPTY,
                 annotations.isEmpty() ? emptyList() : annotations,
+                emptyList(),
                 name,
                 bounds
         );
