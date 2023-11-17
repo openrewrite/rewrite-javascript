@@ -23,6 +23,7 @@ import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
+import org.openrewrite.javascript.internal.tsc.TSCNodeList;
 import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
@@ -171,8 +172,9 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             List<TSCNode> propertyNodes = null;
             List<TSCNode> methodNodes = null;
             List<TSCNode> enumNodes = null;
-            if (node.hasProperty("members")) {
-                for (TSCNode member : node.getNodeListProperty("members")) {
+            TSCNodeList memberNodes = node.getOptionalNodeListProperty("members");
+            if (memberNodes != null) {
+                for (TSCNode member : memberNodes) {
                     if (member.syntaxKind() == TSCSyntaxKind.CallSignature ||
                             member.syntaxKind() == TSCSyntaxKind.Constructor ||
                             member.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
@@ -228,15 +230,15 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             clazz.unsafeSet(null, supertype, owner, mapAnnotations(modifiers), interfaces, members, methods);
         }
 
-        if (node.hasProperty("typeParameters")) {
+        TSCNodeList typeParamNodes = node.getOptionalNodeListProperty("typeParameters");
+        if (typeParamNodes != null) {
             JavaType jt = typeCache.get(signature);
             if (jt == null) {
                 JavaType.Parameterized pt = new JavaType.Parameterized(null, null, null);
                 typeCache.put(signature, pt);
 
-                List<TSCNode> paramNodes = node.getNodeListProperty("typeParameters");
-                List<JavaType> typeParams = new ArrayList<>(paramNodes.size());
-                for (TSCNode paramNode : paramNodes) {
+                List<JavaType> typeParams = new ArrayList<>(typeParamNodes.size());
+                for (TSCNode paramNode : typeParamNodes) {
                     typeParams.add(type(paramNode));
                 }
                 pt.unsafeSet(clazz, typeParams);
@@ -255,8 +257,8 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         List<JavaType> bounds = null;
         JavaType.GenericTypeVariable.Variance variance = INVARIANT;
 
-        if (node.hasProperty("constraint")) {
-            TSCNode constraint = node.getNodeProperty("constraint");
+        TSCNode constraint = node.getOptionalNodeProperty("constraint");
+        if (constraint != null) {
             if (constraint.syntaxKind() == TSCSyntaxKind.IntersectionType) {
                 List<TSCNode> types = constraint.getNodeListProperty("types");
                 bounds = new ArrayList<>(types.size());
@@ -297,11 +299,12 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
         boolean isConstructor = node.syntaxKind() == TSCSyntaxKind.Constructor;
         List<TSCNode> modifiers = node.getOptionalNodeListProperty("modifiers");
+        TSCNode nodeName = node.getOptionalNodeProperty("name");
         JavaType.Method method = new JavaType.Method(
                 null,
                 mapModifiers(modifiers),
                 null,
-                isConstructor ? "<constructor>" : node.hasProperty("name") ? node.getNodeProperty("name").getText() : "{anonymous}",
+                isConstructor ? "<constructor>" : nodeName != null ? nodeName.getText() : "{anonymous}",
                 null,
                 paramNames,
                 null, null, null,

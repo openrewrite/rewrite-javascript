@@ -20,6 +20,7 @@ import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeSignatureBuilder;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
+import org.openrewrite.javascript.internal.tsc.TSCNodeList;
 import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
@@ -58,7 +59,8 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
             case ClassDeclaration:
             case EnumDeclaration:
             case InterfaceDeclaration:
-                return node.hasProperty("typeParameters") && !node.getNodeListProperty("typeParameters").isEmpty() ?
+                TSCNodeList typeParameters = node.getOptionalNodeListProperty("typeParameters");
+                return typeParameters != null && !typeParameters.isEmpty() ?
                         parameterizedSignature(node) : classSignature(node);
             case ArrayType:
                 cached = arraySignature(node);
@@ -131,8 +133,8 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         StringBuilder s = new StringBuilder("Generic{").append(name);
         StringJoiner boundSigs = new StringJoiner(" & ");
 
-        if (node.hasProperty("constraint")) {
-            TSCNode constraint = node.getNodeProperty("constraint");
+        TSCNode constraint = node.getOptionalNodeProperty("constraint");
+        if (constraint != null) {
             if (constraint.syntaxKind() == TSCSyntaxKind.IntersectionType) {
                 for (TSCNode type : constraint.getNodeListProperty("types")) {
                     boundSigs.add(signature(type));
@@ -232,8 +234,9 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
 
         String name = node.getNodeProperty("name").getText();
         String typeSig;
-        if (node.hasProperty("type")) {
-            typeSig = signature(node.getNodeProperty("type"));
+        TSCNode type = node.getOptionalNodeProperty("type");
+        if (type != null) {
+            typeSig = signature(type);
         } else if (node.syntaxKind() == TSCSyntaxKind.EnumMember) {
             typeSig = owner;
         } else {
