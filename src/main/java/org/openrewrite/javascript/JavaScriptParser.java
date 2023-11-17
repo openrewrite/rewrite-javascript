@@ -73,7 +73,7 @@ public class JavaScriptParser implements Parser {
     public Stream<SourceFile> parse(String... sources) {
         List<Input> inputs = new ArrayList<>(sources.length);
         for (int i = 0; i < sources.length; i++) {
-            Path path = Paths.get("f" + i + ".js");
+            Path path = Paths.get("f" + i + ".ts");
             int j = i;
             inputs.add(new Input(
                     path, null,

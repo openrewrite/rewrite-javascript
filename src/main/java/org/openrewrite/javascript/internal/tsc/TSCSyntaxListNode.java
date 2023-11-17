@@ -17,13 +17,12 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.openrewrite.internal.lang.NonNull;
+import org.openrewrite.internal.lang.Nullable;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 public class TSCSyntaxListNode extends TSCNode implements List<TSCNode> {
+    @Nullable
     private List<TSCNode> children;
 
     public TSCSyntaxListNode(TSCProgramContext programContext, V8ValueObject nodeV8) {
@@ -82,7 +81,7 @@ public class TSCSyntaxListNode extends TSCNode implements List<TSCNode> {
 
     @Override
     public boolean containsAll(@NonNull Collection<?> c) {
-        return getChildren().containsAll(c);
+        return new HashSet<>(getChildren()).containsAll(c);
     }
 
     @Override

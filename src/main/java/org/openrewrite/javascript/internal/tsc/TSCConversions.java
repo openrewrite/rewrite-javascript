@@ -150,9 +150,7 @@ public final class TSCConversions {
             }
             V8ValueArray array = (V8ValueArray) value;
             List<T> result = new ArrayList<>(array.getLength());
-            array.forEach(element -> {
-                result.add(of.convertNonNull(context, element));
-            });
+            array.forEach(element -> result.add(of.convertNonNull(context, element)));
             return result;
         };
     }

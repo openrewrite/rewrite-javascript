@@ -17,14 +17,17 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.reference.V8ValueObject;
+import lombok.Getter;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
 import java.nio.file.Path;
 
 public class TSCSourceFileContext extends TSCV8ValueHolder {
+    @Getter
     private final TSCProgramContext programContext;
     private final V8ValueObject scanner;
 
+    @Getter
     private final Path relativeSourcePath;
 
     TSCSourceFileContext(TSCProgramContext programContext, String sourceText, Path relativeSourcePath) {
@@ -37,10 +40,6 @@ public class TSCSourceFileContext extends TSCV8ValueHolder {
             throw new RuntimeException(e);
         }
         resetScanner(0);
-    }
-
-    public TSCProgramContext getProgramContext() {
-        return programContext;
     }
 
     public Integer scannerTokenStart() {
@@ -84,7 +83,4 @@ public class TSCSourceFileContext extends TSCV8ValueHolder {
         }
     }
 
-    public Path getRelativeSourcePath() {
-        return relativeSourcePath;
-    }
 }

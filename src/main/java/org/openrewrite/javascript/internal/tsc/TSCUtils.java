@@ -28,7 +28,7 @@ public final class TSCUtils {
             return text;
         }
 
-        maxLength--; // to accomodate the ellipsis
+        maxLength--; // to accommodate the ellipsis
         int startLength = maxLength / 2;
         int endLength = maxLength - startLength;
         return text.substring(0, startLength) + "…" + text.substring(text.length() - endLength);

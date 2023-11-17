@@ -19,6 +19,7 @@ import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
+import lombok.Getter;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -39,9 +40,13 @@ public class TSCProgramContext extends TSCV8ValueHolder {
      */
     private final Path compilerLibPath;
 
-    private TSCGlobals typescriptGlobals;
-    private TSCTypeChecker typeChecker;
-    private TSCInstanceOfChecks instanceOfChecks;
+    private final TSCGlobals typescriptGlobals;
+
+    @Getter
+    private final TSCTypeChecker typeChecker;
+
+    @Getter
+    private final TSCInstanceOfChecks instanceOfChecks;
 
     final TSCObjectCache<TSCNode> nodeCache = lifecycleLinked(TSCObjectCache.usingInternalKey(TSCNode::wrap));
     final TSCObjectCache<TSCNodeList> nodeListCache = lifecycleLinked(TSCObjectCache.usingInternalKey(TSCNodeList::wrap));
@@ -100,16 +105,8 @@ public class TSCProgramContext extends TSCV8ValueHolder {
     }
 
 
-    public TSCTypeChecker getTypeChecker() {
-        return this.typeChecker;
-    }
-
     public TSCGlobals getTypeScriptGlobals() {
         return this.typescriptGlobals;
-    }
-
-    public TSCInstanceOfChecks getInstanceOfChecks() {
-        return this.instanceOfChecks;
     }
 
     public @Nullable TSCInstanceOfChecks.InterfaceKind identifyInterfaceKind(V8Value valueV8) {

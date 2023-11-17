@@ -25,7 +25,7 @@ import java.util.Map;
 
 public class TSCType implements TSCV8Backed, TSCTypeAccessors {
     @Value
-    static class DebugInfo {
+    public static class DebugInfo {
         List<TSCTypeFlag> typeFlags;
         List<TSCObjectFlag> objectFlags;
         Map<String, Object> properties;

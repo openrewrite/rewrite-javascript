@@ -28,7 +28,7 @@ import java.util.Map;
 public class TSCSymbol implements TSCV8Backed {
 
     @Value
-    static class DebugInfo {
+    public static class DebugInfo {
         List<TSCSymbolFlag> symbolFlags;
         Map<String, Object> properties;
     }
