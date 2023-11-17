@@ -67,9 +67,10 @@ public class TypeScriptParserVisitor {
     }
 
     public JS.CompilationUnit visitSourceFile() {
-        List<JRightPadded<Statement>> statements = new ArrayList<>();
+        TSCNodeList statementList = source.getNodeListProperty("statements");
+        List<JRightPadded<Statement>> statements = new ArrayList<>(statementList.size());
         Space prefix = whitespace();
-        for (TSCNode child : source.getNodeListProperty("statements")) {
+        for (TSCNode child : statementList) {
             @Nullable J visited;
             int saveCursor = getCursor();
             try {
@@ -243,7 +244,7 @@ public class TypeScriptParserVisitor {
                 this::visitNode,
                 true
         );
-        List<JRightPadded<Expression>> elements = new ArrayList<>();
+        List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
         for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
             Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
                     new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
@@ -554,7 +555,7 @@ public class TypeScriptParserVisitor {
                     true
             );
 
-            List<JRightPadded<Expression>> typeParams = new ArrayList<>();
+            List<JRightPadded<Expression>> typeParams = new ArrayList<>(jContainer.getElements().size());
             for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
                 Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
                         new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
@@ -574,7 +575,7 @@ public class TypeScriptParserVisitor {
                     this::visitNode,
                     true
             );
-            List<JRightPadded<Expression>> elements = new ArrayList<>();
+            List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
             for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
                 Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
                         new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
@@ -842,7 +843,7 @@ public class TypeScriptParserVisitor {
                     true
             );
 
-            List<JRightPadded<Expression>> elements = new ArrayList<>();
+            List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
             for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
                 Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
                         new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
@@ -1644,7 +1645,7 @@ public class TypeScriptParserVisitor {
                 this::visitNode,
                 true
         );
-        List<JRightPadded<Expression>> elements = new ArrayList<>();
+        List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
         for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
             Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
                     new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
@@ -1695,7 +1696,7 @@ public class TypeScriptParserVisitor {
         if (jContainer.getElements().isEmpty()) {
             arguments = JContainer.empty();
         } else {
-            List<JRightPadded<Expression>> elements = new ArrayList<>();
+            List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
             for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
                 Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
                         new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
