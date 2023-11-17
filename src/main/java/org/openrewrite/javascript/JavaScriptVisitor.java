@@ -145,6 +145,20 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return d;
     }
 
+    public J visitDelete(JS.Delete delete, P p) {
+        JS.Delete d = delete;
+        d = d.withPrefix(visitSpace(d.getPrefix(), JsSpace.Location.DELETE_PREFIX, p));
+        d = d.withMarkers(visitMarkers(d.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(d, p);
+        if (!(temp instanceof JS.Delete)) {
+            return temp;
+        } else {
+            d = (JS.Delete) temp;
+        }
+        d = d.withType(visitType(d.getType(), p));
+        return d;
+    }
+
     public J visitExport(JS.Export export, P p) {
         JS.Export e = export;
         e = e.withPrefix(visitSpace(e.getPrefix(), JsSpace.Location.EXPORT_PREFIX, p));
@@ -345,21 +359,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         u = u.getPadding().withTypes(ListUtils.map(u.getPadding().getTypes(), t -> visitRightPadded(t, JsRightPadded.Location.UNION_TYPE, p)));
         u = u.withType(visitType(u.getType(), p));
         return u;
-    }
-
-    public J visitUnknownElement(JS.UnknownElement unknownElement, P p) {
-        JS.UnknownElement u = unknownElement;
-        u = u.withPrefix(visitSpace(u.getPrefix(), JsSpace.Location.UNKNOWN_PREFIX, p));
-        u = u.withMarkers(visitMarkers(u.getMarkers(), p));
-        u = u.withSource(visitAndCast(u.getSource(), p));
-        return u;
-    }
-
-    public J visitUnknownElementSource(JS.UnknownElement.Source source, P p) {
-        JS.UnknownElement.Source s = source;
-        s = s.withPrefix(visitSpace(s.getPrefix(), JsSpace.Location.UNKNOWN_SOURCE_PREFIX, p));
-        s = s.withMarkers(visitMarkers(s.getMarkers(), p));
-        return s;
     }
 
     // TODO: remove me. Requires changes from rewrite-java.

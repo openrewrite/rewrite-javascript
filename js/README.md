@@ -13,7 +13,7 @@ nvm use && yarn update
 ```
 
 ## Structure
-
+Each script may be run and debugged through `package.json => scripts`
 - `src/`
   - `codegen/` is for scripts that generate Java and TypeScript code during the build process
     - `generatedLicenseHeader.txt` is inserted at the top of every generated Java/TS file

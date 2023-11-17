@@ -11,16 +11,18 @@ dependencies {
     implementation(platform("org.openrewrite:rewrite-bom:$latest"))
     implementation("org.openrewrite:rewrite-java")
 
+    compileOnly("org.assertj:assertj-core:latest.release")
     testImplementation("org.assertj:assertj-core:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-params:latest.release")
     testImplementation("org.openrewrite:rewrite-test")
+    testImplementation("org.openrewrite.recipe:rewrite-static-analysis:${latest}")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
 
-    implementation("com.caoccao.javet:javet-macos:2.1.2") // Mac OS (x86_64 and arm64)
-    implementation("com.caoccao.javet:javet:2.1.2") // Linux and Windows
+    implementation("com.caoccao.javet:javet-macos:3.0.0") // Mac OS (x86_64 and arm64)
+    implementation("com.caoccao.javet:javet:3.0.0") // Linux and Windows
 }
 
 tasks.withType<Javadoc> {

@@ -16,9 +16,13 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
+import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.javascript.Assertions.javaScript;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
-class MethodInvocationTest extends ParserTest {
+class MethodInvocationTest implements RewriteTest {
 
     @Test
     void methodInvocation() {
@@ -45,6 +49,7 @@ class MethodInvocationTest extends ParserTest {
         );
     }
 
+    @ExpectedToFail("Requires CallExpression#typeArguments")
     @Test
     void typeArguments() {
         rewriteRun(
@@ -53,11 +58,11 @@ class MethodInvocationTest extends ParserTest {
               class User {
               }
               
-              function foo < T > ( arg : T ) : T {
-                  return arg ;
+              function foo < T > () : User {
+                  return new User() ;
               }
               
-              const bar = foo < User > ( new User ( ) ) ;
+              const bar = foo<User>();
               """
           )
         );

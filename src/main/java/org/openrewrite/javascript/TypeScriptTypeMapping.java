@@ -16,7 +16,6 @@
 package org.openrewrite.javascript;
 
 import org.openrewrite.Incubating;
-import org.openrewrite.TypeScriptSignatureBuilder;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeMapping;
 import org.openrewrite.java.internal.JavaTypeCache;
@@ -24,19 +23,19 @@ import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
+import org.openrewrite.javascript.internal.tsc.TSCNodeList;
 import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
-import org.openrewrite.javascript.table.ParseExceptionAnalysis;
 import org.openrewrite.javascript.tree.TsType;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
-import static org.openrewrite.TypeScriptSignatureBuilder.mapFqn;
+import static org.openrewrite.javascript.TypeScriptSignatureBuilder.mapFqn;
 import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.*;
 
 @Incubating(since = "0.0")
@@ -173,20 +172,22 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             List<TSCNode> propertyNodes = null;
             List<TSCNode> methodNodes = null;
             List<TSCNode> enumNodes = null;
-            if (node.hasProperty("members")) {
-                for (TSCNode member : node.getNodeListProperty("members")) {
+            TSCNodeList memberNodes = node.getOptionalNodeListProperty("members");
+            if (memberNodes != null) {
+                for (TSCNode member : memberNodes) {
                     if (member.syntaxKind() == TSCSyntaxKind.CallSignature ||
                             member.syntaxKind() == TSCSyntaxKind.Constructor ||
                             member.syntaxKind() == TSCSyntaxKind.ConstructSignature ||
                             member.syntaxKind() == TSCSyntaxKind.FunctionDeclaration ||
                             member.syntaxKind() == TSCSyntaxKind.MethodDeclaration ||
-                            member.syntaxKind() == TSCSyntaxKind.MethodSignature) {
+                            member.syntaxKind() == TSCSyntaxKind.MethodSignature ||
+                            // TODO: possibly not the appropriate way to map indexed access
+                            member.syntaxKind() == TSCSyntaxKind.IndexSignature) {
                         if (methodNodes == null) {
                             methodNodes = new ArrayList<>(1);
                         }
                         methodNodes.add(member);
-                    } else if (member.syntaxKind() == TSCSyntaxKind.EnumMember ||
-                            member.syntaxKind() == TSCSyntaxKind.PropertyDeclaration ||
+                    } else if (member.syntaxKind() == TSCSyntaxKind.PropertyDeclaration ||
                             member.syntaxKind() == TSCSyntaxKind.PropertySignature) {
                         if (propertyNodes == null) {
                             propertyNodes = new ArrayList<>(1);
@@ -229,18 +230,19 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             clazz.unsafeSet(null, supertype, owner, mapAnnotations(modifiers), interfaces, members, methods);
         }
 
-        if (node.hasProperty("typeParameters")) {
+        TSCNodeList typeParamNodes = node.getOptionalNodeListProperty("typeParameters");
+        if (typeParamNodes != null) {
             JavaType jt = typeCache.get(signature);
             if (jt == null) {
                 JavaType.Parameterized pt = new JavaType.Parameterized(null, null, null);
                 typeCache.put(signature, pt);
 
-                List<TSCNode> paramNodes = node.getNodeListProperty("typeParameters");
-                List<JavaType> typeParams = new ArrayList<>(paramNodes.size());
-                for (TSCNode paramNode : paramNodes) {
+                List<JavaType> typeParams = new ArrayList<>(typeParamNodes.size());
+                for (TSCNode paramNode : typeParamNodes) {
                     typeParams.add(type(paramNode));
                 }
                 pt.unsafeSet(clazz, typeParams);
+                return pt;
             } else if (!(jt instanceof JavaType.Parameterized)) {
                 throw new UnsupportedOperationException("this should not have happened.");
             }
@@ -255,8 +257,8 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         List<JavaType> bounds = null;
         JavaType.GenericTypeVariable.Variance variance = INVARIANT;
 
-        if (node.hasProperty("constraint")) {
-            TSCNode constraint = node.getNodeProperty("constraint");
+        TSCNode constraint = node.getOptionalNodeProperty("constraint");
+        if (constraint != null) {
             if (constraint.syntaxKind() == TSCSyntaxKind.IntersectionType) {
                 List<TSCNode> types = constraint.getNodeListProperty("types");
                 bounds = new ArrayList<>(types.size());
@@ -297,11 +299,12 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
         boolean isConstructor = node.syntaxKind() == TSCSyntaxKind.Constructor;
         List<TSCNode> modifiers = node.getOptionalNodeListProperty("modifiers");
+        TSCNode nodeName = node.getOptionalNodeProperty("name");
         JavaType.Method method = new JavaType.Method(
                 null,
                 mapModifiers(modifiers),
                 null,
-                isConstructor ? "<constructor>" : node.hasProperty("name") ? node.getNodeProperty("name").getText() : "{anonymous}",
+                isConstructor ? "<constructor>" : nodeName != null ? nodeName.getText() : "{anonymous}",
                 null,
                 paramNames,
                 null, null, null,
@@ -801,10 +804,10 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
     }
 
     private void implementMe(TSCSyntaxKind syntaxKind) {
-        throw new RuntimeException(ParseExceptionAnalysis.getAnalysisMessage(syntaxKind.name()));
+        throw new UnsupportedOperationException(syntaxKind.name() + " syntaxKind is not supported in TypeMapping.");
     }
 
     private void implementMe(TSCType type) {
-        throw new RuntimeException(ParseExceptionAnalysis.getAnalysisMessage(type.typeToString()));
+        throw new UnsupportedOperationException(type.typeToString() + " type is not supported in TypeMapping.");
     }
 }

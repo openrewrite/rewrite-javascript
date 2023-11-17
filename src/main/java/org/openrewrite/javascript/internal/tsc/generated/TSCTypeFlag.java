@@ -66,7 +66,6 @@ public enum TSCTypeFlag {
     DefinitelyFalsy(117632),
     PossiblyFalsy(117724),
     Intrinsic(67359327),
-    Primitive(134348796),
     StringLike(402653316),
     NumberLike(296),
     BigIntLike(2112),
@@ -74,6 +73,7 @@ public enum TSCTypeFlag {
     EnumLike(1056),
     ESSymbolLike(12288),
     VoidLike(49152),
+    Primitive(402784252),
     DefinitelyNonNullable(470302716),
     DisjointDomains(469892092),
     UnionOrIntersection(3145728),
@@ -83,12 +83,12 @@ public enum TSCTypeFlag {
     InstantiablePrimitive(406847488),
     Instantiable(465829888),
     StructuredOrInstantiable(469499904),
-    ObjectFlagsType(3899393),
+    ObjectFlagsType(138117121),
     Simplifiable(25165824),
     Singleton(67358815),
     Narrowable(536624127),
-    IncludesMask(205258751),
-    NotPrimitiveUnion(36323363);
+    IncludesMask(473694207),
+    NotPrimitiveUnion(36323331);
 
 
     public final int code;
@@ -177,8 +177,6 @@ public enum TSCTypeFlag {
                 return TSCTypeFlag.PossiblyFalsy;
             case 67359327:
                 return TSCTypeFlag.Intrinsic;
-            case 134348796:
-                return TSCTypeFlag.Primitive;
             case 402653316:
                 return TSCTypeFlag.StringLike;
             case 296:
@@ -193,6 +191,8 @@ public enum TSCTypeFlag {
                 return TSCTypeFlag.ESSymbolLike;
             case 49152:
                 return TSCTypeFlag.VoidLike;
+            case 402784252:
+                return TSCTypeFlag.Primitive;
             case 470302716:
                 return TSCTypeFlag.DefinitelyNonNullable;
             case 469892092:
@@ -211,7 +211,7 @@ public enum TSCTypeFlag {
                 return TSCTypeFlag.Instantiable;
             case 469499904:
                 return TSCTypeFlag.StructuredOrInstantiable;
-            case 3899393:
+            case 138117121:
                 return TSCTypeFlag.ObjectFlagsType;
             case 25165824:
                 return TSCTypeFlag.Simplifiable;
@@ -219,9 +219,9 @@ public enum TSCTypeFlag {
                 return TSCTypeFlag.Singleton;
             case 536624127:
                 return TSCTypeFlag.Narrowable;
-            case 205258751:
+            case 473694207:
                 return TSCTypeFlag.IncludesMask;
-            case 36323363:
+            case 36323331:
                 return TSCTypeFlag.NotPrimitiveUnion;
             default:
                 throw new IllegalArgumentException("unknown TSCTypeFlag code: " + code);

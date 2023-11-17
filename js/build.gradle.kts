@@ -1,5 +1,5 @@
 plugins {
-    id("com.github.node-gradle.node") version "3.5.1"
+    id("com.github.node-gradle.node") version "7.0.1"
 }
 
 apply(plugin = "base")
@@ -8,8 +8,8 @@ apply(plugin = "com.github.node-gradle.node")
 group = "org.openrewrite"
 
 node {
-    version.set("18.15.0")
-    npmVersion.set("9.5.0")
+    version.set("20.8.0")
+    npmVersion.set("10.1.0")
     download.set(true)
 }
 

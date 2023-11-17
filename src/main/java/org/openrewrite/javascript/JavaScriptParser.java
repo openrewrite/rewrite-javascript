@@ -15,32 +15,62 @@
  */
 package org.openrewrite.javascript;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
-import org.openrewrite.internal.lang.NonNull;
+import org.openrewrite.SourceFile;
+import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.internal.lang.Nullable;
-import org.openrewrite.javascript.internal.TSCMapper;
+import org.openrewrite.java.internal.JavaTypeCache;
+import org.openrewrite.javascript.internal.JavetNativeBridge;
+import org.openrewrite.javascript.internal.TypeScriptParserVisitor;
+import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.style.NamedStyles;
+import org.openrewrite.tree.ParseError;
+import org.openrewrite.tree.ParsingEventListener;
 import org.openrewrite.tree.ParsingExecutionContextView;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class JavaScriptParser implements Parser<JS.CompilationUnit> {
+public class JavaScriptParser implements Parser {
+
+    @Nullable
+    private static TSCRuntime RUNTIME;
+
+    private static TSCRuntime runtime() {
+        if (RUNTIME == null) {
+            JavetNativeBridge.init();
+            RUNTIME = TSCRuntime.init();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> RUNTIME.close()));
+        }
+        return RUNTIME;
+    }
+
+    @Value
+    private static class SourceWrapper {
+        Parser.Input input;
+        Path sourcePath;
+        Charset charset;
+        boolean isCharsetBomMarked;
+        String sourceText;
+    }
+
+    private final Collection<NamedStyles> styles;
+
+    private JavaScriptParser(Collection<NamedStyles> styles) {
+        this.styles = styles;
+    }
 
     @Override
-    public Stream<JS.CompilationUnit> parse(@NonNull String... sources) {
+    public Stream<SourceFile> parse(String... sources) {
         List<Input> inputs = new ArrayList<>(sources.length);
         for (int i = 0; i < sources.length; i++) {
             Path path = Paths.get("f" + i + ".js");
@@ -60,29 +90,69 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
     }
 
     @Override
-    public Stream<JS.CompilationUnit> parseInputs(Iterable<Input> sources, @Nullable Path relativeTo, ExecutionContext ctx) {
+    public Stream<SourceFile> parseInputs(Iterable<Input> sources, @Nullable Path relativeTo, ExecutionContext ctx) {
         ParsingExecutionContextView pctx = ParsingExecutionContextView.view(ctx);
-        List<JS.CompilationUnit> outputs;
-        try (TSCMapper mapper = new TSCMapper(relativeTo, pctx) {
-            @Override
-            protected void onParseFailure(Input input, Throwable error) {
-                pctx.parseFailure(input, relativeTo, JavaScriptParser.this, error);
-                ctx.getOnError().accept(error);
-            }
-        }) {
+        Map<Path, SourceWrapper> sourcesByRelativePath = new LinkedHashMap<>();
 
-            for (Input source : sources) {
-                mapper.add(source);
-            }
+        for (Input input : sources) {
+            EncodingDetectingInputStream is = input.getSource(pctx);
+            String inputSourceText = is.readFully();
+            Path relativePath = input.getRelativePath(relativeTo);
 
-            outputs = mapper.build();
+            SourceWrapper source = new SourceWrapper(
+                    input,
+                    relativePath,
+                    is.getCharset(),
+                    is.isCharsetBomMarked(),
+                    inputSourceText
+            );
+            sourcesByRelativePath.put(relativePath, source);
         }
-        return outputs.stream();
+
+        List<SourceFile> compilationUnits = new ArrayList<>(sourcesByRelativePath.size());
+        ParsingEventListener parsingListener = ParsingExecutionContextView.view(pctx).getParsingListener();
+        Map<Path, String> sourceTextsForTSC = new LinkedHashMap<>();
+        sourcesByRelativePath.forEach((relativePath, sourceText) -> {
+            sourceTextsForTSC.put(relativePath, sourceText.sourceText);
+        });
+
+        //noinspection resource
+        runtime().parseSourceTexts(
+                sourceTextsForTSC,
+                (node, context) -> {
+                    SourceWrapper source = sourcesByRelativePath.get(context.getRelativeSourcePath());
+                    parsingListener.startedParsing(source.getInput());
+                    TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
+                            node,
+                            context,
+                            source.getSourcePath(),
+                            new JavaTypeCache(),
+                            source.getCharset().toString(),
+                            source.isCharsetBomMarked(),
+                            styles
+                    );
+                    SourceFile cu;
+                    try {
+                        cu = fileMapper.visitSourceFile();
+                        parsingListener.parsed(source.getInput(), cu);
+                    } catch (Throwable t) {
+                        ((ExecutionContext) pctx).getOnError().accept(t);
+                        cu = ParseError.build(JavaScriptParser.builder().build(), source.getInput(), relativeTo, pctx, t);
+                    }
+                    compilationUnits.add(cu);
+                }
+        );
+        return compilationUnits.stream();
     }
 
     private final static List<String> EXTENSIONS = Collections.unmodifiableList(Arrays.asList(
             ".js", ".jsx", ".mjs", ".cjs",
             ".ts", ".tsx", ".mts", ".cts"
+    ));
+
+    // Exclude Yarn's Plug'n'Play loader files (https://yarnpkg.com/features/pnp)
+    private final static List<String> EXCLUSIONS = Collections.unmodifiableList(Arrays.asList(
+            ".pnp.cjs", ".pnp.loader.mjs"
     ));
 
     @Override
@@ -94,7 +164,7 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
 
         final String filename = path.getFileName().toString().toLowerCase();
         for (String ext : EXTENSIONS) {
-            if (filename.endsWith(ext)) {
+            if (filename.endsWith(ext) && !EXCLUSIONS.contains(filename)) {
                 return true;
             }
         }
@@ -103,7 +173,7 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
 
     @Override
     public Path sourcePathFromSourceText(Path prefix, String sourceCode) {
-        return prefix.resolve("file.js");
+        return prefix.resolve("file.ts");
     }
 
     public static Builder builder() {
@@ -112,13 +182,21 @@ public class JavaScriptParser implements Parser<JS.CompilationUnit> {
 
     public static class Builder extends Parser.Builder {
         // FIXME add logCompilationWarningsAndErrors.
+        Collection<NamedStyles> styles = new ArrayList<>();
 
         public Builder() {
             super(JS.CompilationUnit.class);
         }
 
+        public Builder styles(Iterable<? extends NamedStyles> styles) {
+            for (NamedStyles style : styles) {
+                this.styles.add(style);
+            }
+            return this;
+        }
+
         public JavaScriptParser build() {
-            return new JavaScriptParser();
+            return new JavaScriptParser(styles);
         }
 
         @Override

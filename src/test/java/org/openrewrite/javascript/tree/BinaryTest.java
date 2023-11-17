@@ -17,8 +17,12 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.openrewrite.Issue;
+import org.openrewrite.test.RewriteTest;
 
-class BinaryTest extends ParserTest {
+import static org.openrewrite.javascript.Assertions.javaScript;
+
+class BinaryTest implements RewriteTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
@@ -56,10 +60,12 @@ class BinaryTest extends ParserTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-javascript/issues/65")
     @ParameterizedTest
     @ValueSource(strings = {
       "&&",
       "||",
+      ",",
     })
     void logicalOps(String arg) {
         rewriteRun(

@@ -33,383 +33,385 @@ public enum TSCSyntaxKind {
     ShebangTrivia(6),
     /** Also includes LastTriviaToken */
     ConflictMarkerTrivia(7),
+    NonTextFileMarkerTrivia(8),
     /** Also includes FirstLiteralToken */
-    NumericLiteral(8),
-    BigIntLiteral(9),
-    StringLiteral(10),
-    JsxText(11),
-    JsxTextAllWhiteSpaces(12),
-    RegularExpressionLiteral(13),
+    NumericLiteral(9),
+    BigIntLiteral(10),
+    StringLiteral(11),
+    JsxText(12),
+    JsxTextAllWhiteSpaces(13),
+    RegularExpressionLiteral(14),
     /** Also includes LastLiteralToken, FirstTemplateToken */
-    NoSubstitutionTemplateLiteral(14),
-    TemplateHead(15),
-    TemplateMiddle(16),
+    NoSubstitutionTemplateLiteral(15),
+    TemplateHead(16),
+    TemplateMiddle(17),
     /** Also includes LastTemplateToken */
-    TemplateTail(17),
+    TemplateTail(18),
     /** Also includes FirstPunctuation */
-    OpenBraceToken(18),
-    CloseBraceToken(19),
-    OpenParenToken(20),
-    CloseParenToken(21),
-    OpenBracketToken(22),
-    CloseBracketToken(23),
-    DotToken(24),
-    DotDotDotToken(25),
-    SemicolonToken(26),
-    CommaToken(27),
-    QuestionDotToken(28),
+    OpenBraceToken(19),
+    CloseBraceToken(20),
+    OpenParenToken(21),
+    CloseParenToken(22),
+    OpenBracketToken(23),
+    CloseBracketToken(24),
+    DotToken(25),
+    DotDotDotToken(26),
+    SemicolonToken(27),
+    CommaToken(28),
+    QuestionDotToken(29),
     /** Also includes FirstBinaryOperator */
-    LessThanToken(29),
-    LessThanSlashToken(30),
-    GreaterThanToken(31),
-    LessThanEqualsToken(32),
-    GreaterThanEqualsToken(33),
-    EqualsEqualsToken(34),
-    ExclamationEqualsToken(35),
-    EqualsEqualsEqualsToken(36),
-    ExclamationEqualsEqualsToken(37),
-    EqualsGreaterThanToken(38),
-    PlusToken(39),
-    MinusToken(40),
-    AsteriskToken(41),
-    AsteriskAsteriskToken(42),
-    SlashToken(43),
-    PercentToken(44),
-    PlusPlusToken(45),
-    MinusMinusToken(46),
-    LessThanLessThanToken(47),
-    GreaterThanGreaterThanToken(48),
-    GreaterThanGreaterThanGreaterThanToken(49),
-    AmpersandToken(50),
-    BarToken(51),
-    CaretToken(52),
-    ExclamationToken(53),
-    TildeToken(54),
-    AmpersandAmpersandToken(55),
-    BarBarToken(56),
-    QuestionToken(57),
-    ColonToken(58),
-    AtToken(59),
-    QuestionQuestionToken(60),
-    BacktickToken(61),
-    HashToken(62),
+    LessThanToken(30),
+    LessThanSlashToken(31),
+    GreaterThanToken(32),
+    LessThanEqualsToken(33),
+    GreaterThanEqualsToken(34),
+    EqualsEqualsToken(35),
+    ExclamationEqualsToken(36),
+    EqualsEqualsEqualsToken(37),
+    ExclamationEqualsEqualsToken(38),
+    EqualsGreaterThanToken(39),
+    PlusToken(40),
+    MinusToken(41),
+    AsteriskToken(42),
+    AsteriskAsteriskToken(43),
+    SlashToken(44),
+    PercentToken(45),
+    PlusPlusToken(46),
+    MinusMinusToken(47),
+    LessThanLessThanToken(48),
+    GreaterThanGreaterThanToken(49),
+    GreaterThanGreaterThanGreaterThanToken(50),
+    AmpersandToken(51),
+    BarToken(52),
+    CaretToken(53),
+    ExclamationToken(54),
+    TildeToken(55),
+    AmpersandAmpersandToken(56),
+    BarBarToken(57),
+    QuestionToken(58),
+    ColonToken(59),
+    AtToken(60),
+    QuestionQuestionToken(61),
+    BacktickToken(62),
+    HashToken(63),
     /** Also includes FirstAssignment */
-    EqualsToken(63),
+    EqualsToken(64),
     /** Also includes FirstCompoundAssignment */
-    PlusEqualsToken(64),
-    MinusEqualsToken(65),
-    AsteriskEqualsToken(66),
-    AsteriskAsteriskEqualsToken(67),
-    SlashEqualsToken(68),
-    PercentEqualsToken(69),
-    LessThanLessThanEqualsToken(70),
-    GreaterThanGreaterThanEqualsToken(71),
-    GreaterThanGreaterThanGreaterThanEqualsToken(72),
-    AmpersandEqualsToken(73),
-    BarEqualsToken(74),
-    BarBarEqualsToken(75),
-    AmpersandAmpersandEqualsToken(76),
-    QuestionQuestionEqualsToken(77),
+    PlusEqualsToken(65),
+    MinusEqualsToken(66),
+    AsteriskEqualsToken(67),
+    AsteriskAsteriskEqualsToken(68),
+    SlashEqualsToken(69),
+    PercentEqualsToken(70),
+    LessThanLessThanEqualsToken(71),
+    GreaterThanGreaterThanEqualsToken(72),
+    GreaterThanGreaterThanGreaterThanEqualsToken(73),
+    AmpersandEqualsToken(74),
+    BarEqualsToken(75),
+    BarBarEqualsToken(76),
+    AmpersandAmpersandEqualsToken(77),
+    QuestionQuestionEqualsToken(78),
     /** Also includes LastAssignment, LastCompoundAssignment, LastPunctuation, LastBinaryOperator */
-    CaretEqualsToken(78),
-    Identifier(79),
-    PrivateIdentifier(80),
+    CaretEqualsToken(79),
+    Identifier(80),
+    PrivateIdentifier(81),
+    JSDocCommentTextToken(82),
     /** Also includes FirstReservedWord, FirstKeyword */
-    BreakKeyword(81),
-    CaseKeyword(82),
-    CatchKeyword(83),
-    ClassKeyword(84),
-    ConstKeyword(85),
-    ContinueKeyword(86),
-    DebuggerKeyword(87),
-    DefaultKeyword(88),
-    DeleteKeyword(89),
-    DoKeyword(90),
-    ElseKeyword(91),
-    EnumKeyword(92),
-    ExportKeyword(93),
-    ExtendsKeyword(94),
-    FalseKeyword(95),
-    FinallyKeyword(96),
-    ForKeyword(97),
-    FunctionKeyword(98),
-    IfKeyword(99),
-    ImportKeyword(100),
-    InKeyword(101),
-    InstanceOfKeyword(102),
-    NewKeyword(103),
-    NullKeyword(104),
-    ReturnKeyword(105),
-    SuperKeyword(106),
-    SwitchKeyword(107),
-    ThisKeyword(108),
-    ThrowKeyword(109),
-    TrueKeyword(110),
-    TryKeyword(111),
-    TypeOfKeyword(112),
-    VarKeyword(113),
-    VoidKeyword(114),
-    WhileKeyword(115),
+    BreakKeyword(83),
+    CaseKeyword(84),
+    CatchKeyword(85),
+    ClassKeyword(86),
+    ConstKeyword(87),
+    ContinueKeyword(88),
+    DebuggerKeyword(89),
+    DefaultKeyword(90),
+    DeleteKeyword(91),
+    DoKeyword(92),
+    ElseKeyword(93),
+    EnumKeyword(94),
+    ExportKeyword(95),
+    ExtendsKeyword(96),
+    FalseKeyword(97),
+    FinallyKeyword(98),
+    ForKeyword(99),
+    FunctionKeyword(100),
+    IfKeyword(101),
+    ImportKeyword(102),
+    InKeyword(103),
+    InstanceOfKeyword(104),
+    NewKeyword(105),
+    NullKeyword(106),
+    ReturnKeyword(107),
+    SuperKeyword(108),
+    SwitchKeyword(109),
+    ThisKeyword(110),
+    ThrowKeyword(111),
+    TrueKeyword(112),
+    TryKeyword(113),
+    TypeOfKeyword(114),
+    VarKeyword(115),
+    VoidKeyword(116),
+    WhileKeyword(117),
     /** Also includes LastReservedWord */
-    WithKeyword(116),
+    WithKeyword(118),
     /** Also includes FirstFutureReservedWord */
-    ImplementsKeyword(117),
-    InterfaceKeyword(118),
-    LetKeyword(119),
-    PackageKeyword(120),
-    PrivateKeyword(121),
-    ProtectedKeyword(122),
-    PublicKeyword(123),
-    StaticKeyword(124),
+    ImplementsKeyword(119),
+    InterfaceKeyword(120),
+    LetKeyword(121),
+    PackageKeyword(122),
+    PrivateKeyword(123),
+    ProtectedKeyword(124),
+    PublicKeyword(125),
+    StaticKeyword(126),
     /** Also includes LastFutureReservedWord */
-    YieldKeyword(125),
+    YieldKeyword(127),
     /** Also includes FirstContextualKeyword */
-    AbstractKeyword(126),
-    AccessorKeyword(127),
-    AsKeyword(128),
-    AssertsKeyword(129),
-    AssertKeyword(130),
-    AnyKeyword(131),
-    AsyncKeyword(132),
-    AwaitKeyword(133),
-    BooleanKeyword(134),
-    ConstructorKeyword(135),
-    DeclareKeyword(136),
-    GetKeyword(137),
-    InferKeyword(138),
-    IntrinsicKeyword(139),
-    IsKeyword(140),
-    KeyOfKeyword(141),
-    ModuleKeyword(142),
-    NamespaceKeyword(143),
-    NeverKeyword(144),
-    OutKeyword(145),
-    ReadonlyKeyword(146),
-    RequireKeyword(147),
-    NumberKeyword(148),
-    ObjectKeyword(149),
-    SatisfiesKeyword(150),
-    SetKeyword(151),
-    StringKeyword(152),
-    SymbolKeyword(153),
-    TypeKeyword(154),
-    UndefinedKeyword(155),
-    UniqueKeyword(156),
-    UnknownKeyword(157),
-    FromKeyword(158),
-    GlobalKeyword(159),
-    BigIntKeyword(160),
-    OverrideKeyword(161),
+    AbstractKeyword(128),
+    AccessorKeyword(129),
+    AsKeyword(130),
+    AssertsKeyword(131),
+    AssertKeyword(132),
+    AnyKeyword(133),
+    AsyncKeyword(134),
+    AwaitKeyword(135),
+    BooleanKeyword(136),
+    ConstructorKeyword(137),
+    DeclareKeyword(138),
+    GetKeyword(139),
+    InferKeyword(140),
+    IntrinsicKeyword(141),
+    IsKeyword(142),
+    KeyOfKeyword(143),
+    ModuleKeyword(144),
+    NamespaceKeyword(145),
+    NeverKeyword(146),
+    OutKeyword(147),
+    ReadonlyKeyword(148),
+    RequireKeyword(149),
+    NumberKeyword(150),
+    ObjectKeyword(151),
+    SatisfiesKeyword(152),
+    SetKeyword(153),
+    StringKeyword(154),
+    SymbolKeyword(155),
+    TypeKeyword(156),
+    UndefinedKeyword(157),
+    UniqueKeyword(158),
+    UnknownKeyword(159),
+    UsingKeyword(160),
+    FromKeyword(161),
+    GlobalKeyword(162),
+    BigIntKeyword(163),
+    OverrideKeyword(164),
     /** Also includes LastKeyword, LastToken, LastContextualKeyword */
-    OfKeyword(162),
+    OfKeyword(165),
     /** Also includes FirstNode */
-    QualifiedName(163),
-    ComputedPropertyName(164),
-    TypeParameter(165),
-    Parameter(166),
-    Decorator(167),
-    PropertySignature(168),
-    PropertyDeclaration(169),
-    MethodSignature(170),
-    MethodDeclaration(171),
-    ClassStaticBlockDeclaration(172),
-    Constructor(173),
-    GetAccessor(174),
-    SetAccessor(175),
-    CallSignature(176),
-    ConstructSignature(177),
-    IndexSignature(178),
+    QualifiedName(166),
+    ComputedPropertyName(167),
+    TypeParameter(168),
+    Parameter(169),
+    Decorator(170),
+    PropertySignature(171),
+    PropertyDeclaration(172),
+    MethodSignature(173),
+    MethodDeclaration(174),
+    ClassStaticBlockDeclaration(175),
+    Constructor(176),
+    GetAccessor(177),
+    SetAccessor(178),
+    CallSignature(179),
+    ConstructSignature(180),
+    IndexSignature(181),
     /** Also includes FirstTypeNode */
-    TypePredicate(179),
-    TypeReference(180),
-    FunctionType(181),
-    ConstructorType(182),
-    TypeQuery(183),
-    TypeLiteral(184),
-    ArrayType(185),
-    TupleType(186),
-    OptionalType(187),
-    RestType(188),
-    UnionType(189),
-    IntersectionType(190),
-    ConditionalType(191),
-    InferType(192),
-    ParenthesizedType(193),
-    ThisType(194),
-    TypeOperator(195),
-    IndexedAccessType(196),
-    MappedType(197),
-    LiteralType(198),
-    NamedTupleMember(199),
-    TemplateLiteralType(200),
-    TemplateLiteralTypeSpan(201),
+    TypePredicate(182),
+    TypeReference(183),
+    FunctionType(184),
+    ConstructorType(185),
+    TypeQuery(186),
+    TypeLiteral(187),
+    ArrayType(188),
+    TupleType(189),
+    OptionalType(190),
+    RestType(191),
+    UnionType(192),
+    IntersectionType(193),
+    ConditionalType(194),
+    InferType(195),
+    ParenthesizedType(196),
+    ThisType(197),
+    TypeOperator(198),
+    IndexedAccessType(199),
+    MappedType(200),
+    LiteralType(201),
+    NamedTupleMember(202),
+    TemplateLiteralType(203),
+    TemplateLiteralTypeSpan(204),
     /** Also includes LastTypeNode */
-    ImportType(202),
-    ObjectBindingPattern(203),
-    ArrayBindingPattern(204),
-    BindingElement(205),
-    ArrayLiteralExpression(206),
-    ObjectLiteralExpression(207),
-    PropertyAccessExpression(208),
-    ElementAccessExpression(209),
-    CallExpression(210),
-    NewExpression(211),
-    TaggedTemplateExpression(212),
-    TypeAssertionExpression(213),
-    ParenthesizedExpression(214),
-    FunctionExpression(215),
-    ArrowFunction(216),
-    DeleteExpression(217),
-    TypeOfExpression(218),
-    VoidExpression(219),
-    AwaitExpression(220),
-    PrefixUnaryExpression(221),
-    PostfixUnaryExpression(222),
-    BinaryExpression(223),
-    ConditionalExpression(224),
-    TemplateExpression(225),
-    YieldExpression(226),
-    SpreadElement(227),
-    ClassExpression(228),
-    OmittedExpression(229),
-    ExpressionWithTypeArguments(230),
-    AsExpression(231),
-    NonNullExpression(232),
-    MetaProperty(233),
-    SyntheticExpression(234),
-    SatisfiesExpression(235),
-    TemplateSpan(236),
-    SemicolonClassElement(237),
-    Block(238),
-    EmptyStatement(239),
+    ImportType(205),
+    ObjectBindingPattern(206),
+    ArrayBindingPattern(207),
+    BindingElement(208),
+    ArrayLiteralExpression(209),
+    ObjectLiteralExpression(210),
+    PropertyAccessExpression(211),
+    ElementAccessExpression(212),
+    CallExpression(213),
+    NewExpression(214),
+    TaggedTemplateExpression(215),
+    TypeAssertionExpression(216),
+    ParenthesizedExpression(217),
+    FunctionExpression(218),
+    ArrowFunction(219),
+    DeleteExpression(220),
+    TypeOfExpression(221),
+    VoidExpression(222),
+    AwaitExpression(223),
+    PrefixUnaryExpression(224),
+    PostfixUnaryExpression(225),
+    BinaryExpression(226),
+    ConditionalExpression(227),
+    TemplateExpression(228),
+    YieldExpression(229),
+    SpreadElement(230),
+    ClassExpression(231),
+    OmittedExpression(232),
+    ExpressionWithTypeArguments(233),
+    AsExpression(234),
+    NonNullExpression(235),
+    MetaProperty(236),
+    SyntheticExpression(237),
+    SatisfiesExpression(238),
+    TemplateSpan(239),
+    SemicolonClassElement(240),
+    Block(241),
+    EmptyStatement(242),
     /** Also includes FirstStatement */
-    VariableStatement(240),
-    ExpressionStatement(241),
-    IfStatement(242),
-    DoStatement(243),
-    WhileStatement(244),
-    ForStatement(245),
-    ForInStatement(246),
-    ForOfStatement(247),
-    ContinueStatement(248),
-    BreakStatement(249),
-    ReturnStatement(250),
-    WithStatement(251),
-    SwitchStatement(252),
-    LabeledStatement(253),
-    ThrowStatement(254),
-    TryStatement(255),
+    VariableStatement(243),
+    ExpressionStatement(244),
+    IfStatement(245),
+    DoStatement(246),
+    WhileStatement(247),
+    ForStatement(248),
+    ForInStatement(249),
+    ForOfStatement(250),
+    ContinueStatement(251),
+    BreakStatement(252),
+    ReturnStatement(253),
+    WithStatement(254),
+    SwitchStatement(255),
+    LabeledStatement(256),
+    ThrowStatement(257),
+    TryStatement(258),
     /** Also includes LastStatement */
-    DebuggerStatement(256),
-    VariableDeclaration(257),
-    VariableDeclarationList(258),
-    FunctionDeclaration(259),
-    ClassDeclaration(260),
-    InterfaceDeclaration(261),
-    TypeAliasDeclaration(262),
-    EnumDeclaration(263),
-    ModuleDeclaration(264),
-    ModuleBlock(265),
-    CaseBlock(266),
-    NamespaceExportDeclaration(267),
-    ImportEqualsDeclaration(268),
-    ImportDeclaration(269),
-    ImportClause(270),
-    NamespaceImport(271),
-    NamedImports(272),
-    ImportSpecifier(273),
-    ExportAssignment(274),
-    ExportDeclaration(275),
-    NamedExports(276),
-    NamespaceExport(277),
-    ExportSpecifier(278),
-    MissingDeclaration(279),
-    ExternalModuleReference(280),
-    JsxElement(281),
-    JsxSelfClosingElement(282),
-    JsxOpeningElement(283),
-    JsxClosingElement(284),
-    JsxFragment(285),
-    JsxOpeningFragment(286),
-    JsxClosingFragment(287),
-    JsxAttribute(288),
-    JsxAttributes(289),
-    JsxSpreadAttribute(290),
-    JsxExpression(291),
-    CaseClause(292),
-    DefaultClause(293),
-    HeritageClause(294),
-    CatchClause(295),
-    AssertClause(296),
-    AssertEntry(297),
-    ImportTypeAssertionContainer(298),
-    PropertyAssignment(299),
-    ShorthandPropertyAssignment(300),
-    SpreadAssignment(301),
-    EnumMember(302),
-    UnparsedPrologue(303),
-    UnparsedPrepend(304),
-    UnparsedText(305),
-    UnparsedInternalText(306),
-    UnparsedSyntheticReference(307),
-    SourceFile(308),
-    Bundle(309),
-    UnparsedSource(310),
-    InputFiles(311),
+    DebuggerStatement(259),
+    VariableDeclaration(260),
+    VariableDeclarationList(261),
+    FunctionDeclaration(262),
+    ClassDeclaration(263),
+    InterfaceDeclaration(264),
+    TypeAliasDeclaration(265),
+    EnumDeclaration(266),
+    ModuleDeclaration(267),
+    ModuleBlock(268),
+    CaseBlock(269),
+    NamespaceExportDeclaration(270),
+    ImportEqualsDeclaration(271),
+    ImportDeclaration(272),
+    ImportClause(273),
+    NamespaceImport(274),
+    NamedImports(275),
+    ImportSpecifier(276),
+    ExportAssignment(277),
+    ExportDeclaration(278),
+    NamedExports(279),
+    NamespaceExport(280),
+    ExportSpecifier(281),
+    MissingDeclaration(282),
+    ExternalModuleReference(283),
+    JsxElement(284),
+    JsxSelfClosingElement(285),
+    JsxOpeningElement(286),
+    JsxClosingElement(287),
+    JsxFragment(288),
+    JsxOpeningFragment(289),
+    JsxClosingFragment(290),
+    JsxAttribute(291),
+    JsxAttributes(292),
+    JsxSpreadAttribute(293),
+    JsxExpression(294),
+    JsxNamespacedName(295),
+    CaseClause(296),
+    DefaultClause(297),
+    HeritageClause(298),
+    CatchClause(299),
+    AssertClause(300),
+    AssertEntry(301),
+    ImportTypeAssertionContainer(302),
+    PropertyAssignment(303),
+    ShorthandPropertyAssignment(304),
+    SpreadAssignment(305),
+    EnumMember(306),
+    UnparsedPrologue(307),
+    UnparsedPrepend(308),
+    UnparsedText(309),
+    UnparsedInternalText(310),
+    UnparsedSyntheticReference(311),
+    SourceFile(312),
+    Bundle(313),
+    UnparsedSource(314),
+    InputFiles(315),
     /** Also includes FirstJSDocNode */
-    JSDocTypeExpression(312),
-    JSDocNameReference(313),
-    JSDocMemberName(314),
-    JSDocAllType(315),
-    JSDocUnknownType(316),
-    JSDocNullableType(317),
-    JSDocNonNullableType(318),
-    JSDocOptionalType(319),
-    JSDocFunctionType(320),
-    JSDocVariadicType(321),
-    JSDocNamepathType(322),
+    JSDocTypeExpression(316),
+    JSDocNameReference(317),
+    JSDocMemberName(318),
+    JSDocAllType(319),
+    JSDocUnknownType(320),
+    JSDocNullableType(321),
+    JSDocNonNullableType(322),
+    JSDocOptionalType(323),
+    JSDocFunctionType(324),
+    JSDocVariadicType(325),
+    JSDocNamepathType(326),
     /** Also includes JSDocComment */
-    JSDoc(323),
-    JSDocText(324),
-    JSDocTypeLiteral(325),
-    JSDocSignature(326),
-    JSDocLink(327),
-    JSDocLinkCode(328),
-    JSDocLinkPlain(329),
+    JSDoc(327),
+    JSDocText(328),
+    JSDocTypeLiteral(329),
+    JSDocSignature(330),
+    JSDocLink(331),
+    JSDocLinkCode(332),
+    JSDocLinkPlain(333),
     /** Also includes FirstJSDocTagNode */
-    JSDocTag(330),
-    JSDocAugmentsTag(331),
-    JSDocImplementsTag(332),
-    JSDocAuthorTag(333),
-    JSDocDeprecatedTag(334),
-    JSDocClassTag(335),
-    JSDocPublicTag(336),
-    JSDocPrivateTag(337),
-    JSDocProtectedTag(338),
-    JSDocReadonlyTag(339),
-    JSDocOverrideTag(340),
-    JSDocCallbackTag(341),
-    JSDocOverloadTag(342),
-    JSDocEnumTag(343),
-    JSDocParameterTag(344),
-    JSDocReturnTag(345),
-    JSDocThisTag(346),
-    JSDocTypeTag(347),
-    JSDocTemplateTag(348),
-    JSDocTypedefTag(349),
-    JSDocSeeTag(350),
-    JSDocPropertyTag(351),
-    JSDocThrowsTag(352),
+    JSDocTag(334),
+    JSDocAugmentsTag(335),
+    JSDocImplementsTag(336),
+    JSDocAuthorTag(337),
+    JSDocDeprecatedTag(338),
+    JSDocClassTag(339),
+    JSDocPublicTag(340),
+    JSDocPrivateTag(341),
+    JSDocProtectedTag(342),
+    JSDocReadonlyTag(343),
+    JSDocOverrideTag(344),
+    JSDocCallbackTag(345),
+    JSDocOverloadTag(346),
+    JSDocEnumTag(347),
+    JSDocParameterTag(348),
+    JSDocReturnTag(349),
+    JSDocThisTag(350),
+    JSDocTypeTag(351),
+    JSDocTemplateTag(352),
+    JSDocTypedefTag(353),
+    JSDocSeeTag(354),
+    JSDocPropertyTag(355),
+    JSDocThrowsTag(356),
     /** Also includes LastJSDocNode, LastJSDocTagNode */
-    JSDocSatisfiesTag(353),
-    SyntaxList(354),
-    NotEmittedStatement(355),
-    PartiallyEmittedExpression(356),
-    CommaListExpression(357),
-    MergeDeclarationMarker(358),
-    EndOfDeclarationMarker(359),
-    SyntheticReferenceExpression(360),
-    Count(361);
+    JSDocSatisfiesTag(357),
+    SyntaxList(358),
+    NotEmittedStatement(359),
+    PartiallyEmittedExpression(360),
+    CommaListExpression(361),
+    SyntheticReferenceExpression(362),
+    Count(363);
 
 
     public final int code;
@@ -437,712 +439,716 @@ public enum TSCSyntaxKind {
             case 7:
                 return TSCSyntaxKind.ConflictMarkerTrivia;
             case 8:
-                return TSCSyntaxKind.NumericLiteral;
+                return TSCSyntaxKind.NonTextFileMarkerTrivia;
             case 9:
-                return TSCSyntaxKind.BigIntLiteral;
+                return TSCSyntaxKind.NumericLiteral;
             case 10:
-                return TSCSyntaxKind.StringLiteral;
+                return TSCSyntaxKind.BigIntLiteral;
             case 11:
-                return TSCSyntaxKind.JsxText;
+                return TSCSyntaxKind.StringLiteral;
             case 12:
-                return TSCSyntaxKind.JsxTextAllWhiteSpaces;
+                return TSCSyntaxKind.JsxText;
             case 13:
-                return TSCSyntaxKind.RegularExpressionLiteral;
+                return TSCSyntaxKind.JsxTextAllWhiteSpaces;
             case 14:
-                return TSCSyntaxKind.NoSubstitutionTemplateLiteral;
+                return TSCSyntaxKind.RegularExpressionLiteral;
             case 15:
-                return TSCSyntaxKind.TemplateHead;
+                return TSCSyntaxKind.NoSubstitutionTemplateLiteral;
             case 16:
-                return TSCSyntaxKind.TemplateMiddle;
+                return TSCSyntaxKind.TemplateHead;
             case 17:
-                return TSCSyntaxKind.TemplateTail;
+                return TSCSyntaxKind.TemplateMiddle;
             case 18:
-                return TSCSyntaxKind.OpenBraceToken;
+                return TSCSyntaxKind.TemplateTail;
             case 19:
-                return TSCSyntaxKind.CloseBraceToken;
+                return TSCSyntaxKind.OpenBraceToken;
             case 20:
-                return TSCSyntaxKind.OpenParenToken;
+                return TSCSyntaxKind.CloseBraceToken;
             case 21:
-                return TSCSyntaxKind.CloseParenToken;
+                return TSCSyntaxKind.OpenParenToken;
             case 22:
-                return TSCSyntaxKind.OpenBracketToken;
+                return TSCSyntaxKind.CloseParenToken;
             case 23:
-                return TSCSyntaxKind.CloseBracketToken;
+                return TSCSyntaxKind.OpenBracketToken;
             case 24:
-                return TSCSyntaxKind.DotToken;
+                return TSCSyntaxKind.CloseBracketToken;
             case 25:
-                return TSCSyntaxKind.DotDotDotToken;
+                return TSCSyntaxKind.DotToken;
             case 26:
-                return TSCSyntaxKind.SemicolonToken;
+                return TSCSyntaxKind.DotDotDotToken;
             case 27:
-                return TSCSyntaxKind.CommaToken;
+                return TSCSyntaxKind.SemicolonToken;
             case 28:
-                return TSCSyntaxKind.QuestionDotToken;
+                return TSCSyntaxKind.CommaToken;
             case 29:
-                return TSCSyntaxKind.LessThanToken;
+                return TSCSyntaxKind.QuestionDotToken;
             case 30:
-                return TSCSyntaxKind.LessThanSlashToken;
+                return TSCSyntaxKind.LessThanToken;
             case 31:
-                return TSCSyntaxKind.GreaterThanToken;
+                return TSCSyntaxKind.LessThanSlashToken;
             case 32:
-                return TSCSyntaxKind.LessThanEqualsToken;
+                return TSCSyntaxKind.GreaterThanToken;
             case 33:
-                return TSCSyntaxKind.GreaterThanEqualsToken;
+                return TSCSyntaxKind.LessThanEqualsToken;
             case 34:
-                return TSCSyntaxKind.EqualsEqualsToken;
+                return TSCSyntaxKind.GreaterThanEqualsToken;
             case 35:
-                return TSCSyntaxKind.ExclamationEqualsToken;
+                return TSCSyntaxKind.EqualsEqualsToken;
             case 36:
-                return TSCSyntaxKind.EqualsEqualsEqualsToken;
+                return TSCSyntaxKind.ExclamationEqualsToken;
             case 37:
-                return TSCSyntaxKind.ExclamationEqualsEqualsToken;
+                return TSCSyntaxKind.EqualsEqualsEqualsToken;
             case 38:
-                return TSCSyntaxKind.EqualsGreaterThanToken;
+                return TSCSyntaxKind.ExclamationEqualsEqualsToken;
             case 39:
-                return TSCSyntaxKind.PlusToken;
+                return TSCSyntaxKind.EqualsGreaterThanToken;
             case 40:
-                return TSCSyntaxKind.MinusToken;
+                return TSCSyntaxKind.PlusToken;
             case 41:
-                return TSCSyntaxKind.AsteriskToken;
+                return TSCSyntaxKind.MinusToken;
             case 42:
-                return TSCSyntaxKind.AsteriskAsteriskToken;
+                return TSCSyntaxKind.AsteriskToken;
             case 43:
-                return TSCSyntaxKind.SlashToken;
+                return TSCSyntaxKind.AsteriskAsteriskToken;
             case 44:
-                return TSCSyntaxKind.PercentToken;
+                return TSCSyntaxKind.SlashToken;
             case 45:
-                return TSCSyntaxKind.PlusPlusToken;
+                return TSCSyntaxKind.PercentToken;
             case 46:
-                return TSCSyntaxKind.MinusMinusToken;
+                return TSCSyntaxKind.PlusPlusToken;
             case 47:
-                return TSCSyntaxKind.LessThanLessThanToken;
+                return TSCSyntaxKind.MinusMinusToken;
             case 48:
-                return TSCSyntaxKind.GreaterThanGreaterThanToken;
+                return TSCSyntaxKind.LessThanLessThanToken;
             case 49:
-                return TSCSyntaxKind.GreaterThanGreaterThanGreaterThanToken;
+                return TSCSyntaxKind.GreaterThanGreaterThanToken;
             case 50:
-                return TSCSyntaxKind.AmpersandToken;
+                return TSCSyntaxKind.GreaterThanGreaterThanGreaterThanToken;
             case 51:
-                return TSCSyntaxKind.BarToken;
+                return TSCSyntaxKind.AmpersandToken;
             case 52:
-                return TSCSyntaxKind.CaretToken;
+                return TSCSyntaxKind.BarToken;
             case 53:
-                return TSCSyntaxKind.ExclamationToken;
+                return TSCSyntaxKind.CaretToken;
             case 54:
-                return TSCSyntaxKind.TildeToken;
+                return TSCSyntaxKind.ExclamationToken;
             case 55:
-                return TSCSyntaxKind.AmpersandAmpersandToken;
+                return TSCSyntaxKind.TildeToken;
             case 56:
-                return TSCSyntaxKind.BarBarToken;
+                return TSCSyntaxKind.AmpersandAmpersandToken;
             case 57:
-                return TSCSyntaxKind.QuestionToken;
+                return TSCSyntaxKind.BarBarToken;
             case 58:
-                return TSCSyntaxKind.ColonToken;
+                return TSCSyntaxKind.QuestionToken;
             case 59:
-                return TSCSyntaxKind.AtToken;
+                return TSCSyntaxKind.ColonToken;
             case 60:
-                return TSCSyntaxKind.QuestionQuestionToken;
+                return TSCSyntaxKind.AtToken;
             case 61:
-                return TSCSyntaxKind.BacktickToken;
+                return TSCSyntaxKind.QuestionQuestionToken;
             case 62:
-                return TSCSyntaxKind.HashToken;
+                return TSCSyntaxKind.BacktickToken;
             case 63:
-                return TSCSyntaxKind.EqualsToken;
+                return TSCSyntaxKind.HashToken;
             case 64:
-                return TSCSyntaxKind.PlusEqualsToken;
+                return TSCSyntaxKind.EqualsToken;
             case 65:
-                return TSCSyntaxKind.MinusEqualsToken;
+                return TSCSyntaxKind.PlusEqualsToken;
             case 66:
-                return TSCSyntaxKind.AsteriskEqualsToken;
+                return TSCSyntaxKind.MinusEqualsToken;
             case 67:
-                return TSCSyntaxKind.AsteriskAsteriskEqualsToken;
+                return TSCSyntaxKind.AsteriskEqualsToken;
             case 68:
-                return TSCSyntaxKind.SlashEqualsToken;
+                return TSCSyntaxKind.AsteriskAsteriskEqualsToken;
             case 69:
-                return TSCSyntaxKind.PercentEqualsToken;
+                return TSCSyntaxKind.SlashEqualsToken;
             case 70:
-                return TSCSyntaxKind.LessThanLessThanEqualsToken;
+                return TSCSyntaxKind.PercentEqualsToken;
             case 71:
-                return TSCSyntaxKind.GreaterThanGreaterThanEqualsToken;
+                return TSCSyntaxKind.LessThanLessThanEqualsToken;
             case 72:
-                return TSCSyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken;
+                return TSCSyntaxKind.GreaterThanGreaterThanEqualsToken;
             case 73:
-                return TSCSyntaxKind.AmpersandEqualsToken;
+                return TSCSyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken;
             case 74:
-                return TSCSyntaxKind.BarEqualsToken;
+                return TSCSyntaxKind.AmpersandEqualsToken;
             case 75:
-                return TSCSyntaxKind.BarBarEqualsToken;
+                return TSCSyntaxKind.BarEqualsToken;
             case 76:
-                return TSCSyntaxKind.AmpersandAmpersandEqualsToken;
+                return TSCSyntaxKind.BarBarEqualsToken;
             case 77:
-                return TSCSyntaxKind.QuestionQuestionEqualsToken;
+                return TSCSyntaxKind.AmpersandAmpersandEqualsToken;
             case 78:
-                return TSCSyntaxKind.CaretEqualsToken;
+                return TSCSyntaxKind.QuestionQuestionEqualsToken;
             case 79:
-                return TSCSyntaxKind.Identifier;
+                return TSCSyntaxKind.CaretEqualsToken;
             case 80:
-                return TSCSyntaxKind.PrivateIdentifier;
+                return TSCSyntaxKind.Identifier;
             case 81:
-                return TSCSyntaxKind.BreakKeyword;
+                return TSCSyntaxKind.PrivateIdentifier;
             case 82:
-                return TSCSyntaxKind.CaseKeyword;
+                return TSCSyntaxKind.JSDocCommentTextToken;
             case 83:
-                return TSCSyntaxKind.CatchKeyword;
+                return TSCSyntaxKind.BreakKeyword;
             case 84:
-                return TSCSyntaxKind.ClassKeyword;
+                return TSCSyntaxKind.CaseKeyword;
             case 85:
-                return TSCSyntaxKind.ConstKeyword;
+                return TSCSyntaxKind.CatchKeyword;
             case 86:
-                return TSCSyntaxKind.ContinueKeyword;
+                return TSCSyntaxKind.ClassKeyword;
             case 87:
-                return TSCSyntaxKind.DebuggerKeyword;
+                return TSCSyntaxKind.ConstKeyword;
             case 88:
-                return TSCSyntaxKind.DefaultKeyword;
+                return TSCSyntaxKind.ContinueKeyword;
             case 89:
-                return TSCSyntaxKind.DeleteKeyword;
+                return TSCSyntaxKind.DebuggerKeyword;
             case 90:
-                return TSCSyntaxKind.DoKeyword;
+                return TSCSyntaxKind.DefaultKeyword;
             case 91:
-                return TSCSyntaxKind.ElseKeyword;
+                return TSCSyntaxKind.DeleteKeyword;
             case 92:
-                return TSCSyntaxKind.EnumKeyword;
+                return TSCSyntaxKind.DoKeyword;
             case 93:
-                return TSCSyntaxKind.ExportKeyword;
+                return TSCSyntaxKind.ElseKeyword;
             case 94:
-                return TSCSyntaxKind.ExtendsKeyword;
+                return TSCSyntaxKind.EnumKeyword;
             case 95:
-                return TSCSyntaxKind.FalseKeyword;
+                return TSCSyntaxKind.ExportKeyword;
             case 96:
-                return TSCSyntaxKind.FinallyKeyword;
+                return TSCSyntaxKind.ExtendsKeyword;
             case 97:
-                return TSCSyntaxKind.ForKeyword;
+                return TSCSyntaxKind.FalseKeyword;
             case 98:
-                return TSCSyntaxKind.FunctionKeyword;
+                return TSCSyntaxKind.FinallyKeyword;
             case 99:
-                return TSCSyntaxKind.IfKeyword;
+                return TSCSyntaxKind.ForKeyword;
             case 100:
-                return TSCSyntaxKind.ImportKeyword;
+                return TSCSyntaxKind.FunctionKeyword;
             case 101:
-                return TSCSyntaxKind.InKeyword;
+                return TSCSyntaxKind.IfKeyword;
             case 102:
-                return TSCSyntaxKind.InstanceOfKeyword;
+                return TSCSyntaxKind.ImportKeyword;
             case 103:
-                return TSCSyntaxKind.NewKeyword;
+                return TSCSyntaxKind.InKeyword;
             case 104:
-                return TSCSyntaxKind.NullKeyword;
+                return TSCSyntaxKind.InstanceOfKeyword;
             case 105:
-                return TSCSyntaxKind.ReturnKeyword;
+                return TSCSyntaxKind.NewKeyword;
             case 106:
-                return TSCSyntaxKind.SuperKeyword;
+                return TSCSyntaxKind.NullKeyword;
             case 107:
-                return TSCSyntaxKind.SwitchKeyword;
+                return TSCSyntaxKind.ReturnKeyword;
             case 108:
-                return TSCSyntaxKind.ThisKeyword;
+                return TSCSyntaxKind.SuperKeyword;
             case 109:
-                return TSCSyntaxKind.ThrowKeyword;
+                return TSCSyntaxKind.SwitchKeyword;
             case 110:
-                return TSCSyntaxKind.TrueKeyword;
+                return TSCSyntaxKind.ThisKeyword;
             case 111:
-                return TSCSyntaxKind.TryKeyword;
+                return TSCSyntaxKind.ThrowKeyword;
             case 112:
-                return TSCSyntaxKind.TypeOfKeyword;
+                return TSCSyntaxKind.TrueKeyword;
             case 113:
-                return TSCSyntaxKind.VarKeyword;
+                return TSCSyntaxKind.TryKeyword;
             case 114:
-                return TSCSyntaxKind.VoidKeyword;
+                return TSCSyntaxKind.TypeOfKeyword;
             case 115:
-                return TSCSyntaxKind.WhileKeyword;
+                return TSCSyntaxKind.VarKeyword;
             case 116:
-                return TSCSyntaxKind.WithKeyword;
+                return TSCSyntaxKind.VoidKeyword;
             case 117:
-                return TSCSyntaxKind.ImplementsKeyword;
+                return TSCSyntaxKind.WhileKeyword;
             case 118:
-                return TSCSyntaxKind.InterfaceKeyword;
+                return TSCSyntaxKind.WithKeyword;
             case 119:
-                return TSCSyntaxKind.LetKeyword;
+                return TSCSyntaxKind.ImplementsKeyword;
             case 120:
-                return TSCSyntaxKind.PackageKeyword;
+                return TSCSyntaxKind.InterfaceKeyword;
             case 121:
-                return TSCSyntaxKind.PrivateKeyword;
+                return TSCSyntaxKind.LetKeyword;
             case 122:
-                return TSCSyntaxKind.ProtectedKeyword;
+                return TSCSyntaxKind.PackageKeyword;
             case 123:
-                return TSCSyntaxKind.PublicKeyword;
+                return TSCSyntaxKind.PrivateKeyword;
             case 124:
-                return TSCSyntaxKind.StaticKeyword;
+                return TSCSyntaxKind.ProtectedKeyword;
             case 125:
-                return TSCSyntaxKind.YieldKeyword;
+                return TSCSyntaxKind.PublicKeyword;
             case 126:
-                return TSCSyntaxKind.AbstractKeyword;
+                return TSCSyntaxKind.StaticKeyword;
             case 127:
-                return TSCSyntaxKind.AccessorKeyword;
+                return TSCSyntaxKind.YieldKeyword;
             case 128:
-                return TSCSyntaxKind.AsKeyword;
+                return TSCSyntaxKind.AbstractKeyword;
             case 129:
-                return TSCSyntaxKind.AssertsKeyword;
+                return TSCSyntaxKind.AccessorKeyword;
             case 130:
-                return TSCSyntaxKind.AssertKeyword;
+                return TSCSyntaxKind.AsKeyword;
             case 131:
-                return TSCSyntaxKind.AnyKeyword;
+                return TSCSyntaxKind.AssertsKeyword;
             case 132:
-                return TSCSyntaxKind.AsyncKeyword;
+                return TSCSyntaxKind.AssertKeyword;
             case 133:
-                return TSCSyntaxKind.AwaitKeyword;
+                return TSCSyntaxKind.AnyKeyword;
             case 134:
-                return TSCSyntaxKind.BooleanKeyword;
+                return TSCSyntaxKind.AsyncKeyword;
             case 135:
-                return TSCSyntaxKind.ConstructorKeyword;
+                return TSCSyntaxKind.AwaitKeyword;
             case 136:
-                return TSCSyntaxKind.DeclareKeyword;
+                return TSCSyntaxKind.BooleanKeyword;
             case 137:
-                return TSCSyntaxKind.GetKeyword;
+                return TSCSyntaxKind.ConstructorKeyword;
             case 138:
-                return TSCSyntaxKind.InferKeyword;
+                return TSCSyntaxKind.DeclareKeyword;
             case 139:
-                return TSCSyntaxKind.IntrinsicKeyword;
+                return TSCSyntaxKind.GetKeyword;
             case 140:
-                return TSCSyntaxKind.IsKeyword;
+                return TSCSyntaxKind.InferKeyword;
             case 141:
-                return TSCSyntaxKind.KeyOfKeyword;
+                return TSCSyntaxKind.IntrinsicKeyword;
             case 142:
-                return TSCSyntaxKind.ModuleKeyword;
+                return TSCSyntaxKind.IsKeyword;
             case 143:
-                return TSCSyntaxKind.NamespaceKeyword;
+                return TSCSyntaxKind.KeyOfKeyword;
             case 144:
-                return TSCSyntaxKind.NeverKeyword;
+                return TSCSyntaxKind.ModuleKeyword;
             case 145:
-                return TSCSyntaxKind.OutKeyword;
+                return TSCSyntaxKind.NamespaceKeyword;
             case 146:
-                return TSCSyntaxKind.ReadonlyKeyword;
+                return TSCSyntaxKind.NeverKeyword;
             case 147:
-                return TSCSyntaxKind.RequireKeyword;
+                return TSCSyntaxKind.OutKeyword;
             case 148:
-                return TSCSyntaxKind.NumberKeyword;
+                return TSCSyntaxKind.ReadonlyKeyword;
             case 149:
-                return TSCSyntaxKind.ObjectKeyword;
+                return TSCSyntaxKind.RequireKeyword;
             case 150:
-                return TSCSyntaxKind.SatisfiesKeyword;
+                return TSCSyntaxKind.NumberKeyword;
             case 151:
-                return TSCSyntaxKind.SetKeyword;
+                return TSCSyntaxKind.ObjectKeyword;
             case 152:
-                return TSCSyntaxKind.StringKeyword;
+                return TSCSyntaxKind.SatisfiesKeyword;
             case 153:
-                return TSCSyntaxKind.SymbolKeyword;
+                return TSCSyntaxKind.SetKeyword;
             case 154:
-                return TSCSyntaxKind.TypeKeyword;
+                return TSCSyntaxKind.StringKeyword;
             case 155:
-                return TSCSyntaxKind.UndefinedKeyword;
+                return TSCSyntaxKind.SymbolKeyword;
             case 156:
-                return TSCSyntaxKind.UniqueKeyword;
+                return TSCSyntaxKind.TypeKeyword;
             case 157:
-                return TSCSyntaxKind.UnknownKeyword;
+                return TSCSyntaxKind.UndefinedKeyword;
             case 158:
-                return TSCSyntaxKind.FromKeyword;
+                return TSCSyntaxKind.UniqueKeyword;
             case 159:
-                return TSCSyntaxKind.GlobalKeyword;
+                return TSCSyntaxKind.UnknownKeyword;
             case 160:
-                return TSCSyntaxKind.BigIntKeyword;
+                return TSCSyntaxKind.UsingKeyword;
             case 161:
-                return TSCSyntaxKind.OverrideKeyword;
+                return TSCSyntaxKind.FromKeyword;
             case 162:
-                return TSCSyntaxKind.OfKeyword;
+                return TSCSyntaxKind.GlobalKeyword;
             case 163:
-                return TSCSyntaxKind.QualifiedName;
+                return TSCSyntaxKind.BigIntKeyword;
             case 164:
-                return TSCSyntaxKind.ComputedPropertyName;
+                return TSCSyntaxKind.OverrideKeyword;
             case 165:
-                return TSCSyntaxKind.TypeParameter;
+                return TSCSyntaxKind.OfKeyword;
             case 166:
-                return TSCSyntaxKind.Parameter;
+                return TSCSyntaxKind.QualifiedName;
             case 167:
-                return TSCSyntaxKind.Decorator;
+                return TSCSyntaxKind.ComputedPropertyName;
             case 168:
-                return TSCSyntaxKind.PropertySignature;
+                return TSCSyntaxKind.TypeParameter;
             case 169:
-                return TSCSyntaxKind.PropertyDeclaration;
+                return TSCSyntaxKind.Parameter;
             case 170:
-                return TSCSyntaxKind.MethodSignature;
+                return TSCSyntaxKind.Decorator;
             case 171:
-                return TSCSyntaxKind.MethodDeclaration;
+                return TSCSyntaxKind.PropertySignature;
             case 172:
-                return TSCSyntaxKind.ClassStaticBlockDeclaration;
+                return TSCSyntaxKind.PropertyDeclaration;
             case 173:
-                return TSCSyntaxKind.Constructor;
+                return TSCSyntaxKind.MethodSignature;
             case 174:
-                return TSCSyntaxKind.GetAccessor;
+                return TSCSyntaxKind.MethodDeclaration;
             case 175:
-                return TSCSyntaxKind.SetAccessor;
+                return TSCSyntaxKind.ClassStaticBlockDeclaration;
             case 176:
-                return TSCSyntaxKind.CallSignature;
+                return TSCSyntaxKind.Constructor;
             case 177:
-                return TSCSyntaxKind.ConstructSignature;
+                return TSCSyntaxKind.GetAccessor;
             case 178:
-                return TSCSyntaxKind.IndexSignature;
+                return TSCSyntaxKind.SetAccessor;
             case 179:
-                return TSCSyntaxKind.TypePredicate;
+                return TSCSyntaxKind.CallSignature;
             case 180:
-                return TSCSyntaxKind.TypeReference;
+                return TSCSyntaxKind.ConstructSignature;
             case 181:
-                return TSCSyntaxKind.FunctionType;
+                return TSCSyntaxKind.IndexSignature;
             case 182:
-                return TSCSyntaxKind.ConstructorType;
+                return TSCSyntaxKind.TypePredicate;
             case 183:
-                return TSCSyntaxKind.TypeQuery;
+                return TSCSyntaxKind.TypeReference;
             case 184:
-                return TSCSyntaxKind.TypeLiteral;
+                return TSCSyntaxKind.FunctionType;
             case 185:
-                return TSCSyntaxKind.ArrayType;
+                return TSCSyntaxKind.ConstructorType;
             case 186:
-                return TSCSyntaxKind.TupleType;
+                return TSCSyntaxKind.TypeQuery;
             case 187:
-                return TSCSyntaxKind.OptionalType;
+                return TSCSyntaxKind.TypeLiteral;
             case 188:
-                return TSCSyntaxKind.RestType;
+                return TSCSyntaxKind.ArrayType;
             case 189:
-                return TSCSyntaxKind.UnionType;
+                return TSCSyntaxKind.TupleType;
             case 190:
-                return TSCSyntaxKind.IntersectionType;
+                return TSCSyntaxKind.OptionalType;
             case 191:
-                return TSCSyntaxKind.ConditionalType;
+                return TSCSyntaxKind.RestType;
             case 192:
-                return TSCSyntaxKind.InferType;
+                return TSCSyntaxKind.UnionType;
             case 193:
-                return TSCSyntaxKind.ParenthesizedType;
+                return TSCSyntaxKind.IntersectionType;
             case 194:
-                return TSCSyntaxKind.ThisType;
+                return TSCSyntaxKind.ConditionalType;
             case 195:
-                return TSCSyntaxKind.TypeOperator;
+                return TSCSyntaxKind.InferType;
             case 196:
-                return TSCSyntaxKind.IndexedAccessType;
+                return TSCSyntaxKind.ParenthesizedType;
             case 197:
-                return TSCSyntaxKind.MappedType;
+                return TSCSyntaxKind.ThisType;
             case 198:
-                return TSCSyntaxKind.LiteralType;
+                return TSCSyntaxKind.TypeOperator;
             case 199:
-                return TSCSyntaxKind.NamedTupleMember;
+                return TSCSyntaxKind.IndexedAccessType;
             case 200:
-                return TSCSyntaxKind.TemplateLiteralType;
+                return TSCSyntaxKind.MappedType;
             case 201:
-                return TSCSyntaxKind.TemplateLiteralTypeSpan;
+                return TSCSyntaxKind.LiteralType;
             case 202:
-                return TSCSyntaxKind.ImportType;
+                return TSCSyntaxKind.NamedTupleMember;
             case 203:
-                return TSCSyntaxKind.ObjectBindingPattern;
+                return TSCSyntaxKind.TemplateLiteralType;
             case 204:
-                return TSCSyntaxKind.ArrayBindingPattern;
+                return TSCSyntaxKind.TemplateLiteralTypeSpan;
             case 205:
-                return TSCSyntaxKind.BindingElement;
+                return TSCSyntaxKind.ImportType;
             case 206:
-                return TSCSyntaxKind.ArrayLiteralExpression;
+                return TSCSyntaxKind.ObjectBindingPattern;
             case 207:
-                return TSCSyntaxKind.ObjectLiteralExpression;
+                return TSCSyntaxKind.ArrayBindingPattern;
             case 208:
-                return TSCSyntaxKind.PropertyAccessExpression;
+                return TSCSyntaxKind.BindingElement;
             case 209:
-                return TSCSyntaxKind.ElementAccessExpression;
+                return TSCSyntaxKind.ArrayLiteralExpression;
             case 210:
-                return TSCSyntaxKind.CallExpression;
+                return TSCSyntaxKind.ObjectLiteralExpression;
             case 211:
-                return TSCSyntaxKind.NewExpression;
+                return TSCSyntaxKind.PropertyAccessExpression;
             case 212:
-                return TSCSyntaxKind.TaggedTemplateExpression;
+                return TSCSyntaxKind.ElementAccessExpression;
             case 213:
-                return TSCSyntaxKind.TypeAssertionExpression;
+                return TSCSyntaxKind.CallExpression;
             case 214:
-                return TSCSyntaxKind.ParenthesizedExpression;
+                return TSCSyntaxKind.NewExpression;
             case 215:
-                return TSCSyntaxKind.FunctionExpression;
+                return TSCSyntaxKind.TaggedTemplateExpression;
             case 216:
-                return TSCSyntaxKind.ArrowFunction;
+                return TSCSyntaxKind.TypeAssertionExpression;
             case 217:
-                return TSCSyntaxKind.DeleteExpression;
+                return TSCSyntaxKind.ParenthesizedExpression;
             case 218:
-                return TSCSyntaxKind.TypeOfExpression;
+                return TSCSyntaxKind.FunctionExpression;
             case 219:
-                return TSCSyntaxKind.VoidExpression;
+                return TSCSyntaxKind.ArrowFunction;
             case 220:
-                return TSCSyntaxKind.AwaitExpression;
+                return TSCSyntaxKind.DeleteExpression;
             case 221:
-                return TSCSyntaxKind.PrefixUnaryExpression;
+                return TSCSyntaxKind.TypeOfExpression;
             case 222:
-                return TSCSyntaxKind.PostfixUnaryExpression;
+                return TSCSyntaxKind.VoidExpression;
             case 223:
-                return TSCSyntaxKind.BinaryExpression;
+                return TSCSyntaxKind.AwaitExpression;
             case 224:
-                return TSCSyntaxKind.ConditionalExpression;
+                return TSCSyntaxKind.PrefixUnaryExpression;
             case 225:
-                return TSCSyntaxKind.TemplateExpression;
+                return TSCSyntaxKind.PostfixUnaryExpression;
             case 226:
-                return TSCSyntaxKind.YieldExpression;
+                return TSCSyntaxKind.BinaryExpression;
             case 227:
-                return TSCSyntaxKind.SpreadElement;
+                return TSCSyntaxKind.ConditionalExpression;
             case 228:
-                return TSCSyntaxKind.ClassExpression;
+                return TSCSyntaxKind.TemplateExpression;
             case 229:
-                return TSCSyntaxKind.OmittedExpression;
+                return TSCSyntaxKind.YieldExpression;
             case 230:
-                return TSCSyntaxKind.ExpressionWithTypeArguments;
+                return TSCSyntaxKind.SpreadElement;
             case 231:
-                return TSCSyntaxKind.AsExpression;
+                return TSCSyntaxKind.ClassExpression;
             case 232:
-                return TSCSyntaxKind.NonNullExpression;
+                return TSCSyntaxKind.OmittedExpression;
             case 233:
-                return TSCSyntaxKind.MetaProperty;
+                return TSCSyntaxKind.ExpressionWithTypeArguments;
             case 234:
-                return TSCSyntaxKind.SyntheticExpression;
+                return TSCSyntaxKind.AsExpression;
             case 235:
-                return TSCSyntaxKind.SatisfiesExpression;
+                return TSCSyntaxKind.NonNullExpression;
             case 236:
-                return TSCSyntaxKind.TemplateSpan;
+                return TSCSyntaxKind.MetaProperty;
             case 237:
-                return TSCSyntaxKind.SemicolonClassElement;
+                return TSCSyntaxKind.SyntheticExpression;
             case 238:
-                return TSCSyntaxKind.Block;
+                return TSCSyntaxKind.SatisfiesExpression;
             case 239:
-                return TSCSyntaxKind.EmptyStatement;
+                return TSCSyntaxKind.TemplateSpan;
             case 240:
-                return TSCSyntaxKind.VariableStatement;
+                return TSCSyntaxKind.SemicolonClassElement;
             case 241:
-                return TSCSyntaxKind.ExpressionStatement;
+                return TSCSyntaxKind.Block;
             case 242:
-                return TSCSyntaxKind.IfStatement;
+                return TSCSyntaxKind.EmptyStatement;
             case 243:
-                return TSCSyntaxKind.DoStatement;
+                return TSCSyntaxKind.VariableStatement;
             case 244:
-                return TSCSyntaxKind.WhileStatement;
+                return TSCSyntaxKind.ExpressionStatement;
             case 245:
-                return TSCSyntaxKind.ForStatement;
+                return TSCSyntaxKind.IfStatement;
             case 246:
-                return TSCSyntaxKind.ForInStatement;
+                return TSCSyntaxKind.DoStatement;
             case 247:
-                return TSCSyntaxKind.ForOfStatement;
+                return TSCSyntaxKind.WhileStatement;
             case 248:
-                return TSCSyntaxKind.ContinueStatement;
+                return TSCSyntaxKind.ForStatement;
             case 249:
-                return TSCSyntaxKind.BreakStatement;
+                return TSCSyntaxKind.ForInStatement;
             case 250:
-                return TSCSyntaxKind.ReturnStatement;
+                return TSCSyntaxKind.ForOfStatement;
             case 251:
-                return TSCSyntaxKind.WithStatement;
+                return TSCSyntaxKind.ContinueStatement;
             case 252:
-                return TSCSyntaxKind.SwitchStatement;
+                return TSCSyntaxKind.BreakStatement;
             case 253:
-                return TSCSyntaxKind.LabeledStatement;
+                return TSCSyntaxKind.ReturnStatement;
             case 254:
-                return TSCSyntaxKind.ThrowStatement;
+                return TSCSyntaxKind.WithStatement;
             case 255:
-                return TSCSyntaxKind.TryStatement;
+                return TSCSyntaxKind.SwitchStatement;
             case 256:
-                return TSCSyntaxKind.DebuggerStatement;
+                return TSCSyntaxKind.LabeledStatement;
             case 257:
-                return TSCSyntaxKind.VariableDeclaration;
+                return TSCSyntaxKind.ThrowStatement;
             case 258:
-                return TSCSyntaxKind.VariableDeclarationList;
+                return TSCSyntaxKind.TryStatement;
             case 259:
-                return TSCSyntaxKind.FunctionDeclaration;
+                return TSCSyntaxKind.DebuggerStatement;
             case 260:
-                return TSCSyntaxKind.ClassDeclaration;
+                return TSCSyntaxKind.VariableDeclaration;
             case 261:
-                return TSCSyntaxKind.InterfaceDeclaration;
+                return TSCSyntaxKind.VariableDeclarationList;
             case 262:
-                return TSCSyntaxKind.TypeAliasDeclaration;
+                return TSCSyntaxKind.FunctionDeclaration;
             case 263:
-                return TSCSyntaxKind.EnumDeclaration;
+                return TSCSyntaxKind.ClassDeclaration;
             case 264:
-                return TSCSyntaxKind.ModuleDeclaration;
+                return TSCSyntaxKind.InterfaceDeclaration;
             case 265:
-                return TSCSyntaxKind.ModuleBlock;
+                return TSCSyntaxKind.TypeAliasDeclaration;
             case 266:
-                return TSCSyntaxKind.CaseBlock;
+                return TSCSyntaxKind.EnumDeclaration;
             case 267:
-                return TSCSyntaxKind.NamespaceExportDeclaration;
+                return TSCSyntaxKind.ModuleDeclaration;
             case 268:
-                return TSCSyntaxKind.ImportEqualsDeclaration;
+                return TSCSyntaxKind.ModuleBlock;
             case 269:
-                return TSCSyntaxKind.ImportDeclaration;
+                return TSCSyntaxKind.CaseBlock;
             case 270:
-                return TSCSyntaxKind.ImportClause;
+                return TSCSyntaxKind.NamespaceExportDeclaration;
             case 271:
-                return TSCSyntaxKind.NamespaceImport;
+                return TSCSyntaxKind.ImportEqualsDeclaration;
             case 272:
-                return TSCSyntaxKind.NamedImports;
+                return TSCSyntaxKind.ImportDeclaration;
             case 273:
-                return TSCSyntaxKind.ImportSpecifier;
+                return TSCSyntaxKind.ImportClause;
             case 274:
-                return TSCSyntaxKind.ExportAssignment;
+                return TSCSyntaxKind.NamespaceImport;
             case 275:
-                return TSCSyntaxKind.ExportDeclaration;
+                return TSCSyntaxKind.NamedImports;
             case 276:
-                return TSCSyntaxKind.NamedExports;
+                return TSCSyntaxKind.ImportSpecifier;
             case 277:
-                return TSCSyntaxKind.NamespaceExport;
+                return TSCSyntaxKind.ExportAssignment;
             case 278:
-                return TSCSyntaxKind.ExportSpecifier;
+                return TSCSyntaxKind.ExportDeclaration;
             case 279:
-                return TSCSyntaxKind.MissingDeclaration;
+                return TSCSyntaxKind.NamedExports;
             case 280:
-                return TSCSyntaxKind.ExternalModuleReference;
+                return TSCSyntaxKind.NamespaceExport;
             case 281:
-                return TSCSyntaxKind.JsxElement;
+                return TSCSyntaxKind.ExportSpecifier;
             case 282:
-                return TSCSyntaxKind.JsxSelfClosingElement;
+                return TSCSyntaxKind.MissingDeclaration;
             case 283:
-                return TSCSyntaxKind.JsxOpeningElement;
+                return TSCSyntaxKind.ExternalModuleReference;
             case 284:
-                return TSCSyntaxKind.JsxClosingElement;
+                return TSCSyntaxKind.JsxElement;
             case 285:
-                return TSCSyntaxKind.JsxFragment;
+                return TSCSyntaxKind.JsxSelfClosingElement;
             case 286:
-                return TSCSyntaxKind.JsxOpeningFragment;
+                return TSCSyntaxKind.JsxOpeningElement;
             case 287:
-                return TSCSyntaxKind.JsxClosingFragment;
+                return TSCSyntaxKind.JsxClosingElement;
             case 288:
-                return TSCSyntaxKind.JsxAttribute;
+                return TSCSyntaxKind.JsxFragment;
             case 289:
-                return TSCSyntaxKind.JsxAttributes;
+                return TSCSyntaxKind.JsxOpeningFragment;
             case 290:
-                return TSCSyntaxKind.JsxSpreadAttribute;
+                return TSCSyntaxKind.JsxClosingFragment;
             case 291:
-                return TSCSyntaxKind.JsxExpression;
+                return TSCSyntaxKind.JsxAttribute;
             case 292:
-                return TSCSyntaxKind.CaseClause;
+                return TSCSyntaxKind.JsxAttributes;
             case 293:
-                return TSCSyntaxKind.DefaultClause;
+                return TSCSyntaxKind.JsxSpreadAttribute;
             case 294:
-                return TSCSyntaxKind.HeritageClause;
+                return TSCSyntaxKind.JsxExpression;
             case 295:
-                return TSCSyntaxKind.CatchClause;
+                return TSCSyntaxKind.JsxNamespacedName;
             case 296:
-                return TSCSyntaxKind.AssertClause;
+                return TSCSyntaxKind.CaseClause;
             case 297:
-                return TSCSyntaxKind.AssertEntry;
+                return TSCSyntaxKind.DefaultClause;
             case 298:
-                return TSCSyntaxKind.ImportTypeAssertionContainer;
+                return TSCSyntaxKind.HeritageClause;
             case 299:
-                return TSCSyntaxKind.PropertyAssignment;
+                return TSCSyntaxKind.CatchClause;
             case 300:
-                return TSCSyntaxKind.ShorthandPropertyAssignment;
+                return TSCSyntaxKind.AssertClause;
             case 301:
-                return TSCSyntaxKind.SpreadAssignment;
+                return TSCSyntaxKind.AssertEntry;
             case 302:
-                return TSCSyntaxKind.EnumMember;
+                return TSCSyntaxKind.ImportTypeAssertionContainer;
             case 303:
-                return TSCSyntaxKind.UnparsedPrologue;
+                return TSCSyntaxKind.PropertyAssignment;
             case 304:
-                return TSCSyntaxKind.UnparsedPrepend;
+                return TSCSyntaxKind.ShorthandPropertyAssignment;
             case 305:
-                return TSCSyntaxKind.UnparsedText;
+                return TSCSyntaxKind.SpreadAssignment;
             case 306:
-                return TSCSyntaxKind.UnparsedInternalText;
+                return TSCSyntaxKind.EnumMember;
             case 307:
-                return TSCSyntaxKind.UnparsedSyntheticReference;
+                return TSCSyntaxKind.UnparsedPrologue;
             case 308:
-                return TSCSyntaxKind.SourceFile;
+                return TSCSyntaxKind.UnparsedPrepend;
             case 309:
-                return TSCSyntaxKind.Bundle;
+                return TSCSyntaxKind.UnparsedText;
             case 310:
-                return TSCSyntaxKind.UnparsedSource;
+                return TSCSyntaxKind.UnparsedInternalText;
             case 311:
-                return TSCSyntaxKind.InputFiles;
+                return TSCSyntaxKind.UnparsedSyntheticReference;
             case 312:
-                return TSCSyntaxKind.JSDocTypeExpression;
+                return TSCSyntaxKind.SourceFile;
             case 313:
-                return TSCSyntaxKind.JSDocNameReference;
+                return TSCSyntaxKind.Bundle;
             case 314:
-                return TSCSyntaxKind.JSDocMemberName;
+                return TSCSyntaxKind.UnparsedSource;
             case 315:
-                return TSCSyntaxKind.JSDocAllType;
+                return TSCSyntaxKind.InputFiles;
             case 316:
-                return TSCSyntaxKind.JSDocUnknownType;
+                return TSCSyntaxKind.JSDocTypeExpression;
             case 317:
-                return TSCSyntaxKind.JSDocNullableType;
+                return TSCSyntaxKind.JSDocNameReference;
             case 318:
-                return TSCSyntaxKind.JSDocNonNullableType;
+                return TSCSyntaxKind.JSDocMemberName;
             case 319:
-                return TSCSyntaxKind.JSDocOptionalType;
+                return TSCSyntaxKind.JSDocAllType;
             case 320:
-                return TSCSyntaxKind.JSDocFunctionType;
+                return TSCSyntaxKind.JSDocUnknownType;
             case 321:
-                return TSCSyntaxKind.JSDocVariadicType;
+                return TSCSyntaxKind.JSDocNullableType;
             case 322:
-                return TSCSyntaxKind.JSDocNamepathType;
+                return TSCSyntaxKind.JSDocNonNullableType;
             case 323:
-                return TSCSyntaxKind.JSDoc;
+                return TSCSyntaxKind.JSDocOptionalType;
             case 324:
-                return TSCSyntaxKind.JSDocText;
+                return TSCSyntaxKind.JSDocFunctionType;
             case 325:
-                return TSCSyntaxKind.JSDocTypeLiteral;
+                return TSCSyntaxKind.JSDocVariadicType;
             case 326:
-                return TSCSyntaxKind.JSDocSignature;
+                return TSCSyntaxKind.JSDocNamepathType;
             case 327:
-                return TSCSyntaxKind.JSDocLink;
+                return TSCSyntaxKind.JSDoc;
             case 328:
-                return TSCSyntaxKind.JSDocLinkCode;
+                return TSCSyntaxKind.JSDocText;
             case 329:
-                return TSCSyntaxKind.JSDocLinkPlain;
+                return TSCSyntaxKind.JSDocTypeLiteral;
             case 330:
-                return TSCSyntaxKind.JSDocTag;
+                return TSCSyntaxKind.JSDocSignature;
             case 331:
-                return TSCSyntaxKind.JSDocAugmentsTag;
+                return TSCSyntaxKind.JSDocLink;
             case 332:
-                return TSCSyntaxKind.JSDocImplementsTag;
+                return TSCSyntaxKind.JSDocLinkCode;
             case 333:
-                return TSCSyntaxKind.JSDocAuthorTag;
+                return TSCSyntaxKind.JSDocLinkPlain;
             case 334:
-                return TSCSyntaxKind.JSDocDeprecatedTag;
+                return TSCSyntaxKind.JSDocTag;
             case 335:
-                return TSCSyntaxKind.JSDocClassTag;
+                return TSCSyntaxKind.JSDocAugmentsTag;
             case 336:
-                return TSCSyntaxKind.JSDocPublicTag;
+                return TSCSyntaxKind.JSDocImplementsTag;
             case 337:
-                return TSCSyntaxKind.JSDocPrivateTag;
+                return TSCSyntaxKind.JSDocAuthorTag;
             case 338:
-                return TSCSyntaxKind.JSDocProtectedTag;
+                return TSCSyntaxKind.JSDocDeprecatedTag;
             case 339:
-                return TSCSyntaxKind.JSDocReadonlyTag;
+                return TSCSyntaxKind.JSDocClassTag;
             case 340:
-                return TSCSyntaxKind.JSDocOverrideTag;
+                return TSCSyntaxKind.JSDocPublicTag;
             case 341:
-                return TSCSyntaxKind.JSDocCallbackTag;
+                return TSCSyntaxKind.JSDocPrivateTag;
             case 342:
-                return TSCSyntaxKind.JSDocOverloadTag;
+                return TSCSyntaxKind.JSDocProtectedTag;
             case 343:
-                return TSCSyntaxKind.JSDocEnumTag;
+                return TSCSyntaxKind.JSDocReadonlyTag;
             case 344:
-                return TSCSyntaxKind.JSDocParameterTag;
+                return TSCSyntaxKind.JSDocOverrideTag;
             case 345:
-                return TSCSyntaxKind.JSDocReturnTag;
+                return TSCSyntaxKind.JSDocCallbackTag;
             case 346:
-                return TSCSyntaxKind.JSDocThisTag;
+                return TSCSyntaxKind.JSDocOverloadTag;
             case 347:
-                return TSCSyntaxKind.JSDocTypeTag;
+                return TSCSyntaxKind.JSDocEnumTag;
             case 348:
-                return TSCSyntaxKind.JSDocTemplateTag;
+                return TSCSyntaxKind.JSDocParameterTag;
             case 349:
-                return TSCSyntaxKind.JSDocTypedefTag;
+                return TSCSyntaxKind.JSDocReturnTag;
             case 350:
-                return TSCSyntaxKind.JSDocSeeTag;
+                return TSCSyntaxKind.JSDocThisTag;
             case 351:
-                return TSCSyntaxKind.JSDocPropertyTag;
+                return TSCSyntaxKind.JSDocTypeTag;
             case 352:
-                return TSCSyntaxKind.JSDocThrowsTag;
+                return TSCSyntaxKind.JSDocTemplateTag;
             case 353:
-                return TSCSyntaxKind.JSDocSatisfiesTag;
+                return TSCSyntaxKind.JSDocTypedefTag;
             case 354:
-                return TSCSyntaxKind.SyntaxList;
+                return TSCSyntaxKind.JSDocSeeTag;
             case 355:
-                return TSCSyntaxKind.NotEmittedStatement;
+                return TSCSyntaxKind.JSDocPropertyTag;
             case 356:
-                return TSCSyntaxKind.PartiallyEmittedExpression;
+                return TSCSyntaxKind.JSDocThrowsTag;
             case 357:
-                return TSCSyntaxKind.CommaListExpression;
+                return TSCSyntaxKind.JSDocSatisfiesTag;
             case 358:
-                return TSCSyntaxKind.MergeDeclarationMarker;
+                return TSCSyntaxKind.SyntaxList;
             case 359:
-                return TSCSyntaxKind.EndOfDeclarationMarker;
+                return TSCSyntaxKind.NotEmittedStatement;
             case 360:
-                return TSCSyntaxKind.SyntheticReferenceExpression;
+                return TSCSyntaxKind.PartiallyEmittedExpression;
             case 361:
+                return TSCSyntaxKind.CommaListExpression;
+            case 362:
+                return TSCSyntaxKind.SyntheticReferenceExpression;
+            case 363:
                 return TSCSyntaxKind.Count;
             default:
                 throw new IllegalArgumentException("unknown TSCSyntaxKind code: " + code);

@@ -17,9 +17,12 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
+import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.javascript.Assertions.javaScript;
 
 @SuppressWarnings("JSUnusedLocalSymbols")
-class TypeOperatorTest extends ParserTest {
+class TypeOperatorTest implements RewriteTest {
 
     @ExpectedToFail
     @Test
@@ -34,7 +37,6 @@ class TypeOperatorTest extends ParserTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void delete() {
         rewriteRun(

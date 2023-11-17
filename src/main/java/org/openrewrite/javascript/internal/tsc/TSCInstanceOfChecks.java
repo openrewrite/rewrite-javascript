@@ -21,13 +21,10 @@ import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.primitive.V8ValuePrimitive;
 import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueFunction;
-import com.caoccao.javet.values.reference.V8ValueMap;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.intellij.lang.annotations.Language;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.Map;
 
 public class TSCInstanceOfChecks extends TSCV8ValueHolder {
 
@@ -77,7 +74,7 @@ public class TSCInstanceOfChecks extends TSCV8ValueHolder {
                 }
             }
 
-            @Language("javascript")
+            @Language("typescript")
             String code = "" +
                     "(arg) => {\n" +
                     "  for (let i = 0; i < ctors.length; i++) {\n" +

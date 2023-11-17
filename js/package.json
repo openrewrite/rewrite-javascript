@@ -19,14 +19,14 @@
     "format": "prettier --write ./src"
   },
   "devDependencies": {
-    "@types/node": "^18.15.11",
-    "parcel": "^2.8.3",
-    "prettier": "^2.8.8",
-    "process": "^0.11.10",
-    "ts-node": "^10.9.1"
+    "@types/node": "20.8.7",
+    "parcel": "2.10.0",
+    "prettier": "3.0.3",
+    "process": "0.11.10",
+    "ts-node": "10.9.1"
   },
   "dependencies": {
-    "@typescript/vfs": "^1.4.0",
-    "typescript": "^5.0.4"
+    "@typescript/vfs": "1.5.0",
+    "typescript": "5.2.2"
   }
 }

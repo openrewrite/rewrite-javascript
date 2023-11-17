@@ -21,9 +21,11 @@ import lombok.experimental.NonFinal;
 import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.TypesInUse;
+import org.openrewrite.java.service.ImportService;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.internal.JavaScriptPrinter;
+import org.openrewrite.javascript.service.JavaScriptImportService;
 import org.openrewrite.marker.Markers;
 
 import java.beans.Transient;
@@ -197,6 +199,17 @@ public interface JS extends J {
         @Override
         public JavaSourceFile withPackageDeclaration(Package pkg) {
             throw new IllegalStateException("JavaScript does not support package declarations");
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <S> S service(Class<S> service) {
+            String serviceName =  service.getName();
+            if (ImportService.class.getName().equals(serviceName) ||
+                JavaScriptImportService.class.getName().equals(serviceName)) {
+                return (S) new JavaScriptImportService();
+            }
+            return JavaSourceFile.super.service(service);
         }
 
         public Padding getPadding() {
@@ -409,6 +422,35 @@ public interface JS extends J {
         @Override
         public CoordinateBuilder.Expression getCoordinates() {
             return new CoordinateBuilder.Expression(this);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @Data
+    @With
+    final class Delete implements JS, Expression, Statement {
+
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        Space prefix;
+        Markers markers;
+        Expression expression;
+
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitDelete(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
         }
     }
 
@@ -1658,67 +1700,6 @@ public interface JS extends J {
 
             public JS.Union withTypes(List<JRightPadded<Expression>> types) {
                 return t.types == types ? t : new JS.Union(t.id, t.prefix, t.markers, types, t.type);
-            }
-        }
-    }
-
-    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
-    @AllArgsConstructor
-    @Data
-    @With
-    final class UnknownElement implements JS, Statement, Expression, TypeTree, TypedTree, NameTree {
-
-        @EqualsAndHashCode.Include
-        UUID id;
-
-        Space prefix;
-        Markers markers;
-        Source source;
-
-        @Override
-        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
-            return v.visitUnknownElement(this, p);
-        }
-
-        @Nullable
-        @Override
-        public JavaType getType() {
-            return null;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public UnknownElement withType(@Nullable JavaType type) {
-            return this;
-        }
-
-        @Override
-        public CoordinateBuilder.Statement getCoordinates() {
-            return new CoordinateBuilder.Statement(this);
-        }
-
-        /**
-         * This class only exists to clean up the printed results from `SearchResult` markers.
-         * Without the marker the comments will print before the LST prefix.
-         */
-        @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-        @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
-        @AllArgsConstructor
-        @Data
-        @With
-        public static class Source implements JS {
-
-            @EqualsAndHashCode.Include
-            UUID id;
-
-            Space prefix;
-            Markers markers;
-            String text;
-
-            @Override
-            public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
-                return v.visitUnknownElementSource(this, p);
             }
         }
     }

@@ -16,7 +16,8 @@
 package org.openrewrite.javascript.recipe;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.java.cleanup.SimplifyBooleanExpression;
+import org.openrewrite.java.ShortenFullyQualifiedTypeReferences;
+import org.openrewrite.staticanalysis.SimplifyBooleanExpression;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
@@ -34,6 +35,19 @@ public class RecipeTest implements RewriteTest {
               """,
               """
               const b = true
+              """
+          )
+        );
+    }
+
+    @Test
+    void shortenFullyQualifiedNames() {
+        rewriteRun(
+          spec -> spec.recipe(new ShortenFullyQualifiedTypeReferences()),
+          javaScript(
+            """
+              const a = { b: false }
+              const c = a.b
               """
           )
         );

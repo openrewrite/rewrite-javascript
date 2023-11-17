@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite;
+package org.openrewrite.javascript;
 
+import org.openrewrite.Incubating;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeSignatureBuilder;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.javascript.internal.tsc.TSCNode;
+import org.openrewrite.javascript.internal.tsc.TSCNodeList;
 import org.openrewrite.javascript.internal.tsc.TSCSymbol;
 import org.openrewrite.javascript.internal.tsc.TSCType;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
-import org.openrewrite.javascript.table.ParseExceptionAnalysis;
 import org.openrewrite.javascript.tree.TsType;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 import static org.openrewrite.javascript.internal.tsc.TSCProgramContext.CompilerBridgeSourceKind.ApplicationCode;
 
@@ -40,6 +38,8 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
     @Nullable
     Set<String> typeVariableNameStack;
 
+    Map<TSCNode, String> signatures = new IdentityHashMap<>();
+
     @Override
     public String signature(@Nullable Object object) {
         if (object == null) {
@@ -47,16 +47,24 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         }
 
         TSCNode node = (TSCNode) object;
+        String cached = signatures.get(node);
+        if (cached != null) {
+            return cached;
+        }
+
         switch (node.syntaxKind()) {
             case SourceFile:
-                return mapSourceFileFqn((TSCNode.SourceFile) node);
+                cached = mapSourceFileFqn((TSCNode.SourceFile) node);
+                break;
             case ClassDeclaration:
             case EnumDeclaration:
             case InterfaceDeclaration:
-                return node.hasProperty("typeParameters") && !node.getNodeListProperty("typeParameters").isEmpty() ?
+                TSCNodeList typeParameters = node.getOptionalNodeListProperty("typeParameters");
+                return typeParameters != null && !typeParameters.isEmpty() ?
                         parameterizedSignature(node) : classSignature(node);
             case ArrayType:
-                return arraySignature(node);
+                cached = arraySignature(node);
+                break;
             case EnumMember:
                 return mapEnumMember(node);
             case Identifier:
@@ -70,7 +78,8 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
             case TypeOperator:
                 return mapTypeOperator(node);
             case TypeParameter:
-                return genericSignature(node);
+                cached = genericSignature(node);
+                break;
             case ExpressionWithTypeArguments:
             case TypeReference:
             case TypeQuery:
@@ -79,8 +88,14 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
                 return TsType.Union.getFullyQualifiedName();
             case PropertyDeclaration:
             case VariableDeclaration:
-                return variableSignature(node);
+                cached = variableSignature(node);
+                break;
         }
+        if (cached != null) {
+            signatures.put(node, cached);
+            return cached;
+        }
+
         TSCType type = node.getTypeChecker().getTypeAtLocation(node);
         return mapType(type);
     }
@@ -118,8 +133,8 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         StringBuilder s = new StringBuilder("Generic{").append(name);
         StringJoiner boundSigs = new StringJoiner(" & ");
 
-        if (node.hasProperty("constraint")) {
-            TSCNode constraint = node.getNodeProperty("constraint");
+        TSCNode constraint = node.getOptionalNodeProperty("constraint");
+        if (constraint != null) {
             if (constraint.syntaxKind() == TSCSyntaxKind.IntersectionType) {
                 for (TSCNode type : constraint.getNodeListProperty("types")) {
                     boundSigs.add(signature(type));
@@ -219,8 +234,9 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
 
         String name = node.getNodeProperty("name").getText();
         String typeSig;
-        if (node.hasProperty("type")) {
-            typeSig = signature(node.getNodeProperty("type"));
+        TSCNode type = node.getOptionalNodeProperty("type");
+        if (type != null) {
+            typeSig = signature(type);
         } else if (node.syntaxKind() == TSCSyntaxKind.EnumMember) {
             typeSig = owner;
         } else {
@@ -300,8 +316,9 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
 
     private String mapQualifiedName(TSCNode node) {
         String left = signature(node.getNodeProperty("left"));
-        if (left.contains("<")) {
-            left = left.substring(0, left.indexOf('<'));
+        int index = left.indexOf('<');
+        if (index != -1) {
+            left = left.substring(0, index);
         }
         return left + "$" + node.getNodeProperty("right").getText();
     }
@@ -522,10 +539,10 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
     }
 
     private void implementMe(TSCSyntaxKind syntaxKind) {
-        throw new RuntimeException(ParseExceptionAnalysis.getAnalysisMessage(syntaxKind.name()));
+        throw new UnsupportedOperationException(syntaxKind.name() + " syntaxKind is not supported in TypeScriptSignatureBuilder.");
     }
 
     private void implementMe(TSCType type) {
-        throw new RuntimeException(ParseExceptionAnalysis.getAnalysisMessage(type.typeToString()));
+        throw new UnsupportedOperationException(type.typeToString() + " type is not supported in TypeScriptSignatureBuilder.");
     }
 }

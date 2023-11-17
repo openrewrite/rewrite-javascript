@@ -136,6 +136,15 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitDelete(JS.Delete delete, PrintOutputCapture<P> p) {
+        beforeSyntax(delete, JsSpace.Location.DELETE_PREFIX, p);
+        p.append("delete");
+        visit(delete.getExpression(), p);
+        afterSyntax(delete, p);
+        return delete;
+    }
+
+    @Override
     public J visitExport(JS.Export export, PrintOutputCapture<P> p) {
         beforeSyntax(export, JsSpace.Location.EXPORT_PREFIX, p);
         p.append("export");
@@ -338,22 +347,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return union;
     }
 
-    @Override
-    public J visitUnknownElement(JS.UnknownElement unknownElement, PrintOutputCapture<P> p) {
-        beforeSyntax(unknownElement, JsSpace.Location.UNION_PREFIX, p);
-        visit(unknownElement.getSource(), p);
-        afterSyntax(unknownElement, p);
-        return unknownElement;
-    }
-
-    @Override
-    public J visitUnknownElementSource(JS.UnknownElement.Source source, PrintOutputCapture<P> p) {
-        beforeSyntax(source, JsSpace.Location.UNKNOWN_SOURCE_PREFIX, p);
-        p.append(source.getText());
-        afterSyntax(source, p);
-        return source;
-    }
-
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
         @Override
@@ -376,6 +369,77 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitContainer("(", annotation.getPadding().getArguments(), JContainer.Location.ANNOTATION_ARGUMENTS, ",", ")", p);
             afterSyntax(annotation, p);
             return annotation;
+        }
+
+        @Override
+        public J visitBinary(J.Binary binary, PrintOutputCapture<P> p) {
+            String keyword = "";
+            switch (binary.getOperator()) {
+                case Addition:
+                    keyword = "+";
+                    break;
+                case Subtraction:
+                    keyword = "-";
+                    break;
+                case Multiplication:
+                    keyword = "*";
+                    break;
+                case Division:
+                    keyword = "/";
+                    break;
+                case Modulo:
+                    keyword = "%";
+                    break;
+                case LessThan:
+                    keyword = "<";
+                    break;
+                case GreaterThan:
+                    keyword = ">";
+                    break;
+                case LessThanOrEqual:
+                    keyword = "<=";
+                    break;
+                case GreaterThanOrEqual:
+                    keyword = ">=";
+                    break;
+                case Equal:
+                    keyword = "==";
+                    break;
+                case NotEqual:
+                    keyword = "!=";
+                    break;
+                case BitAnd:
+                    keyword = "&";
+                    break;
+                case BitOr:
+                    keyword = "|";
+                    break;
+                case BitXor:
+                    keyword = "^";
+                    break;
+                case LeftShift:
+                    keyword = "<<";
+                    break;
+                case RightShift:
+                    keyword = ">>";
+                    break;
+                case UnsignedRightShift:
+                    keyword = ">>>";
+                    break;
+                case Or:
+                    keyword = binary.getMarkers().findFirst(Comma.class).isPresent() ? "," : "||";
+                    break;
+                case And:
+                    keyword = "&&";
+                    break;
+            }
+            beforeSyntax(binary, Space.Location.BINARY_PREFIX, p);
+            visit(binary.getLeft(), p);
+            visitSpace(binary.getPadding().getOperator().getBefore(), Space.Location.BINARY_OPERATOR, p);
+            p.append(keyword);
+            visit(binary.getRight(), p);
+            afterSyntax(binary, p);
+            return binary;
         }
 
         @Override

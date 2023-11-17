@@ -144,7 +144,7 @@ public class JavetNativeBridge {
                     try {
                         System.err.printf("    tmp path: %s%n", tempFile.getAbsolutePath());
                         System.err.printf("  tmp exists: %s%n", tempFile.exists());
-                        System.err.printf("  tmp size: %s%n", tempFile.length());
+                        System.err.printf("    tmp size: %s%n", tempFile.length());
                     } catch (Throwable ignored) {
                     }
                 }

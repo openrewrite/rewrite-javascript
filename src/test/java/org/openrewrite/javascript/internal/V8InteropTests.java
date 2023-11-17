@@ -312,16 +312,13 @@ public class V8InteropTests {
               TSCType globalStringType = ctx.getProgramContext().getTypeChecker().getStringType();
               TSCType globalNumberType = ctx.getProgramContext().getTypeChecker().getNumberType();
 
-              // The constraints type args are those passed to `B` in `T2 extends B<string, T1, number>`
+              // The constraint type args are those passed to `B` in `T2 extends B<string, T1, number>`
               List<TSCType> constraintTypeArgs = typeParam2Constraint.assertTypeReference().getTypeArguments();
-              // There are *four* args, even though `B` only has three params; unused local type variables are passed along.
-              assertEquals(4, constraintTypeArgs.size());
+              assertEquals(3, constraintTypeArgs.size());
               // Used type variables, i.e. `string, T1, number`
               assertSame(globalStringType, constraintTypeArgs.get(0));
               assertSame(typeParam1, constraintTypeArgs.get(1));
               assertSame(globalNumberType, constraintTypeArgs.get(2));
-              // Remaining type variables, i.e. `T2`
-              assertSame(typeParam2, constraintTypeArgs.get(3));
           }
         );
     }

@@ -16,6 +16,7 @@ com.caoccao.javet.interop.options.NodeRuntimeOptions
 com.caoccao.javet.interop.options.V8Flags
 com.caoccao.javet.interop.options.V8RuntimeOptions
 com.caoccao.javet.utils.JavetResourceUtils
+com.caoccao.javet.values.V8Value
 com.caoccao.javet.values.primitive.V8ValueBigInteger
 com.caoccao.javet.values.primitive.V8ValueBoolean
 com.caoccao.javet.values.primitive.V8ValueDouble
