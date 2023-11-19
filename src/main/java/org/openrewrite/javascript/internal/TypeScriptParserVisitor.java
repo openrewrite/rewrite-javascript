@@ -17,7 +17,6 @@ package org.openrewrite.javascript.internal;
 
 import org.openrewrite.FileAttributes;
 import org.openrewrite.ParseExceptionResult;
-import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.marker.Semicolon;
@@ -48,6 +47,7 @@ import static org.openrewrite.java.tree.Space.EMPTY;
 public class TypeScriptParserVisitor {
 
     private final TSCNode source;
+    private final String sourceText;
     private final TSCSourceFileContext cursorContext;
     private final Path sourcePath;
     private final TypeScriptTypeMapping typeMapping;
@@ -58,6 +58,7 @@ public class TypeScriptParserVisitor {
 
     public TypeScriptParserVisitor(TSCNode source, TSCSourceFileContext sourceContext, Path sourcePath, JavaTypeCache typeCache, String charset, boolean isCharsetBomMarked, Collection<NamedStyles> styles) {
         this.source = source;
+        this.sourceText = source.getOptionalStringProperty("text");
         this.cursorContext = sourceContext;
         this.sourcePath = sourcePath;
         this.charset = charset;
@@ -103,7 +104,6 @@ public class TypeScriptParserVisitor {
 
         Space eof = whitespace();
         String remainingWhitespace = "";
-        String sourceText = source.getStringProperty("text");
         if (getCursor() < sourceText.length()) {
             remainingWhitespace = sourceText.substring(getCursor());
         }
@@ -3492,9 +3492,7 @@ public class TypeScriptParserVisitor {
     }
 
     private boolean sourceStartsWithAtCursor(String text) {
-        String propertyText = source.getOptionalStringProperty("text");
-        return propertyText != null && propertyText.length() > source.getText().length() ?
-                propertyText.startsWith(text, getCursor()) : source.getText().startsWith(text, getCursor());
+        return sourceText.startsWith(text, getCursor());
     }
 
     private Space sourceBefore(TSCSyntaxKind syntaxKind) {
@@ -3509,7 +3507,7 @@ public class TypeScriptParserVisitor {
      * whitespace and comments.
      */
     private Space whitespace() {
-        StringBuilder initialSpace = new StringBuilder();
+        StringBuilder initialSpace = null;
         List<Comment> comments = Collections.emptyList();
         TSCSyntaxKind kind;
         boolean done = false;
@@ -3519,12 +3517,13 @@ public class TypeScriptParserVisitor {
                 case WhitespaceTrivia:
                 case NewLineTrivia: {
                     if (comments.isEmpty()) {
+                        if (initialSpace == null) {
+                            initialSpace = new StringBuilder();
+                        }
                         initialSpace.append(lastToken());
                     } else {
-                        comments = ListUtils.mapLast(
-                                comments,
-                                comment -> comment.withSuffix(comment.getSuffix() + lastToken())
-                        );
+                        Comment lastComment = comments.get(comments.size() - 1);
+                        comments.set(comments.size() - 1, lastComment.withSuffix(lastComment.getSuffix() + lastToken()));
                     }
                     break;
                 }
@@ -3552,7 +3551,7 @@ public class TypeScriptParserVisitor {
                     break;
             }
         } while (!done);
-        return Space.build(initialSpace.toString(), comments);
+        return Space.build(initialSpace == null ? null : initialSpace.toString(), comments);
     }
 
     private J unknown(TSCNode node) {
