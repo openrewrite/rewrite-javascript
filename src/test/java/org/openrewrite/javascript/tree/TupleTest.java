@@ -24,7 +24,6 @@ import static org.openrewrite.javascript.Assertions.javaScript;
 @SuppressWarnings({"JSUnresolvedVariable", "JSUnusedLocalSymbols"})
 class TupleTest implements RewriteTest {
 
-    @ExpectedToFail
     @Test
     void emptyTuple() {
         rewriteRun(
@@ -36,25 +35,63 @@ class TupleTest implements RewriteTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void tuple() {
         rewriteRun(
           javaScript(
             """
-              let tuple : [ number , boolean , ] = [ 1 , true ]
+              let tuple : [ number , boolean ] = [ 1 , true ]
               """
           )
         );
     }
 
-    @ExpectedToFail
     @Test
     void typed() {
         rewriteRun(
           javaScript(
             """
               let input : [ x : number , y : number ] = [ 1 , 2 ]
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail("Requires spread operator")
+    @Test
+    void spreadOperators() {
+        rewriteRun(
+          javaScript(
+            """
+              function concat(arr1, arr2) {
+                  return [...arr1, ...arr2]
+              }
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail("Requires ArrayBindingPattern.")
+    @Test
+    void arrayBindingPattern() {
+        rewriteRun(
+          javaScript(
+            """
+              function tail(arg) {
+                  const [_, ...result] = arg;
+                  return result;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void trailingCommas() {
+        rewriteRun(
+          javaScript(
+            """
+              let input : [  number , boolean , ] = [ 1 , true , ]
               """
           )
         );

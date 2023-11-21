@@ -310,6 +310,20 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return s;
     }
 
+    public J visitTuple(JS.Tuple tuple, P p) {
+        JS.Tuple t = tuple;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.TUPLE_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(t, p);
+        if (!(temp instanceof JS.Tuple)) {
+            return temp;
+        } else {
+            t = (JS.Tuple) temp;
+        }
+        t = t.withType(visitType(t.getType(), p));
+        return t;
+    }
+
     public J visitTypeDeclaration(JS.TypeDeclaration typeDeclaration, P p) {
         JS.TypeDeclaration t = typeDeclaration;
         t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.TYPE_DECLARATION_PREFIX, p));

@@ -1453,6 +1453,81 @@ public interface JS extends J {
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Data
+    final class Tuple implements JS, Expression, TypeTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<Tuple.Padding> padding;
+
+        @EqualsAndHashCode.Include
+        @With
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        JContainer<J> types;
+
+        @With
+        @Nullable
+        JavaType type;
+
+        public List<J> getTypes() {
+            return types.getElements();
+        }
+
+        public Tuple withBindings(List<J> types) {
+            return getPadding().withTypes(JContainer.withElements(this.types, types));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTuple(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public Tuple.Padding getPadding() {
+            Tuple.Padding p;
+            if (this.padding == null) {
+                p = new Tuple.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Tuple.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final Tuple t;
+
+            public JContainer<J> getTypes() {
+                return t.types;
+            }
+
+            public Tuple withTypes(JContainer<J> types) {
+                return t.types == types ? t : new Tuple(t.id, t.prefix, t.markers, types, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Data
     final class TypeDeclaration implements JS, Statement, TypedTree {
 
         @Nullable

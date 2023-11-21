@@ -301,6 +301,14 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitTuple(JS.Tuple tuple, PrintOutputCapture<P> p) {
+        beforeSyntax(tuple, JsSpace.Location.TUPLE_PREFIX, p);
+        visitContainer("[", tuple.getPadding().getTypes(), JsContainer.Location.TUPLE_ELEMENT, ",", "]", p);
+        afterSyntax(tuple, p);
+        return tuple;
+    }
+
+    @Override
     public J visitTypeDeclaration(JS.TypeDeclaration typeDeclaration, PrintOutputCapture<P> p) {
         beforeSyntax(typeDeclaration, JsSpace.Location.TYPE_DECLARATION_PREFIX, p);
         visit(typeDeclaration.getLeadingAnnotations(), p);
@@ -589,6 +597,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 case Volatile:
                     keyword = "volatile";
                     break;
+                default:
+                    keyword = mod.getKeyword();
             }
             beforeSyntax(mod, Space.Location.MODIFIER_PREFIX, p);
             p.append(keyword);

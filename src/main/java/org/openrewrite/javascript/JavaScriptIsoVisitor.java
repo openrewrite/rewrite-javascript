@@ -94,6 +94,11 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
+    public JS.Tuple visitTuple(JS.Tuple tuple, P p) {
+        return (JS.Tuple) super.visitTuple(tuple, p);
+    }
+
+    @Override
     public JS.TypeDeclaration visitTypeDeclaration(JS.TypeDeclaration typeDeclaration, P p) {
         return (JS.TypeDeclaration) super.visitTypeDeclaration(typeDeclaration, p);
     }
