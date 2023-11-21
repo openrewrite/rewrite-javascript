@@ -312,7 +312,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     public J visitTypeDeclaration(JS.TypeDeclaration typeDeclaration, PrintOutputCapture<P> p) {
         beforeSyntax(typeDeclaration, JsSpace.Location.TYPE_DECLARATION_PREFIX, p);
         visit(typeDeclaration.getLeadingAnnotations(), p);
-        visit(typeDeclaration.getModifiers(), p);
+        typeDeclaration.getModifiers().forEach(m -> delegate.visitModifier(m, p));
         visit(typeDeclaration.getName(), p);
         J.TypeParameters typeParameters = typeDeclaration.getTypeParameters();
         if (typeParameters != null) {
@@ -550,7 +550,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         @Override
         public void visitModifier(J.Modifier mod, PrintOutputCapture<P> p) {
             visit(mod.getAnnotations(), p);
-            String keyword = "";
+            String keyword;
             switch (mod.getType()) {
                 case Default:
                     keyword = "default";
@@ -844,7 +844,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
-    public Markers visitMarkers(Markers markers, PrintOutputCapture<P> pPrintOutputCapture) {
+    public Markers visitMarkers(@Nullable Markers markers, PrintOutputCapture<P> pPrintOutputCapture) {
         return delegate.visitMarkers(markers, pPrintOutputCapture);
     }
 }

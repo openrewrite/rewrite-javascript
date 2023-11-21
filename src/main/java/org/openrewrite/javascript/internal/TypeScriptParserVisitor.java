@@ -2286,7 +2286,7 @@ public class TypeScriptParserVisitor {
         List<J.Annotation> trailing = new ArrayList<>();
         List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
 
-        Space before = sourceBefore(TSCSyntaxKind.TypeKeyword);
+        Space before = whitespace();
         modifiers.add(mapModifier(before, "type", trailing));
 
         TSCNode nameNode = node.getNodeProperty("name");
@@ -3487,6 +3487,7 @@ public class TypeScriptParserVisitor {
     }
 
     private J.Modifier mapModifier(Space prefix, String name, @Nullable List<J.Annotation> annotations) {
+        skip(name);
         return new J.Modifier(
                 randomId(),
                 prefix,

@@ -433,7 +433,6 @@ public interface JS extends J {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @Data
@@ -568,6 +567,7 @@ public interface JS extends J {
         }
     }
 
+    @Getter
     @SuppressWarnings("unchecked")
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
@@ -575,11 +575,9 @@ public interface JS extends J {
     final class ExpressionStatement implements JS, Expression, Statement {
 
         @With
-        @Getter
         UUID id;
 
         @With
-        @Getter
         Expression expression;
 
         @Override
@@ -1283,6 +1281,7 @@ public interface JS extends J {
         }
     }
 
+    @Getter
     @SuppressWarnings("unchecked")
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
@@ -1290,11 +1289,9 @@ public interface JS extends J {
     final class StatementExpression implements JS, Expression, Statement {
 
         @With
-        @Getter
         UUID id;
 
         @With
-        @Getter
         Statement statement;
 
         @Override

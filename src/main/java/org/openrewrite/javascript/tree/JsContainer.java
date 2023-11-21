@@ -15,7 +15,10 @@
  */
 package org.openrewrite.javascript.tree;
 
+import lombok.Getter;
+
 public class JsContainer {
+    @Getter
     public enum Location {
         ARRAY_LITERAL_EXPRESSION(JsSpace.Location.ARRAY_LITERAL_ELEMENTS, JsRightPadded.Location.ARRAY_LITERAL_ELEMENT_SUFFIX),
         BINDING_ELEMENT(JsSpace.Location.BINDING_ELEMENTS, JsRightPadded.Location.BINDING_ELEMENT_SUFFIX),
@@ -32,12 +35,5 @@ public class JsContainer {
             this.elementLocation = elementLocation;
         }
 
-        public JsSpace.Location getBeforeLocation() {
-            return beforeLocation;
-        }
-
-        public JsRightPadded.Location getElementLocation() {
-            return elementLocation;
-        }
     }
 }

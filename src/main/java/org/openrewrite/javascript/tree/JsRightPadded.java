@@ -15,7 +15,10 @@
  */
 package org.openrewrite.javascript.tree;
 
+import lombok.Getter;
+
 public class JsRightPadded {
+    @Getter
     public enum Location {
         ALIAS_PROPERTY_NAME(JsSpace.Location.ALIAS_PROPERTY_NAME_PREFIX),
         ARRAY_LITERAL_ELEMENT_SUFFIX(JsSpace.Location.ARRAY_LITERAL_SUFFIX),
@@ -35,8 +38,5 @@ public class JsRightPadded {
             this.afterLocation = afterLocation;
         }
 
-        public JsSpace.Location getAfterLocation() {
-            return afterLocation;
-        }
     }
 }
