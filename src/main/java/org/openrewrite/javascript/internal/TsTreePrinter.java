@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.StreamSupport.stream;
 
-@SuppressWarnings({"unused", "DuplicatedCode"})
+@SuppressWarnings({"unused", "DuplicatedCode", "SameParameterValue"})
 public class TsTreePrinter {
 
     private static final String TAB = "    ";
@@ -58,8 +58,8 @@ public class TsTreePrinter {
         return "------------\nJ Tree\n" + printJTree(tree);
     }
 
-    public static String print(TSCNode node, TSCSourceFileContext context) {
-        return printTSTree(node, context);
+    public static String print(TSCNode node, TSCSourceFileContext context, boolean printSpace) {
+        return printTSTree(node, context, printSpace);
     }
 
     @AllArgsConstructor
@@ -69,13 +69,15 @@ public class TsTreePrinter {
         int depth;
     }
 
-    public static String printTSTree(TSCNode node, TSCSourceFileContext context) {
+    public static String printTSTree(TSCNode node, TSCSourceFileContext context, boolean printSpace) {
         TsTreePrinter treePrinter = new TsTreePrinter();
         StringBuilder sb = new StringBuilder();
         sb.append("------------").append("\n");
         sb.append("TS tree").append("\n");
-        treePrinter.printBeforeFirstNode(node, 0, context);
-        treePrinter.printTSCNode(node, 1, context);
+        if (printSpace) {
+            treePrinter.printBeforeFirstNode(node, 0, context);
+        }
+        treePrinter.printTSCNode(node, 1, context, printSpace);
         sb.append(String.join("\n", treePrinter.outputLines));
         context.resetScanner(0);
         return sb.toString();
@@ -114,7 +116,7 @@ public class TsTreePrinter {
         }
     }
 
-    private void printTSCNode(TSCNode node, int depth, TSCSourceFileContext context) {
+    private void printTSCNode(TSCNode node, int depth, TSCSourceFileContext context, boolean printSpace) {
         StringBuilder line = new StringBuilder();
         line.append(leftPadding(depth))
                 .append(toString(node));
@@ -126,9 +128,9 @@ public class TsTreePrinter {
             TSCNode childNode = tscNodes.get(i);
             TSCNode nextChildNode = i < tscNodes.size() - 1 ? tscNodes.get(i + 1) : null;
             boolean hasGap = nextChildNode != null && nextChildNode.getStart() > childNode.getEnd();
-            printTSCNode(childNode, depth + 1, context);
+            printTSCNode(childNode, depth + 1, context, printSpace);
 
-            if (hasGap) {
+            if (printSpace && hasGap) {
                 context.resetScanner(childNode.getEnd());
                 int stop = nextChildNode.getStart();
                 while (true) {
@@ -155,7 +157,6 @@ public class TsTreePrinter {
                     outputLines.add(subLine);
                 }
             }
-
         }
     }
 

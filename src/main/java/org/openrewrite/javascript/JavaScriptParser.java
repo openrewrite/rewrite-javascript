@@ -129,7 +129,7 @@ public class JavaScriptParser implements Parser {
 
                     if (debug) {
                         System.out.println(TsTreePrinter.print(source.input));
-                        System.out.println(TsTreePrinter.print(node, context));
+                        System.out.println(TsTreePrinter.print(node, context, true));
                     }
 
                     parsingListener.startedParsing(source.getInput());
