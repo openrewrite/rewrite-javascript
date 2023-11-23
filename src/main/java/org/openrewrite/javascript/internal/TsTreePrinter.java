@@ -55,7 +55,7 @@ public class TsTreePrinter {
     }
 
     public static String print(Tree tree) {
-        return printJTree(tree);
+        return "------------\nJ Tree\n" + printJTree(tree);
     }
 
     public static String print(TSCNode node, TSCSourceFileContext context) {
@@ -74,10 +74,44 @@ public class TsTreePrinter {
         StringBuilder sb = new StringBuilder();
         sb.append("------------").append("\n");
         sb.append("TS tree").append("\n");
+        treePrinter.printBeforeFirstNode(node, 0, context);
         treePrinter.printTSCNode(node, 1, context);
         sb.append(String.join("\n", treePrinter.outputLines));
         context.resetScanner(0);
         return sb.toString();
+    }
+
+    private void printBeforeFirstNode(TSCNode node, int depth, TSCSourceFileContext context) {
+        if (node.getStart() == 0) {
+            return;
+        }
+
+        StringBuilder line = new StringBuilder();
+        context.resetScanner(0);
+        int stop = node.getStart();
+        while (true) {
+            TSCSyntaxKind kind = context.nextScannerSyntaxType();
+            String text = context.scannerTokenText();
+            int start = context.scannerTokenStart();
+            int end = context.scannerTokenEnd();
+            if (end > stop || kind == TSCSyntaxKind.EndOfFileToken) {
+                break;
+            }
+
+            StringBuilder subLine = new StringBuilder();
+            subLine.append(leftPadding(depth + 1))
+                    .append("[")
+                    .append(start)
+                    .append(",").append(end)
+                    .append(")")
+                    .append(" | ")
+                    .append("* ")
+                    .append(kind).append(" | Text : \"")
+                    .append(truncate(text).replace("\n", "\\n").replace("\r", "\\r"))
+                    .append("\"");
+            connectToLatestSibling(depth + 1);
+            outputLines.add(subLine);
+        }
     }
 
     private void printTSCNode(TSCNode node, int depth, TSCSourceFileContext context) {
