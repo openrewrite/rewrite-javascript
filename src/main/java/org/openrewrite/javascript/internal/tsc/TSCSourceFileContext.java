@@ -22,12 +22,12 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
 import java.nio.file.Path;
 
+@Getter
 public class TSCSourceFileContext extends TSCV8ValueHolder {
-    @Getter
     private final TSCProgramContext programContext;
+
     private final V8ValueObject scanner;
 
-    @Getter
     private final Path relativeSourcePath;
 
     TSCSourceFileContext(TSCProgramContext programContext, String sourceText, Path relativeSourcePath) {

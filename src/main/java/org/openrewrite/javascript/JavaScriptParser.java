@@ -24,6 +24,7 @@ import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.javascript.internal.JavetNativeBridge;
+import org.openrewrite.javascript.internal.TsTreePrinter;
 import org.openrewrite.javascript.internal.TypeScriptParserVisitor;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.tree.JS;
@@ -40,6 +41,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
+@SuppressWarnings("ConstantValue")
 public class JavaScriptParser implements Parser {
 
     @Nullable
@@ -116,11 +118,20 @@ public class JavaScriptParser implements Parser {
             sourceTextsForTSC.put(relativePath, sourceText.sourceText);
         });
 
+        // Debug purpose only, Turn this to ture locally to help debug when developing parser
+        boolean debug = false;
+
         //noinspection resource
         runtime().parseSourceTexts(
                 sourceTextsForTSC,
                 (node, context) -> {
                     SourceWrapper source = sourcesByRelativePath.get(context.getRelativeSourcePath());
+
+                    if (debug) {
+                        System.out.println(TsTreePrinter.print(source.input));
+                        System.out.println(TsTreePrinter.print(node, context, true));
+                    }
+
                     parsingListener.startedParsing(source.getInput());
                     TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
                             node,
@@ -139,6 +150,11 @@ public class JavaScriptParser implements Parser {
                         ((ExecutionContext) pctx).getOnError().accept(t);
                         cu = ParseError.build(JavaScriptParser.builder().build(), source.getInput(), relativeTo, pctx, t);
                     }
+
+                    if (debug) {
+                        System.out.println(TsTreePrinter.print(cu));
+                    }
+
                     compilationUnits.add(cu);
                 }
         );
