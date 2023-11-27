@@ -102,24 +102,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
-    public J visitBinary(JS.Binary binary, PrintOutputCapture<P> p) {
-        beforeSyntax(binary, Space.Location.BINARY_PREFIX, p);
-        String keyword = "";
-        switch (binary.getOperator()) {
-            case In:
-                keyword = "in";
-                break;
-        }
-        visit(binary.getLeft(), p);
-        visitSpace(binary.getPadding().getOperator().getBefore(), Space.Location.BINARY_OPERATOR, p);
-        p.append(keyword);
-
-        visit(binary.getRight(), p);
-        afterSyntax(binary, p);
-        return binary;
-    }
-
-    @Override
     public J visitBinding(JS.ObjectBindingDeclarations.Binding binding, PrintOutputCapture<P> p) {
         beforeSyntax(binding, JsSpace.Location.BINDING_PREFIX, p);
         if (binding.getAfterVararg() != null) {
@@ -229,6 +211,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 break;
             case IdentityNotEquals:
                 keyword = "!==";
+                break;
+            case In:
+                keyword = "in";
                 break;
         }
 

@@ -297,7 +297,7 @@ public class TypeScriptParserVisitor {
 
         Space opPrefix = whitespace();
         JLeftPadded<J.Binary.Type> op = null;
-        JLeftPadded<JS.Binary.Type> jsOp = null;
+        JLeftPadded<JS.JsBinary.Type> jsOp = null;
         TSCSyntaxKind opKind = node.getNodeProperty("operatorToken").syntaxKind();
         switch (opKind) {
             // Bitwise ops
@@ -391,7 +391,7 @@ public class TypeScriptParserVisitor {
             // TS/JS specific ops
             case InKeyword:
                 consumeToken(TSCSyntaxKind.InKeyword);
-                jsOp = padLeft(opPrefix, JS.Binary.Type.In);
+                jsOp = padLeft(opPrefix, JS.JsBinary.Type.In);
                 break;
             default:
                 implementMe(node);
@@ -400,7 +400,7 @@ public class TypeScriptParserVisitor {
         Expression right = (Expression) visitNode(node.getNodeProperty("right"));
 
         if (jsOp != null) {
-            return new JS.Binary(
+            return new JS.JsBinary(
                     randomId(),
                     prefix,
                     markers,
