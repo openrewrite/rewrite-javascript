@@ -15,8 +15,10 @@
  */
 package org.openrewrite.javascript.tree;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
@@ -54,6 +56,19 @@ class UnaryTest implements RewriteTest {
               const n1 = 1
               const n2 = %s
               """.formatted(arg)
+          )
+        );
+    }
+
+    @ExpectedToFail
+    @Test
+    void keyofKeyword() {
+        rewriteRun(
+          javaScript(
+            """
+              type Person = { name: string; age: number };
+              type KeysOfPerson = keyof Person;
+              """
           )
         );
     }
