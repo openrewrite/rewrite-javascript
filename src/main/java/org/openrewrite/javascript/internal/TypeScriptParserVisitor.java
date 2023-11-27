@@ -2356,7 +2356,43 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitTypeLiteral(TSCNode node) {
-        return unknown(node);
+        Space prefix = whitespace();
+        List<TSCNode> propertyNodes = node.getOptionalNodeListProperty("members");
+
+        JContainer<J> jContainer = mapContainer(
+                TSCSyntaxKind.OpenBraceToken,
+                propertyNodes,
+                TSCSyntaxKind.CommaToken,
+                TSCSyntaxKind.CloseBraceToken,
+                this::visitNode,
+                true
+        );
+
+        JContainer<Expression> arguments;
+        if (jContainer.getElements().isEmpty()) {
+            arguments = JContainer.empty();
+        } else {
+            List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
+            for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
+                Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
+                        new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
+                JRightPadded<Expression> apply = padRight(exp, jjRightPadded.getAfter(), jjRightPadded.getMarkers());
+                elements.add(apply);
+            }
+            arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
+        }
+
+        return new J.NewClass(
+                randomId(),
+                prefix,
+                Markers.build(singletonList(new ObjectLiteral(randomId()))),
+                null,
+                EMPTY,
+                null,
+                arguments,
+                null,
+                null
+        );
     }
 
     private JS.TypeOperator visitTypeOperator(TSCNode node) {
