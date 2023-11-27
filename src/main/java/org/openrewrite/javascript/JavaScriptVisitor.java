@@ -26,7 +26,7 @@ import org.openrewrite.marker.Markers;
 import java.util.List;
 import java.util.Objects;
 
-@SuppressWarnings({"unused", "DuplicatedCode"})
+@SuppressWarnings("unused")
 public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
     @Override

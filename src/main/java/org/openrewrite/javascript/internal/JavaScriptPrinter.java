@@ -33,7 +33,7 @@ import org.openrewrite.marker.Markers;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-@SuppressWarnings({"SameParameterValue", "SwitchStatementWithTooFewBranches"})
+@SuppressWarnings("SameParameterValue")
 public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P>> {
 
     private static final UnaryOperator<String> JAVA_SCRIPT_MARKER_WRAPPER =
