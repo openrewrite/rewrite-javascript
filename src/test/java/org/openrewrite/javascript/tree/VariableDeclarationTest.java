@@ -17,6 +17,7 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
+import org.junitpioneer.jupiter.Issue;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
@@ -86,6 +87,20 @@ class VariableDeclarationTest implements RewriteTest {
           javaScript(
             """
               declare const name ;
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-javascript/issues/80")
+    @Test
+    void readOnlyModifier() {
+        rewriteRun(
+          javaScript(
+            """
+              interface SomeType {
+                  readonly prop: string;
+              }
               """
           )
         );

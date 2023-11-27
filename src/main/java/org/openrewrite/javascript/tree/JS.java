@@ -433,7 +433,6 @@ public interface JS extends J {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @Data
@@ -568,6 +567,7 @@ public interface JS extends J {
         }
     }
 
+    @Getter
     @SuppressWarnings("unchecked")
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
@@ -575,11 +575,9 @@ public interface JS extends J {
     final class ExpressionStatement implements JS, Expression, Statement {
 
         @With
-        @Getter
         UUID id;
 
         @With
-        @Getter
         Expression expression;
 
         @Override
@@ -897,7 +895,8 @@ public interface JS extends J {
 
         public enum Type {
             IdentityEquals,
-            IdentityNotEquals
+            IdentityNotEquals,
+            In
         }
 
         public JS.JsBinary.Padding getPadding() {
@@ -1283,6 +1282,7 @@ public interface JS extends J {
         }
     }
 
+    @Getter
     @SuppressWarnings("unchecked")
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
@@ -1290,11 +1290,9 @@ public interface JS extends J {
     final class StatementExpression implements JS, Expression, Statement {
 
         @With
-        @Getter
         UUID id;
 
         @With
-        @Getter
         Statement statement;
 
         @Override
@@ -1444,6 +1442,81 @@ public interface JS extends J {
 
             public TemplateExpression withTag(@Nullable JRightPadded<Expression> tag) {
                 return t.tag == tag ? t : new TemplateExpression(t.id, t.prefix, t.markers, t.delimiter, tag, t.strings, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Data
+    final class Tuple implements JS, Expression, TypeTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<Tuple.Padding> padding;
+
+        @EqualsAndHashCode.Include
+        @With
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        JContainer<J> elements;
+
+        @With
+        @Nullable
+        JavaType type;
+
+        public List<J> getElements() {
+            return elements.getElements();
+        }
+
+        public Tuple withElements(List<J> elements) {
+            return getPadding().withElements(JContainer.withElements(this.elements, elements));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTuple(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public Tuple.Padding getPadding() {
+            Tuple.Padding p;
+            if (this.padding == null) {
+                p = new Tuple.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Tuple.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final Tuple t;
+
+            public JContainer<J> getElements() {
+                return t.elements;
+            }
+
+            public Tuple withElements(JContainer<J> elements) {
+                return t.elements == elements ? t : new Tuple(t.id, t.prefix, t.markers, elements, t.type);
             }
         }
     }

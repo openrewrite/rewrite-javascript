@@ -190,8 +190,12 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
-        List<J.Annotation> annotations = new ArrayList<>();
-        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
+        if (!trailing.isEmpty()) {
+            throw new UnsupportedOperationException("Add support for trailing annotations on: " + node.getText());
+        }
 
         int saveCursor = getCursor();
         Space before = whitespace();
@@ -223,7 +227,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                annotations,
+                leading.isEmpty() ? emptyList() : leading,
                 modifiers,
                 params,
                 returnTypeExpression,
@@ -286,13 +290,14 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J.Binary visitBinary(TSCNode node) {
+    private J visitBinary(TSCNode node) {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
         Expression left = (Expression) visitNode(node.getNodeProperty("left"));
 
         Space opPrefix = whitespace();
         JLeftPadded<J.Binary.Type> op = null;
+        JLeftPadded<JS.JsBinary.Type> jsOp = null;
         TSCSyntaxKind opKind = node.getNodeProperty("operatorToken").syntaxKind();
         switch (opKind) {
             // Bitwise ops
@@ -383,20 +388,38 @@ public class TypeScriptParserVisitor {
                 consumeToken(TSCSyntaxKind.SlashToken);
                 op = padLeft(opPrefix, J.Binary.Type.Division);
                 break;
+            // TS/JS specific ops
+            case InKeyword:
+                consumeToken(TSCSyntaxKind.InKeyword);
+                jsOp = padLeft(opPrefix, JS.JsBinary.Type.In);
+                break;
             default:
                 implementMe(node);
         }
 
         Expression right = (Expression) visitNode(node.getNodeProperty("right"));
-        return new J.Binary(
-                randomId(),
-                prefix,
-                markers,
-                left,
-                op,
-                right,
-                typeMapping.type(node)
-        );
+
+        if (jsOp != null) {
+            return new JS.JsBinary(
+                    randomId(),
+                    prefix,
+                    markers,
+                    left,
+                    jsOp,
+                    right,
+                    typeMapping.type(node)
+            );
+        } else {
+            return new J.Binary(
+                    randomId(),
+                    prefix,
+                    markers,
+                    left,
+                    op,
+                    right,
+                    typeMapping.type(node)
+            );
+        }
     }
 
     private J visitBinaryExpression(TSCNode node) {
@@ -424,6 +447,7 @@ public class TypeScriptParserVisitor {
             case GreaterThanEqualsToken:
             case GreaterThanGreaterThanToken:
             case GreaterThanGreaterThanGreaterThanToken:
+            case InKeyword:
             case LessThanToken:
             case LessThanEqualsToken:
             case LessThanLessThanToken:
@@ -605,16 +629,15 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
-        List<J.Annotation> leadingAnnotation = new ArrayList<>();
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
         List<J.Modifier> modifiers;
         List<TSCNode> modifierNodes = node.getOptionalNodeListProperty("modifiers");
         if (modifierNodes != null) {
-            modifiers = mapModifiers(node.getNodeListProperty("modifiers"), leadingAnnotation);
+            modifiers = mapModifiers(node.getNodeListProperty("modifiers"), leading, trailing);
         } else {
             modifiers = emptyList();
         }
-
-        List<J.Annotation> kindAnnotations = emptyList();
 
         Space kindPrefix;
         TSCSyntaxKind syntaxKind = node.syntaxKind();
@@ -633,7 +656,7 @@ public class TypeScriptParserVisitor {
                 type = J.ClassDeclaration.Kind.Type.Class;
         }
 
-        J.ClassDeclaration.Kind kind = new J.ClassDeclaration.Kind(randomId(), kindPrefix, Markers.EMPTY, kindAnnotations, type);
+        J.ClassDeclaration.Kind kind = new J.ClassDeclaration.Kind(randomId(), kindPrefix, Markers.EMPTY, trailing, type);
 
         J.Identifier name;
         TSCNode nameNode = node.getOptionalNodeProperty("name");
@@ -720,7 +743,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                leadingAnnotation.isEmpty() ? emptyList() : leadingAnnotation,
+                leading.isEmpty() ? emptyList() : leading,
                 modifiers,
                 kind,
                 name,
@@ -792,10 +815,11 @@ public class TypeScriptParserVisitor {
 
         Space prefix = whitespace();
         List<J.Modifier> modifiers;
-        List<J.Annotation> leadingAnnotations = new ArrayList<>();
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
         TSCNodeList modifierNodes = node.getOptionalNodeListProperty("modifiers");
         if (modifierNodes != null) {
-            modifiers = mapModifiers(modifierNodes, leadingAnnotations);
+            modifiers = mapModifiers(modifierNodes, leading, trailing);
         } else {
             modifiers = emptyList();
         }
@@ -817,7 +841,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 Markers.EMPTY,
-                leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
+                leading.isEmpty() ? emptyList() : leading,
                 modifiers,
                 typeParameters,
                 null,
@@ -1153,8 +1177,9 @@ public class TypeScriptParserVisitor {
 
         Space prefix = whitespace();
 
-        List<J.Annotation> annotations = new ArrayList<>();
-        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
 
         Space before = sourceBefore(TSCSyntaxKind.FunctionKeyword);
         Markers markers = Markers.build(singletonList(new FunctionKeyword(randomId(), before)));
@@ -1169,7 +1194,9 @@ public class TypeScriptParserVisitor {
             // Function expressions do not require a name `function (..)`
             name = convertToIdentifier(EMPTY, "");
         }
-
+        if (!trailing.isEmpty()) {
+            name = name.withAnnotations(trailing);
+        }
         name = name.withType(method);
 
         J.TypeParameters typeParameters = mapTypeParameters(node.getOptionalNodeListProperty("typeParameters"));
@@ -1195,7 +1222,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                annotations,
+                leading.isEmpty() ? emptyList() : leading,
                 modifiers,
                 typeParameters,
                 returnTypeExpression,
@@ -1212,12 +1239,15 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
-        List<J.Annotation> leadingAnnotations = new ArrayList<>();
-        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leadingAnnotations);
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
 
         Space variablePrefix = whitespace();
         J.Identifier name = visitIdentifier(node.getNodeProperty("name"));
-
+        if (!trailing.isEmpty()) {
+            name = name.withAnnotations(trailing);
+        }
         TypeTree typeTree = null;
         TSCNode type = node.getOptionalNodeProperty("type");
         if (type != null) {
@@ -1249,8 +1279,8 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
-                modifiers,
+                leading.isEmpty() ? emptyList() : leading,
+                modifiers.isEmpty() ? emptyList() : modifiers,
                 typeTree,
                 varargs,
                 dimensionsBeforeName,
@@ -1508,8 +1538,9 @@ public class TypeScriptParserVisitor {
 
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
-        List<J.Annotation> annotations = new ArrayList<>();
-        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
 
         if (node.hasProperty("asteriskToken")) {
             markers = markers.addIfAbsent(new Asterisk(randomId(), sourceBefore(TSCSyntaxKind.AsteriskToken)));
@@ -1522,7 +1553,9 @@ public class TypeScriptParserVisitor {
         } else {
             name = visitIdentifier(nameNode, methodType);
         }
-
+        if (!trailing.isEmpty()) {
+            name = name.withAnnotations(trailing);
+        }
         J.TypeParameters typeParameters = mapTypeParameters(node.getOptionalNodeListProperty("typeParameters"));
 
         JContainer<Statement> parameters = mapContainer(
@@ -1550,7 +1583,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                annotations.isEmpty() ? emptyList() : annotations,
+                leading.isEmpty() ? emptyList() : leading,
                 modifiers,
                 typeParameters,
                 returnTypeExpression,
@@ -1738,35 +1771,18 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
-        List<J.Annotation> annotations = new ArrayList<>();
-        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
 
         Space beforeVariableModifier = whitespace();
         TSCSyntaxKind keyword = scan();
         if (keyword == TSCSyntaxKind.ConstKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "const"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "const", trailing));
         } else if (keyword == TSCSyntaxKind.LetKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "let"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "let", trailing));
         } else if (keyword == TSCSyntaxKind.VarKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "var"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "var", trailing));
         } else {
             // Unclear if the modifier should be `@Nullable` in the `JSVariableDeclaration`.
             implementMe(node);
@@ -1850,7 +1866,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                annotations,
+                leading.isEmpty() ? emptyList() : leading,
                 modifiers,
                 typeTree,
                 JContainer.build(beforeBraces, bindings, Markers.EMPTY),
@@ -1893,8 +1909,9 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
-        List<J.Annotation> leadingAnnotations = new ArrayList<>();
-        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leadingAnnotations);
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
 
         TSCNode varArgNode = node.getOptionalNodeProperty("dotDotDotToken");
         Space varArg = varArgNode != null ? sourceBefore(TSCSyntaxKind.DotDotDotToken) : null;
@@ -1905,7 +1922,9 @@ public class TypeScriptParserVisitor {
         } else {
             implementMe(node);
         }
-
+        if (!trailing.isEmpty()) {
+            name = name.withAnnotations(trailing);
+        }
         TypeTree typeTree = null;
         TSCNode typeNode = node.getOptionalNodeProperty("type");
         if (typeNode != null) {
@@ -1952,8 +1971,8 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
-                modifiers,
+                leading.isEmpty() ? emptyList() : leading,
+                modifiers.isEmpty() ? emptyList() : modifiers,
                 typeTree,
                 varArg,
                 dimensions,
@@ -1965,8 +1984,9 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
-        List<J.Annotation> leadingAnnotations = new ArrayList<>();
-        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leadingAnnotations);
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
 
         Space variablePrefix = whitespace();
         J j = visitNode(node.getOptionalNodeProperty("name"));
@@ -1981,7 +2001,9 @@ public class TypeScriptParserVisitor {
         } else {
             implementMe(node);
         }
-
+        if (!trailing.isEmpty()) {
+            name = name.withAnnotations(trailing);
+        }
         TypeTree typeTree = null;
 
         // The initializer on a property declaration is the type reference.
@@ -2023,8 +2045,8 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                leadingAnnotations.isEmpty() ? emptyList() : leadingAnnotations,
-                modifiers,
+                leading.isEmpty() ? emptyList() : leading,
+                modifiers.isEmpty() ? emptyList() : modifiers,
                 typeTree,
                 null,
                 dimensions,
@@ -2257,18 +2279,35 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitTupleType(TSCNode node) {
-        return unknown(node);
+        Space prefix = whitespace();
+        TSCNodeList nodes = node.getOptionalNodeListProperty("elements");
+        JContainer<J> types = mapContainer(
+                TSCSyntaxKind.OpenBracketToken,
+                nodes == null ? emptyList() : nodes,
+                TSCSyntaxKind.CommaToken,
+                TSCSyntaxKind.CloseBracketToken,
+                this::visitNode,
+                true
+        );
+        return new JS.Tuple(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                types,
+                typeMapping.type(node)
+        );
     }
 
     private J visitTypeAliasDeclaration(TSCNode node) {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
-        List<J.Annotation> annotations = new ArrayList<>();
-        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
 
-        Space before = sourceBefore(TSCSyntaxKind.TypeKeyword);
-        annotations = mapKeywordToAnnotation(before, "type", annotations);
+        Space before = whitespace();
+        modifiers.add(mapModifier(before, "type", trailing));
 
         TSCNode nameNode = node.getNodeProperty("name");
         J.Identifier name = (J.Identifier) visitNode(nameNode);
@@ -2284,7 +2323,7 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                annotations,
+                leading,
                 modifiers,
                 name,
                 typeParameters,
@@ -2344,8 +2383,12 @@ public class TypeScriptParserVisitor {
 
     private J.TypeParameter visitTypeParameter(TSCNode node) {
         Space prefix = whitespace();
-        List<J.Annotation> annotations = new ArrayList<>();
-        mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
+        if (!trailing.isEmpty()) {
+            throw new UnsupportedOperationException("Add support for trailing annotations on: " + node.getText());
+        }
         implementMe(node, "expression");
         TSCNode defaultType = node.getOptionalNodeProperty("default");
         Expression name = (Expression) visitNode(node.getNodeProperty("name"));
@@ -2382,8 +2425,8 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 Markers.EMPTY,
-                annotations.isEmpty() ? emptyList() : annotations,
-                emptyList(),
+                leading.isEmpty() ? emptyList() : leading,
+                modifiers,
                 name,
                 bounds
         );
@@ -2500,35 +2543,21 @@ public class TypeScriptParserVisitor {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
 
-        List<J.Annotation> annotations = new ArrayList<>();
-        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
         int saveCursor = getCursor();
         Space beforeVariableModifier = whitespace();
         TSCSyntaxKind keyword = scan();
         if (keyword == TSCSyntaxKind.ConstKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "const"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "const", trailing));
+            trailing = null;
         } else if (keyword == TSCSyntaxKind.LetKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "let"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "let", trailing));
+            trailing = null;
         } else if (keyword == TSCSyntaxKind.VarKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "var"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "var", trailing));
+            trailing = null;
         } else {
             cursor(saveCursor);
         }
@@ -2540,6 +2569,9 @@ public class TypeScriptParserVisitor {
         J.Identifier name = null;
         if (j instanceof J.Identifier) {
             name = (J.Identifier) j;
+            if (!trailing.isEmpty()) {
+                name = name.withAnnotations(trailing);
+            }
         } else {
             implementMe(node);
         }
@@ -2578,8 +2610,8 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                annotations,
-                modifiers,
+                leading.isEmpty() ? emptyList() : leading,
+                modifiers.isEmpty() ? emptyList() : modifiers,
                 typeTree,
                 null,
                 emptyList(),
@@ -2593,31 +2625,13 @@ public class TypeScriptParserVisitor {
 
         Space beforeVariableModifier = whitespace();
         TSCSyntaxKind keyword = scan();
-        List<J.Annotation> annotations = new ArrayList<>();
+        List<J.Modifier> modifiers = new ArrayList<>();
         if (keyword == TSCSyntaxKind.ConstKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "const"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "const", null));
         } else if (keyword == TSCSyntaxKind.LetKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "let"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "let", null));
         } else if (keyword == TSCSyntaxKind.VarKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "var"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "var", null));
         } else {
             // Unclear if the modifier should be `@Nullable` in the `JSVariableDeclaration`.
             throw new UnsupportedOperationException("Unsupported variable modifier.");
@@ -2686,8 +2700,8 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                annotations,
                 emptyList(),
+                modifiers.isEmpty() ? emptyList() : modifiers,
                 typeTree,
                 null,
                 emptyList(),
@@ -2701,35 +2715,18 @@ public class TypeScriptParserVisitor {
 
         implementMe(node, "exclamationToken");
 
-        List<J.Annotation> annotations = new ArrayList<>();
-        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), annotations);
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = new ArrayList<>();
+        List<J.Modifier> modifiers = mapModifiers(node.getOptionalNodeListProperty("modifiers"), leading, trailing);
 
         Space beforeVariableModifier = whitespace();
         TSCSyntaxKind keyword = scan();
         if (keyword == TSCSyntaxKind.ConstKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "const"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "const", trailing));
         } else if (keyword == TSCSyntaxKind.LetKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "let"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "let", trailing));
         } else if (keyword == TSCSyntaxKind.VarKeyword) {
-            annotations.add(new J.Annotation(
-                    randomId(),
-                    beforeVariableModifier,
-                    Markers.build(singletonList(new Keyword(randomId()))),
-                    convertToIdentifier(EMPTY, "var"),
-                    null)
-            );
+            modifiers.add(mapModifier(beforeVariableModifier, "var", trailing));
         } else {
             // Unclear if the modifier should be `@Nullable` in the `JSVariableDeclaration`.
             throw new UnsupportedOperationException("Unsupported variable modifier.");
@@ -2805,8 +2802,8 @@ public class TypeScriptParserVisitor {
                 randomId(),
                 prefix,
                 markers,
-                annotations,
-                modifiers,
+                leading.isEmpty() ? emptyList() : leading,
+                modifiers.isEmpty() ? emptyList() : modifiers,
                 typeTree,
                 null,
                 emptyList(),
@@ -3368,23 +3365,29 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private List<J.Modifier> mapModifiers(@Nullable List<TSCNode> nodes, List<J.Annotation> leadingAnnotations) {
+    private List<J.Modifier> mapModifiers(@Nullable List<TSCNode> nodes, List<J.Annotation> leadingAnnotations, List<J.Annotation> trailingAnnotations) {
         if (nodes == null) {
-            return emptyList();
+            return new ArrayList<>();
         }
 
         List<J.Modifier> modifiers = new ArrayList<>(nodes.size());
-        List<J.Annotation> annotations = null;
+        List<J.Annotation> leading = new ArrayList<>();
+        List<J.Annotation> trailing = null;
         for (TSCNode node : nodes) {
             Space prefix = whitespace();
             switch (node.syntaxKind()) {
                 // JS/TS equivalent of an annotation.
                 case Decorator: {
                     J.Annotation annotation = (J.Annotation) visitNode(node);
-                    if (annotations == null) {
-                        annotations = new ArrayList<>(1);
+                    if (leading != null) {
+                        leading.add(annotation);
+                    } else {
+                        if (trailing == null) {
+                            trailing = new ArrayList<>(1);
+                        } else {
+                            trailing.add(annotation);
+                        }
                     }
-                    annotations.add(annotation);
                     break;
                 }
                 // JS/TS keywords.
@@ -3392,78 +3395,80 @@ public class TypeScriptParserVisitor {
                 case DefaultKeyword:
                 case ExportKeyword:
                 case ReadonlyKeyword: {
-                    annotations = mapKeywordToAnnotation(prefix, node, annotations);
+                    if (!leading.isEmpty()) {
+                        leadingAnnotations.addAll(leading);
+                        leading = null;
+                    }
+                    modifiers.add(mapModifier(prefix, node.getText(), trailing));
+                    trailing = null;
                     break;
                 }
                 // Keywords that exist in J.
                 case AbstractKeyword:
+                    if (!leading.isEmpty()) {
+                        leadingAnnotations.addAll(leading);
+                        leading = null;
+                    }
                     consumeToken(TSCSyntaxKind.AbstractKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Abstract, annotations == null ? emptyList() : annotations));
-                    annotations = null;
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Abstract, trailing == null ? emptyList() : trailing));
+                    trailing = null;
                     break;
                 case AsyncKeyword:
+                    if (!leading.isEmpty()) {
+                        leadingAnnotations.addAll(leading);
+                        leading = null;
+                    }
                     consumeToken(TSCSyntaxKind.AsyncKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Async, annotations == null ? emptyList() : annotations));
-                    annotations = null;
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Async, trailing == null ? emptyList() : trailing));
+                    trailing = null;
                     break;
                 case PublicKeyword:
+                    if (!leading.isEmpty()) {
+                        leadingAnnotations.addAll(leading);
+                        leading = null;
+                    }
                     consumeToken(TSCSyntaxKind.PublicKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Public, annotations == null ? emptyList() : annotations));
-                    annotations = null;
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Public, trailing == null ? emptyList() : trailing));
+                    trailing = null;
                     break;
                 case PrivateKeyword:
+                    if (!leading.isEmpty()) {
+                        leadingAnnotations.addAll(leading);
+                        leading = null;
+                    }
                     consumeToken(TSCSyntaxKind.PrivateKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Private, annotations == null ? emptyList() : annotations));
-                    annotations = null;
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Private, trailing == null ? emptyList() : trailing));
+                    trailing = null;
                     break;
                 case ProtectedKeyword:
+                    if (!leading.isEmpty()) {
+                        leadingAnnotations.addAll(leading);
+                        leading = null;
+                    }
                     consumeToken(TSCSyntaxKind.ProtectedKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Protected, annotations == null ? emptyList() : annotations));
-                    annotations = null;
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Protected, trailing == null ? emptyList() : trailing));
+                    trailing = null;
                     break;
                 case StaticKeyword:
+                    if (!leading.isEmpty()) {
+                        leadingAnnotations.addAll(leading);
+                        leading = null;
+                    }
                     consumeToken(TSCSyntaxKind.StaticKeyword);
-                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Static, annotations == null ? emptyList() : annotations));
-                    annotations = null;
+                    modifiers.add(new J.Modifier(randomId(), prefix, Markers.EMPTY, null, J.Modifier.Type.Static, trailing == null ? emptyList() : trailing));
+                    trailing = null;
                     break;
                 default:
                     implementMe(node);
             }
         }
-        if (annotations != null) {
-            leadingAnnotations.addAll(annotations);
+        if (leading != null) {
+            leadingAnnotations.addAll(leading);
         }
-        return modifiers.isEmpty() ? emptyList() : modifiers;
-    }
-
-    private List<J.Annotation> mapKeywordToAnnotation(Space prefix, String keyword, @Nullable List<J.Annotation> annotations) {
-        J.Annotation annotation = new J.Annotation(
-                randomId(),
-                prefix,
-                Markers.build(singletonList(new Keyword(randomId()))),
-                convertToIdentifier(EMPTY, keyword),
-                null
-        );
-        if (annotations == null) {
-            annotations = new ArrayList<>(1);
+        if (trailing != null) {
+            trailingAnnotations.addAll(trailing);
         }
-        annotations.add(annotation);
-        return annotations;
-    }
-
-    private List<J.Annotation> mapKeywordToAnnotation(Space prefix, TSCNode node, @Nullable List<J.Annotation> annotations) {
-        J.Annotation annotation = new J.Annotation(
-                randomId(),
-                prefix,
-                Markers.build(singletonList(new Keyword(randomId()))),
-                (NameTree) visitNode(node),
-                null
-        );
-        if (annotations == null) {
-            annotations = new ArrayList<>(1);
-        }
-        annotations.add(annotation);
-        return annotations;
+        return modifiers.isEmpty() ? new ArrayList<>() : modifiers;
     }
 
     @Nullable
@@ -3501,6 +3506,17 @@ public class TypeScriptParserVisitor {
         return prefix;
     }
 
+    private J.Modifier mapModifier(Space prefix, String name, @Nullable List<J.Annotation> annotations) {
+        skip(name);
+        return new J.Modifier(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                name,
+                J.Modifier.Type.LanguageExtension,
+                annotations == null ? emptyList() : annotations
+        );
+    }
     /**
      * Consume whitespace and leading comments until the current node.
      * The type-script spec is not actively maintained, so we need to rely on the parser elements to collect

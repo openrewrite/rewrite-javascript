@@ -24,19 +24,6 @@ import static org.openrewrite.javascript.Assertions.javaScript;
 @SuppressWarnings("JSUnusedLocalSymbols")
 class TypeOperatorTest implements RewriteTest {
 
-    @ExpectedToFail
-    @Test
-    void in() {
-        rewriteRun(
-          javaScript(
-            """
-              let foo = { bar : 'v1' , buz : 'v2' }
-              v = 'bar' in foo
-              """
-          )
-        );
-    }
-
     @Test
     void delete() {
         rewriteRun(
@@ -68,6 +55,24 @@ class TypeOperatorTest implements RewriteTest {
             """
               let arr = [ 1, 2 ]
               let t = arr instanceof Array
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail
+    @Test
+    void extendsKeyword() {
+        rewriteRun(
+          javaScript(
+            """
+              type PartialPerson = { name?: string; age?: number };
+
+              function merge<T extends object, U extends object>(obj1: T, obj2: U): T & U {
+                  return { ...obj1, ...obj2 };
+              }
+
+              const merged = merge({ name: 'John' }, { age: 30 });
               """
           )
         );
