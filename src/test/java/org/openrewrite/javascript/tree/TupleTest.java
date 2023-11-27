@@ -46,12 +46,13 @@ class TupleTest implements RewriteTest {
         );
     }
 
+    @ExpectedToFail("Requires NamedTupleMember.")
     @Test
-    void typed() {
+    void namedTupleMember() {
         rewriteRun(
           javaScript(
             """
-              let input : [ x : number , y : number ] = [ 1 , 2 ]
+              type NewLocation = [lat: number, long: number]
               """
           )
         );
