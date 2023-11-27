@@ -1466,18 +1466,18 @@ public interface JS extends J {
         @With
         Markers markers;
 
-        JContainer<J> types;
+        JContainer<J> elements;
 
         @With
         @Nullable
         JavaType type;
 
-        public List<J> getTypes() {
-            return types.getElements();
+        public List<J> getElements() {
+            return elements.getElements();
         }
 
-        public Tuple withBindings(List<J> types) {
-            return getPadding().withTypes(JContainer.withElements(this.types, types));
+        public Tuple withElements(List<J> elements) {
+            return getPadding().withElements(JContainer.withElements(this.elements, elements));
         }
 
         @Override
@@ -1510,12 +1510,12 @@ public interface JS extends J {
         public static class Padding {
             private final Tuple t;
 
-            public JContainer<J> getTypes() {
-                return t.types;
+            public JContainer<J> getElements() {
+                return t.elements;
             }
 
-            public Tuple withTypes(JContainer<J> types) {
-                return t.types == types ? t : new Tuple(t.id, t.prefix, t.markers, types, t.type);
+            public Tuple withElements(JContainer<J> elements) {
+                return t.elements == elements ? t : new Tuple(t.id, t.prefix, t.markers, elements, t.type);
             }
         }
     }

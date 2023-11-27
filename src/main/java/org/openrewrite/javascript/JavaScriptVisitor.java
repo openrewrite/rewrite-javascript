@@ -320,6 +320,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             t = (JS.Tuple) temp;
         }
+        t = t.getPadding().withElements(visitContainer(t.getPadding().getElements(), JsContainer.Location.TUPLE_ELEMENT, p));
         t = t.withType(visitType(t.getType(), p));
         return t;
     }

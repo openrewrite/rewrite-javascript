@@ -303,7 +303,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     @Override
     public J visitTuple(JS.Tuple tuple, PrintOutputCapture<P> p) {
         beforeSyntax(tuple, JsSpace.Location.TUPLE_PREFIX, p);
-        visitContainer("[", tuple.getPadding().getTypes(), JsContainer.Location.TUPLE_ELEMENT, ",", "]", p);
+        visitContainer("[", tuple.getPadding().getElements(), JsContainer.Location.TUPLE_ELEMENT, ",", "]", p);
         afterSyntax(tuple, p);
         return tuple;
     }
