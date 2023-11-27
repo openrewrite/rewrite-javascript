@@ -405,6 +405,105 @@ public interface JS extends J {
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Data
+    final class Binary implements JS, Expression, TypedTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<JS.Binary.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        @With
+        Expression left;
+
+        JLeftPadded<JS.Binary.Type> operator;
+
+        public Binary(UUID id, Space prefix, Markers markers, Expression left, JLeftPadded<Type> operator, Expression right, @Nullable JavaType type) {
+            this.id = id;
+            this.prefix = prefix;
+            this.markers = markers;
+            this.left = left;
+            this.operator = operator;
+            this.right = right;
+            this.type = type;
+        }
+
+        public JS.Binary.Type getOperator() {
+            return operator.getElement();
+        }
+
+        public JS.Binary withOperator(JS.Binary.Type operator) {
+            return getPadding().withOperator(this.operator.withElement(operator));
+        }
+
+        @With
+        Expression right;
+
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitBinary(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public enum Type {
+            In,
+        }
+
+        public JS.Binary.Padding getPadding() {
+            JS.Binary.Padding p;
+            if (this.padding == null) {
+                p = new JS.Binary.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JS.Binary.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JS.Binary t;
+
+            public JLeftPadded<JS.Binary.Type> getOperator() {
+                return t.operator;
+            }
+
+            public JS.Binary withOperator(JLeftPadded<JS.Binary.Type> operator) {
+                return t.operator == operator ? t : new JS.Binary(t.id, t.prefix, t.markers, t.left, operator, t.right, t.type);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @Data
     @With
     final class DefaultType implements JS, Expression, TypedTree, NameTree {

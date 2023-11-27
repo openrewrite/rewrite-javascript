@@ -24,19 +24,6 @@ import static org.openrewrite.javascript.Assertions.javaScript;
 @SuppressWarnings("JSUnusedLocalSymbols")
 class TypeOperatorTest implements RewriteTest {
 
-    @ExpectedToFail
-    @Test
-    void in() {
-        rewriteRun(
-          javaScript(
-            """
-              let foo = { bar : 'v1' , buz : 'v2' }
-              v = 'bar' in foo
-              """
-          )
-        );
-    }
-
     @Test
     void delete() {
         rewriteRun(

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.javascript.tree;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.Issue;
@@ -125,6 +126,18 @@ class BinaryTest implements RewriteTest {
               if ( 1 %s 2 ) {
               }
               """.formatted(arg)
+          )
+        );
+    }
+
+    @Test
+    void in() {
+        rewriteRun(
+          javaScript(
+            """
+              let foo = { bar : 'v1' , buz : 'v2' }
+              var x = 'bar' in foo
+              """
           )
         );
     }

@@ -33,7 +33,7 @@ import org.openrewrite.marker.Markers;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-@SuppressWarnings("SameParameterValue")
+@SuppressWarnings({"SameParameterValue", "SwitchStatementWithTooFewBranches"})
 public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P>> {
 
     private static final UnaryOperator<String> JAVA_SCRIPT_MARKER_WRAPPER =
@@ -99,6 +99,24 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(arrowFunction.getBody(), p);
         afterSyntax(arrowFunction, p);
         return arrowFunction;
+    }
+
+    @Override
+    public J visitBinary(JS.Binary binary, PrintOutputCapture<P> p) {
+        beforeSyntax(binary, Space.Location.BINARY_PREFIX, p);
+        String keyword = "";
+        switch (binary.getOperator()) {
+            case In:
+                keyword = "in";
+                break;
+        }
+        visit(binary.getLeft(), p);
+        visitSpace(binary.getPadding().getOperator().getBefore(), Space.Location.BINARY_OPERATOR, p);
+        p.append(keyword);
+
+        visit(binary.getRight(), p);
+        afterSyntax(binary, p);
+        return binary;
     }
 
     @Override

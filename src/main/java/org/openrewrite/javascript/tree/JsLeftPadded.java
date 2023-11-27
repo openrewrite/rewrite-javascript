@@ -15,7 +15,10 @@
  */
 package org.openrewrite.javascript.tree;
 
+import lombok.Getter;
+
 public class JsLeftPadded {
+    @Getter
     public enum Location {
         BINARY_OPERATOR(JsSpace.Location.BINARY_PREFIX),
         BINDING_INITIALIZER(JsSpace.Location.BINDING_INITIALIZER_PREFIX),
@@ -29,10 +32,6 @@ public class JsLeftPadded {
 
         Location(JsSpace.Location beforeLocation) {
             this.beforeLocation = beforeLocation;
-        }
-
-        public JsSpace.Location getBeforeLocation() {
-            return beforeLocation;
         }
     }
 }

@@ -26,7 +26,7 @@ import org.openrewrite.marker.Markers;
 import java.util.List;
 import java.util.Objects;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "DuplicatedCode"})
 public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
     @Override
@@ -106,6 +106,23 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         a = a.withBody(visitAndCast(a.getBody(), p));
         a = a.withType(visitType(a.getType(), p));
         return a;
+    }
+
+    public J visitBinary(JS.Binary binary, P p) {
+        JS.Binary b = binary;
+        b = b.withPrefix(visitSpace(b.getPrefix(), Space.Location.BINARY_PREFIX, p));
+        b = b.withMarkers(visitMarkers(b.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(b, p);
+        if (!(temp instanceof JS.Binary)) {
+            return temp;
+        } else {
+            b = (JS.Binary) temp;
+        }
+        b = b.withLeft(visitAndCast(b.getLeft(), p));
+        b = b.getPadding().withOperator(visitLeftPadded(b.getPadding().getOperator(), JsLeftPadded.Location.BINARY_OPERATOR, p));
+        b = b.withRight(visitAndCast(b.getRight(), p));
+        b = b.withType(visitType(b.getType(), p));
+        return b;
     }
 
     public J visitBinding(JS.ObjectBindingDeclarations.Binding binding, P p) {
