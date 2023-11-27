@@ -71,6 +71,14 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return a;
     }
 
+    public J visitArrayBindingPattern(JS.ArrayBindingPattern arrayBindingPattern, P p) {
+        JS.ArrayBindingPattern a = arrayBindingPattern;
+        a = a.withPrefix(visitSpace(a.getPrefix(), JsSpace.Location.ARRAY_BINDING_PATTERN_PREFIX, p));
+        a = a.withMarkers(visitMarkers(a.getMarkers(), p));
+        a = a.getPadding().withElements(visitContainer(a.getPadding().getElements(), JsContainer.Location.EXPORT_ELEMENT, p));
+        return a;
+    }
+
     public J visitArrowFunction(JS.ArrowFunction arrowFunction, P p) {
         JS.ArrowFunction a = arrowFunction;
         a = a.withPrefix(visitSpace(a.getPrefix(), JsSpace.Location.ARROW_FUNCTION_PREFIX, p));
