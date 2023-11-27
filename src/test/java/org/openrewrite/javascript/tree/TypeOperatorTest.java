@@ -72,4 +72,22 @@ class TypeOperatorTest implements RewriteTest {
           )
         );
     }
+
+    @ExpectedToFail
+    @Test
+    void extendsKeyword() {
+        rewriteRun(
+          javaScript(
+            """
+              type PartialPerson = { name?: string; age?: number };
+
+              function merge<T extends object, U extends object>(obj1: T, obj2: U): T & U {
+                  return { ...obj1, ...obj2 };
+              }
+
+              const merged = merge({ name: 'John' }, { age: 30 });
+              """
+          )
+        );
+    }
 }
