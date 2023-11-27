@@ -1728,43 +1728,7 @@ public class TypeScriptParserVisitor {
 
     private J visitObjectLiteralExpression(TSCNode node) {
         Space prefix = whitespace();
-
-        List<TSCNode> propertyNodes = node.getOptionalNodeListProperty("properties");
-
-        JContainer<J> jContainer = mapContainer(
-                TSCSyntaxKind.OpenBraceToken,
-                propertyNodes,
-                TSCSyntaxKind.CommaToken,
-                TSCSyntaxKind.CloseBraceToken,
-                this::visitNode,
-                true
-        );
-
-        JContainer<Expression> arguments;
-        if (jContainer.getElements().isEmpty()) {
-            arguments = JContainer.empty();
-        } else {
-            List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
-            for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
-                Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
-                        new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
-                JRightPadded<Expression> apply = padRight(exp, jjRightPadded.getAfter(), jjRightPadded.getMarkers());
-                elements.add(apply);
-            }
-            arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
-        }
-
-        return new J.NewClass(
-                randomId(),
-                prefix,
-                Markers.build(singletonList(new ObjectLiteral(randomId()))),
-                null,
-                EMPTY,
-                null,
-                arguments,
-                null,
-                null // FIXME: @Gary 1. Is an object literal equivalent to a new class? 2. What is the type of an object literal?
-        );
+        return mapPropertyNodesToNewClass( node.getOptionalNodeListProperty("properties"), prefix);
     }
 
     private JS.ObjectBindingDeclarations mapObjectBindingDeclaration(TSCNode node) {
@@ -2357,42 +2321,7 @@ public class TypeScriptParserVisitor {
 
     private J visitTypeLiteral(TSCNode node) {
         Space prefix = whitespace();
-        List<TSCNode> propertyNodes = node.getOptionalNodeListProperty("members");
-
-        JContainer<J> jContainer = mapContainer(
-                TSCSyntaxKind.OpenBraceToken,
-                propertyNodes,
-                TSCSyntaxKind.CommaToken,
-                TSCSyntaxKind.CloseBraceToken,
-                this::visitNode,
-                true
-        );
-
-        JContainer<Expression> arguments;
-        if (jContainer.getElements().isEmpty()) {
-            arguments = JContainer.empty();
-        } else {
-            List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
-            for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
-                Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
-                        new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
-                JRightPadded<Expression> apply = padRight(exp, jjRightPadded.getAfter(), jjRightPadded.getMarkers());
-                elements.add(apply);
-            }
-            arguments = JContainer.build(jContainer.getBefore(), elements, jContainer.getMarkers());
-        }
-
-        return new J.NewClass(
-                randomId(),
-                prefix,
-                Markers.build(singletonList(new ObjectLiteral(randomId()))),
-                null,
-                EMPTY,
-                null,
-                arguments,
-                null,
-                null
-        );
+        return mapPropertyNodesToNewClass( node.getOptionalNodeListProperty("members"), prefix);
     }
 
     private JS.TypeOperator visitTypeOperator(TSCNode node) {
@@ -3553,6 +3482,37 @@ public class TypeScriptParserVisitor {
                 annotations == null ? emptyList() : annotations
         );
     }
+
+    private J.NewClass mapPropertyNodesToNewClass(List<TSCNode> propertyNodes, Space prefix) {
+        return new J.NewClass(
+                randomId(),
+                prefix,
+                Markers.build(singletonList(new ObjectLiteral(randomId()))),
+                null,
+                EMPTY,
+                null,
+                mapContainer(
+                        TSCSyntaxKind.OpenBraceToken,
+                        propertyNodes,
+                        TSCSyntaxKind.CommaToken,
+                        TSCSyntaxKind.CloseBraceToken,
+                        x -> convertToExpression(visitNode(x)),
+                        true
+                ),
+                null,
+                null
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private <J2 extends J> J2 convertToExpression(J j) {
+        if (j instanceof Statement && !(j instanceof Expression)) {
+            j = new JS.StatementExpression(randomId(), (Statement) j);
+        }
+        return (J2) j;
+    }
+
+
     /**
      * Consume whitespace and leading comments until the current node.
      * The type-script spec is not actively maintained, so we need to rely on the parser elements to collect
