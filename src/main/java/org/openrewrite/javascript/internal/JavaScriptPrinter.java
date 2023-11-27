@@ -212,6 +212,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             case IdentityNotEquals:
                 keyword = "!==";
                 break;
+            case In:
+                keyword = "in";
+                break;
         }
 
         visitSpace(binary.getPadding().getOperator().getBefore(), JsSpace.Location.BINARY_PREFIX, p);

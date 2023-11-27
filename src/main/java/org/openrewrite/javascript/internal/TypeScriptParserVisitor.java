@@ -290,13 +290,14 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private J.Binary visitBinary(TSCNode node) {
+    private J visitBinary(TSCNode node) {
         Space prefix = whitespace();
         Markers markers = Markers.EMPTY;
         Expression left = (Expression) visitNode(node.getNodeProperty("left"));
 
         Space opPrefix = whitespace();
         JLeftPadded<J.Binary.Type> op = null;
+        JLeftPadded<JS.JsBinary.Type> jsOp = null;
         TSCSyntaxKind opKind = node.getNodeProperty("operatorToken").syntaxKind();
         switch (opKind) {
             // Bitwise ops
@@ -387,20 +388,38 @@ public class TypeScriptParserVisitor {
                 consumeToken(TSCSyntaxKind.SlashToken);
                 op = padLeft(opPrefix, J.Binary.Type.Division);
                 break;
+            // TS/JS specific ops
+            case InKeyword:
+                consumeToken(TSCSyntaxKind.InKeyword);
+                jsOp = padLeft(opPrefix, JS.JsBinary.Type.In);
+                break;
             default:
                 implementMe(node);
         }
 
         Expression right = (Expression) visitNode(node.getNodeProperty("right"));
-        return new J.Binary(
-                randomId(),
-                prefix,
-                markers,
-                left,
-                op,
-                right,
-                typeMapping.type(node)
-        );
+
+        if (jsOp != null) {
+            return new JS.JsBinary(
+                    randomId(),
+                    prefix,
+                    markers,
+                    left,
+                    jsOp,
+                    right,
+                    typeMapping.type(node)
+            );
+        } else {
+            return new J.Binary(
+                    randomId(),
+                    prefix,
+                    markers,
+                    left,
+                    op,
+                    right,
+                    typeMapping.type(node)
+            );
+        }
     }
 
     private J visitBinaryExpression(TSCNode node) {
@@ -428,6 +447,7 @@ public class TypeScriptParserVisitor {
             case GreaterThanEqualsToken:
             case GreaterThanGreaterThanToken:
             case GreaterThanGreaterThanGreaterThanToken:
+            case InKeyword:
             case LessThanToken:
             case LessThanEqualsToken:
             case LessThanLessThanToken:

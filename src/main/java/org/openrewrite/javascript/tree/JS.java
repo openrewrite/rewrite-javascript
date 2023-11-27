@@ -895,7 +895,8 @@ public interface JS extends J {
 
         public enum Type {
             IdentityEquals,
-            IdentityNotEquals
+            IdentityNotEquals,
+            In
         }
 
         public JS.JsBinary.Padding getPadding() {
