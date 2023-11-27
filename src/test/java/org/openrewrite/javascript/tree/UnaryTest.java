@@ -68,6 +68,10 @@ class UnaryTest implements RewriteTest {
             """
               type Person = { name: string; age: number };
               type KeysOfPerson = keyof Person;
+              let person: Person = {
+                  name: "John",
+                  age: 42,
+                };
               """
           )
         );
