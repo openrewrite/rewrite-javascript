@@ -93,7 +93,6 @@ class ArrayTest implements RewriteTest {
         );
     }
 
-    @ExpectedToFail("Requires support for TupleType. Note: TupleType needs to implement TypeTree")
     @Test
     void noElementType() {
         rewriteRun(

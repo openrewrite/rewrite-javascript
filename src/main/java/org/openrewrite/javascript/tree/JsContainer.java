@@ -15,13 +15,17 @@
  */
 package org.openrewrite.javascript.tree;
 
+import lombok.Getter;
+
 public class JsContainer {
+    @Getter
     public enum Location {
         ARRAY_LITERAL_EXPRESSION(JsSpace.Location.ARRAY_LITERAL_ELEMENTS, JsRightPadded.Location.ARRAY_LITERAL_ELEMENT_SUFFIX),
         BINDING_ELEMENT(JsSpace.Location.BINDING_ELEMENTS, JsRightPadded.Location.BINDING_ELEMENT_SUFFIX),
         EXPORT_ELEMENT(JsSpace.Location.EXPORT_ELEMENTS, JsRightPadded.Location.EXPORT_ELEMENT_SUFFIX),
         FUNCTION_TYPE_PARAMETER(JsSpace.Location.FUNCTION_TYPE_PARAMETERS, JsRightPadded.Location.FUNCTION_TYPE_PARAMETER_SUFFIX),
-        IMPORT_ELEMENT(JsSpace.Location.IMPORT_ELEMENTS, JsRightPadded.Location.IMPORT_ELEMENT_SUFFIX);
+        IMPORT_ELEMENT(JsSpace.Location.IMPORT_ELEMENTS, JsRightPadded.Location.IMPORT_ELEMENT_SUFFIX),
+        TUPLE_ELEMENT(JsSpace.Location.TUPLE_ELEMENT, JsRightPadded.Location.TUPLE_ELEMENT_SUFFIX);
 
         private final JsSpace.Location beforeLocation;
         private final JsRightPadded.Location elementLocation;
@@ -31,12 +35,5 @@ public class JsContainer {
             this.elementLocation = elementLocation;
         }
 
-        public JsSpace.Location getBeforeLocation() {
-            return beforeLocation;
-        }
-
-        public JsRightPadded.Location getElementLocation() {
-            return elementLocation;
-        }
     }
 }
