@@ -31,6 +31,7 @@ import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Markers;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 @SuppressWarnings("SameParameterValue")
@@ -69,6 +70,14 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(alias.getAlias(), p);
         afterSyntax(alias, p);
         return alias;
+    }
+
+    @Override
+    public J visitArrayBindingPattern(JS.ArrayBindingPattern arrayBindingPattern, PrintOutputCapture<P> p) {
+        beforeSyntax(arrayBindingPattern, JsSpace.Location.ARROW_FUNCTION_PREFIX, p);
+        visitContainer("[", arrayBindingPattern.getPadding().getElements(), JsContainer.Location.ARRAY_BINDING_ELEMENT, ",", "]", p);
+        afterSyntax(arrayBindingPattern, p);
+        return arrayBindingPattern;
     }
 
     @Override
@@ -670,8 +679,11 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 }
 
                 if (multiVariable.getTypeExpression() != null) {
-                    multiVariable.getMarkers().findFirst(TypeReferencePrefix.class).ifPresent(typeReferencePrefix -> visitSpace(typeReferencePrefix.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p));
-                    p.append(":");
+                    Optional<TypeReferencePrefix> typeReferencePrefix = multiVariable.getMarkers().findFirst(TypeReferencePrefix.class);
+                    if (typeReferencePrefix.isPresent()) {
+                        visitSpace(typeReferencePrefix.get().getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+                        p.append(":");
+                    }
                     visit(multiVariable.getTypeExpression(), p);
                 }
 
