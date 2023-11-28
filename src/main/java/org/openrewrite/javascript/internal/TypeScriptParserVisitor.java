@@ -2335,7 +2335,7 @@ public class TypeScriptParserVisitor {
             operator = JS.TypeOperator.Type.ReadOnly;
         } else if (op == TSCSyntaxKind.KeyOfKeyword) {
             before = sourceBefore(TSCSyntaxKind.KeyOfKeyword);
-            operator = JS.TypeOperator.Type.Keyof;
+            operator = JS.TypeOperator.Type.KeyOf;
         } else {
             implementMe(node);
         }
