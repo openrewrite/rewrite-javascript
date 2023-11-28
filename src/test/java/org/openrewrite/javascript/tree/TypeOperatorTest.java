@@ -81,16 +81,27 @@ class TypeOperatorTest implements RewriteTest {
     }
 
     @ExpectedToFail
-    @ParameterizedTest
-    @ValueSource(strings = {
-      ";",
-      ","
-    })
-    void typeLiteral(String delimiter) {
+    @Test
+    void typeLiteralDelimiterSemicolon() {
         rewriteRun(
           javaScript("""
-            type Person = { name: string %s age: number };
-            """.formatted(delimiter))
+            type Person = {
+                name: string ; // Semicolon as delimiter
+                age: number };
+            """
+          )
+        );
+    }
+
+    @Test
+    void typeLiteralDelimiterComma() {
+        rewriteRun(
+          javaScript("""
+            type Person = {
+                name: string , // Comma as delimiter
+                age: number };
+            """
+          )
         );
     }
 }
