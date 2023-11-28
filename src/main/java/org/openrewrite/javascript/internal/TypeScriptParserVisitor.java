@@ -2821,20 +2821,90 @@ public class TypeScriptParserVisitor {
             case InterfaceDeclaration:
                 j = visitClassDeclaration(node);
                 break;
+            /* Keywords. Most of these will be handled by modifiers and/or implied through the visit. */
+            // Reserved words
+            case BreakKeyword:
+            case CaseKeyword:
+            case CatchKeyword:
+            case ClassKeyword:
+            case ConstKeyword:
+            case ContinueKeyword:
+            case DebuggerKeyword:
+            case DeleteKeyword:
+            case DoKeyword:
+            case ElseKeyword:
+            case EnumKeyword:
+            case ExtendsKeyword:
+            case FinallyKeyword:
+            case ForKeyword:
+            case FunctionKeyword:
+            case IfKeyword:
+            case ImportKeyword:
+            case InKeyword:
+            case InstanceOfKeyword:
+            case NewKeyword:
+            case ReturnKeyword:
+            case SwitchKeyword:
+            case ThrowKeyword:
+            case TryKeyword:
+            case TypeOfKeyword:
+            case VarKeyword:
+            case WhileKeyword:
+            case WithKeyword:
+            // Strict mode reserved words
+            case ImplementsKeyword:
+            case InterfaceKeyword:
+            case LetKeyword:
+            case PackageKeyword:
+            case PrivateKeyword:
+            case ProtectedKeyword:
+            case PublicKeyword:
+            case StaticKeyword:
+            case YieldKeyword:
+            // Contextual keywords
+            case AbstractKeyword:
+            case AccessorKeyword:
             case AnyKeyword:
+            case AsKeyword:
+            case AssertKeyword:
+            case AssertsKeyword:
             case AsyncKeyword:
+            case AwaitKeyword:
+            case BigIntKeyword:
             case BooleanKeyword:
+            case ConstructorKeyword:
             case DeclareKeyword:
             case DefaultKeyword:
             case ExportKeyword:
+            case FromKeyword:
+            case GetKeyword:
+            case GlobalKeyword:
+            case InferKeyword:
+            case IntrinsicKeyword:
+            case IsKeyword:
+            case KeyOfKeyword:
+            case ModuleKeyword:
+            case NamespaceKeyword:
+            case NeverKeyword:
             case NumberKeyword:
             case NullKeyword:
+            case ObjectKeyword:
+            case OfKeyword:
+            case OutKeyword:
+            case OverrideKeyword:
             case ReadonlyKeyword:
+            case RequireKeyword:
+            case SatisfiesKeyword:
+            case SetKeyword:
             case StringKeyword:
             case SuperKeyword:
+            case SymbolKeyword:
             case ThisKeyword:
+            case TypeKeyword:
             case UndefinedKeyword:
+            case UniqueKeyword:
             case UnknownKeyword:
+            case UsingKeyword:
             case VoidKeyword:
                 j = visitKeyword(node);
                 break;
@@ -2961,6 +3031,7 @@ public class TypeScriptParserVisitor {
             case ExternalModuleReference:
                 j = visitExternalModuleReference(node);
                 break;
+            case PrivateIdentifier:
             case Identifier:
                 j = visitIdentifier(node);
                 break;
@@ -3060,6 +3131,125 @@ public class TypeScriptParserVisitor {
             case YieldExpression:
                 j = visitYieldExpression(node);
                 break;
+            // TODO:
+            case BigIntLiteral:
+            case JsxText:
+            case JsxTextAllWhiteSpaces:
+            case TemplateHead:
+            case TemplateMiddle:
+            case TemplateTail:
+            // Names
+            case ComputedPropertyName:
+            // TypeMember
+            case ClassStaticBlockDeclaration:
+            case GetAccessor:
+            case SetAccessor:
+            case ConstructSignature:
+            case IndexSignature:
+            // Type
+            case TypePredicate:
+            case ConstructorType:
+            case OptionalType:
+            case RestType:
+            case IntersectionType:
+            case ConditionalType:
+            case InferType:
+            case ParenthesizedType:
+            case ThisType:
+            case MappedType:
+            case NamedTupleMember:
+            case TemplateLiteralType:
+            case TemplateLiteralTypeSpan:
+            case ImportType:
+            // Binding patterns
+            case ObjectBindingPattern:
+            // Expression
+            case TypeAssertionExpression:
+            case VoidExpression:
+            case SpreadElement:
+            case OmittedExpression:
+            case NonNullExpression:
+            case SyntheticExpression:
+            case SatisfiesExpression:
+            // Misc
+            case TemplateSpan:
+            case SemicolonClassElement:
+            // Element
+            case WithStatement:
+            case DebuggerStatement:
+            case ModuleDeclaration:
+            case ModuleBlock:
+            case CaseBlock:
+            case NamespaceExportDeclaration:
+            case ImportClause:
+            case NamespaceImport:
+            case NamedImports:
+            case NamedExports:
+            case NamespaceExport:
+            case MissingDeclaration:
+            // JSX
+            case JsxElement:
+            case JsxSelfClosingElement:
+            case JsxOpeningElement:
+            case JsxClosingElement:
+            case JsxFragment:
+            case JsxOpeningFragment:
+            case JsxClosingFragment:
+            case JsxAttribute:
+            case JsxAttributes:
+            case JsxSpreadAttribute:
+            case JsxExpression:
+            case JsxNamespacedName:
+            // Property assignments
+            case ShorthandPropertyAssignment:
+            case SpreadAssignment:
+            /* Note:
+                JS docs are parsed as multiline comments and are not visited. These are in place in prep, for when
+                we add JS doc support to handle things like tags to prevent imports from being removed. When types are
+                in use.
+             */
+            case JSDocTypeExpression:
+            case JSDocNameReference:
+            case JSDocMemberName: // C#p
+            case JSDocAllType: // The * type
+            case JSDocUnknownType: // The ? type
+            case JSDocNullableType:
+            case JSDocNonNullableType:
+            case JSDocOptionalType:
+            case JSDocFunctionType:
+            case JSDocVariadicType:
+            case JSDocNamepathType: // https://jsdoc.app/about-namepaths.html
+            case JSDoc:
+            case JSDocText:
+            case JSDocTypeLiteral:
+            case JSDocSignature:
+            case JSDocLink:
+            case JSDocLinkCode:
+            case JSDocLinkPlain:
+            case JSDocTag:
+            case JSDocAugmentsTag:
+            case JSDocImplementsTag:
+            case JSDocAuthorTag:
+            case JSDocDeprecatedTag:
+            case JSDocClassTag:
+            case JSDocPublicTag:
+            case JSDocPrivateTag:
+            case JSDocProtectedTag:
+            case JSDocReadonlyTag:
+            case JSDocOverrideTag:
+            case JSDocCallbackTag:
+            case JSDocOverloadTag:
+            case JSDocEnumTag:
+            case JSDocParameterTag:
+            case JSDocReturnTag:
+            case JSDocThisTag:
+            case JSDocTypeTag:
+            case JSDocTemplateTag:
+            case JSDocTypedefTag:
+            case JSDocSeeTag:
+            case JSDocPropertyTag:
+            case JSDocThrowsTag:
+            case JSDocSatisfiesTag:
             default:
                 implementMe(node);
                 j = null;
@@ -3355,19 +3545,6 @@ public class TypeScriptParserVisitor {
                     }
                     break;
                 }
-                // JS/TS keywords.
-                case DeclareKeyword:
-                case DefaultKeyword:
-                case ExportKeyword:
-                case ReadonlyKeyword: {
-                    if (!leading.isEmpty()) {
-                        leadingAnnotations.addAll(leading);
-                        leading = null;
-                    }
-                    modifiers.add(mapModifier(prefix, node.getText(), trailing));
-                    trailing = null;
-                    break;
-                }
                 // Keywords that exist in J.
                 case AbstractKeyword:
                     if (!leading.isEmpty()) {
@@ -3424,7 +3601,13 @@ public class TypeScriptParserVisitor {
                     trailing = null;
                     break;
                 default:
-                    implementMe(node);
+                    if (!leading.isEmpty()) {
+                        leadingAnnotations.addAll(leading);
+                        leading = null;
+                    }
+                    modifiers.add(mapModifier(prefix, node.getText(), trailing));
+                    trailing = null;
+                    break;
             }
         }
         if (leading != null) {
