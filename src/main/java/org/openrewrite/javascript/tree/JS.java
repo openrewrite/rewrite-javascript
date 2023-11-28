@@ -1679,7 +1679,7 @@ public interface JS extends J {
 
         public enum Type {
             ReadOnly,
-            Keyof,
+            KeyOf,
         }
 
         public JS.TypeOperator.Padding getPadding() {
