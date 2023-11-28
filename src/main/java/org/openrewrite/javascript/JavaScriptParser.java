@@ -118,19 +118,11 @@ public class JavaScriptParser implements Parser {
             sourceTextsForTSC.put(relativePath, sourceText.sourceText);
         });
 
-        // Debug purpose only, Turn this to ture locally to help debug when developing parser
-        boolean debug = false;
-
         //noinspection resource
         runtime().parseSourceTexts(
                 sourceTextsForTSC,
                 (node, context) -> {
                     SourceWrapper source = sourcesByRelativePath.get(context.getRelativeSourcePath());
-
-                    if (debug) {
-                        System.out.println(TsTreePrinter.print(source.input));
-                        System.out.println(TsTreePrinter.print(node, context, true));
-                    }
 
                     parsingListener.startedParsing(source.getInput());
                     TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
@@ -149,10 +141,6 @@ public class JavaScriptParser implements Parser {
                     } catch (Throwable t) {
                         ((ExecutionContext) pctx).getOnError().accept(t);
                         cu = ParseError.build(JavaScriptParser.builder().build(), source.getInput(), relativeTo, pctx, t);
-                    }
-
-                    if (debug) {
-                        System.out.println(TsTreePrinter.print(cu));
                     }
 
                     compilationUnits.add(cu);
