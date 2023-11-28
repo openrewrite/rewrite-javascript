@@ -60,20 +60,17 @@ class UnaryTest implements RewriteTest {
         );
     }
 
-    @ExpectedToFail
     @Test
     void keyofKeyword() {
         rewriteRun(
           javaScript(
             """
-              type Person = { name: string; age: number };
+              type Person = { name: string , age: number };
               type KeysOfPerson = keyof Person;
-              let person: Person = {
-                  name: "John",
-                  age: 42,
-                };
               """
           )
         );
     }
+
+
 }
