@@ -338,6 +338,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         String keyword = "";
         if (typeOperator.getOperator() == JS.TypeOperator.Type.ReadOnly) {
             keyword = "readonly";
+        } else if (typeOperator.getOperator() == JS.TypeOperator.Type.Keyof) {
+            keyword = "keyof";
         }
 
         p.append(keyword);
