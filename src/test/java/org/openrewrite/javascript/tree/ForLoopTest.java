@@ -17,7 +17,6 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
-import org.junitpioneer.jupiter.Issue;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
@@ -82,19 +81,6 @@ class ForLoopTest implements RewriteTest {
           javaScript(
             """
               for ( const { a , b } of [ { a : 1 , b : 2 } , { a : 3 , b : 4 } ] ) {
-              }
-              """
-          )
-        );
-    }
-
-    @Issue("https://github.com/openrewrite/rewrite-javascript/issues/83")
-    @Test
-    void arrayBindingPattern() {
-        rewriteRun(
-          javaScript(
-            """
-              for (const [ , ] of undefined) {
               }
               """
           )

@@ -17,7 +17,6 @@ package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
-import org.openrewrite.Issue;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
@@ -73,7 +72,7 @@ class TupleTest implements RewriteTest {
         );
     }
 
-    @Issue("https://github.com/openrewrite/rewrite-javascript/issues/83")
+    @ExpectedToFail("Requires ArrayBindingPattern.")
     @Test
     void arrayBindingPattern() {
         rewriteRun(

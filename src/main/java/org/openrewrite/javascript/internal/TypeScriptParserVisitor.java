@@ -180,20 +180,7 @@ public class TypeScriptParserVisitor {
     }
 
     private J visitArrayBindingPattern(TSCNode node) {
-        return new JS.ArrayBindingPattern(
-                randomId(),
-                whitespace(),
-                Markers.EMPTY,
-                mapContainer(
-                        TSCSyntaxKind.OpenBracketToken,
-                        node.getNodeListProperty("elements"),
-                        TSCSyntaxKind.CommaToken,
-                        TSCSyntaxKind.CloseBracketToken,
-                        this::visitNode,
-                        true
-                ),
-                typeMapping.type(node)
-        );
+        return unknown(node);
     }
 
     private J visitArrowFunction(TSCNode node) {
@@ -2629,9 +2616,6 @@ public class TypeScriptParserVisitor {
                 J.Identifier name = null;
                 if (j instanceof J.Identifier) {
                     name = (J.Identifier) j;
-                } else if (j instanceof TypeTree) {
-                    name = convertToIdentifier(EMPTY, "");
-                    typeTree = (TypeTree) j;
                 } else {
                     implementMe(declaration);
                 }
@@ -2731,9 +2715,6 @@ public class TypeScriptParserVisitor {
             J.Identifier name = null;
             if (j instanceof J.Identifier) {
                 name = (J.Identifier) j;
-            } else if (j instanceof TypeTree) {
-                name = convertToIdentifier(EMPTY, "");
-                typeTree = (TypeTree) j;
             } else {
                 implementMe(declaration);
             }
@@ -3269,12 +3250,7 @@ public class TypeScriptParserVisitor {
                 int saveCursor = getCursor();
                 T visited;
                 try {
-                    if (node.syntaxKind() == TSCSyntaxKind.OmittedExpression) {
-                        //noinspection unchecked
-                        visited = (T) new J.Empty(randomId(), EMPTY, Markers.EMPTY);
-                    } else {
-                        visited = visitFn.apply(node);
-                    }
+                    visited = visitFn.apply(node);
                 } catch (Exception e) {
                     if (withUnknown) {
                         cursor(saveCursor);
