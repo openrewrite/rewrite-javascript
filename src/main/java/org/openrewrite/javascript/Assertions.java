@@ -25,7 +25,9 @@ import org.openrewrite.java.tree.Space;
 import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.test.SourceSpec;
 import org.openrewrite.test.SourceSpecs;
+import org.opentest4j.AssertionFailedError;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -91,12 +93,14 @@ public final class Assertions {
 
             new JavaScriptVisitor<Integer>() {
                 @Override
-                public @Nullable J preVisit(J tree, Integer integer) {
-                    if (tree instanceof J.Unknown) {
-                        ((J.Unknown) tree).getSource().getMarkers().findFirst(ParseExceptionResult.class)
-                                .ifPresent(result -> assertThat(result.getMessage()).isEqualTo(""));
+                public J visitUnknownSource(J.Unknown.Source source, Integer integer) {
+                    Optional<ParseExceptionResult> result = source.getMarkers().findFirst(ParseExceptionResult.class);
+                    if (result.isPresent()) {
+                        System.out.println(result.get().getMessage());
+                        throw new AssertionFailedError("Parsing error, J.Unknown detected");
+                    } else {
+                        throw new UnsupportedOperationException("A J.Unknown should always have a parse exception result.");
                     }
-                    return super.preVisit(tree, integer);
                 }
             }.visit(cu, 0);
         });
