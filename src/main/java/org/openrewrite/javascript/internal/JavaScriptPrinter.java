@@ -351,6 +351,22 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitUnary(JS.Unary unary, PrintOutputCapture<P> p) {
+        beforeSyntax(unary, Space.Location.UNARY_PREFIX, p);
+        switch (unary.getOperator()) {
+            case Spread:
+                visitSpace(unary.getPadding().getOperator().getBefore(), Space.Location.UNARY_OPERATOR, p);
+                p.append("...");
+                visit(unary.getExpression(), p);
+                break;
+            default:
+                break;
+        }
+        afterSyntax(unary, p);
+        return unary;
+    }
+
+    @Override
     public J visitUnion(JS.Union union, PrintOutputCapture<P> p) {
         beforeSyntax(union, JsSpace.Location.UNION_PREFIX, p);
 

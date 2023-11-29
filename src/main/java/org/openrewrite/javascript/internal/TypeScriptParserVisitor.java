@@ -2067,6 +2067,19 @@ public class TypeScriptParserVisitor {
         return maybeSemicolon(statement);
     }
 
+    private J visitSpreadElement(TSCNode node) {
+        Space prefix = whitespace();
+        consumeToken(TSCSyntaxKind.DotDotDotToken);
+        return new JS.Unary(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                padLeft(Space.EMPTY, JS.Unary.Type.Spread),
+                convertToExpression(visitNode(node.getNodeProperty("expression"))),
+                null
+        );
+    }
+
     private J.Literal visitStringLiteral(TSCNode node) {
         implementMe(node, "singleQuote");
         if (node.getBooleanProperty("hasExtendedUnicodeEscape")) {
@@ -3014,6 +3027,9 @@ public class TypeScriptParserVisitor {
                 break;
             case ReturnStatement:
                 j = visitReturnStatement(node);
+                break;
+            case SpreadElement:
+                j = visitSpreadElement(node);
                 break;
             case StringLiteral:
                 j = visitStringLiteral(node);

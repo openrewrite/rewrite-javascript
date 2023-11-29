@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junitpioneer.jupiter.ExpectedToFail;
+import org.junitpioneer.jupiter.Issue;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
@@ -72,5 +73,17 @@ class UnaryTest implements RewriteTest {
         );
     }
 
-
+    @Issue("https://github.com/openrewrite/rewrite-javascript/issues/82")
+    @Test
+    void spreadOperator() {
+        rewriteRun(
+          javaScript(
+            """
+              function concat<T>(arr1: T[], arr2: T[]): T[] {
+                return [  ...   arr1 , ...  arr2 ];
+              }
+              """
+          )
+        );
+    }
 }
