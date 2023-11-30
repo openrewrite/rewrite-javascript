@@ -24,7 +24,6 @@ import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.javascript.internal.JavetNativeBridge;
-import org.openrewrite.javascript.internal.TsTreePrinter;
 import org.openrewrite.javascript.internal.TypeScriptParserVisitor;
 import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.tree.JS;
@@ -41,7 +40,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
-@SuppressWarnings("ConstantValue")
 public class JavaScriptParser implements Parser {
 
     @Nullable
@@ -75,7 +73,7 @@ public class JavaScriptParser implements Parser {
     public Stream<SourceFile> parse(String... sources) {
         List<Input> inputs = new ArrayList<>(sources.length);
         for (int i = 0; i < sources.length; i++) {
-            Path path = Paths.get("f" + i + ".ts");
+            Path path = Paths.get("f" + i + ".js");
             int j = i;
             inputs.add(new Input(
                     path, null,
@@ -118,34 +116,36 @@ public class JavaScriptParser implements Parser {
             sourceTextsForTSC.put(relativePath, sourceText.sourceText);
         });
 
-        //noinspection resource
-        runtime().parseSourceTexts(
-                sourceTextsForTSC,
-                (node, context) -> {
-                    SourceWrapper source = sourcesByRelativePath.get(context.getRelativeSourcePath());
-
-                    parsingListener.startedParsing(source.getInput());
-                    TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
-                            node,
-                            context,
-                            source.getSourcePath(),
-                            new JavaTypeCache(),
-                            source.getCharset().toString(),
-                            source.isCharsetBomMarked(),
-                            styles
-                    );
-                    SourceFile cu;
-                    try {
-                        cu = fileMapper.visitSourceFile();
-                        parsingListener.parsed(source.getInput(), cu);
-                    } catch (Throwable t) {
-                        ((ExecutionContext) pctx).getOnError().accept(t);
-                        cu = ParseError.build(JavaScriptParser.builder().build(), source.getInput(), relativeTo, pctx, t);
+        try {
+            //noinspection resource
+            runtime().parseSourceTexts(
+                    sourceTextsForTSC,
+                    (node, context) -> {
+                        SourceWrapper source = sourcesByRelativePath.get(context.getRelativeSourcePath());
+                        parsingListener.startedParsing(source.getInput());
+                        TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
+                                node,
+                                context,
+                                source.getSourcePath(),
+                                new JavaTypeCache(),
+                                source.getCharset().toString(),
+                                source.isCharsetBomMarked(),
+                                styles
+                        );
+                        SourceFile cu;
+                        try {
+                            cu = fileMapper.visitSourceFile();
+                            parsingListener.parsed(source.getInput(), cu);
+                        } catch (Throwable t) {
+                            ((ExecutionContext) pctx).getOnError().accept(t);
+                            cu = ParseError.build(JavaScriptParser.builder().build(), source.getInput(), relativeTo, pctx, t);
+                        }
+                        compilationUnits.add(cu);
                     }
-
-                    compilationUnits.add(cu);
-                }
-        );
+            );
+        } catch (Exception e) {
+            return acceptedInputs(sources).map(input -> ParseError.build(this, input, relativeTo, ctx, e));
+        }
         return compilationUnits.stream();
     }
 
