@@ -18,12 +18,12 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.junitpioneer.jupiter.ExpectedToFail;
 import org.junitpioneer.jupiter.Issue;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
 
+@SuppressWarnings("JSUnusedLocalSymbols")
 class UnaryTest implements RewriteTest {
 
     @ParameterizedTest
@@ -79,8 +79,8 @@ class UnaryTest implements RewriteTest {
         rewriteRun(
           javaScript(
             """
-              function concat<T>(arr1: T[], arr2: T[]): T[] {
-                return [  ...   arr1 , ...  arr2 ];
+              function spread(arr) {
+                return [...arr]
               }
               """
           )
