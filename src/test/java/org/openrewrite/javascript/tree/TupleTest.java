@@ -58,7 +58,6 @@ class TupleTest implements RewriteTest {
         );
     }
 
-    @ExpectedToFail("Requires spread operator")
     @Test
     void spreadOperators() {
         rewriteRun(

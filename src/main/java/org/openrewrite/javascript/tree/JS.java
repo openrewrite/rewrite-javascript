@@ -20,6 +20,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.openrewrite.*;
 import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.JavaPrinter;
 import org.openrewrite.java.internal.TypesInUse;
 import org.openrewrite.java.service.ImportService;
 import org.openrewrite.java.tree.*;
@@ -38,6 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.singletonList;
 
 @SuppressWarnings("unused")
 public interface JS extends J {
@@ -1707,6 +1710,115 @@ public interface JS extends J {
 
             public JS.TypeOperator withExpression(JLeftPadded<Expression> expression) {
                 return t.expression == expression ? t : new JS.TypeOperator(t.id, t.prefix, t.markers, t.operator, expression);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class Unary implements JS, Statement, Expression, TypedTree {
+        @Nullable
+        @NonFinal
+        transient WeakReference<JS.Unary.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JLeftPadded<Type> operator;
+
+        public Type getOperator() {
+            return operator.getElement();
+        }
+
+        public JS.Unary withOperator(Type operator) {
+            return getPadding().withOperator(this.operator.withElement(operator));
+        }
+
+        @With
+        @Getter
+        Expression expression;
+
+        @With
+        @Nullable
+        @Getter
+        JavaType type;
+
+        @Override
+        public <R extends Tree, P> R accept(TreeVisitor<R, P> v, P p) {
+            return JS.super.accept(v, p);
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitUnary(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        @Override
+        @Transient
+        public List<J> getSideEffects() {
+            return getOperator().isModifying() ? singletonList(this) : expression.getSideEffects();
+        }
+
+        @SuppressWarnings("SwitchStatementWithTooFewBranches")
+        public enum Type {
+            Spread;
+
+            public boolean isModifying() {
+                switch (this) {
+                    case Spread:
+                    default:
+                        return false;
+                }
+            }
+        }
+
+        public JS.Unary.Padding getPadding() {
+            JS.Unary.Padding p;
+            if (this.padding == null) {
+                p = new JS.Unary.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JS.Unary.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @Override
+        public String toString() {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JS.Unary t;
+
+            public JLeftPadded<JS.Unary.Type> getOperator() {
+                return t.operator;
+            }
+
+            public JS.Unary withOperator(JLeftPadded<JS.Unary.Type> operator) {
+                return t.operator == operator ? t : new JS.Unary(t.id, t.prefix, t.markers, operator, t.expression, t.type);
             }
         }
     }

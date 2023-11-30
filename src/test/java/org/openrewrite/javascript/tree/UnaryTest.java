@@ -18,11 +18,12 @@ package org.openrewrite.javascript.tree;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.junitpioneer.jupiter.ExpectedToFail;
+import org.junitpioneer.jupiter.Issue;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
 
+@SuppressWarnings("JSUnusedLocalSymbols")
 class UnaryTest implements RewriteTest {
 
     @ParameterizedTest
@@ -72,5 +73,17 @@ class UnaryTest implements RewriteTest {
         );
     }
 
-
+    @Issue("https://github.com/openrewrite/rewrite-javascript/issues/82")
+    @Test
+    void spreadOperator() {
+        rewriteRun(
+          javaScript(
+            """
+              function spread(arr) {
+                return [...arr]
+              }
+              """
+          )
+        );
+    }
 }
