@@ -478,10 +478,10 @@ public class TypeScriptParserVisitor {
         }
         Statement r = (Statement) visitNode(incrementor.getNodeProperty("right"));
         Space after = whitespace();
-        if (sourceStartsWithAtCursor(",")) {
-            consumeToken(TSCSyntaxKind.CommaToken);
-        } else if (sourceStartsWithAtCursor(")")) {
-            consumeToken(TSCSyntaxKind.CloseParenToken);
+        if (tryConsume(TSCSyntaxKind.CommaToken)) {
+            // TODO check where to add this to LST
+        } else if (tryConsume(TSCSyntaxKind.CloseParenToken)) {
+            // TODO check where to add this to LST
         }
         updates.add(padRight(r, after));
     }
@@ -3126,23 +3126,31 @@ public class TypeScriptParserVisitor {
     }
 
     private <K2 extends J> JRightPadded<K2> maybeSemicolon(K2 k) {
+        return tryConsumeWithPrefix(
+                TSCSyntaxKind.SemicolonToken,
+                prefix -> new JRightPadded<>(k, prefix, Markers.EMPTY.add(new Semicolon(randomId())))
+        ).orElseGet(() -> JRightPadded.build(k));
+    }
+
+    private boolean tryConsume(TSCSyntaxKind kind) {
         int saveCursor = getCursor();
-        Space beforeSemi = whitespace();
-        Semicolon semicolon = null;
-        if (sourceStartsWithAtCursor(";")) {
-            semicolon = new Semicolon(randomId());
-            consumeToken(TSCSyntaxKind.SemicolonToken);
+        if (scan() == kind) {
+            return true;
         } else {
-            beforeSemi = EMPTY;
-            cursor(saveCursor);
+            cursorContext.resetScanner(saveCursor);
+            return false;
         }
+    }
 
-        JRightPadded<K2> padded = JRightPadded.build(k).withAfter(beforeSemi);
-        if (semicolon != null) {
-            padded = padded.withMarkers(padded.getMarkers().add(semicolon));
+    private <T> Optional<T> tryConsumeWithPrefix(TSCSyntaxKind kind, Function<Space, T> whenMatched) {
+        int saveCursor = getCursor();
+        Space prefix = whitespace();
+        if (scan() == kind) {
+            return Optional.of(whenMatched.apply(prefix));
+        } else {
+            cursorContext.resetScanner(saveCursor);
+            return Optional.empty();
         }
-
-        return padded;
     }
 
     private TSCSyntaxKind scan() {
@@ -3298,9 +3306,8 @@ public class TypeScriptParserVisitor {
                         after = sourceBefore(delimiter);
                     } else if (delimiter == TSCSyntaxKind.CommaToken) {
                         after = whitespace();
-                        if (sourceStartsWithAtCursor(",")) {
-                            consumeToken(delimiter);
-                            markers = markers.addIfAbsent(new TrailingComma(randomId(), whitespace()));
+                        if (tryConsume(TSCSyntaxKind.CommaToken)) {
+                            markers = markers.add(new TrailingComma(randomId(), whitespace()));
                         }
                     } else {
                         after = whitespace();
