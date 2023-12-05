@@ -163,6 +163,8 @@ public class CodemodRecipe extends ScanningRecipe<CodemodRecipe.Accumulator> {
                 Files.createDirectories(path.getParent());
                 Path written = Files.write(path, tree.printAllAsBytes());
                 modificationTimestamps.put(written, Files.getLastModifiedTime(written).toMillis());
+                // TODO instead use life cycle hook or dedicated directory provided by recipe scheduler
+                written.toFile().deleteOnExit();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
