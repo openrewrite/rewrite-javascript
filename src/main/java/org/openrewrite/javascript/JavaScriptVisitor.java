@@ -418,30 +418,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
     }
 
     @Override
-    public J visitArrayType(J.ArrayType arrayType, P p) {
-        J.ArrayType a = arrayType;
-        a = a.withPrefix(visitSpace(a.getPrefix(), Space.Location.ARRAY_TYPE_PREFIX, p));
-        a = a.withMarkers(visitMarkers(a.getMarkers(), p));
-        Expression temp = (Expression) visitExpression(a, p);
-        if (!(temp instanceof J.ArrayType)) {
-            return temp;
-        } else {
-            a = (J.ArrayType) temp;
-        }
-        //noinspection DataFlowIssue
-        a = a.withElementType(visitAndCast(a.getElementType(), p));
-        a = a.withElementType(visitTypeName(a.getElementType(), p));
-        a = a.withDimensions(
-                ListUtils.map(a.getDimensions(), dim ->
-                        visitRightPadded(dim.withElement(
-                                visitSpace(dim.getElement(), Space.Location.DIMENSION, p)
-                        ), JRightPadded.Location.DIMENSION, p)
-                )
-        );
-        return a;
-    }
-
-    @Override
     public J visitParameterizedType(J.ParameterizedType type, P p) {
         J.ParameterizedType pt = type;
         pt = pt.withPrefix(visitSpace(pt.getPrefix(), Space.Location.PARAMETERIZED_TYPE_PREFIX, p));

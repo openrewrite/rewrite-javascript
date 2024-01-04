@@ -99,10 +99,10 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
     }
 
     private JavaType array(TSCNode node, String signature) {
-        JavaType.Array arr = new JavaType.Array(null, null);
+        JavaType.Array arr = new JavaType.Array(null, null, JavaType.EMPTY_FULLY_QUALIFIED_ARRAY);
         typeCache.put(signature, arr);
         TSCNode elementType = node.getNodeProperty("elementType");
-        arr.unsafeSet(type(elementType));
+        arr.unsafeSet(type(elementType), null);
         return arr;
     }
 

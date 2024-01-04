@@ -3332,27 +3332,16 @@ public class TypeScriptParserVisitor {
 
     private J.ArrayType mapArrayType(TSCNode node) {
         Space prefix = whitespace();
-
-        int dimensionsCount = 1;
-        TSCNode curElement = node.getNodeProperty("elementType");
-        while (curElement.syntaxKind() == TSCSyntaxKind.ArrayType) {
-            dimensionsCount++;
-            curElement = curElement.getNodeProperty("elementType");
-        }
-
-        TypeTree typeTree = (TypeTree) visitNode(curElement);
-        List<JRightPadded<Space>> dimensions = new ArrayList<>(dimensionsCount);
-        for (int i = 0; i < dimensionsCount; i++) {
-            Space before = sourceBefore(TSCSyntaxKind.OpenBracketToken);
-            dimensions.add(padRight(before, sourceBefore(TSCSyntaxKind.CloseBracketToken)));
-        }
+        TypeTree typeTree = (TypeTree) visitNode(node.getNodeProperty("elementType"));
 
         return new J.ArrayType(
                 randomId(),
                 prefix,
                 Markers.EMPTY,
                 typeTree,
-                dimensions
+                null,
+                new JLeftPadded<>(sourceBefore(TSCSyntaxKind.OpenBracketToken), sourceBefore(TSCSyntaxKind.CloseBracketToken), Markers.EMPTY),
+                typeTree.getType()
         );
     }
 
