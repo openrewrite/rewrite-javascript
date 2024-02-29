@@ -206,7 +206,7 @@ public interface JS extends J {
 
         @Override
         @SuppressWarnings("unchecked")
-        public <S> S service(Class<S> service) {
+        public <S, T extends S> T service(Class<S> service) {
             String serviceName = service.getName();
             try {
                 Class<S> serviceClass;
@@ -217,7 +217,7 @@ public interface JS extends J {
                 } else {
                     return JavaSourceFile.super.service(service);
                 }
-                return serviceClass.getConstructor().newInstance();
+                return (T) serviceClass.getConstructor().newInstance();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
