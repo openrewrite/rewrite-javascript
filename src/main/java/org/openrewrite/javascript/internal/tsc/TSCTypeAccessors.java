@@ -36,6 +36,7 @@ public interface TSCTypeAccessors extends TSCV8Backed {
         return getTypeChecker().typeToString(_typeInstanceInternal());
     }
 
+    @Override
     default TSCType.DebugInfo getDebugInfo() {
         return new TSCType.DebugInfo(
                 listMatchingTypeFlags(),
@@ -206,6 +207,7 @@ public interface TSCTypeAccessors extends TSCV8Backed {
             }
         }
 
+        @Override
         default TSCType wrapped() {
             return _typeInstanceInternal();
         }

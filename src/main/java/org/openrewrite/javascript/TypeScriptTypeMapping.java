@@ -49,6 +49,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         this.typeCache = typeCache;
     }
 
+    @Override
     @SuppressWarnings("DataFlowIssue")
     public JavaType type(@Nullable TSCNode node) {
         if (node == null) {

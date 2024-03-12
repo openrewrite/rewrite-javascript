@@ -61,8 +61,10 @@ public interface JS extends J {
         return v.defaultValue(this, p);
     }
 
+    @Override
     Space getPrefix();
 
+    @Override
     default List<Comment> getComments() {
         return getPrefix().getComments();
     }
@@ -129,10 +131,12 @@ public interface JS extends J {
 
         List<JRightPadded<Import>> imports;
 
+        @Override
         public List<Import> getImports() {
             return JRightPadded.getElements(imports);
         }
 
+        @Override
         public JS.CompilationUnit withImports(List<Import> imports) {
             return getPadding().withImports(JRightPadded.withElements(this.imports, imports));
         }
@@ -151,6 +155,7 @@ public interface JS extends J {
         @Getter
         Space eof;
 
+        @Override
         @Transient
         public @NonNull List<ClassDeclaration> getClasses() {
             return statements.stream()
@@ -179,6 +184,7 @@ public interface JS extends J {
 
         @Transient
         @NonNull
+        @Override
         public TypesInUse getTypesInUse() {
             TypesInUse cache;
             if (this.typesInUse == null) {
@@ -223,6 +229,7 @@ public interface JS extends J {
             }
         }
 
+        @Override
         public Padding getPadding() {
             Padding p;
             if (this.padding == null) {
@@ -1185,6 +1192,7 @@ public interface JS extends J {
             @Getter
             JavaType.Variable variableType;
 
+            @Override
             public JavaType getType() {
                 return variableType != null ? variableType.getType() : null;
             }
