@@ -25,7 +25,7 @@ import static java.util.Calendar.YEAR;
 import static java.util.Calendar.getInstance;
 import static org.openrewrite.javascript.Assertions.javaScript;
 
-public class AddLicenseHeaderTest implements RewriteTest {
+class AddLicenseHeaderTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {

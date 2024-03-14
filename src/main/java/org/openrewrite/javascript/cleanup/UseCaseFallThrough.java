@@ -35,7 +35,7 @@ import java.util.Set;
 import static java.util.Collections.singletonList;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class UseCaseFallThrough extends Recipe {
 
     @Override
@@ -64,8 +64,8 @@ public class UseCaseFallThrough extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaScriptIsoVisitor<ExecutionContext>() {
             @Override
-            public J.Switch visitSwitch(J.Switch switch_, ExecutionContext executionContext) {
-                J.Switch s = super.visitSwitch(switch_, executionContext);
+            public J.Switch visitSwitch(J.Switch switch_, ExecutionContext ctx) {
+                J.Switch s = super.visitSwitch(switch_, ctx);
                 if (switch_.getSelector().getType() == JavaType.Primitive.Boolean) {
                     return switch_;
                 }

@@ -16,6 +16,7 @@
 package org.openrewrite.javascript.format;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Tree;
 import org.openrewrite.javascript.JavaScriptParser;
 import org.openrewrite.javascript.style.IntelliJ;
@@ -42,6 +43,7 @@ class SpacesTest implements RewriteTest {
                 )));
     }
 
+    @DocumentExample
     @Test
     void beforeParensFunctionDeclarationTrue() {
         rewriteRun(

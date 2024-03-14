@@ -16,6 +16,7 @@
 package org.openrewrite.javascript.recipe;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.ShortenFullyQualifiedTypeReferences;
 import org.openrewrite.staticanalysis.SimplifyBooleanExpression;
 import org.openrewrite.test.RewriteTest;
@@ -23,8 +24,9 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.javascript.Assertions.javaScript;
 
 @SuppressWarnings({"PointlessBooleanExpressionJS", "JSUnusedLocalSymbols"})
-public class RecipeTest implements RewriteTest {
+class RecipeTest implements RewriteTest {
 
+    @DocumentExample
     @Test
     void simplifyBooleanExpression() {
         rewriteRun(

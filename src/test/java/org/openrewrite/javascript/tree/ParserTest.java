@@ -21,7 +21,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
 
-public class ParserTest implements RewriteTest {
+class ParserTest implements RewriteTest {
 
     @Issue("https://github.com/openrewrite/rewrite-javascript/issues/57")
     @Test
