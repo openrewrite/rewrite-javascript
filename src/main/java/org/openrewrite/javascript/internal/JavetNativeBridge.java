@@ -31,13 +31,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class JavetNativeBridge {
+public final class JavetNativeBridge {
 
     private JavetNativeBridge() {
     }
 
-    private static volatile boolean hasLoadedNativeLib = false;
-    private static volatile @Nullable Throwable nativeLibError = null;
+    private static volatile boolean hasLoadedNativeLib;
+    private static volatile @Nullable Throwable nativeLibError;
     private static final Object loadNativeLibLock = new Object();
 
     public static Class<?>[] getClassesInitializedByBridge() {

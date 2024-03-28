@@ -29,7 +29,7 @@ public abstract class TSCV8ValueHolder implements AutoCloseable {
 
     private final List<IV8Value> v8Values = new ArrayList<>();
     private final List<AutoCloseable> otherValues = new ArrayList<>();
-    private boolean isClosed = false;
+    private boolean isClosed;
 
     protected <T extends AutoCloseable> T lifecycleLinked(T value) {
         if (isClosed) {

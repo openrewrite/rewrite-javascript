@@ -27,11 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class TSCV8Utils {
+public final class TSCV8Utils {
     private TSCV8Utils() {
     }
 
-    private final static Pattern IDENTIFIER_PATTERN = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\\\d_$]*)$");
+    private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\\\d_$]*)$");
 
     public static void assertValidIdentifier(String name) {
         if (!IDENTIFIER_PATTERN.matcher(name).matches()) {

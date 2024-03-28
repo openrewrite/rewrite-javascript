@@ -42,7 +42,7 @@ public class TsTreePrinter {
     private static final String UNVISITED_PREFIX = "#";
 
     // Set to true to print types and verify, otherwise just verify the parse to print idempotent.
-    private final static boolean printTypes = true;
+    private static final boolean printTypes = true;
 
     private final List<StringBuilder> outputLines;
 

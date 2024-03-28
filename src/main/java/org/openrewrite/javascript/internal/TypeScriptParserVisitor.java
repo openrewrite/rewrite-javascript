@@ -250,7 +250,7 @@ public class TypeScriptParserVisitor {
         );
         List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
         for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
-            Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
+            Expression exp = !(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement ?
                     new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
             JRightPadded<Expression> apply = padRight(exp, jjRightPadded.getAfter(), jjRightPadded.getMarkers());
             elements.add(apply);
@@ -584,7 +584,7 @@ public class TypeScriptParserVisitor {
 
             List<JRightPadded<Expression>> typeParams = new ArrayList<>(jContainer.getElements().size());
             for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
-                Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
+                Expression exp = !(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement ?
                         new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
                 JRightPadded<Expression> apply = padRight(exp, jjRightPadded.getAfter(), jjRightPadded.getMarkers());
                 typeParams.add(apply);
@@ -605,7 +605,7 @@ public class TypeScriptParserVisitor {
             );
             List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
             for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
-                Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
+                Expression exp = !(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement ?
                         new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
                 JRightPadded<Expression> apply = padRight(exp, jjRightPadded.getAfter(), jjRightPadded.getMarkers());
                 elements.add(apply);
@@ -874,7 +874,7 @@ public class TypeScriptParserVisitor {
 
             List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
             for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
-                Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
+                Expression exp = !(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement ?
                         new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
                 JRightPadded<Expression> apply = padRight(exp, jjRightPadded.getAfter(), jjRightPadded.getMarkers());
                 elements.add(apply);
@@ -1695,7 +1695,7 @@ public class TypeScriptParserVisitor {
         );
         List<JRightPadded<Expression>> elements = new ArrayList<>(jContainer.getElements().size());
         for (JRightPadded<J> jjRightPadded : jContainer.getPadding().getElements()) {
-            Expression exp = (!(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement) ?
+            Expression exp = !(jjRightPadded.getElement() instanceof Expression) && jjRightPadded.getElement() instanceof Statement ?
                     new JS.StatementExpression(randomId(), (Statement) jjRightPadded.getElement()) : (Expression) jjRightPadded.getElement();
             JRightPadded<Expression> apply = padRight(exp, jjRightPadded.getAfter(), jjRightPadded.getMarkers());
             elements.add(apply);
@@ -2811,7 +2811,7 @@ public class TypeScriptParserVisitor {
             markers = markers.add(new Asterisk(randomId(), sourceBefore(TSCSyntaxKind.AsteriskToken)));
         }
         J j = visitNode(node.getNodeProperty("expression"));
-        Expression expr = (!(j instanceof Expression) && j instanceof Statement) ?
+        Expression expr = !(j instanceof Expression) && j instanceof Statement ?
                 new JS.StatementExpression(randomId(), (Statement) j) : (Expression) j;
         return new J.Yield(
                 randomId(),

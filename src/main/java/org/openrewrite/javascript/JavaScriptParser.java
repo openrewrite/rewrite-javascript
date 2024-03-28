@@ -40,18 +40,18 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class JavaScriptParser implements Parser {
+public final class JavaScriptParser implements Parser {
 
     @Nullable
-    private static TSCRuntime RUNTIME;
+    private static TSCRuntime runtime;
 
     private static TSCRuntime runtime() {
-        if (RUNTIME == null) {
+        if (runtime == null) {
             JavetNativeBridge.init();
-            RUNTIME = TSCRuntime.init();
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> RUNTIME.close()));
+            runtime = TSCRuntime.init();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> runtime.close()));
         }
-        return RUNTIME;
+        return runtime;
     }
 
     @Value
@@ -112,9 +112,8 @@ public class JavaScriptParser implements Parser {
         List<SourceFile> compilationUnits = new ArrayList<>(sourcesByRelativePath.size());
         ParsingEventListener parsingListener = ParsingExecutionContextView.view(pctx).getParsingListener();
         Map<Path, String> sourceTextsForTSC = new LinkedHashMap<>();
-        sourcesByRelativePath.forEach((relativePath, sourceText) -> {
-            sourceTextsForTSC.put(relativePath, sourceText.sourceText);
-        });
+        sourcesByRelativePath.forEach((relativePath, sourceText) ->
+            sourceTextsForTSC.put(relativePath, sourceText.sourceText));
 
         try {
             //noinspection resource
@@ -151,13 +150,13 @@ public class JavaScriptParser implements Parser {
         return compilationUnits.stream();
     }
 
-    private final static List<String> EXTENSIONS = Collections.unmodifiableList(Arrays.asList(
+    private static final List<String> EXTENSIONS = Collections.unmodifiableList(Arrays.asList(
             ".js", ".jsx", ".mjs", ".cjs",
             ".ts", ".tsx", ".mts", ".cts"
     ));
 
     // Exclude Yarn's Plug'n'Play loader files (https://yarnpkg.com/features/pnp)
-    private final static List<String> EXCLUSIONS = Collections.unmodifiableList(Arrays.asList(
+    private static final List<String> EXCLUSIONS = Collections.unmodifiableList(Arrays.asList(
             ".pnp.cjs", ".pnp.loader.mjs"
     ));
 

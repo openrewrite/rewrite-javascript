@@ -412,6 +412,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
             case BigIntKeyword:
             case BigIntLiteral:
                 implementMe(node.syntaxKind());
+                break;
             case BooleanKeyword:
             case FalseKeyword:
             case TrueKeyword:

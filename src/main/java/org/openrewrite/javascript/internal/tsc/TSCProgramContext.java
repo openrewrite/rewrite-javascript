@@ -80,7 +80,7 @@ public class TSCProgramContext extends TSCV8ValueHolder {
                 V8ValueObject typeChecker = contextV8.get("typeChecker");
                 V8ValueFunction createScanner = contextV8.get("createScanner");
                 V8ValueFunction getOpenRewriteId = contextV8.get("getOpenRewriteId");
-                V8ValueObject pathPrefixes = contextV8.get("pathPrefixes");
+                V8ValueObject pathPrefixes = contextV8.get("pathPrefixes")
         ) {
             return new TSCProgramContext(
                     program,

@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 
 import static org.openrewrite.javascript.internal.tsc.TSCConversions.*;
 
-public class TSCTypeChecker extends TSCV8ValueHolder implements TSCV8Backed {
+public final class TSCTypeChecker extends TSCV8ValueHolder implements TSCV8Backed {
 
     // TODO: unmapped functions include all marked @internal and those that return "uncheckable" nodes
 

@@ -22,7 +22,7 @@ import com.caoccao.javet.values.reference.V8ValueObject;
 
 import java.util.*;
 
-public class TSCNodeList implements TSCV8Backed, List<TSCNode> {
+public final class TSCNodeList implements TSCV8Backed, List<TSCNode> {
 
     public static TSCNodeList wrap(TSCProgramContext programContext, V8ValueObject maybeArrayV8) {
         if (!(maybeArrayV8 instanceof V8ValueArray)) {
@@ -60,7 +60,7 @@ public class TSCNodeList implements TSCV8Backed, List<TSCNode> {
 
     @Override
     public boolean isEmpty() {
-        return size() == 0;
+        return isEmpty();
     }
 
     @Override

@@ -48,12 +48,12 @@ public class TSCRuntime implements AutoCloseable {
      * This causes tests to fail if references are not recycled, and will
      * attribute dangling references to the call site that created them.
      */
-    private final static boolean USE_WRAPPED_V8_RUNTIME = false;
+    private static final boolean USE_WRAPPED_V8_RUNTIME = false;
 
     public final V8Runtime v8Runtime;
 
     @Nullable
-    public V8ValueFunction tsParseV8 = null;
+    public V8ValueFunction tsParseV8;
 
     private final V8ValueObject parseOptionsV8;
 
@@ -65,7 +65,7 @@ public class TSCRuntime implements AutoCloseable {
 
     public static TSCRuntime init(boolean forceWrappedV8Runtime) {
         try {
-            V8Runtime v8Runtime = (forceWrappedV8Runtime || USE_WRAPPED_V8_RUNTIME)
+            V8Runtime v8Runtime = forceWrappedV8Runtime || USE_WRAPPED_V8_RUNTIME
                     ? JavetBridge.makeWrappedV8Runtime()
                     : V8Host.getV8Instance().createV8Runtime();
             JavetStandardConsoleInterceptor javetStandardConsoleInterceptor = new JavetStandardConsoleInterceptor(v8Runtime);
@@ -115,7 +115,9 @@ public class TSCRuntime implements AutoCloseable {
 
     private static String getJSEntryProgramText() {
         try (InputStream is = TSCRuntime.class.getResourceAsStream("/tsc/index.js")) {
-            if (is == null) throw new IllegalStateException("entry JS resource does not exist");
+            if (is == null) {
+                throw new IllegalStateException("entry JS resource does not exist");
+            }
             return readFully(is, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);

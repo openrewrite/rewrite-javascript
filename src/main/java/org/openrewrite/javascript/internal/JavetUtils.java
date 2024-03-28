@@ -18,7 +18,7 @@ package org.openrewrite.javascript.internal;
 import com.caoccao.javet.values.IV8Value;
 import org.openrewrite.internal.lang.Nullable;
 
-public class JavetUtils {
+public final class JavetUtils {
     private JavetUtils() {}
 
     public static void close(@Nullable IV8Value valueV8) {

@@ -83,7 +83,7 @@ public final class JavetBridge {
                             try (V8Value constructor = ((V8ValueObject) valueV8).get("constructor")) {
                                 if (constructor instanceof V8ValueObject) {
                                     String name = ((V8ValueObject) constructor).getPrimitive("name");
-                                    if (name.equals("NodeObject")) {
+                                    if ("NodeObject".equals(name)) {
                                         System.err.print("[" + name + ":" + TSCSyntaxKind.fromCode(((V8ValueObject) valueV8).getInteger("kind")) + "]");
                                     } else {
                                         System.err.print("[" + name + "]");

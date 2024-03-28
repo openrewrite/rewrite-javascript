@@ -36,14 +36,14 @@ class TypeScriptTypeMappingTest {
     private static final String goat = StringUtils.readFully(TypeScriptSignatureBuilderTest.class.getResourceAsStream("/TypeScriptTypeGoat.ts"));
     private static final JS.CompilationUnit cu = JavaScriptParser.builder().build()
             .parse(new InMemoryExecutionContext(), goat)
-            .map(s -> (JS.CompilationUnit) s)
+            .map(JS.CompilationUnit.class::cast)
             .collect(Collectors.toList())
             .get(0);
     private static final List<JavaType.FullyQualified> classes = cu
             .getStatements()
             .stream()
-            .filter(it -> it instanceof J.ClassDeclaration)
-            .map(it -> (J.ClassDeclaration) it)
+            .filter(J.ClassDeclaration.class::isInstance)
+            .map(J.ClassDeclaration.class::cast)
             .map(J.ClassDeclaration::getType)
             .collect(Collectors.toList());
     private static final JavaType.Parameterized goatType = TypeUtils.asParameterized(classes.get(0));
@@ -186,7 +186,7 @@ class TypeScriptTypeMappingTest {
         JavaType.Class clazz = (JavaType.Class) firstClassType("EnumTypeA");
 
         List<JavaType.Variable> enumConstants = clazz.getMembers().stream()
-                .filter(m -> m instanceof JavaType.Variable)
+                .filter(JavaType.Variable.class::isInstance)
                 .collect(Collectors.toList());
         assertThat(enumConstants).hasSize(2);
         assertThat(enumConstants.get(0).getName()).isEqualTo("FOO");

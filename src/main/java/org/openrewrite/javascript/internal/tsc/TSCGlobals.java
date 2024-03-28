@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 
 import static org.openrewrite.javascript.internal.tsc.TSCConversions.NODE_LIST;
 
-public class TSCGlobals extends TSCV8ValueHolder implements TSCV8Backed {
+public final class TSCGlobals extends TSCV8ValueHolder implements TSCV8Backed {
 
     public static TSCGlobals fromJS(Supplier<TSCProgramContext> context, V8ValueObject objectV8) {
         return new TSCGlobals(context, objectV8);

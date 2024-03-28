@@ -26,7 +26,7 @@ import org.intellij.lang.annotations.Language;
 
 import javax.annotation.Nullable;
 
-public class TSCInstanceOfChecks extends TSCV8ValueHolder {
+public final class TSCInstanceOfChecks extends TSCV8ValueHolder {
 
     public enum InterfaceKind {
         Node,

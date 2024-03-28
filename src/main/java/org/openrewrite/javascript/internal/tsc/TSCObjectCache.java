@@ -56,7 +56,7 @@ public abstract class TSCObjectCache<T extends TSCV8Backed> extends TSCV8ValueHo
         public T getOrCreate(TSCProgramContext programContext, V8ValueObject objectV8) {
             try {
                 TKey key = getKey.getKey(programContext, objectV8);
-                return this.cache.computeIfAbsent(key, (_key) -> {
+                return this.cache.computeIfAbsent(key, _key -> {
                     V8ValueObject clone = lifecycleLinked(objectV8);
                     try {
                         return makeInstance.makeInstance(programContext, clone);

@@ -115,7 +115,7 @@ public class V8InteropTests {
             AtomicReference<TSCType> inOtherFile = new AtomicReference<>();
             AtomicBoolean checked = new AtomicBoolean();
             runtime.parseSourceTexts(sources, (root, ctx) -> {
-                if (ctx.getRelativeSourcePath().toString().equals("a.ts")) {
+                if ("a.ts".equals(ctx.getRelativeSourcePath().toString())) {
                     return;
                 }
                 TSCType type = root.firstNodeWithText("x").getTypeForNode();
@@ -238,14 +238,14 @@ public class V8InteropTests {
           }
           """,
           (root, ctx) -> {
-              TSCNode Foo = root.firstNodeWithText("class Foo {}");
-              TSCType FooType = Foo.getTypeForNode();
+              TSCNode foo = root.firstNodeWithText("class Foo {}");
+              TSCType fooType = foo.getTypeForNode();
 
               TSCNode x = root.firstNodeWithText("x: Foo");
               TSCNode.TypeNode xTypeNode = x.getTypeNodeProperty("type");
               TSCType xType = xTypeNode.getTypeFromTypeNode();
 
-              assertSame(FooType, xType);
+              assertSame(fooType, xType);
           }
         );
     }
@@ -371,13 +371,13 @@ public class V8InteropTests {
           """,
           "example.ts",
           (root, ctx) -> {
-              TSCNode Foo = root.firstNodeWithText("Foo");
+              TSCNode foo = root.firstNodeWithText("Foo");
               assertEquals(
                 new TSCProgramContext.CompilerBridgeSourceInfo(
                   TSCProgramContext.CompilerBridgeSourceKind.ApplicationCode,
                   Paths.get("example.ts")
                 ),
-                Foo.getSourceFile().getCompilerBridgeSourceInfo()
+                foo.getSourceFile().getCompilerBridgeSourceInfo()
               );
 
               TSCNode string = root.firstNodeWithText("String");
