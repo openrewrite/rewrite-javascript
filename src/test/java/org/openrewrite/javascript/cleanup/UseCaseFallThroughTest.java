@@ -16,6 +16,7 @@
 package org.openrewrite.javascript.cleanup;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -24,7 +25,7 @@ import static org.openrewrite.javascript.Assertions.javaScript;
 
 @SuppressWarnings({"JSUnusedLocalSymbols", "CommaExpressionJS"})
 @Issue("https://github.com/openrewrite/rewrite-javascript/issues/64")
-public class UseCaseFallThroughTest implements RewriteTest {
+class UseCaseFallThroughTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -32,7 +33,7 @@ public class UseCaseFallThroughTest implements RewriteTest {
     }
 
     @Test
-    public void noChange() {
+    void noChange() {
         rewriteRun(
           javaScript(
             """
@@ -56,7 +57,7 @@ public class UseCaseFallThroughTest implements RewriteTest {
     }
 
     @Test
-    public void booleanLiteral() {
+    void booleanLiteral() {
         rewriteRun(
           javaScript(
             """
@@ -79,7 +80,7 @@ public class UseCaseFallThroughTest implements RewriteTest {
     }
 
     @Test
-    public void logicalAndWithOr() {
+    void logicalAndWithOr() {
         rewriteRun(
           javaScript(
             """
@@ -97,8 +98,9 @@ public class UseCaseFallThroughTest implements RewriteTest {
         );
     }
 
+    @DocumentExample
     @Test
-    public void logicalOrs() {
+    void logicalOrs() {
         rewriteRun(
           javaScript(
             """
@@ -130,7 +132,7 @@ public class UseCaseFallThroughTest implements RewriteTest {
     }
 
     @Test
-    public void logicalComma() {
+    void logicalComma() {
         rewriteRun(
           javaScript(
             """
@@ -162,7 +164,7 @@ public class UseCaseFallThroughTest implements RewriteTest {
     }
 
     @Test
-    public void withBraces() {
+    void withBraces() {
         rewriteRun(
           javaScript(
             """

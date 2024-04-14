@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class FindJavaScriptSources extends Recipe {
     transient JavaScriptSourceFile javaScriptSourceFile = new JavaScriptSourceFile(this);
 
@@ -50,7 +50,7 @@ public class FindJavaScriptSources extends Recipe {
             final Set<String> tsExtensions = new HashSet<>(Arrays.asList(".ts", ".tsx", ".mts", ".cts"));
 
             @Override
-            public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext executionContext) {
+            public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
                 if (!(tree instanceof SourceFile)) {
                     return tree;
                 }
@@ -69,11 +69,11 @@ public class FindJavaScriptSources extends Recipe {
                     }
 
                     if (sourceFileType != null) {
-                        javaScriptSourceFile.insertRow(executionContext, new JavaScriptSourceFile.Row(s.getSourcePath().toString(), sourceFileType));
+                        javaScriptSourceFile.insertRow(ctx, new JavaScriptSourceFile.Row(s.getSourcePath().toString(), sourceFileType));
                         return SearchResult.found(s);
                     }
                 }
-                return super.visit(tree, executionContext);
+                return super.visit(tree, ctx);
             }
         };
     }

@@ -51,6 +51,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
     }
 
+    @Override
     public J visitCompilationUnit(JS.CompilationUnit cu, PrintOutputCapture<P> p) {
         beforeSyntax(cu, Space.Location.COMPILATION_UNIT_PREFIX, p);
 

@@ -438,6 +438,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return pt;
     }
 
+    @Override
     public <N extends NameTree> N visitTypeName(N nameTree, P p) {
         return nameTree;
     }

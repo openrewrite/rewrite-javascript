@@ -37,10 +37,12 @@ public interface TSCV8Backed {
     interface Wrapper extends TSCV8Backed {
         TSCV8Backed wrapped();
 
+        @Override
         default TSCProgramContext getProgramContext() {
             return wrapped().getProgramContext();
         }
 
+        @Override
         default V8ValueObject getBackingV8Object() {
             return wrapped().getBackingV8Object();
         }

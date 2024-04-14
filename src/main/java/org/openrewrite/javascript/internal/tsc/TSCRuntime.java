@@ -115,7 +115,9 @@ public class TSCRuntime implements AutoCloseable {
 
     private static String getJSEntryProgramText() {
         try (InputStream is = TSCRuntime.class.getResourceAsStream("/tsc/index.js")) {
-            if (is == null) throw new IllegalStateException("entry JS resource does not exist");
+            if (is == null) {
+                throw new IllegalStateException("entry JS resource does not exist");
+            }
             return readFully(is, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);

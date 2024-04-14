@@ -201,6 +201,7 @@ public class JavaScriptParser implements Parser {
             return this;
         }
 
+        @Override
         public JavaScriptParser build() {
             return new JavaScriptParser(styles);
         }

@@ -25,7 +25,7 @@ import org.openrewrite.java.MethodMatcher;
 
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class AddLicenseHeader extends Recipe {
     /**
      * A method pattern that is used to find matching method declarations/invocations.
