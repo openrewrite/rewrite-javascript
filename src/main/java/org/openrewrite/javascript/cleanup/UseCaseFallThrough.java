@@ -52,7 +52,7 @@ public class UseCaseFallThrough extends Recipe {
 
     @Override
     public Set<String> getTags() {
-        return Collections.singleton("RSPEC-3616");
+        return Collections.singleton("RSPEC-S3616");
     }
 
     @Override
