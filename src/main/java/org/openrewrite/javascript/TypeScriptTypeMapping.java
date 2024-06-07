@@ -35,8 +35,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
-import static org.openrewrite.javascript.TypeScriptSignatureBuilder.mapFqn;
 import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.*;
+import static org.openrewrite.javascript.TypeScriptSignatureBuilder.mapFqn;
 
 @Incubating(since = "0.0")
 public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
