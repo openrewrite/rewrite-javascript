@@ -16,10 +16,10 @@
 package org.openrewrite.javascript.internal.tsc;
 
 import org.openrewrite.DebugOnly;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

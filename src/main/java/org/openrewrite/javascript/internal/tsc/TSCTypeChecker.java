@@ -16,12 +16,12 @@
 package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.values.reference.V8ValueObject;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.javascript.internal.tsc.generated.TSCIndexKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSignatureKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSymbolFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 

@@ -17,8 +17,7 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.V8Value;
-
-import javax.annotation.Nullable;
+import org.openrewrite.internal.lang.Nullable;
 
 public interface TSCConversion<T> {
     T convertUnsafe(TSCProgramContext context, V8Value value) throws JavetException;
