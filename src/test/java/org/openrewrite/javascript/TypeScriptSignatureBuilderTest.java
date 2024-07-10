@@ -26,7 +26,7 @@ import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 import java.util.List;
 import java.util.Objects;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class TypeScriptSignatureBuilderTest {
 

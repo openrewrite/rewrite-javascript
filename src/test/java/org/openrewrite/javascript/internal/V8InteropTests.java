@@ -29,6 +29,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class V8InteropTests {
@@ -126,7 +128,7 @@ public class V8InteropTests {
                     assertSame(inOtherFile.get(), type);
                 }
             });
-            assertTrue(checked.get());
+            assertThat(checked.get()).isTrue();
         }
     }
 

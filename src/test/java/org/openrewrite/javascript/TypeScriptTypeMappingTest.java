@@ -15,7 +15,6 @@
  */
 package org.openrewrite.javascript;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.InMemoryExecutionContext;
@@ -58,8 +57,8 @@ class TypeScriptTypeMappingTest {
     @Test
     void className() {
         JavaType.FullyQualified clazz = TypeUtils.asFullyQualified(this.firstMethodParameter("clazz"));
-        Assertions.assertThat(clazz).isNotNull();
-        Assertions.assertThat(clazz.getFullyQualifiedName()).isEqualTo(getSourcePath() + ".A");
+        assertThat(clazz).isNotNull();
+        assertThat(clazz.getFullyQualifiedName()).isEqualTo(getSourcePath() + ".A");
     }
 
     @Test
@@ -209,7 +208,7 @@ class TypeScriptTypeMappingTest {
                 .filter(m -> m.getName().equals(methodName))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Expected to find matching method named " + methodName));
-        Assertions.assertThat(type.getDeclaringType().toString()).isEqualTo("%s.TypeScriptTypeGoat", getSourcePath());
+        assertThat(type.getDeclaringType().toString()).isEqualTo("%s.TypeScriptTypeGoat", getSourcePath());
         return type;
     }
 
@@ -222,7 +221,7 @@ class TypeScriptTypeMappingTest {
                 .filter(m -> m.getName().equals(fieldName))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Expected to find matching member named " + fieldName));
-        Assertions.assertThat(type.getOwner().toString()).isEqualTo("%s.TypeScriptTypeGoat", getSourcePath());
+        assertThat(type.getOwner().toString()).isEqualTo("%s.TypeScriptTypeGoat", getSourcePath());
         return type;
     }
 

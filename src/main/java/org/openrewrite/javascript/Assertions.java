@@ -86,7 +86,7 @@ public final class Assertions {
             new JavaScriptIsoVisitor<Integer>() {
                 @Override
                 public Space visitSpace(Space space, Space.Location loc, Integer integer) {
-                    assertThat(space.getWhitespace().trim()).isEmpty();
+                    assertThat(space.getWhitespace()).isBlank();
                     return super.visitSpace(space, loc, integer);
                 }
             }.visit(cu, 0);
