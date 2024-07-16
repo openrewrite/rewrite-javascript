@@ -24,8 +24,7 @@ public class JavaScriptTypeCache implements Cloneable {
 
     Map<Object, Object> typeCache = new HashMap<>();
 
-    @Nullable
-    public <T> T get(String signature) {
+    public <T> @Nullable T get(String signature) {
         //noinspection unchecked
         return (T) typeCache.get(key(signature));
     }

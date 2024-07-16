@@ -56,8 +56,7 @@ public interface JS extends J {
         return v.isAdaptableTo(JavaScriptVisitor.class);
     }
 
-    @Nullable
-    default <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+    default <P> @Nullable J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
         return v.defaultValue(this, p);
     }
 
@@ -310,9 +309,8 @@ public interface JS extends J {
             return v.visitAlias(this, p);
         }
 
-        @Nullable
         @Override
-        public JavaType getType() {
+        public @Nullable JavaType getType() {
             return propertyName.getElement().getType();
         }
 
@@ -497,8 +495,7 @@ public interface JS extends J {
         @Nullable
         JContainer<Expression> exports;
 
-        @Nullable
-        public List<Expression> getExports() {
+        public @Nullable List<Expression> getExports() {
             return exports == null ? null : exports.getElements();
         }
 
@@ -519,8 +516,7 @@ public interface JS extends J {
         @Nullable
         JLeftPadded<Expression> initializer;
 
-        @Nullable
-        public Expression getInitializer() {
+        public @Nullable Expression getInitializer() {
             return initializer == null ? null : initializer.getElement();
         }
 
@@ -557,8 +553,7 @@ public interface JS extends J {
         public static class Padding {
             private final Export t;
 
-            @Nullable
-            public JContainer<Expression> getExports() {
+            public @Nullable JContainer<Expression> getExports() {
                 return t.exports;
             }
 
@@ -566,8 +561,7 @@ public interface JS extends J {
                 return t.exports == exports ? t : new Export(t.id, t.prefix, t.markers, exports, t.from, t.target, t.initializer);
             }
 
-            @Nullable
-            public JLeftPadded<Expression> getInitializer() {
+            public @Nullable JLeftPadded<Expression> getInitializer() {
                 return t.initializer;
             }
 
@@ -621,9 +615,8 @@ public interface JS extends J {
             return expression.getMarkers();
         }
 
-        @Nullable
         @Override
-        public JavaType getType() {
+        public @Nullable JavaType getType() {
             return expression.getType();
         }
 
@@ -750,8 +743,7 @@ public interface JS extends J {
         @Nullable
         JRightPadded<J.Identifier> name;
 
-        @Nullable
-        public J.Identifier getName() {
+        public @Nullable J.Identifier getName() {
             return name == null ? null : name.getElement();
         }
 
@@ -762,8 +754,7 @@ public interface JS extends J {
         @Nullable
         JContainer<Expression> imports;
 
-        @Nullable
-        public List<Expression> getImports() {
+        public @Nullable List<Expression> getImports() {
             return imports == null ? null : imports.getElements();
         }
 
@@ -784,8 +775,7 @@ public interface JS extends J {
         @Nullable
         JLeftPadded<Expression> initializer;
 
-        @Nullable
-        public Expression getInitializer() {
+        public @Nullable Expression getInitializer() {
             return initializer == null ? null : initializer.getElement();
         }
 
@@ -822,8 +812,7 @@ public interface JS extends J {
         public static class Padding {
             private final JsImport t;
 
-            @Nullable
-            public JRightPadded<J.Identifier> getName() {
+            public @Nullable JRightPadded<J.Identifier> getName() {
                 return t.name;
             }
 
@@ -831,8 +820,7 @@ public interface JS extends J {
                 return t.name == name ? t : new JsImport(t.id, t.prefix, t.markers, name, t.imports, t.from, t.target, t.initializer);
             }
 
-            @Nullable
-            public JContainer<Expression> getImports() {
+            public @Nullable JContainer<Expression> getImports() {
                 return t.imports;
             }
 
@@ -840,8 +828,7 @@ public interface JS extends J {
                 return t.imports == imports ? t : new JsImport(t.id, t.prefix, t.markers, t.name, imports, t.from, t.target, t.initializer);
             }
 
-            @Nullable
-            public JLeftPadded<Expression> getInitializer() {
+            public @Nullable JLeftPadded<Expression> getInitializer() {
                 return t.initializer;
             }
 
@@ -1076,8 +1063,7 @@ public interface JS extends J {
         @Nullable
         JLeftPadded<Expression> initializer;
 
-        @Nullable
-        public Expression getInitializer() {
+        public @Nullable Expression getInitializer() {
             return initializer == null ? null : initializer.getElement();
         }
 
@@ -1108,14 +1094,12 @@ public interface JS extends J {
             return allAnnotations;
         }
 
-        @Nullable
-        public JavaType.FullyQualified getTypeAsFullyQualified() {
+        public @Nullable JavaType.FullyQualified getTypeAsFullyQualified() {
             return typeExpression == null ? null : TypeUtils.asFullyQualified(typeExpression.getType());
         }
 
-        @Nullable
         @Override
-        public JavaType getType() {
+        public @Nullable JavaType getType() {
             return typeExpression == null ? null : typeExpression.getType();
         }
 
@@ -1153,8 +1137,7 @@ public interface JS extends J {
             @Nullable
             JRightPadded<J.Identifier> propertyName;
 
-            @Nullable
-            public J.Identifier getPropertyName() {
+            public @Nullable J.Identifier getPropertyName() {
                 return propertyName == null ? null : propertyName.getElement();
             }
 
@@ -1178,8 +1161,7 @@ public interface JS extends J {
             @Nullable
             JLeftPadded<Expression> initializer;
 
-            @Nullable
-            public Expression getInitializer() {
+            public @Nullable Expression getInitializer() {
                 return initializer == null ? null : initializer.getElement();
             }
 
@@ -1231,8 +1213,7 @@ public interface JS extends J {
             public static class Padding {
                 private final ObjectBindingDeclarations.Binding t;
 
-                @Nullable
-                public JRightPadded<J.Identifier> getPropertyName() {
+                public @Nullable JRightPadded<J.Identifier> getPropertyName() {
                     return t.propertyName;
                 }
 
@@ -1240,8 +1221,7 @@ public interface JS extends J {
                     return t.propertyName == propertyName ? t : new ObjectBindingDeclarations.Binding(t.id, t.prefix, t.markers, propertyName, t.name, t.dimensionsAfterName, t.afterVararg, t.initializer, t.variableType);
                 }
 
-                @Nullable
-                public JLeftPadded<Expression> getInitializer() {
+                public @Nullable JLeftPadded<Expression> getInitializer() {
                     return t.initializer;
                 }
 
@@ -1282,8 +1262,7 @@ public interface JS extends J {
                 return t.bindings == bindings ? t : new ObjectBindingDeclarations(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.typeExpression, bindings, t.initializer);
             }
 
-            @Nullable
-            public JLeftPadded<Expression> getInitializer() {
+            public @Nullable JLeftPadded<Expression> getInitializer() {
                 return t.initializer;
             }
 
@@ -1337,9 +1316,8 @@ public interface JS extends J {
             return statement.getMarkers();
         }
 
-        @Nullable
         @Override
-        public JavaType getType() {
+        public @Nullable JavaType getType() {
             return null;
         }
 
@@ -1382,8 +1360,7 @@ public interface JS extends J {
         @Nullable
         JRightPadded<Expression> tag;
 
-        @Nullable
-        public Expression getTag() {
+        public @Nullable Expression getTag() {
             return tag == null ? null : tag.getElement();
         }
 
@@ -1446,8 +1423,7 @@ public interface JS extends J {
         public static class Padding {
             private final TemplateExpression t;
 
-            @Nullable
-            public JRightPadded<Expression> getTag() {
+            public @Nullable JRightPadded<Expression> getTag() {
                 return t.tag;
             }
 
@@ -1579,9 +1555,8 @@ public interface JS extends J {
         @Nullable
         JavaType javaType;
 
-        @Nullable
         @Override
-        public JavaType getType() {
+        public @Nullable JavaType getType() {
             return javaType;
         }
 
@@ -1665,9 +1640,8 @@ public interface JS extends J {
             return getPadding().withExpression(this.expression.withElement(expression));
         }
 
-        @Nullable
         @Override
-        public JavaType getType() {
+        public @Nullable JavaType getType() {
             return expression.getElement().getType();
         }
 

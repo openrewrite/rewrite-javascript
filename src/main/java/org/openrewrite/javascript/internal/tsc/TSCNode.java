@@ -135,8 +135,7 @@ public class TSCNode implements TSCV8Backed {
         return TSCSyntaxKind.fromCode(this.syntaxKindCode());
     }
 
-    @Nullable
-    public TSCType getTypeForNode() {
+    public @Nullable TSCType getTypeForNode() {
         return this.programContext.getTypeChecker().getTypeAtLocation(this);
     }
 
@@ -209,8 +208,7 @@ public class TSCNode implements TSCV8Backed {
         return position >= this.getStart() && position < this.getEnd();
     }
 
-    @Nullable
-    public TSCSymbol getSymbolForNode() {
+    public @Nullable TSCSymbol getSymbolForNode() {
         return this.programContext.getTypeChecker().getSymbolAtLocation(this);
     }
 
@@ -250,8 +248,7 @@ public class TSCNode implements TSCV8Backed {
     }
 
     @Deprecated
-    @Nullable
-    public TSCNode getChildNode(String name) {
+    public @Nullable TSCNode getChildNode(String name) {
         return getOptionalNodeProperty(name);
     }
 

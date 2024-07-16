@@ -486,8 +486,7 @@ public class TypeScriptParserVisitor {
         updates.add(padRight(r, after));
     }
 
-    @Nullable
-    private J.Block visitBlock(@Nullable TSCNode node) {
+    private @Nullable J.Block visitBlock(@Nullable TSCNode node) {
         if (node == null) {
             return null;
         }
@@ -2822,8 +2821,7 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    @Nullable
-    private J visitNode(@Nullable TSCNode node) {
+    private @Nullable J visitNode(@Nullable TSCNode node) {
         if (node == null) {
             return null;
         }
@@ -3451,8 +3449,7 @@ public class TypeScriptParserVisitor {
         return modifiers.isEmpty() ? new ArrayList<>() : modifiers;
     }
 
-    @Nullable
-    private J.TypeParameters mapTypeParameters(@Nullable List<TSCNode> typeParameters) {
+    private @Nullable J.TypeParameters mapTypeParameters(@Nullable List<TSCNode> typeParameters) {
         return typeParameters == null ? null : new J.TypeParameters(randomId(), sourceBefore(TSCSyntaxKind.LessThanToken), Markers.EMPTY,
                 emptyList(),
                 convertAll(typeParameters, commaDelim, t -> sourceBefore(TSCSyntaxKind.GreaterThanToken)));
