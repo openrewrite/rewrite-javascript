@@ -1,3 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress until="2024-09-12">
+        <notes><![CDATA[
+        file name: braces:3.0.2
+        ]]></notes>
+        <packageUrl regex="true">^pkg:npm/braces@.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-4068</vulnerabilityName>
+        <vulnerabilityName>GHSA-grv7-fg5c-xmjg</vulnerabilityName>
+    </suppress>
+    <suppress until="2024-09-12">
+        <notes><![CDATA[
+        file name: msgpackr:1.9.9
+        ]]></notes>
+        <packageUrl regex="true">^pkg:npm/msgpackr@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-52079</vulnerabilityName>
+        <vulnerabilityName>GHSA-7hpj-7hhx-2fgx</vulnerabilityName>
+    </suppress>
 </suppressions>
