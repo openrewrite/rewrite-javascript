@@ -19,8 +19,8 @@ import com.caoccao.javet.enums.JSRuntimeType;
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.interop.loader.JavetLibLoader;
 import com.caoccao.javet.utils.JavetOSUtils;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.internal.StringUtils;
-import org.openrewrite.internal.lang.Nullable;
 
 import java.io.File;
 import java.io.FileOutputStream;

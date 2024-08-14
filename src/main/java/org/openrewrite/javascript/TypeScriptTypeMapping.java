@@ -15,8 +15,8 @@
  */
 package org.openrewrite.javascript;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.Incubating;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeMapping;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.tree.Flag;
