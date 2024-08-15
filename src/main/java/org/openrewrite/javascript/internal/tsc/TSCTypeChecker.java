@@ -16,7 +16,7 @@
 package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.values.reference.V8ValueObject;
-import org.openrewrite.internal.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.javascript.internal.tsc.generated.TSCIndexKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSignatureKind;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSymbolFlag;

@@ -15,9 +15,9 @@
  */
 package org.openrewrite.javascript.internal;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.FileAttributes;
 import org.openrewrite.ParseExceptionResult;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
@@ -486,7 +486,7 @@ public class TypeScriptParserVisitor {
         updates.add(padRight(r, after));
     }
 
-    private @Nullable J.Block visitBlock(@Nullable TSCNode node) {
+    private J.@Nullable Block visitBlock(@Nullable TSCNode node) {
         if (node == null) {
             return null;
         }
@@ -1320,7 +1320,7 @@ public class TypeScriptParserVisitor {
         return visitIdentifier(node, type, null);
     }
 
-    private J.Identifier visitIdentifier(TSCNode node, @Nullable JavaType type, @Nullable JavaType.Variable fieldType) {
+    private J.Identifier visitIdentifier(TSCNode node, @Nullable JavaType type, JavaType.@Nullable Variable fieldType) {
         Space prefix = whitespace();
         skip(node.getText());
         // TODO: check on escapedText property.
@@ -3449,7 +3449,7 @@ public class TypeScriptParserVisitor {
         return modifiers.isEmpty() ? new ArrayList<>() : modifiers;
     }
 
-    private @Nullable J.TypeParameters mapTypeParameters(@Nullable List<TSCNode> typeParameters) {
+    private J.@Nullable TypeParameters mapTypeParameters(@Nullable List<TSCNode> typeParameters) {
         return typeParameters == null ? null : new J.TypeParameters(randomId(), sourceBefore(TSCSyntaxKind.LessThanToken), Markers.EMPTY,
                 emptyList(),
                 convertAll(typeParameters, commaDelim, t -> sourceBefore(TSCSyntaxKind.GreaterThanToken)));

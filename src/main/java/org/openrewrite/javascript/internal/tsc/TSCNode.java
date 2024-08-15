@@ -19,8 +19,8 @@ import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.V8Value;
 import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueObject;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.DebugOnly;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
 import java.io.PrintStream;

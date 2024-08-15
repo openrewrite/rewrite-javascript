@@ -15,8 +15,8 @@
  */
 package org.openrewrite.javascript;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.Incubating;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeMapping;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.tree.Flag;
@@ -107,11 +107,11 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return arr;
     }
 
-    private @Nullable JavaType.FullyQualified classType(@Nullable TSCNode node) {
+    private JavaType.@Nullable FullyQualified classType(@Nullable TSCNode node) {
         return classType(node, signatureBuilder.signature(node));
     }
 
-    private @Nullable JavaType.FullyQualified classType(@Nullable TSCNode node, String signature) {
+    private JavaType.@Nullable FullyQualified classType(@Nullable TSCNode node, String signature) {
         if (node == null || node.syntaxKind() != TSCSyntaxKind.SourceFile && node.getTypeForNode() == null) {
             return null;
         }
@@ -279,11 +279,11 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return gtv;
     }
 
-    public @Nullable JavaType.Method methodDeclarationType(TSCNode node) {
+    public JavaType.@Nullable Method methodDeclarationType(TSCNode node) {
         return methodDeclarationType(node, null);
     }
 
-    public @Nullable JavaType.Method methodDeclarationType(TSCNode node, @Nullable JavaType.FullyQualified declaringType) {
+    public JavaType.@Nullable Method methodDeclarationType(TSCNode node, JavaType.@Nullable FullyQualified declaringType) {
 
         String signature = signatureBuilder.methodSignature(node);
         JavaType.Method existing = typeCache.get(signature);
@@ -343,7 +343,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return method;
     }
 
-    public @Nullable JavaType.Method methodInvocationType(TSCNode node) {
+    public JavaType.@Nullable Method methodInvocationType(TSCNode node) {
         String signature = signatureBuilder.methodSignature(node);
         JavaType.Method existing = typeCache.get(signature);
         if (existing != null) {
@@ -430,19 +430,19 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return JavaType.Primitive.None;
     }
 
-    public @Nullable JavaType.Variable variableType(TSCNode node) {
+    public JavaType.@Nullable Variable variableType(TSCNode node) {
         return variableType(node, null, signatureBuilder.variableSignature(node));
     }
 
-    public @Nullable JavaType.Variable variableType(TSCNode node, String signature) {
+    public JavaType.@Nullable Variable variableType(TSCNode node, String signature) {
         return variableType(node, null, signature);
     }
 
-    public @Nullable JavaType.Variable variableType(TSCNode node, @Nullable JavaType.FullyQualified declaringType) {
+    public JavaType.@Nullable Variable variableType(TSCNode node, JavaType.@Nullable FullyQualified declaringType) {
         return variableType(node, declaringType, signatureBuilder.variableSignature(node));
     }
 
-    public @Nullable JavaType.Variable variableType(TSCNode node, @Nullable JavaType.FullyQualified declaringType, String signature) {
+    public JavaType.@Nullable Variable variableType(TSCNode node, JavaType.@Nullable FullyQualified declaringType, String signature) {
         JavaType.Variable existing = typeCache.get(signature);
         if (existing != null) {
             return existing;

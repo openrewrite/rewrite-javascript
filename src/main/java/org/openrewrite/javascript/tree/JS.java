@@ -18,8 +18,8 @@ package org.openrewrite.javascript.tree;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaPrinter;
 import org.openrewrite.java.internal.TypesInUse;
 import org.openrewrite.java.service.ImportService;
@@ -510,8 +510,7 @@ public interface JS extends J {
 
         @Getter
         @With
-        @Nullable
-        J.Literal target;
+        J.@Nullable Literal target;
 
         @Nullable
         JLeftPadded<Expression> initializer;
@@ -743,11 +742,11 @@ public interface JS extends J {
         @Nullable
         JRightPadded<J.Identifier> name;
 
-        public @Nullable J.Identifier getName() {
+        public J.@Nullable Identifier getName() {
             return name == null ? null : name.getElement();
         }
 
-        public JsImport withName(@Nullable J.Identifier name) {
+        public JsImport withName(J.@Nullable Identifier name) {
             return getPadding().withName(JRightPadded.withElement(this.name, name));
         }
 
@@ -767,10 +766,10 @@ public interface JS extends J {
         @With
         Space from;
 
-        @Nullable
+
         @Getter
         @With
-        J.Literal target;
+        J.@Nullable Literal target;
 
         @Nullable
         JLeftPadded<Expression> initializer;
@@ -1094,7 +1093,7 @@ public interface JS extends J {
             return allAnnotations;
         }
 
-        public @Nullable JavaType.FullyQualified getTypeAsFullyQualified() {
+        public JavaType.@Nullable FullyQualified getTypeAsFullyQualified() {
             return typeExpression == null ? null : TypeUtils.asFullyQualified(typeExpression.getType());
         }
 
@@ -1137,11 +1136,11 @@ public interface JS extends J {
             @Nullable
             JRightPadded<J.Identifier> propertyName;
 
-            public @Nullable J.Identifier getPropertyName() {
+            public J.@Nullable Identifier getPropertyName() {
                 return propertyName == null ? null : propertyName.getElement();
             }
 
-            public ObjectBindingDeclarations.Binding withPropertyName(@Nullable J.Identifier propertyName) {
+            public ObjectBindingDeclarations.Binding withPropertyName(J.@Nullable Identifier propertyName) {
                 return getPadding().withPropertyName(JRightPadded.withElement(this.propertyName, propertyName));
             }
 
@@ -1170,9 +1169,8 @@ public interface JS extends J {
             }
 
             @With
-            @Nullable
             @Getter
-            JavaType.Variable variableType;
+            JavaType.@Nullable Variable variableType;
 
             @Override
             public JavaType getType() {
@@ -1538,9 +1536,9 @@ public interface JS extends J {
         @With
         J.Identifier name;
 
-        @Nullable
+
         @With
-        J.TypeParameters typeParameters;
+        J.@Nullable TypeParameters typeParameters;
 
         JLeftPadded<Expression> initializer;
 
