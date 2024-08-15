@@ -15,8 +15,8 @@
  */
 package org.openrewrite.javascript;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.Incubating;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaTypeMapping;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.tree.Flag;
@@ -283,7 +283,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return methodDeclarationType(node, null);
     }
 
-    public @Nullable JavaType.Method methodDeclarationType(TSCNode node, @Nullable JavaType.FullyQualified declaringType) {
+    public @Nullable JavaType.Method methodDeclarationType(TSCNode node, JavaType.@Nullable FullyQualified declaringType) {
 
         String signature = signatureBuilder.methodSignature(node);
         JavaType.Method existing = typeCache.get(signature);
@@ -438,11 +438,11 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
         return variableType(node, null, signature);
     }
 
-    public @Nullable JavaType.Variable variableType(TSCNode node, @Nullable JavaType.FullyQualified declaringType) {
+    public @Nullable JavaType.Variable variableType(TSCNode node, JavaType.@Nullable FullyQualified declaringType) {
         return variableType(node, declaringType, signatureBuilder.variableSignature(node));
     }
 
-    public @Nullable JavaType.Variable variableType(TSCNode node, @Nullable JavaType.FullyQualified declaringType, String signature) {
+    public @Nullable JavaType.Variable variableType(TSCNode node, JavaType.@Nullable FullyQualified declaringType, String signature) {
         JavaType.Variable existing = typeCache.get(signature);
         if (existing != null) {
             return existing;

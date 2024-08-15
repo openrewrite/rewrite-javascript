@@ -15,9 +15,9 @@
  */
 package org.openrewrite.javascript.internal;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.FileAttributes;
 import org.openrewrite.ParseExceptionResult;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
@@ -1320,7 +1320,7 @@ public class TypeScriptParserVisitor {
         return visitIdentifier(node, type, null);
     }
 
-    private J.Identifier visitIdentifier(TSCNode node, @Nullable JavaType type, @Nullable JavaType.Variable fieldType) {
+    private J.Identifier visitIdentifier(TSCNode node, @Nullable JavaType type, JavaType.@Nullable Variable fieldType) {
         Space prefix = whitespace();
         skip(node.getText());
         // TODO: check on escapedText property.

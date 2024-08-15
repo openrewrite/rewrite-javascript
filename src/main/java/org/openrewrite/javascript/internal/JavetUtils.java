@@ -16,7 +16,7 @@
 package org.openrewrite.javascript.internal;
 
 import com.caoccao.javet.values.IV8Value;
-import org.openrewrite.internal.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class JavetUtils {
     private JavetUtils() {}

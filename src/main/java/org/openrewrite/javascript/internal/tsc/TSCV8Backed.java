@@ -22,8 +22,8 @@ import com.caoccao.javet.values.reference.V8ValueArray;
 import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.DebugOnly;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.javascript.internal.tsc.generated.TSCSyntaxKind;
 
 import java.util.ArrayList;

@@ -16,12 +16,12 @@
 package org.openrewrite.javascript;
 
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.SourceFile;
 import org.openrewrite.internal.EncodingDetectingInputStream;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.javascript.internal.JavetNativeBridge;
 import org.openrewrite.javascript.internal.TypeScriptParserVisitor;
