@@ -21,7 +21,7 @@ import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import lombok.Getter;
 import lombok.Value;
-import org.openrewrite.internal.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -109,11 +109,11 @@ public class TSCProgramContext extends TSCV8ValueHolder {
         return this.typescriptGlobals;
     }
 
-    public @Nullable TSCInstanceOfChecks.InterfaceKind identifyInterfaceKind(V8Value valueV8) {
+    public TSCInstanceOfChecks.@Nullable InterfaceKind identifyInterfaceKind(V8Value valueV8) {
         return this.getInstanceOfChecks().identifyInterfaceKind(valueV8);
     }
 
-    public @Nullable TSCInstanceOfChecks.ConstructorKind identifyConstructorKind(V8Value valueV8) {
+    public TSCInstanceOfChecks.@Nullable ConstructorKind identifyConstructorKind(V8Value valueV8) {
         return this.getInstanceOfChecks().identifyConstructorKind(valueV8);
     }
 

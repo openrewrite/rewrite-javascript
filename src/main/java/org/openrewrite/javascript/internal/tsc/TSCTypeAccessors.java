@@ -15,8 +15,8 @@
  */
 package org.openrewrite.javascript.internal.tsc;
 
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.DebugOnly;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.javascript.internal.tsc.generated.TSCObjectFlag;
 import org.openrewrite.javascript.internal.tsc.generated.TSCTypeFlag;
 
@@ -312,7 +312,7 @@ public interface TSCTypeAccessors extends TSCV8Backed {
             return getTypeProperty("target");
         }
 
-        default @Nullable TSCNode.TypeNode getNode() {
+        default TSCNode.@Nullable TypeNode getNode() {
             return getOptionalTypeNodeProperty("node");
         }
 

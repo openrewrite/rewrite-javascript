@@ -26,8 +26,8 @@ import com.caoccao.javet.values.reference.V8ValueFunction;
 import com.caoccao.javet.values.reference.V8ValueMap;
 import com.caoccao.javet.values.reference.V8ValueObject;
 import org.intellij.lang.annotations.Language;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.DebugOnly;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.javascript.internal.JavetUtils;
 
 import java.io.IOException;
