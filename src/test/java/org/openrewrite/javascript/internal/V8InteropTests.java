@@ -78,13 +78,12 @@ public class V8InteropTests {
 
     @Test
     public void testTypeIdentity() {
-        parseSingleSource("function foo() {}", (root, ctx) -> {
+        parseSingleSource("function foo() {}", (root, ctx) ->
             root.getAllChildNodes().forEach(child -> {
                 TSCType first = child.getTypeForNode();
                 TSCType second = child.getTypeForNode();
                 assertSame(first, second);
-            });
-        });
+            }));
     }
 
     @Test

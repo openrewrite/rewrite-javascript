@@ -112,9 +112,8 @@ public class JavaScriptParser implements Parser {
         List<SourceFile> compilationUnits = new ArrayList<>(sourcesByRelativePath.size());
         ParsingEventListener parsingListener = ParsingExecutionContextView.view(pctx).getParsingListener();
         Map<Path, String> sourceTextsForTSC = new LinkedHashMap<>();
-        sourcesByRelativePath.forEach((relativePath, sourceText) -> {
-            sourceTextsForTSC.put(relativePath, sourceText.sourceText);
-        });
+        sourcesByRelativePath.forEach((relativePath, sourceText) ->
+            sourceTextsForTSC.put(relativePath, sourceText.sourceText));
 
         try {
             //noinspection resource
