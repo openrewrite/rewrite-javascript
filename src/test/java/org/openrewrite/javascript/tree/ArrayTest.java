@@ -16,7 +16,6 @@
 package org.openrewrite.javascript.tree;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
