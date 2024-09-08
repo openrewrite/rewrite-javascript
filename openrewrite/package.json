@@ -1,0 +1,21 @@
+{
+  "name": "openrewrite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "dev": "tsc --watch -p tsconfig.json",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@types/node": "^22.5.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}
