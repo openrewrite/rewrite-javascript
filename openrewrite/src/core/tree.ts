@@ -29,3 +29,9 @@ export class Cursor {
         return new Cursor(this._parent === null ? null : this._parent.fork(), this.value);
     }
 }
+
+export interface Tree {
+    id(): UUID;
+
+    withId(id: UUID): Tree;
+}
