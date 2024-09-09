@@ -1,7 +1,7 @@
 import {random_id, UUID} from "./tree";
 
 export interface Marker {
-    id(): UUID;
+    get id(): UUID;
 
     withId(id: UUID): Marker;
 }
@@ -17,7 +17,7 @@ export class Markers {
         this._markers = markers;
     }
 
-    public id(): UUID {
+    public get id(): UUID {
         return this._id;
     }
 
@@ -25,7 +25,7 @@ export class Markers {
         return this._id === id ? this : new Markers(id, this._markers);
     }
 
-    public markers(): Marker[] {
+    public get markers(): Marker[] {
         return this._markers;
     }
 
