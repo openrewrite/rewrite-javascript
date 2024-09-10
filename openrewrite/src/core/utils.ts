@@ -1,7 +1,7 @@
 export class ListUtils {
-    static map<T>(ls: T[] | undefined, map: (item: T) => T): T[] | undefined {
+    static map<T>(ls: T[] | undefined, map: (item: T) => T): T[] {
         if (ls === undefined || ls.length === 0) {
-            return ls;
+            return ls as T[];
         }
 
         let newLs: T[] = ls;

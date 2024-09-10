@@ -37,7 +37,14 @@ export abstract class TreeVisitor<T extends Tree, P> {
         this._cursor = cursor;
     }
 
-    abstract visit(tree: Tree | null, p: P): T | null;
+    visit(tree: Tree | null, p: P): T | null {
+        // FIXME
+        return tree as T;
+    }
+
+    protected visitAndCast<T extends Tree>(t: T | null, p: P): T | null {
+        return this.visit(t, p) as T | null;
+    }
 
     visitMarkers(markers: Markers | undefined, p: P): Markers {
         if (markers == undefined || markers === Markers.EMPTY) {
@@ -80,7 +87,12 @@ export class Cursor {
 }
 
 export class Checksum {
-    constructor(private readonly _algorithm: string, private readonly _value: ArrayBuffer) {
+    private readonly _algorithm: string;
+    private readonly _value: ArrayBuffer;
+
+    constructor(algorithm: string, value: ArrayBuffer) {
+        this._algorithm = algorithm;
+        this._value = value;
     }
 
     get algorithm(): string {
@@ -93,15 +105,30 @@ export class Checksum {
 }
 
 export class FileAttributes {
+    private readonly _creationTime: Date | undefined;
+    private readonly _lastModifiedTime: Date | undefined;
+    private readonly _lastAccessTime: Date | undefined;
+    private readonly _isReadable: boolean;
+    private readonly _isWritable: boolean;
+    private readonly _isExecutable: boolean;
+    private readonly _size: number;
+
     public constructor(
-        private readonly _creationTime: Date | undefined,
-        private readonly _lastModifiedTime: Date | undefined,
-        private readonly _lastAccessTime: Date | undefined,
-        private readonly _isReadable: boolean,
-        private readonly _isWritable: boolean,
-        private readonly _isExecutable: boolean,
-        private readonly _size: number,
+        creationTime: Date | undefined,
+        lastModifiedTime: Date | undefined,
+        lastAccessTime: Date | undefined,
+        isReadable: boolean,
+        isWritable: boolean,
+        isExecutable: boolean,
+        size: number,
     ) {
+        this._creationTime = creationTime;
+        this._lastModifiedTime = lastModifiedTime;
+        this._lastAccessTime = lastAccessTime;
+        this._isReadable = isReadable;
+        this._isWritable = isWritable;
+        this._isExecutable = isExecutable;
+        this._size = size;
     }
 
     get creationTime(): Date | undefined {
@@ -167,21 +194,21 @@ export interface SourceFile extends Tree {
 
     withSourcePath(sourcePath: string): SourceFile;
 
-    get charsetName(): string | undefined;
+    get charsetName(): string | null;
 
-    withCharsetName(charset: string | undefined): SourceFile;
+    withCharsetName(charset: string | null): SourceFile;
 
     get charsetBomMarked(): boolean;
 
     withCharsetBomMarked(isCharsetBomMarked: boolean): SourceFile;
 
-    get checksum(): Checksum | undefined;
+    get checksum(): Checksum | null;
 
-    withChecksum(checksum: Checksum | undefined): SourceFile;
+    withChecksum(checksum: Checksum | null): SourceFile;
 
-    get fileAttributes(): FileAttributes | undefined;
+    get fileAttributes(): FileAttributes | null;
 
-    withFileAttributes(fileAttributes: FileAttributes | undefined): SourceFile;
+    withFileAttributes(fileAttributes: FileAttributes | null): SourceFile;
 }
 
 type CommentWrapper = (input: string) => string;

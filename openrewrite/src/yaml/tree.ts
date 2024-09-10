@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import * as extensions from "./extensions";
 import * as support from "./support_types";
 import {YamlVisitor} from "./visitor";
@@ -5,7 +7,7 @@ import {UUID, Checksum, FileAttributes, SourceFile, Tree, TreeVisitor, Markers, 
 import {Yaml, YamlKey} from "./support_types";
 
 export class Documents extends Yaml implements SourceFile {
-    public constructor(id: UUID, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | undefined, charsetName: string | undefined, charsetBomMarked: boolean, checksum: Checksum | undefined, documents: Document[]) {
+    public constructor(id: UUID, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, documents: Document[]) {
         super();
         this._id = id;
         this._markers = markers;
@@ -60,23 +62,23 @@ export class Documents extends Yaml implements SourceFile {
         return sourcePath === this._sourcePath ? this : this.clone({_sourcePath: sourcePath});
     }
 
-    _fileAttributes: FileAttributes | undefined;
+    _fileAttributes: FileAttributes | null;
 
-    public get fileAttributes(): FileAttributes | undefined {
+    public get fileAttributes(): FileAttributes | null {
         return this._fileAttributes;
     }
 
-    public withFileAttributes(fileAttributes: FileAttributes | undefined): Documents {
+    public withFileAttributes(fileAttributes: FileAttributes | null): Documents {
         return fileAttributes === this._fileAttributes ? this : this.clone({_fileAttributes: fileAttributes});
     }
 
-    _charsetName: string | undefined;
+    _charsetName: string | null;
 
-    public get charsetName(): string | undefined {
+    public get charsetName(): string | null {
         return this._charsetName;
     }
 
-    public withCharsetName(charsetName: string | undefined): Documents {
+    public withCharsetName(charsetName: string | null): Documents {
         return charsetName === this._charsetName ? this : this.clone({_charsetName: charsetName});
     }
 
@@ -90,13 +92,13 @@ export class Documents extends Yaml implements SourceFile {
         return charsetBomMarked === this._charsetBomMarked ? this : this.clone({_charsetBomMarked: charsetBomMarked});
     }
 
-    _checksum: Checksum | undefined;
+    _checksum: Checksum | null;
 
-    public get checksum(): Checksum | undefined {
+    public get checksum(): Checksum | null {
         return this._checksum;
     }
 
-    public withChecksum(checksum: Checksum | undefined): Documents {
+    public withChecksum(checksum: Checksum | null): Documents {
         return checksum === this._checksum ? this : this.clone({_checksum: checksum});
     }
 
@@ -114,7 +116,7 @@ export class Documents extends Yaml implements SourceFile {
         return PrinterFactory.current().createPrinter(cursor);
     }
 
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml {
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
         return v.visitDocuments(this, p);
     }
 
@@ -202,7 +204,7 @@ export class Document extends Yaml {
         return end === this._end ? this : this.clone({_end: end});
     }
 
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml {
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
         return v.visitDocument(this, p);
     }
 
@@ -266,7 +268,7 @@ export class DocumentEnd extends Yaml {
         return explicit === this._explicit ? this : this.clone({_explicit: explicit});
     }
 
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml {
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
         return v.visitDocumentEnd(this, p);
     }
 
@@ -276,7 +278,7 @@ export interface Block extends Yaml {
 }
 
 export class Scalar extends Yaml implements Block, YamlKey {
-    public constructor(id: UUID, prefix: string, markers: Markers, style: ScalarStyle, anchor: Anchor | undefined, value: string) {
+    public constructor(id: UUID, prefix: string, markers: Markers, style: ScalarStyle, anchor: Anchor | null, value: string) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -337,13 +339,13 @@ export class Scalar extends Yaml implements Block, YamlKey {
         return style === this._style ? this : this.clone({_style: style});
     }
 
-    _anchor: Anchor | undefined;
+    _anchor: Anchor | null;
 
-    public get anchor(): Anchor | undefined {
+    public get anchor(): Anchor | null {
         return this._anchor;
     }
 
-    public withAnchor(anchor: Anchor | undefined): Scalar {
+    public withAnchor(anchor: Anchor | null): Scalar {
         return anchor === this._anchor ? this : this.clone({_anchor: anchor});
     }
 
@@ -357,7 +359,7 @@ export class Scalar extends Yaml implements Block, YamlKey {
         return value === this._value ? this : this.clone({_value: value});
     }
 
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml {
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
         return v.visitScalar(this, p);
     }
 
@@ -373,7 +375,7 @@ enum ScalarStyle {
 }
 
 export class Mapping extends Yaml implements Block {
-    public constructor(id: UUID, markers: Markers, openingBracePrefix: string | undefined, entries: MappingEntry[], closingBracePrefix: string | undefined, anchor: Anchor | undefined) {
+    public constructor(id: UUID, markers: Markers, openingBracePrefix: string | null, entries: MappingEntry[], closingBracePrefix: string | null, anchor: Anchor | null) {
         super();
         this._id = id;
         this._markers = markers;
@@ -414,13 +416,13 @@ export class Mapping extends Yaml implements Block {
         return markers === this._markers ? this : this.clone({_markers: markers});
     }
 
-    _openingBracePrefix: string | undefined;
+    _openingBracePrefix: string | null;
 
-    public get openingBracePrefix(): string | undefined {
+    public get openingBracePrefix(): string | null {
         return this._openingBracePrefix;
     }
 
-    public withOpeningBracePrefix(openingBracePrefix: string | undefined): Mapping {
+    public withOpeningBracePrefix(openingBracePrefix: string | null): Mapping {
         return openingBracePrefix === this._openingBracePrefix ? this : this.clone({_openingBracePrefix: openingBracePrefix});
     }
 
@@ -434,27 +436,27 @@ export class Mapping extends Yaml implements Block {
         return entries === this._entries ? this : this.clone({_entries: entries});
     }
 
-    _closingBracePrefix: string | undefined;
+    _closingBracePrefix: string | null;
 
-    public get closingBracePrefix(): string | undefined {
+    public get closingBracePrefix(): string | null {
         return this._closingBracePrefix;
     }
 
-    public withClosingBracePrefix(closingBracePrefix: string | undefined): Mapping {
+    public withClosingBracePrefix(closingBracePrefix: string | null): Mapping {
         return closingBracePrefix === this._closingBracePrefix ? this : this.clone({_closingBracePrefix: closingBracePrefix});
     }
 
-    _anchor: Anchor | undefined;
+    _anchor: Anchor | null;
 
-    public get anchor(): Anchor | undefined {
+    public get anchor(): Anchor | null {
         return this._anchor;
     }
 
-    public withAnchor(anchor: Anchor | undefined): Mapping {
+    public withAnchor(anchor: Anchor | null): Mapping {
         return anchor === this._anchor ? this : this.clone({_anchor: anchor});
     }
 
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml {
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
         return v.visitMapping(this, p);
     }
 
@@ -542,14 +544,14 @@ export class MappingEntry extends Yaml {
         return value === this._value ? this : this.clone({_value: value});
     }
 
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml {
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
         return v.visitMappingEntry(this, p);
     }
 
 }
 
 export class Sequence extends Yaml implements Block {
-    public constructor(id: UUID, markers: Markers, openingBracketPrefix: string | undefined, entries: SequenceEntry[], closingBracketPrefix: string | undefined, anchor: Anchor | undefined) {
+    public constructor(id: UUID, markers: Markers, openingBracketPrefix: string | null, entries: SequenceEntry[], closingBracketPrefix: string | null, anchor: Anchor | null) {
         super();
         this._id = id;
         this._markers = markers;
@@ -590,13 +592,13 @@ export class Sequence extends Yaml implements Block {
         return markers === this._markers ? this : this.clone({_markers: markers});
     }
 
-    _openingBracketPrefix: string | undefined;
+    _openingBracketPrefix: string | null;
 
-    public get openingBracketPrefix(): string | undefined {
+    public get openingBracketPrefix(): string | null {
         return this._openingBracketPrefix;
     }
 
-    public withOpeningBracketPrefix(openingBracketPrefix: string | undefined): Sequence {
+    public withOpeningBracketPrefix(openingBracketPrefix: string | null): Sequence {
         return openingBracketPrefix === this._openingBracketPrefix ? this : this.clone({_openingBracketPrefix: openingBracketPrefix});
     }
 
@@ -610,34 +612,34 @@ export class Sequence extends Yaml implements Block {
         return entries === this._entries ? this : this.clone({_entries: entries});
     }
 
-    _closingBracketPrefix: string | undefined;
+    _closingBracketPrefix: string | null;
 
-    public get closingBracketPrefix(): string | undefined {
+    public get closingBracketPrefix(): string | null {
         return this._closingBracketPrefix;
     }
 
-    public withClosingBracketPrefix(closingBracketPrefix: string | undefined): Sequence {
+    public withClosingBracketPrefix(closingBracketPrefix: string | null): Sequence {
         return closingBracketPrefix === this._closingBracketPrefix ? this : this.clone({_closingBracketPrefix: closingBracketPrefix});
     }
 
-    _anchor: Anchor | undefined;
+    _anchor: Anchor | null;
 
-    public get anchor(): Anchor | undefined {
+    public get anchor(): Anchor | null {
         return this._anchor;
     }
 
-    public withAnchor(anchor: Anchor | undefined): Sequence {
+    public withAnchor(anchor: Anchor | null): Sequence {
         return anchor === this._anchor ? this : this.clone({_anchor: anchor});
     }
 
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml {
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
         return v.visitSequence(this, p);
     }
 
 }
 
 export class SequenceEntry extends Yaml {
-    public constructor(id: UUID, prefix: string, markers: Markers, block: Block, dash: boolean, trailingCommaPrefix: string | undefined) {
+    public constructor(id: UUID, prefix: string, markers: Markers, block: Block, dash: boolean, trailingCommaPrefix: string | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -708,17 +710,17 @@ export class SequenceEntry extends Yaml {
         return dash === this._dash ? this : this.clone({_dash: dash});
     }
 
-    _trailingCommaPrefix: string | undefined;
+    _trailingCommaPrefix: string | null;
 
-    public get trailingCommaPrefix(): string | undefined {
+    public get trailingCommaPrefix(): string | null {
         return this._trailingCommaPrefix;
     }
 
-    public withTrailingCommaPrefix(trailingCommaPrefix: string | undefined): SequenceEntry {
+    public withTrailingCommaPrefix(trailingCommaPrefix: string | null): SequenceEntry {
         return trailingCommaPrefix === this._trailingCommaPrefix ? this : this.clone({_trailingCommaPrefix: trailingCommaPrefix});
     }
 
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml {
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
         return v.visitSequenceEntry(this, p);
     }
 
@@ -782,7 +784,7 @@ export class Alias extends Yaml implements Block, YamlKey {
         return anchor === this._anchor ? this : this.clone({_anchor: anchor});
     }
 
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml {
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
         return v.visitAlias(this, p);
     }
 
@@ -858,7 +860,7 @@ export class Anchor extends Yaml {
         return key === this._key ? this : this.clone({_key: key});
     }
 
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml {
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
         return v.visitAnchor(this, p);
     }
 

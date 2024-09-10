@@ -18,7 +18,7 @@ export abstract class Yaml implements Tree {
     abstract withMarkers(markers: Markers): Tree;
 }
 
-export interface YamlKey {
+export interface YamlKey extends Tree {
     // get value(): string;
 
     withPrefix(prefix: string): YamlKey;
