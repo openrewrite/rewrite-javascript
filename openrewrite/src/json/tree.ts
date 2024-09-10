@@ -44,7 +44,7 @@ export class Array extends Json implements JsonValue {
         return markers === this._markers ? this : new Array(this._id, this._prefix, markers, this._values);
     }
 
-    _values: JsonRightPadded<JsonValue>[];
+    private readonly _values: JsonRightPadded<JsonValue>[];
 
     public get values(): JsonValue[] {
         return JsonRightPadded.getElements(this._values);
@@ -402,7 +402,7 @@ export class Member extends Json {
         return markers === this._markers ? this : new Member(this._id, this._prefix, markers, this._key, this._value);
     }
 
-    _key: JsonRightPadded<JsonKey>;
+    private readonly _key: JsonRightPadded<JsonKey>;
 
     public get key(): JsonKey {
         return this._key.element;
@@ -479,7 +479,7 @@ export class JsonObject extends Json implements JsonValue {
         return markers === this._markers ? this : new JsonObject(this._id, this._prefix, markers, this._members);
     }
 
-    _members: JsonRightPadded<Json>[];
+    private readonly _members: JsonRightPadded<Json>[];
 
     public get members(): Json[] {
         return JsonRightPadded.getElements(this._members);
