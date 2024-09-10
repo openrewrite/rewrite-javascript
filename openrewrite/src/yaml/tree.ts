@@ -1,10 +1,9 @@
 // noinspection JSUnusedGlobalSymbols
 
 import * as extensions from "./extensions";
-import * as support from "./support_types";
+import {YamlKey, Yaml} from "./support_types";
 import {YamlVisitor} from "./visitor";
 import {UUID, Checksum, FileAttributes, SourceFile, Tree, TreeVisitor, Markers, Cursor, PrintOutputCapture, PrinterFactory} from "../core";
-import {Yaml, YamlKey} from "./support_types";
 
 export class Documents extends Yaml implements SourceFile {
     public constructor(id: UUID, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, documents: Document[]) {
@@ -19,97 +18,84 @@ export class Documents extends Yaml implements SourceFile {
         this._documents = documents;
     }
 
-    private clone(update: Partial<Documents>): Documents {
-        return new Documents(
-            '_id' in update ? update._id! : this._id,
-            '_markers' in update ? update._markers! : this._markers,
-            '_sourcePath' in update ? update._sourcePath! : this._sourcePath,
-            '_fileAttributes' in update ? update._fileAttributes! : this._fileAttributes,
-            '_charsetName' in update ? update._charsetName! : this._charsetName,
-            '_charsetBomMarked' in update ? update._charsetBomMarked! : this._charsetBomMarked,
-            '_checksum' in update ? update._checksum! : this._checksum,
-            '_documents' in update ? update._documents! : this._documents,
-        );
-    }
-
-    _id: UUID;
+    private readonly _id: UUID;
 
     public get id(): UUID {
         return this._id;
     }
 
     public withId(id: UUID): Documents {
-        return id === this._id ? this : this.clone({_id: id});
+        return id === this._id ? this : new Documents(id, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._documents);
     }
 
-    _markers: Markers;
+    private readonly _markers: Markers;
 
     public get markers(): Markers {
         return this._markers;
     }
 
     public withMarkers(markers: Markers): Documents {
-        return markers === this._markers ? this : this.clone({_markers: markers});
+        return markers === this._markers ? this : new Documents(this._id, markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._documents);
     }
 
-    _sourcePath: string;
+    private readonly _sourcePath: string;
 
     public get sourcePath(): string {
         return this._sourcePath;
     }
 
     public withSourcePath(sourcePath: string): Documents {
-        return sourcePath === this._sourcePath ? this : this.clone({_sourcePath: sourcePath});
+        return sourcePath === this._sourcePath ? this : new Documents(this._id, this._markers, sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._documents);
     }
 
-    _fileAttributes: FileAttributes | null;
+    private readonly _fileAttributes: FileAttributes | null;
 
     public get fileAttributes(): FileAttributes | null {
         return this._fileAttributes;
     }
 
     public withFileAttributes(fileAttributes: FileAttributes | null): Documents {
-        return fileAttributes === this._fileAttributes ? this : this.clone({_fileAttributes: fileAttributes});
+        return fileAttributes === this._fileAttributes ? this : new Documents(this._id, this._markers, this._sourcePath, fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._documents);
     }
 
-    _charsetName: string | null;
+    private readonly _charsetName: string | null;
 
     public get charsetName(): string | null {
         return this._charsetName;
     }
 
     public withCharsetName(charsetName: string | null): Documents {
-        return charsetName === this._charsetName ? this : this.clone({_charsetName: charsetName});
+        return charsetName === this._charsetName ? this : new Documents(this._id, this._markers, this._sourcePath, this._fileAttributes, charsetName, this._charsetBomMarked, this._checksum, this._documents);
     }
 
-    _charsetBomMarked: boolean;
+    private readonly _charsetBomMarked: boolean;
 
     public get charsetBomMarked(): boolean {
         return this._charsetBomMarked;
     }
 
     public withCharsetBomMarked(charsetBomMarked: boolean): Documents {
-        return charsetBomMarked === this._charsetBomMarked ? this : this.clone({_charsetBomMarked: charsetBomMarked});
+        return charsetBomMarked === this._charsetBomMarked ? this : new Documents(this._id, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, charsetBomMarked, this._checksum, this._documents);
     }
 
-    _checksum: Checksum | null;
+    private readonly _checksum: Checksum | null;
 
     public get checksum(): Checksum | null {
         return this._checksum;
     }
 
     public withChecksum(checksum: Checksum | null): Documents {
-        return checksum === this._checksum ? this : this.clone({_checksum: checksum});
+        return checksum === this._checksum ? this : new Documents(this._id, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, checksum, this._documents);
     }
 
-    _documents: Document[];
+    private readonly _documents: Document[];
 
     public get documents(): Document[] {
         return this._documents;
     }
 
     public withDocuments(documents: Document[]): Documents {
-        return documents === this._documents ? this : this.clone({_documents: documents});
+        return documents === this._documents ? this : new Documents(this._id, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, documents);
     }
 
     public printer<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
@@ -133,75 +119,64 @@ export class Document extends Yaml {
         this._end = end;
     }
 
-    private clone(update: Partial<Document>): Document {
-        return new Document(
-            '_id' in update ? update._id! : this._id,
-            '_prefix' in update ? update._prefix! : this._prefix,
-            '_markers' in update ? update._markers! : this._markers,
-            '_explicit' in update ? update._explicit! : this._explicit,
-            '_block' in update ? update._block! : this._block,
-            '_end' in update ? update._end! : this._end,
-        );
-    }
-
-    _id: UUID;
+    private readonly _id: UUID;
 
     public get id(): UUID {
         return this._id;
     }
 
     public withId(id: UUID): Document {
-        return id === this._id ? this : this.clone({_id: id});
+        return id === this._id ? this : new Document(id, this._prefix, this._markers, this._explicit, this._block, this._end);
     }
 
-    _prefix: string;
+    private readonly _prefix: string;
 
     public get prefix(): string {
         return this._prefix;
     }
 
     public withPrefix(prefix: string): Document {
-        return prefix === this._prefix ? this : this.clone({_prefix: prefix});
+        return prefix === this._prefix ? this : new Document(this._id, prefix, this._markers, this._explicit, this._block, this._end);
     }
 
-    _markers: Markers;
+    private readonly _markers: Markers;
 
     public get markers(): Markers {
         return this._markers;
     }
 
     public withMarkers(markers: Markers): Document {
-        return markers === this._markers ? this : this.clone({_markers: markers});
+        return markers === this._markers ? this : new Document(this._id, this._prefix, markers, this._explicit, this._block, this._end);
     }
 
-    _explicit: boolean;
+    private readonly _explicit: boolean;
 
     public get explicit(): boolean {
         return this._explicit;
     }
 
     public withExplicit(explicit: boolean): Document {
-        return explicit === this._explicit ? this : this.clone({_explicit: explicit});
+        return explicit === this._explicit ? this : new Document(this._id, this._prefix, this._markers, explicit, this._block, this._end);
     }
 
-    _block: Block;
+    private readonly _block: Block;
 
     public get block(): Block {
         return this._block;
     }
 
     public withBlock(block: Block): Document {
-        return block === this._block ? this : this.clone({_block: block});
+        return block === this._block ? this : new Document(this._id, this._prefix, this._markers, this._explicit, block, this._end);
     }
 
-    _end: DocumentEnd;
+    private readonly _end: DocumentEnd;
 
     public get end(): DocumentEnd {
         return this._end;
     }
 
     public withEnd(end: DocumentEnd): Document {
-        return end === this._end ? this : this.clone({_end: end});
+        return end === this._end ? this : new Document(this._id, this._prefix, this._markers, this._explicit, this._block, end);
     }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
@@ -219,53 +194,44 @@ export class DocumentEnd extends Yaml {
         this._explicit = explicit;
     }
 
-    private clone(update: Partial<DocumentEnd>): DocumentEnd {
-        return new DocumentEnd(
-            '_id' in update ? update._id! : this._id,
-            '_prefix' in update ? update._prefix! : this._prefix,
-            '_markers' in update ? update._markers! : this._markers,
-            '_explicit' in update ? update._explicit! : this._explicit,
-        );
-    }
-
-    _id: UUID;
+    private readonly _id: UUID;
 
     public get id(): UUID {
         return this._id;
     }
 
     public withId(id: UUID): DocumentEnd {
-        return id === this._id ? this : this.clone({_id: id});
+        return id === this._id ? this : new DocumentEnd(id, this._prefix, this._markers, this._explicit);
     }
 
-    _prefix: string;
+    private readonly _prefix: string;
 
     public get prefix(): string {
         return this._prefix;
     }
 
     public withPrefix(prefix: string): DocumentEnd {
-        return prefix === this._prefix ? this : this.clone({_prefix: prefix});
+        return prefix === this._prefix ? this : new DocumentEnd(this._id, prefix, this._markers, this._explicit);
     }
 
-    _markers: Markers;
+    private readonly _markers: Markers;
 
     public get markers(): Markers {
         return this._markers;
     }
 
     public withMarkers(markers: Markers): DocumentEnd {
-        return markers === this._markers ? this : this.clone({_markers: markers});
+        return markers === this._markers ? this : new DocumentEnd(this._id, this._prefix, markers, this._explicit);
     }
 
-    _explicit: boolean;
+    private readonly _explicit: boolean;
 
     public get explicit(): boolean {
         return this._explicit;
     }
 
     public withExplicit(explicit: boolean): DocumentEnd {
-        return explicit === this._explicit ? this : this.clone({_explicit: explicit});
+        return explicit === this._explicit ? this : new DocumentEnd(this._id, this._prefix, this._markers, explicit);
     }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
@@ -288,75 +254,64 @@ export class Scalar extends Yaml implements Block, YamlKey {
         this._value = value;
     }
 
-    private clone(update: Partial<Scalar>): Scalar {
-        return new Scalar(
-            '_id' in update ? update._id! : this._id,
-            '_prefix' in update ? update._prefix! : this._prefix,
-            '_markers' in update ? update._markers! : this._markers,
-            '_style' in update ? update._style! : this._style,
-            '_anchor' in update ? update._anchor! : this._anchor,
-            '_value' in update ? update._value! : this._value,
-        );
-    }
-
-    _id: UUID;
+    private readonly _id: UUID;
 
     public get id(): UUID {
         return this._id;
     }
 
     public withId(id: UUID): Scalar {
-        return id === this._id ? this : this.clone({_id: id});
+        return id === this._id ? this : new Scalar(id, this._prefix, this._markers, this._style, this._anchor, this._value);
     }
 
-    _prefix: string;
+    private readonly _prefix: string;
 
     public get prefix(): string {
         return this._prefix;
     }
 
     public withPrefix(prefix: string): Scalar {
-        return prefix === this._prefix ? this : this.clone({_prefix: prefix});
+        return prefix === this._prefix ? this : new Scalar(this._id, prefix, this._markers, this._style, this._anchor, this._value);
     }
 
-    _markers: Markers;
+    private readonly _markers: Markers;
 
     public get markers(): Markers {
         return this._markers;
     }
 
     public withMarkers(markers: Markers): Scalar {
-        return markers === this._markers ? this : this.clone({_markers: markers});
+        return markers === this._markers ? this : new Scalar(this._id, this._prefix, markers, this._style, this._anchor, this._value);
     }
 
-    _style: ScalarStyle;
+    private readonly _style: ScalarStyle;
 
     public get style(): ScalarStyle {
         return this._style;
     }
 
     public withStyle(style: ScalarStyle): Scalar {
-        return style === this._style ? this : this.clone({_style: style});
+        return style === this._style ? this : new Scalar(this._id, this._prefix, this._markers, style, this._anchor, this._value);
     }
 
-    _anchor: Anchor | null;
+    private readonly _anchor: Anchor | null;
 
     public get anchor(): Anchor | null {
         return this._anchor;
     }
 
     public withAnchor(anchor: Anchor | null): Scalar {
-        return anchor === this._anchor ? this : this.clone({_anchor: anchor});
+        return anchor === this._anchor ? this : new Scalar(this._id, this._prefix, this._markers, this._style, anchor, this._value);
     }
 
-    _value: string;
+    private readonly _value: string;
 
     public get value(): string {
         return this._value;
     }
 
     public withValue(value: string): Scalar {
-        return value === this._value ? this : this.clone({_value: value});
+        return value === this._value ? this : new Scalar(this._id, this._prefix, this._markers, this._style, this._anchor, value);
     }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
@@ -385,75 +340,64 @@ export class Mapping extends Yaml implements Block {
         this._anchor = anchor;
     }
 
-    private clone(update: Partial<Mapping>): Mapping {
-        return new Mapping(
-            '_id' in update ? update._id! : this._id,
-            '_markers' in update ? update._markers! : this._markers,
-            '_openingBracePrefix' in update ? update._openingBracePrefix! : this._openingBracePrefix,
-            '_entries' in update ? update._entries! : this._entries,
-            '_closingBracePrefix' in update ? update._closingBracePrefix! : this._closingBracePrefix,
-            '_anchor' in update ? update._anchor! : this._anchor,
-        );
-    }
-
-    _id: UUID;
+    private readonly _id: UUID;
 
     public get id(): UUID {
         return this._id;
     }
 
     public withId(id: UUID): Mapping {
-        return id === this._id ? this : this.clone({_id: id});
+        return id === this._id ? this : new Mapping(id, this._markers, this._openingBracePrefix, this._entries, this._closingBracePrefix, this._anchor);
     }
 
-    _markers: Markers;
+    private readonly _markers: Markers;
 
     public get markers(): Markers {
         return this._markers;
     }
 
     public withMarkers(markers: Markers): Mapping {
-        return markers === this._markers ? this : this.clone({_markers: markers});
+        return markers === this._markers ? this : new Mapping(this._id, markers, this._openingBracePrefix, this._entries, this._closingBracePrefix, this._anchor);
     }
 
-    _openingBracePrefix: string | null;
+    private readonly _openingBracePrefix: string | null;
 
     public get openingBracePrefix(): string | null {
         return this._openingBracePrefix;
     }
 
     public withOpeningBracePrefix(openingBracePrefix: string | null): Mapping {
-        return openingBracePrefix === this._openingBracePrefix ? this : this.clone({_openingBracePrefix: openingBracePrefix});
+        return openingBracePrefix === this._openingBracePrefix ? this : new Mapping(this._id, this._markers, openingBracePrefix, this._entries, this._closingBracePrefix, this._anchor);
     }
 
-    _entries: MappingEntry[];
+    private readonly _entries: MappingEntry[];
 
     public get entries(): MappingEntry[] {
         return this._entries;
     }
 
     public withEntries(entries: MappingEntry[]): Mapping {
-        return entries === this._entries ? this : this.clone({_entries: entries});
+        return entries === this._entries ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, entries, this._closingBracePrefix, this._anchor);
     }
 
-    _closingBracePrefix: string | null;
+    private readonly _closingBracePrefix: string | null;
 
     public get closingBracePrefix(): string | null {
         return this._closingBracePrefix;
     }
 
     public withClosingBracePrefix(closingBracePrefix: string | null): Mapping {
-        return closingBracePrefix === this._closingBracePrefix ? this : this.clone({_closingBracePrefix: closingBracePrefix});
+        return closingBracePrefix === this._closingBracePrefix ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, this._entries, closingBracePrefix, this._anchor);
     }
 
-    _anchor: Anchor | null;
+    private readonly _anchor: Anchor | null;
 
     public get anchor(): Anchor | null {
         return this._anchor;
     }
 
     public withAnchor(anchor: Anchor | null): Mapping {
-        return anchor === this._anchor ? this : this.clone({_anchor: anchor});
+        return anchor === this._anchor ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, this._entries, this._closingBracePrefix, anchor);
     }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
@@ -473,75 +417,64 @@ export class MappingEntry extends Yaml {
         this._value = value;
     }
 
-    private clone(update: Partial<MappingEntry>): MappingEntry {
-        return new MappingEntry(
-            '_id' in update ? update._id! : this._id,
-            '_prefix' in update ? update._prefix! : this._prefix,
-            '_markers' in update ? update._markers! : this._markers,
-            '_key' in update ? update._key! : this._key,
-            '_beforeMappingValueIndicator' in update ? update._beforeMappingValueIndicator! : this._beforeMappingValueIndicator,
-            '_value' in update ? update._value! : this._value,
-        );
-    }
-
-    _id: UUID;
+    private readonly _id: UUID;
 
     public get id(): UUID {
         return this._id;
     }
 
     public withId(id: UUID): MappingEntry {
-        return id === this._id ? this : this.clone({_id: id});
+        return id === this._id ? this : new MappingEntry(id, this._prefix, this._markers, this._key, this._beforeMappingValueIndicator, this._value);
     }
 
-    _prefix: string;
+    private readonly _prefix: string;
 
     public get prefix(): string {
         return this._prefix;
     }
 
     public withPrefix(prefix: string): MappingEntry {
-        return prefix === this._prefix ? this : this.clone({_prefix: prefix});
+        return prefix === this._prefix ? this : new MappingEntry(this._id, prefix, this._markers, this._key, this._beforeMappingValueIndicator, this._value);
     }
 
-    _markers: Markers;
+    private readonly _markers: Markers;
 
     public get markers(): Markers {
         return this._markers;
     }
 
     public withMarkers(markers: Markers): MappingEntry {
-        return markers === this._markers ? this : this.clone({_markers: markers});
+        return markers === this._markers ? this : new MappingEntry(this._id, this._prefix, markers, this._key, this._beforeMappingValueIndicator, this._value);
     }
 
-    _key: YamlKey;
+    private readonly _key: YamlKey;
 
     public get key(): YamlKey {
         return this._key;
     }
 
     public withKey(key: YamlKey): MappingEntry {
-        return key === this._key ? this : this.clone({_key: key});
+        return key === this._key ? this : new MappingEntry(this._id, this._prefix, this._markers, key, this._beforeMappingValueIndicator, this._value);
     }
 
-    _beforeMappingValueIndicator: string;
+    private readonly _beforeMappingValueIndicator: string;
 
     public get beforeMappingValueIndicator(): string {
         return this._beforeMappingValueIndicator;
     }
 
     public withBeforeMappingValueIndicator(beforeMappingValueIndicator: string): MappingEntry {
-        return beforeMappingValueIndicator === this._beforeMappingValueIndicator ? this : this.clone({_beforeMappingValueIndicator: beforeMappingValueIndicator});
+        return beforeMappingValueIndicator === this._beforeMappingValueIndicator ? this : new MappingEntry(this._id, this._prefix, this._markers, this._key, beforeMappingValueIndicator, this._value);
     }
 
-    _value: Block;
+    private readonly _value: Block;
 
     public get value(): Block {
         return this._value;
     }
 
     public withValue(value: Block): MappingEntry {
-        return value === this._value ? this : this.clone({_value: value});
+        return value === this._value ? this : new MappingEntry(this._id, this._prefix, this._markers, this._key, this._beforeMappingValueIndicator, value);
     }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
@@ -561,75 +494,64 @@ export class Sequence extends Yaml implements Block {
         this._anchor = anchor;
     }
 
-    private clone(update: Partial<Sequence>): Sequence {
-        return new Sequence(
-            '_id' in update ? update._id! : this._id,
-            '_markers' in update ? update._markers! : this._markers,
-            '_openingBracketPrefix' in update ? update._openingBracketPrefix! : this._openingBracketPrefix,
-            '_entries' in update ? update._entries! : this._entries,
-            '_closingBracketPrefix' in update ? update._closingBracketPrefix! : this._closingBracketPrefix,
-            '_anchor' in update ? update._anchor! : this._anchor,
-        );
-    }
-
-    _id: UUID;
+    private readonly _id: UUID;
 
     public get id(): UUID {
         return this._id;
     }
 
     public withId(id: UUID): Sequence {
-        return id === this._id ? this : this.clone({_id: id});
+        return id === this._id ? this : new Sequence(id, this._markers, this._openingBracketPrefix, this._entries, this._closingBracketPrefix, this._anchor);
     }
 
-    _markers: Markers;
+    private readonly _markers: Markers;
 
     public get markers(): Markers {
         return this._markers;
     }
 
     public withMarkers(markers: Markers): Sequence {
-        return markers === this._markers ? this : this.clone({_markers: markers});
+        return markers === this._markers ? this : new Sequence(this._id, markers, this._openingBracketPrefix, this._entries, this._closingBracketPrefix, this._anchor);
     }
 
-    _openingBracketPrefix: string | null;
+    private readonly _openingBracketPrefix: string | null;
 
     public get openingBracketPrefix(): string | null {
         return this._openingBracketPrefix;
     }
 
     public withOpeningBracketPrefix(openingBracketPrefix: string | null): Sequence {
-        return openingBracketPrefix === this._openingBracketPrefix ? this : this.clone({_openingBracketPrefix: openingBracketPrefix});
+        return openingBracketPrefix === this._openingBracketPrefix ? this : new Sequence(this._id, this._markers, openingBracketPrefix, this._entries, this._closingBracketPrefix, this._anchor);
     }
 
-    _entries: SequenceEntry[];
+    private readonly _entries: SequenceEntry[];
 
     public get entries(): SequenceEntry[] {
         return this._entries;
     }
 
     public withEntries(entries: SequenceEntry[]): Sequence {
-        return entries === this._entries ? this : this.clone({_entries: entries});
+        return entries === this._entries ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, entries, this._closingBracketPrefix, this._anchor);
     }
 
-    _closingBracketPrefix: string | null;
+    private readonly _closingBracketPrefix: string | null;
 
     public get closingBracketPrefix(): string | null {
         return this._closingBracketPrefix;
     }
 
     public withClosingBracketPrefix(closingBracketPrefix: string | null): Sequence {
-        return closingBracketPrefix === this._closingBracketPrefix ? this : this.clone({_closingBracketPrefix: closingBracketPrefix});
+        return closingBracketPrefix === this._closingBracketPrefix ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, this._entries, closingBracketPrefix, this._anchor);
     }
 
-    _anchor: Anchor | null;
+    private readonly _anchor: Anchor | null;
 
     public get anchor(): Anchor | null {
         return this._anchor;
     }
 
     public withAnchor(anchor: Anchor | null): Sequence {
-        return anchor === this._anchor ? this : this.clone({_anchor: anchor});
+        return anchor === this._anchor ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, this._entries, this._closingBracketPrefix, anchor);
     }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
@@ -649,75 +571,64 @@ export class SequenceEntry extends Yaml {
         this._trailingCommaPrefix = trailingCommaPrefix;
     }
 
-    private clone(update: Partial<SequenceEntry>): SequenceEntry {
-        return new SequenceEntry(
-            '_id' in update ? update._id! : this._id,
-            '_prefix' in update ? update._prefix! : this._prefix,
-            '_markers' in update ? update._markers! : this._markers,
-            '_block' in update ? update._block! : this._block,
-            '_dash' in update ? update._dash! : this._dash,
-            '_trailingCommaPrefix' in update ? update._trailingCommaPrefix! : this._trailingCommaPrefix,
-        );
-    }
-
-    _id: UUID;
+    private readonly _id: UUID;
 
     public get id(): UUID {
         return this._id;
     }
 
     public withId(id: UUID): SequenceEntry {
-        return id === this._id ? this : this.clone({_id: id});
+        return id === this._id ? this : new SequenceEntry(id, this._prefix, this._markers, this._block, this._dash, this._trailingCommaPrefix);
     }
 
-    _prefix: string;
+    private readonly _prefix: string;
 
     public get prefix(): string {
         return this._prefix;
     }
 
     public withPrefix(prefix: string): SequenceEntry {
-        return prefix === this._prefix ? this : this.clone({_prefix: prefix});
+        return prefix === this._prefix ? this : new SequenceEntry(this._id, prefix, this._markers, this._block, this._dash, this._trailingCommaPrefix);
     }
 
-    _markers: Markers;
+    private readonly _markers: Markers;
 
     public get markers(): Markers {
         return this._markers;
     }
 
     public withMarkers(markers: Markers): SequenceEntry {
-        return markers === this._markers ? this : this.clone({_markers: markers});
+        return markers === this._markers ? this : new SequenceEntry(this._id, this._prefix, markers, this._block, this._dash, this._trailingCommaPrefix);
     }
 
-    _block: Block;
+    private readonly _block: Block;
 
     public get block(): Block {
         return this._block;
     }
 
     public withBlock(block: Block): SequenceEntry {
-        return block === this._block ? this : this.clone({_block: block});
+        return block === this._block ? this : new SequenceEntry(this._id, this._prefix, this._markers, block, this._dash, this._trailingCommaPrefix);
     }
 
-    _dash: boolean;
+    private readonly _dash: boolean;
 
     public get dash(): boolean {
         return this._dash;
     }
 
     public withDash(dash: boolean): SequenceEntry {
-        return dash === this._dash ? this : this.clone({_dash: dash});
+        return dash === this._dash ? this : new SequenceEntry(this._id, this._prefix, this._markers, this._block, dash, this._trailingCommaPrefix);
     }
 
-    _trailingCommaPrefix: string | null;
+    private readonly _trailingCommaPrefix: string | null;
 
     public get trailingCommaPrefix(): string | null {
         return this._trailingCommaPrefix;
     }
 
     public withTrailingCommaPrefix(trailingCommaPrefix: string | null): SequenceEntry {
-        return trailingCommaPrefix === this._trailingCommaPrefix ? this : this.clone({_trailingCommaPrefix: trailingCommaPrefix});
+        return trailingCommaPrefix === this._trailingCommaPrefix ? this : new SequenceEntry(this._id, this._prefix, this._markers, this._block, this._dash, trailingCommaPrefix);
     }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
@@ -735,53 +646,44 @@ export class Alias extends Yaml implements Block, YamlKey {
         this._anchor = anchor;
     }
 
-    private clone(update: Partial<Alias>): Alias {
-        return new Alias(
-            '_id' in update ? update._id! : this._id,
-            '_prefix' in update ? update._prefix! : this._prefix,
-            '_markers' in update ? update._markers! : this._markers,
-            '_anchor' in update ? update._anchor! : this._anchor,
-        );
-    }
-
-    _id: UUID;
+    private readonly _id: UUID;
 
     public get id(): UUID {
         return this._id;
     }
 
     public withId(id: UUID): Alias {
-        return id === this._id ? this : this.clone({_id: id});
+        return id === this._id ? this : new Alias(id, this._prefix, this._markers, this._anchor);
     }
 
-    _prefix: string;
+    private readonly _prefix: string;
 
     public get prefix(): string {
         return this._prefix;
     }
 
     public withPrefix(prefix: string): Alias {
-        return prefix === this._prefix ? this : this.clone({_prefix: prefix});
+        return prefix === this._prefix ? this : new Alias(this._id, prefix, this._markers, this._anchor);
     }
 
-    _markers: Markers;
+    private readonly _markers: Markers;
 
     public get markers(): Markers {
         return this._markers;
     }
 
     public withMarkers(markers: Markers): Alias {
-        return markers === this._markers ? this : this.clone({_markers: markers});
+        return markers === this._markers ? this : new Alias(this._id, this._prefix, markers, this._anchor);
     }
 
-    _anchor: Anchor;
+    private readonly _anchor: Anchor;
 
     public get anchor(): Anchor {
         return this._anchor;
     }
 
     public withAnchor(anchor: Anchor): Alias {
-        return anchor === this._anchor ? this : this.clone({_anchor: anchor});
+        return anchor === this._anchor ? this : new Alias(this._id, this._prefix, this._markers, anchor);
     }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
@@ -800,64 +702,54 @@ export class Anchor extends Yaml {
         this._key = key;
     }
 
-    private clone(update: Partial<Anchor>): Anchor {
-        return new Anchor(
-            '_id' in update ? update._id! : this._id,
-            '_prefix' in update ? update._prefix! : this._prefix,
-            '_postfix' in update ? update._postfix! : this._postfix,
-            '_markers' in update ? update._markers! : this._markers,
-            '_key' in update ? update._key! : this._key,
-        );
-    }
-
-    _id: UUID;
+    private readonly _id: UUID;
 
     public get id(): UUID {
         return this._id;
     }
 
     public withId(id: UUID): Anchor {
-        return id === this._id ? this : this.clone({_id: id});
+        return id === this._id ? this : new Anchor(id, this._prefix, this._postfix, this._markers, this._key);
     }
 
-    _prefix: string;
+    private readonly _prefix: string;
 
     public get prefix(): string {
         return this._prefix;
     }
 
     public withPrefix(prefix: string): Anchor {
-        return prefix === this._prefix ? this : this.clone({_prefix: prefix});
+        return prefix === this._prefix ? this : new Anchor(this._id, prefix, this._postfix, this._markers, this._key);
     }
 
-    _postfix: string;
+    private readonly _postfix: string;
 
     public get postfix(): string {
         return this._postfix;
     }
 
     public withPostfix(postfix: string): Anchor {
-        return postfix === this._postfix ? this : this.clone({_postfix: postfix});
+        return postfix === this._postfix ? this : new Anchor(this._id, this._prefix, postfix, this._markers, this._key);
     }
 
-    _markers: Markers;
+    private readonly _markers: Markers;
 
     public get markers(): Markers {
         return this._markers;
     }
 
     public withMarkers(markers: Markers): Anchor {
-        return markers === this._markers ? this : this.clone({_markers: markers});
+        return markers === this._markers ? this : new Anchor(this._id, this._prefix, this._postfix, markers, this._key);
     }
 
-    _key: string;
+    private readonly _key: string;
 
     public get key(): string {
         return this._key;
     }
 
     public withKey(key: string): Anchor {
-        return key === this._key ? this : this.clone({_key: key});
+        return key === this._key ? this : new Anchor(this._id, this._prefix, this._postfix, this._markers, key);
     }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {

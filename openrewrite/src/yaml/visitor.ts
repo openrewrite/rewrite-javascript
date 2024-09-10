@@ -1,6 +1,7 @@
 import {ListUtils, SourceFile, TreeVisitor} from "../core";
 import {Yaml} from "./support_types";
 import * as yaml from "./tree";
+
 export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
     isAcceptable(sourceFile: SourceFile, p: P): boolean {
         return sourceFile instanceof Yaml;
