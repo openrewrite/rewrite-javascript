@@ -18,10 +18,30 @@ export abstract class J implements Tree {
     abstract withMarkers(markers: Markers): Tree;
 }
 
-export interface JsonKey extends Tree {
+export interface Expression extends Tree {
 }
 
-export interface JsonValue extends Tree {
+export interface Statement extends Tree {
+}
+
+export interface Loop extends Statement {
+}
+
+export interface MethodCall extends Expression {
+}
+
+export interface NameTree extends TypedTree {
+}
+
+export interface TypeTree extends NameTree {
+}
+
+export interface JavaType {
+}
+
+export interface TypedTree extends Tree {
+    get type(): JavaType | null;
+    withType(type: JavaType | null): TypedTree;
 }
 
 export class Space {
