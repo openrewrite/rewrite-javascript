@@ -21,7 +21,7 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
         return document;
     }
 
-    public visitDocumentEnd(documentEnd: yaml.DocumentEnd, p: P): Yaml | null {
+    public visitDocumentEnd(documentEnd: yaml.Document.End, p: P): Yaml | null {
         documentEnd = documentEnd.withMarkers(this.visitMarkers(documentEnd.markers, p));
         return documentEnd;
     }
@@ -34,12 +34,12 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
 
     public visitMapping(mapping: yaml.Mapping, p: P): Yaml | null {
         mapping = mapping.withMarkers(this.visitMarkers(mapping.markers, p));
-        mapping = mapping.withEntries(ListUtils.map(mapping.entries, el => this.visit(el, p) as yaml.MappingEntry));
+        mapping = mapping.withEntries(ListUtils.map(mapping.entries, el => this.visit(el, p) as yaml.Mapping.Entry));
         mapping = mapping.withAnchor(this.visitAndCast(mapping.anchor, p));
         return mapping;
     }
 
-    public visitMappingEntry(mappingEntry: yaml.MappingEntry, p: P): Yaml | null {
+    public visitMappingEntry(mappingEntry: yaml.Mapping.Entry, p: P): Yaml | null {
         mappingEntry = mappingEntry.withMarkers(this.visitMarkers(mappingEntry.markers, p));
         mappingEntry = mappingEntry.withKey(this.visitAndCast(mappingEntry.key, p)!);
         mappingEntry = mappingEntry.withValue(this.visitAndCast(mappingEntry.value, p)!);
@@ -48,12 +48,12 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
 
     public visitSequence(sequence: yaml.Sequence, p: P): Yaml | null {
         sequence = sequence.withMarkers(this.visitMarkers(sequence.markers, p));
-        sequence = sequence.withEntries(ListUtils.map(sequence.entries, el => this.visit(el, p) as yaml.SequenceEntry));
+        sequence = sequence.withEntries(ListUtils.map(sequence.entries, el => this.visit(el, p) as yaml.Sequence.Entry));
         sequence = sequence.withAnchor(this.visitAndCast(sequence.anchor, p));
         return sequence;
     }
 
-    public visitSequenceEntry(sequenceEntry: yaml.SequenceEntry, p: P): Yaml | null {
+    public visitSequenceEntry(sequenceEntry: yaml.Sequence.Entry, p: P): Yaml | null {
         sequenceEntry = sequenceEntry.withMarkers(this.visitMarkers(sequenceEntry.markers, p));
         sequenceEntry = sequenceEntry.withBlock(this.visitAndCast(sequenceEntry.block, p)!);
         return sequenceEntry;

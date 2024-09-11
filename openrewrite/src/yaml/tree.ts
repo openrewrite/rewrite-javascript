@@ -109,7 +109,7 @@ export class Documents extends Yaml implements SourceFile {
 }
 
 export class Document extends Yaml {
-    public constructor(id: UUID, prefix: string, markers: Markers, explicit: boolean, block: Block, end: DocumentEnd) {
+    public constructor(id: UUID, prefix: string, markers: Markers, explicit: boolean, block: Block, end: Document.End) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -169,13 +169,13 @@ export class Document extends Yaml {
         return block === this._block ? this : new Document(this._id, this._prefix, this._markers, this._explicit, block, this._end);
     }
 
-    private readonly _end: DocumentEnd;
+    private readonly _end: Document.End;
 
-    public get end(): DocumentEnd {
+    public get end(): Document.End {
         return this._end;
     }
 
-    public withEnd(end: DocumentEnd): Document {
+    public withEnd(end: Document.End): Document {
         return end === this._end ? this : new Document(this._id, this._prefix, this._markers, this._explicit, this._block, end);
     }
 
@@ -185,66 +185,68 @@ export class Document extends Yaml {
 
 }
 
-export class DocumentEnd extends Yaml {
-    public constructor(id: UUID, prefix: string, markers: Markers, explicit: boolean) {
-        super();
-        this._id = id;
-        this._prefix = prefix;
-        this._markers = markers;
-        this._explicit = explicit;
+export namespace Document {
+    export class End extends Yaml {
+        public constructor(id: UUID, prefix: string, markers: Markers, explicit: boolean) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._explicit = explicit;
+        }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): Document.End {
+            return id === this._id ? this : new Document.End(id, this._prefix, this._markers, this._explicit);
+        }
+
+        private readonly _prefix: string;
+
+        public get prefix(): string {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: string): Document.End {
+            return prefix === this._prefix ? this : new Document.End(this._id, prefix, this._markers, this._explicit);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): Document.End {
+            return markers === this._markers ? this : new Document.End(this._id, this._prefix, markers, this._explicit);
+        }
+
+        private readonly _explicit: boolean;
+
+        public get explicit(): boolean {
+            return this._explicit;
+        }
+
+        public withExplicit(explicit: boolean): Document.End {
+            return explicit === this._explicit ? this : new Document.End(this._id, this._prefix, this._markers, explicit);
+        }
+
+        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+            return v.visitDocumentEnd(this, p);
+        }
+
     }
-
-    private readonly _id: UUID;
-
-    public get id(): UUID {
-        return this._id;
-    }
-
-    public withId(id: UUID): DocumentEnd {
-        return id === this._id ? this : new DocumentEnd(id, this._prefix, this._markers, this._explicit);
-    }
-
-    private readonly _prefix: string;
-
-    public get prefix(): string {
-        return this._prefix;
-    }
-
-    public withPrefix(prefix: string): DocumentEnd {
-        return prefix === this._prefix ? this : new DocumentEnd(this._id, prefix, this._markers, this._explicit);
-    }
-
-    private readonly _markers: Markers;
-
-    public get markers(): Markers {
-        return this._markers;
-    }
-
-    public withMarkers(markers: Markers): DocumentEnd {
-        return markers === this._markers ? this : new DocumentEnd(this._id, this._prefix, markers, this._explicit);
-    }
-
-    private readonly _explicit: boolean;
-
-    public get explicit(): boolean {
-        return this._explicit;
-    }
-
-    public withExplicit(explicit: boolean): DocumentEnd {
-        return explicit === this._explicit ? this : new DocumentEnd(this._id, this._prefix, this._markers, explicit);
-    }
-
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-        return v.visitDocumentEnd(this, p);
-    }
-
 }
 
 export interface Block extends Yaml {
 }
 
 export class Scalar extends Yaml implements Block, YamlKey {
-    public constructor(id: UUID, prefix: string, markers: Markers, style: ScalarStyle, anchor: Anchor | null, value: string) {
+    public constructor(id: UUID, prefix: string, markers: Markers, style: Scalar.Style, anchor: Anchor | null, value: string) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -284,13 +286,13 @@ export class Scalar extends Yaml implements Block, YamlKey {
         return markers === this._markers ? this : new Scalar(this._id, this._prefix, markers, this._style, this._anchor, this._value);
     }
 
-    private readonly _style: ScalarStyle;
+    private readonly _style: Scalar.Style;
 
-    public get style(): ScalarStyle {
+    public get style(): Scalar.Style {
         return this._style;
     }
 
-    public withStyle(style: ScalarStyle): Scalar {
+    public withStyle(style: Scalar.Style): Scalar {
         return style === this._style ? this : new Scalar(this._id, this._prefix, this._markers, style, this._anchor, this._value);
     }
 
@@ -320,17 +322,19 @@ export class Scalar extends Yaml implements Block, YamlKey {
 
 }
 
-enum ScalarStyle {
-    DOUBLE_QUOTED = 0,
-    SINGLE_QUOTED = 1,
-    LITERAL = 2,
-    FOLDED = 3,
-    PLAIN = 4,
+export namespace Scalar {
+    export enum Style {
+        DOUBLE_QUOTED = 0,
+        SINGLE_QUOTED = 1,
+        LITERAL = 2,
+        FOLDED = 3,
+        PLAIN = 4,
 
+    }
 }
 
 export class Mapping extends Yaml implements Block {
-    public constructor(id: UUID, markers: Markers, openingBracePrefix: string | null, entries: MappingEntry[], closingBracePrefix: string | null, anchor: Anchor | null) {
+    public constructor(id: UUID, markers: Markers, openingBracePrefix: string | null, entries: Mapping.Entry[], closingBracePrefix: string | null, anchor: Anchor | null) {
         super();
         this._id = id;
         this._markers = markers;
@@ -370,13 +374,13 @@ export class Mapping extends Yaml implements Block {
         return openingBracePrefix === this._openingBracePrefix ? this : new Mapping(this._id, this._markers, openingBracePrefix, this._entries, this._closingBracePrefix, this._anchor);
     }
 
-    private readonly _entries: MappingEntry[];
+    private readonly _entries: Mapping.Entry[];
 
-    public get entries(): MappingEntry[] {
+    public get entries(): Mapping.Entry[] {
         return this._entries;
     }
 
-    public withEntries(entries: MappingEntry[]): Mapping {
+    public withEntries(entries: Mapping.Entry[]): Mapping {
         return entries === this._entries ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, entries, this._closingBracePrefix, this._anchor);
     }
 
@@ -406,85 +410,87 @@ export class Mapping extends Yaml implements Block {
 
 }
 
-export class MappingEntry extends Yaml {
-    public constructor(id: UUID, prefix: string, markers: Markers, key: YamlKey, beforeMappingValueIndicator: string, value: Block) {
-        super();
-        this._id = id;
-        this._prefix = prefix;
-        this._markers = markers;
-        this._key = key;
-        this._beforeMappingValueIndicator = beforeMappingValueIndicator;
-        this._value = value;
+export namespace Mapping {
+    export class Entry extends Yaml {
+        public constructor(id: UUID, prefix: string, markers: Markers, key: YamlKey, beforeMappingValueIndicator: string, value: Block) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._key = key;
+            this._beforeMappingValueIndicator = beforeMappingValueIndicator;
+            this._value = value;
+        }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): Mapping.Entry {
+            return id === this._id ? this : new Mapping.Entry(id, this._prefix, this._markers, this._key, this._beforeMappingValueIndicator, this._value);
+        }
+
+        private readonly _prefix: string;
+
+        public get prefix(): string {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: string): Mapping.Entry {
+            return prefix === this._prefix ? this : new Mapping.Entry(this._id, prefix, this._markers, this._key, this._beforeMappingValueIndicator, this._value);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): Mapping.Entry {
+            return markers === this._markers ? this : new Mapping.Entry(this._id, this._prefix, markers, this._key, this._beforeMappingValueIndicator, this._value);
+        }
+
+        private readonly _key: YamlKey;
+
+        public get key(): YamlKey {
+            return this._key;
+        }
+
+        public withKey(key: YamlKey): Mapping.Entry {
+            return key === this._key ? this : new Mapping.Entry(this._id, this._prefix, this._markers, key, this._beforeMappingValueIndicator, this._value);
+        }
+
+        private readonly _beforeMappingValueIndicator: string;
+
+        public get beforeMappingValueIndicator(): string {
+            return this._beforeMappingValueIndicator;
+        }
+
+        public withBeforeMappingValueIndicator(beforeMappingValueIndicator: string): Mapping.Entry {
+            return beforeMappingValueIndicator === this._beforeMappingValueIndicator ? this : new Mapping.Entry(this._id, this._prefix, this._markers, this._key, beforeMappingValueIndicator, this._value);
+        }
+
+        private readonly _value: Block;
+
+        public get value(): Block {
+            return this._value;
+        }
+
+        public withValue(value: Block): Mapping.Entry {
+            return value === this._value ? this : new Mapping.Entry(this._id, this._prefix, this._markers, this._key, this._beforeMappingValueIndicator, value);
+        }
+
+        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+            return v.visitMappingEntry(this, p);
+        }
+
     }
-
-    private readonly _id: UUID;
-
-    public get id(): UUID {
-        return this._id;
-    }
-
-    public withId(id: UUID): MappingEntry {
-        return id === this._id ? this : new MappingEntry(id, this._prefix, this._markers, this._key, this._beforeMappingValueIndicator, this._value);
-    }
-
-    private readonly _prefix: string;
-
-    public get prefix(): string {
-        return this._prefix;
-    }
-
-    public withPrefix(prefix: string): MappingEntry {
-        return prefix === this._prefix ? this : new MappingEntry(this._id, prefix, this._markers, this._key, this._beforeMappingValueIndicator, this._value);
-    }
-
-    private readonly _markers: Markers;
-
-    public get markers(): Markers {
-        return this._markers;
-    }
-
-    public withMarkers(markers: Markers): MappingEntry {
-        return markers === this._markers ? this : new MappingEntry(this._id, this._prefix, markers, this._key, this._beforeMappingValueIndicator, this._value);
-    }
-
-    private readonly _key: YamlKey;
-
-    public get key(): YamlKey {
-        return this._key;
-    }
-
-    public withKey(key: YamlKey): MappingEntry {
-        return key === this._key ? this : new MappingEntry(this._id, this._prefix, this._markers, key, this._beforeMappingValueIndicator, this._value);
-    }
-
-    private readonly _beforeMappingValueIndicator: string;
-
-    public get beforeMappingValueIndicator(): string {
-        return this._beforeMappingValueIndicator;
-    }
-
-    public withBeforeMappingValueIndicator(beforeMappingValueIndicator: string): MappingEntry {
-        return beforeMappingValueIndicator === this._beforeMappingValueIndicator ? this : new MappingEntry(this._id, this._prefix, this._markers, this._key, beforeMappingValueIndicator, this._value);
-    }
-
-    private readonly _value: Block;
-
-    public get value(): Block {
-        return this._value;
-    }
-
-    public withValue(value: Block): MappingEntry {
-        return value === this._value ? this : new MappingEntry(this._id, this._prefix, this._markers, this._key, this._beforeMappingValueIndicator, value);
-    }
-
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-        return v.visitMappingEntry(this, p);
-    }
-
 }
 
 export class Sequence extends Yaml implements Block {
-    public constructor(id: UUID, markers: Markers, openingBracketPrefix: string | null, entries: SequenceEntry[], closingBracketPrefix: string | null, anchor: Anchor | null) {
+    public constructor(id: UUID, markers: Markers, openingBracketPrefix: string | null, entries: Sequence.Entry[], closingBracketPrefix: string | null, anchor: Anchor | null) {
         super();
         this._id = id;
         this._markers = markers;
@@ -524,13 +530,13 @@ export class Sequence extends Yaml implements Block {
         return openingBracketPrefix === this._openingBracketPrefix ? this : new Sequence(this._id, this._markers, openingBracketPrefix, this._entries, this._closingBracketPrefix, this._anchor);
     }
 
-    private readonly _entries: SequenceEntry[];
+    private readonly _entries: Sequence.Entry[];
 
-    public get entries(): SequenceEntry[] {
+    public get entries(): Sequence.Entry[] {
         return this._entries;
     }
 
-    public withEntries(entries: SequenceEntry[]): Sequence {
+    public withEntries(entries: Sequence.Entry[]): Sequence {
         return entries === this._entries ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, entries, this._closingBracketPrefix, this._anchor);
     }
 
@@ -560,81 +566,83 @@ export class Sequence extends Yaml implements Block {
 
 }
 
-export class SequenceEntry extends Yaml {
-    public constructor(id: UUID, prefix: string, markers: Markers, block: Block, dash: boolean, trailingCommaPrefix: string | null) {
-        super();
-        this._id = id;
-        this._prefix = prefix;
-        this._markers = markers;
-        this._block = block;
-        this._dash = dash;
-        this._trailingCommaPrefix = trailingCommaPrefix;
+export namespace Sequence {
+    export class Entry extends Yaml {
+        public constructor(id: UUID, prefix: string, markers: Markers, block: Block, dash: boolean, trailingCommaPrefix: string | null) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._block = block;
+            this._dash = dash;
+            this._trailingCommaPrefix = trailingCommaPrefix;
+        }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): Sequence.Entry {
+            return id === this._id ? this : new Sequence.Entry(id, this._prefix, this._markers, this._block, this._dash, this._trailingCommaPrefix);
+        }
+
+        private readonly _prefix: string;
+
+        public get prefix(): string {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: string): Sequence.Entry {
+            return prefix === this._prefix ? this : new Sequence.Entry(this._id, prefix, this._markers, this._block, this._dash, this._trailingCommaPrefix);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): Sequence.Entry {
+            return markers === this._markers ? this : new Sequence.Entry(this._id, this._prefix, markers, this._block, this._dash, this._trailingCommaPrefix);
+        }
+
+        private readonly _block: Block;
+
+        public get block(): Block {
+            return this._block;
+        }
+
+        public withBlock(block: Block): Sequence.Entry {
+            return block === this._block ? this : new Sequence.Entry(this._id, this._prefix, this._markers, block, this._dash, this._trailingCommaPrefix);
+        }
+
+        private readonly _dash: boolean;
+
+        public get dash(): boolean {
+            return this._dash;
+        }
+
+        public withDash(dash: boolean): Sequence.Entry {
+            return dash === this._dash ? this : new Sequence.Entry(this._id, this._prefix, this._markers, this._block, dash, this._trailingCommaPrefix);
+        }
+
+        private readonly _trailingCommaPrefix: string | null;
+
+        public get trailingCommaPrefix(): string | null {
+            return this._trailingCommaPrefix;
+        }
+
+        public withTrailingCommaPrefix(trailingCommaPrefix: string | null): Sequence.Entry {
+            return trailingCommaPrefix === this._trailingCommaPrefix ? this : new Sequence.Entry(this._id, this._prefix, this._markers, this._block, this._dash, trailingCommaPrefix);
+        }
+
+        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+            return v.visitSequenceEntry(this, p);
+        }
+
     }
-
-    private readonly _id: UUID;
-
-    public get id(): UUID {
-        return this._id;
-    }
-
-    public withId(id: UUID): SequenceEntry {
-        return id === this._id ? this : new SequenceEntry(id, this._prefix, this._markers, this._block, this._dash, this._trailingCommaPrefix);
-    }
-
-    private readonly _prefix: string;
-
-    public get prefix(): string {
-        return this._prefix;
-    }
-
-    public withPrefix(prefix: string): SequenceEntry {
-        return prefix === this._prefix ? this : new SequenceEntry(this._id, prefix, this._markers, this._block, this._dash, this._trailingCommaPrefix);
-    }
-
-    private readonly _markers: Markers;
-
-    public get markers(): Markers {
-        return this._markers;
-    }
-
-    public withMarkers(markers: Markers): SequenceEntry {
-        return markers === this._markers ? this : new SequenceEntry(this._id, this._prefix, markers, this._block, this._dash, this._trailingCommaPrefix);
-    }
-
-    private readonly _block: Block;
-
-    public get block(): Block {
-        return this._block;
-    }
-
-    public withBlock(block: Block): SequenceEntry {
-        return block === this._block ? this : new SequenceEntry(this._id, this._prefix, this._markers, block, this._dash, this._trailingCommaPrefix);
-    }
-
-    private readonly _dash: boolean;
-
-    public get dash(): boolean {
-        return this._dash;
-    }
-
-    public withDash(dash: boolean): SequenceEntry {
-        return dash === this._dash ? this : new SequenceEntry(this._id, this._prefix, this._markers, this._block, dash, this._trailingCommaPrefix);
-    }
-
-    private readonly _trailingCommaPrefix: string | null;
-
-    public get trailingCommaPrefix(): string | null {
-        return this._trailingCommaPrefix;
-    }
-
-    public withTrailingCommaPrefix(trailingCommaPrefix: string | null): SequenceEntry {
-        return trailingCommaPrefix === this._trailingCommaPrefix ? this : new SequenceEntry(this._id, this._prefix, this._markers, this._block, this._dash, trailingCommaPrefix);
-    }
-
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-        return v.visitSequenceEntry(this, p);
-    }
-
 }
 
 export class Alias extends Yaml implements Block, YamlKey {
