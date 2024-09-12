@@ -37,13 +37,17 @@ export abstract class TreeVisitor<T extends Tree, P> {
         this._cursor = cursor;
     }
 
+    defaultValue(tree: Tree | null, p: P): T | null {
+        return tree as T;
+    }
+
     visit(tree: Tree | null, p: P): T | null {
         // FIXME
         return tree as T;
     }
 
     protected visitAndCast<T extends Tree>(t: T | null, p: P): T | null {
-        return this.visit(t, p) as T | null;
+        return this.visit(t, p) as unknown as T;
     }
 
     visitMarkers(markers: Markers | undefined, p: P): Markers {
@@ -57,6 +61,16 @@ export abstract class TreeVisitor<T extends Tree, P> {
 
     visitMarker<M>(marker: M, p: P): M {
         return marker;
+    }
+
+    isAdaptableTo<V extends TreeVisitor<any, any>>(adaptTo: Function & { prototype: V}): boolean {
+        // FIXME
+        return this instanceof adaptTo;
+    }
+
+    adapt<R extends Tree, V extends TreeVisitor<R, P>>(adaptTo: Function & { prototype: V}): V {
+        // FIXME
+        return this as unknown as V;
     }
 }
 
