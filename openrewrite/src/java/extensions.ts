@@ -31,8 +31,10 @@ export function withJavaType<T>(expr: T, type: JavaType): T {
 }
 
 export function withName(method: J.MethodInvocation, name: J.Identifier): J.MethodInvocation {
-    // FIXME
-    return undefined;
+    if (method.name === name) return method;
+    // FIXME add type attribution logic
+    return new J.MethodInvocation(method.id, method.prefix, method.markers, method.padding.select,
+        method.padding.typeParameters, name, method.padding.arguments, method.methodType);
 }
 
 

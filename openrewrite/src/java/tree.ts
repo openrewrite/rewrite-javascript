@@ -471,7 +471,7 @@ export namespace J {
         }
 
         public withAssignment(assignment: Expression): Assignment {
-            return this.padding.withAssignment(JLeftPadded.withElement(this._assignment, assignment));
+            return this.padding.withAssignment(this._assignment.withElement(assignment));
         }
 
         private readonly _type: JavaType | null;
@@ -561,7 +561,7 @@ export namespace J {
         }
 
         public withOperator(operator: AssignmentOperation.Type): AssignmentOperation {
-            return this.padding.withOperator(JLeftPadded.withElement(this._operator, operator));
+            return this.padding.withOperator(this._operator.withElement(operator));
         }
 
         private readonly _assignment: Expression;
@@ -682,7 +682,7 @@ export namespace J {
         }
 
         public withOperator(operator: Binary.Type): Binary {
-            return this.padding.withOperator(JLeftPadded.withElement(this._operator, operator));
+            return this.padding.withOperator(this._operator.withElement(operator));
         }
 
         private readonly _right: Expression;
@@ -797,7 +797,7 @@ export namespace J {
         }
 
         public withStatic(_static: boolean): Block {
-            return this.padding.withStatic(JRightPadded.withElement(this._static, _static));
+            return this.padding.withStatic(this._static.withElement(_static));
         }
 
         private readonly _statements: JRightPadded<Statement>[];
@@ -1572,7 +1572,7 @@ export namespace J {
         }
 
         public withBody(body: Statement): DoWhileLoop {
-            return this.padding.withBody(JRightPadded.withElement(this._body, body));
+            return this.padding.withBody(this._body.withElement(body));
         }
 
         private readonly _whileCondition: JLeftPadded<J.ControlParentheses<Expression>>;
@@ -1582,7 +1582,7 @@ export namespace J {
         }
 
         public withWhileCondition(whileCondition: J.ControlParentheses<Expression>): DoWhileLoop {
-            return this.padding.withWhileCondition(JLeftPadded.withElement(this._whileCondition, whileCondition));
+            return this.padding.withWhileCondition(this._whileCondition.withElement(whileCondition));
         }
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
@@ -1874,7 +1874,7 @@ export namespace J {
         }
 
         public withName(name: Identifier): FieldAccess {
-            return this.padding.withName(JLeftPadded.withElement(this._name, name));
+            return this.padding.withName(this._name.withElement(name));
         }
 
         private readonly _type: JavaType | null;
@@ -1962,7 +1962,7 @@ export namespace J {
         }
 
         public withBody(body: Statement): ForEachLoop {
-            return this.padding.withBody(JRightPadded.withElement(this._body, body));
+            return this.padding.withBody(this._body.withElement(body));
         }
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
@@ -2031,7 +2031,7 @@ export namespace J {
             }
 
             public withVariable(variable: VariableDeclarations): ForEachLoop.Control {
-                return this.padding.withVariable(JRightPadded.withElement(this._variable, variable));
+                return this.padding.withVariable(this._variable.withElement(variable));
             }
 
             private readonly _iterable: JRightPadded<Expression>;
@@ -2041,7 +2041,7 @@ export namespace J {
             }
 
             public withIterable(iterable: Expression): ForEachLoop.Control {
-                return this.padding.withIterable(JRightPadded.withElement(this._iterable, iterable));
+                return this.padding.withIterable(this._iterable.withElement(iterable));
             }
 
             public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
@@ -2127,7 +2127,7 @@ export namespace J {
         }
 
         public withBody(body: Statement): ForLoop {
-            return this.padding.withBody(JRightPadded.withElement(this._body, body));
+            return this.padding.withBody(this._body.withElement(body));
         }
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
@@ -2207,7 +2207,7 @@ export namespace J {
             }
 
             public withCondition(condition: Expression): ForLoop.Control {
-                return this.padding.withCondition(JRightPadded.withElement(this._condition, condition));
+                return this.padding.withCondition(this._condition.withElement(condition));
             }
 
             private readonly _update: JRightPadded<Statement>[];
@@ -2472,7 +2472,7 @@ export namespace J {
         }
 
         public withThenPart(thenPart: Statement): If {
-            return this.padding.withThenPart(JRightPadded.withElement(this._thenPart, thenPart));
+            return this.padding.withThenPart(this._thenPart.withElement(thenPart));
         }
 
         private readonly _elsePart: If.Else | null;
@@ -2550,7 +2550,7 @@ export namespace J {
             }
 
             public withBody(body: Statement): If.Else {
-                return this.padding.withBody(JRightPadded.withElement(this._body, body));
+                return this.padding.withBody(this._body.withElement(body));
             }
 
             public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
@@ -2621,7 +2621,7 @@ export namespace J {
         }
 
         public withStatic(_static: boolean): Import {
-            return this.padding.withStatic(JLeftPadded.withElement(this._static, _static));
+            return this.padding.withStatic(this._static.withElement(_static));
         }
 
         private readonly _qualid: FieldAccess;
@@ -2717,7 +2717,7 @@ export namespace J {
         }
 
         public withExpression(expression: Expression): InstanceOf {
-            return this.padding.withExpression(JRightPadded.withElement(this._expression, expression));
+            return this.padding.withExpression(this._expression.withElement(expression));
         }
 
         private readonly _clazz: J;
@@ -2890,7 +2890,7 @@ export namespace J {
         }
 
         public withLabel(label: Identifier): Label {
-            return this.padding.withLabel(JRightPadded.withElement(this._label, label));
+            return this.padding.withLabel(this._label.withElement(label));
         }
 
         private readonly _statement: Statement;
@@ -3260,7 +3260,7 @@ export namespace J {
         }
 
         public withContaining(containing: Expression): MemberReference {
-            return this.padding.withContaining(JRightPadded.withElement(this._containing, containing));
+            return this.padding.withContaining(this._containing.withElement(containing));
         }
 
         private readonly _typeParameters: JContainer<Expression> | null;
@@ -3280,7 +3280,7 @@ export namespace J {
         }
 
         public withReference(reference: Identifier): MemberReference {
-            return this.padding.withReference(JLeftPadded.withElement(this._reference, reference));
+            return this.padding.withReference(this._reference.withElement(reference));
         }
 
         private readonly _type: JavaType | null;
@@ -4046,7 +4046,7 @@ export namespace J {
         }
 
         public withIndex(index: Expression): ArrayDimension {
-            return this.padding.withIndex(JRightPadded.withElement(this._index, index));
+            return this.padding.withIndex(this._index.withElement(index));
         }
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
@@ -4260,7 +4260,7 @@ export namespace J {
         }
 
         public withTypeTree(typeTree: TypeTree): NullableType {
-            return this.padding.withTypeTree(JRightPadded.withElement(this._typeTree, typeTree));
+            return this.padding.withTypeTree(this._typeTree.withElement(typeTree));
         }
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
@@ -4490,7 +4490,7 @@ export namespace J {
         }
 
         public withTree(tree: J2): J.Parentheses<J2> {
-            return this.padding.withTree(JRightPadded.withElement(this._tree, tree));
+            return this.padding.withTree(this._tree.withElement(tree));
         }
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
@@ -4557,7 +4557,7 @@ export namespace J {
         }
 
         public withTree(tree: J2): J.ControlParentheses<J2> {
-            return this.padding.withTree(JRightPadded.withElement(this._tree, tree));
+            return this.padding.withTree(this._tree.withElement(tree));
         }
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
@@ -4953,7 +4953,7 @@ export namespace J {
         }
 
         public withTruePart(truePart: Expression): Ternary {
-            return this.padding.withTruePart(JLeftPadded.withElement(this._truePart, truePart));
+            return this.padding.withTruePart(this._truePart.withElement(truePart));
         }
 
         private readonly _falsePart: JLeftPadded<Expression>;
@@ -4963,7 +4963,7 @@ export namespace J {
         }
 
         public withFalsePart(falsePart: Expression): Ternary {
-            return this.padding.withFalsePart(JLeftPadded.withElement(this._falsePart, falsePart));
+            return this.padding.withFalsePart(this._falsePart.withElement(falsePart));
         }
 
         private readonly _type: JavaType | null;
@@ -5596,7 +5596,7 @@ export namespace J {
         }
 
         public withOperator(operator: Unary.Type): Unary {
-            return this.padding.withOperator(JLeftPadded.withElement(this._operator, operator));
+            return this.padding.withOperator(this._operator.withElement(operator));
         }
 
         private readonly _expression: Expression;
@@ -5950,7 +5950,7 @@ export namespace J {
         }
 
         public withBody(body: Statement): WhileLoop {
-            return this.padding.withBody(JRightPadded.withElement(this._body, body));
+            return this.padding.withBody(this._body.withElement(body));
         }
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
