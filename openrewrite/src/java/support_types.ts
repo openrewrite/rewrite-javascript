@@ -36,6 +36,7 @@ export namespace JavaType {
     export class Variable implements JavaType {
     }
     export class Method implements JavaType {
+        returnType: JavaType;
     }
 }
 

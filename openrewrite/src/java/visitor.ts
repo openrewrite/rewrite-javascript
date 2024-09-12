@@ -662,7 +662,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
         return parameterizedType;
     }
 
-    public visitParentheses<J2 extends J>(parentheses: J.Parentheses<J2>, p: P): J | null {
+    public visitParentheses<J2 extends Tree>(parentheses: J.Parentheses<J2>, p: P): J | null {
         parentheses = parentheses.withPrefix(this.visitSpace(parentheses.prefix, Space.Location.PARENTHESES_PREFIX, p)!);
         let tempExpression = this.visitExpression(parentheses, p) as Expression & J;
         if (!(tempExpression instanceof J.Parentheses))
@@ -675,7 +675,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
         return parentheses;
     }
 
-    public visitControlParentheses<J2 extends J>(controlParentheses: J.ControlParentheses<J2>, p: P): J | null {
+    public visitControlParentheses<J2 extends Tree>(controlParentheses: J.ControlParentheses<J2>, p: P): J | null {
         controlParentheses = controlParentheses.withPrefix(this.visitSpace(controlParentheses.prefix, Space.Location.CONTROL_PARENTHESES_PREFIX, p)!);
         let tempExpression = this.visitExpression(controlParentheses, p) as Expression & J;
         if (!(tempExpression instanceof J.ControlParentheses))

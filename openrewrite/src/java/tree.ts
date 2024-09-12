@@ -6,7 +6,6 @@ import {JavaVisitor} from "./visitor";
 import {UUID, Checksum, FileAttributes, SourceFile, Tree, TreeVisitor, Markers, Cursor, PrintOutputCapture, PrinterFactory} from "../core";
 
 export abstract class J implements Tree {
-    prefix: Space;
 
     abstract get id(): UUID;
 
@@ -93,6 +92,14 @@ export namespace J {
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
             return v.visitAnnotatedType(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.AnnotatedType {
+            return extensions.withJavaType(this, type);
         }
 
     }
@@ -936,6 +943,10 @@ export namespace J {
 
         private readonly _type: Case.Type;
 
+        public get type(): Case.Type {
+            return this._type;
+        }
+
         public withType(_type: Case.Type): Case {
             return _type === this._type ? this : new Case(this._id, this._prefix, this._markers, _type, this._expressions, this._statements, this._body);
         }
@@ -1363,6 +1374,10 @@ export namespace J {
 
         private readonly _charsetName: string | null;
 
+        public get charsetName(): string | null {
+            return this._charsetName;
+        }
+
         public withCharsetName(charsetName: string | null): CompilationUnit {
             return charsetName === this._charsetName ? this : new CompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, charsetName, this._charsetBomMarked, this._checksum, this._packageDeclaration, this._imports, this._classes, this._eof);
         }
@@ -1634,6 +1649,14 @@ export namespace J {
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
             return v.visitEmpty(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.Empty {
+            return extensions.withJavaType(this, type);
         }
 
     }
@@ -2293,6 +2316,14 @@ export namespace J {
             return v.visitParenthesizedTypeTree(this, p);
         }
 
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.ParenthesizedTypeTree {
+            return extensions.withJavaType(this, type);
+        }
+
     }
 
     export class Identifier extends J implements TypeTree, Expression {
@@ -2788,6 +2819,14 @@ export namespace J {
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
             return v.visitIntersectionType(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.IntersectionType {
+            return extensions.withJavaType(this, type);
         }
 
         get padding() {
@@ -3440,6 +3479,14 @@ export namespace J {
             return v.visitMethodDeclaration(this, p);
         }
 
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.MethodDeclaration {
+            return extensions.withJavaType(this, type);
+        }
+
         get padding() {
             const t = this;
             return new class {
@@ -3642,6 +3689,14 @@ export namespace J {
             return v.visitMethodInvocation(this, p);
         }
 
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.MethodInvocation {
+            return extensions.withJavaType(this, type);
+        }
+
         get padding() {
             const t = this;
             return new class {
@@ -3821,6 +3876,14 @@ export namespace J {
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
             return v.visitMultiCatch(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.MultiCatch {
+            return extensions.withJavaType(this, type);
         }
 
         get padding() {
@@ -4112,6 +4175,14 @@ export namespace J {
             return v.visitNewClass(this, p);
         }
 
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.NewClass {
+            return extensions.withJavaType(this, type);
+        }
+
         get padding() {
             const t = this;
             return new class {
@@ -4194,6 +4265,14 @@ export namespace J {
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
             return v.visitNullableType(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.NullableType {
+            return extensions.withJavaType(this, type);
         }
 
         get padding() {
@@ -4365,7 +4444,7 @@ export namespace J {
 
     }
 
-    export class Parentheses<J2> extends J implements Expression {
+    export class Parentheses<J2 extends Tree> extends J implements Expression {
         public constructor(id: UUID, prefix: Space, markers: Markers, tree: JRightPadded<J2>) {
             super();
             this._id = id;
@@ -4432,7 +4511,7 @@ export namespace J {
 
     }
 
-    export class ControlParentheses<J2> extends J implements Expression {
+    export class ControlParentheses<J2 extends Tree> extends J implements Expression {
         public constructor(id: UUID, prefix: Space, markers: Markers, tree: JRightPadded<J2>) {
             super();
             this._id = id;
@@ -4539,6 +4618,10 @@ export namespace J {
         }
 
         private readonly _type: JavaType.Primitive;
+
+        public get type(): JavaType.Primitive {
+            return this._type;
+        }
 
         public withType(_type: JavaType.Primitive): Primitive {
             return _type === this._type ? this : new Primitive(this._id, this._prefix, this._markers, _type);
@@ -4733,6 +4816,14 @@ export namespace J {
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
             return v.visitSwitchExpression(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.SwitchExpression {
+            return extensions.withJavaType(this, type);
         }
 
     }
@@ -5269,6 +5360,14 @@ export namespace J {
             return v.visitTypeCast(this, p);
         }
 
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.TypeCast {
+            return extensions.withJavaType(this, type);
+        }
+
     }
 
     export class TypeParameter extends J {
@@ -5661,6 +5760,14 @@ export namespace J {
             return v.visitVariableDeclarations(this, p);
         }
 
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.VariableDeclarations {
+            return extensions.withJavaType(this, type);
+        }
+
         get padding() {
             const t = this;
             return new class {
@@ -5760,6 +5867,14 @@ export namespace J {
 
             public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
                 return v.visitVariable(this, p);
+            }
+
+            public get type(): JavaType | null {
+                return extensions.getJavaType(this);
+            }
+
+            public withType(type: JavaType): J.VariableDeclarations.NamedVariable {
+                return extensions.withJavaType(this, type);
             }
 
             get padding() {
@@ -5920,6 +6035,14 @@ export namespace J {
             return v.visitWildcard(this, p);
         }
 
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.Wildcard {
+            return extensions.withJavaType(this, type);
+        }
+
         get padding() {
             const t = this;
             return new class {
@@ -6060,6 +6183,14 @@ export namespace J {
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
             return v.visitUnknown(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.Unknown {
+            return extensions.withJavaType(this, type);
         }
 
     }
