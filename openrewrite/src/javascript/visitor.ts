@@ -286,17 +286,17 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
     public visitJsUnary(unary: JS.JsUnary, p: P): J | null {
         unary = unary.withPrefix(this.visitSpace(unary.prefix, JsSpace.Location.UNARY_PREFIX, p)!);
         let tempStatement = this.visitStatement(unary, p) as Statement & J;
-        if (!(tempStatement instanceof JS.Unary))
+        if (!(tempStatement instanceof JS.JsUnary))
         {
             return tempStatement;
         }
-        unary = tempStatement as unknown as JS.JsUnary;
+        unary = tempStatement as JS.JsUnary;
         let tempExpression = this.visitExpression(unary, p) as Expression & J;
-        if (!(tempExpression instanceof JS.Unary))
+        if (!(tempExpression instanceof JS.JsUnary))
         {
             return tempExpression;
         }
-        unary = tempExpression as unknown as JS.JsUnary;
+        unary = tempExpression as JS.JsUnary;
         unary = unary.withMarkers(this.visitMarkers(unary.markers, p));
         unary = unary.padding.withOperator(this.visitLeftPadded(unary.padding.operator, JsLeftPadded.Location.UNARY_OPERATOR, p)!);
         unary = unary.withExpression(this.visitAndCast(unary.expression, p)!);
