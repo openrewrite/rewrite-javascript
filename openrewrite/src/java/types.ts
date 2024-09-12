@@ -15,6 +15,11 @@ export namespace JavaType {
     }
 
     export class Variable implements JavaType {
+        type: JavaType = null!;
+
+        withType(type: JavaType): Variable {
+            return null!;
+        }
     }
 
     export class Method implements JavaType {

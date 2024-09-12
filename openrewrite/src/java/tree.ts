@@ -168,6 +168,14 @@ export namespace J {
             return v.visitAnnotation(this, p);
         }
 
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.Annotation {
+            return extensions.withJavaType(this, type);
+        }
+
         get padding() {
             const t = this;
             return new class {
@@ -4497,6 +4505,14 @@ export namespace J {
             return v.visitParentheses(this, p);
         }
 
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.Parentheses<J2> {
+            return extensions.withJavaType(this, type);
+        }
+
         get padding() {
             const t = this;
             return new class {
@@ -4562,6 +4578,14 @@ export namespace J {
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
             return v.visitControlParentheses(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): J.ControlParentheses<J2> {
+            return extensions.withJavaType(this, type);
         }
 
         get padding() {

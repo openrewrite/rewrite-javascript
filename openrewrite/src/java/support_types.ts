@@ -8,6 +8,9 @@ export interface JavaSourceFile extends SourceFile {
 }
 
 export interface Expression extends Tree {
+    get type(): JavaType | null;
+
+    withType(type: JavaType | null): TypedTree;
 }
 
 export interface Statement extends Tree {
@@ -193,7 +196,7 @@ export class JContainer<T> {
         this._markers = markers;
     }
 
-    static build<J2 extends J>(before: Space, elements: JRightPadded<J2>[], markers: Markers): JContainer<J2> {
+    static build<J2>(before: Space, elements: JRightPadded<J2>[], markers: Markers): JContainer<J2> {
         return new JContainer(before, elements, markers);
     }
 
@@ -455,6 +458,13 @@ export namespace JRightPadded {
         TYPE_PARAMETER,
         WHILE_BODY,
     }
+
+    export namespace Location {
+        export function afterLocation(location: Location): Space.Location {
+            // FIXME
+            return null!;
+        }
+    }
 }
 
 export namespace JLeftPadded {
@@ -479,6 +489,13 @@ export namespace JLeftPadded {
         WHILE_CONDITION,
         WILDCARD_BOUND,
     }
+
+    export namespace Location {
+        export function beforeLocation(location: Location): Space.Location {
+            // FIXME
+            return null!;
+        }
+    }
 }
 
 export namespace JContainer {
@@ -498,5 +515,15 @@ export namespace JContainer {
         TRY_RESOURCES,
         TYPE_BOUNDS,
         TYPE_PARAMETERS,
+}
+    export namespace Location {
+        export function beforeLocation(location: Location): Space.Location {
+            // FIXME
+            return null!;
+        }
+        export function elementLocation(location: Location): JRightPadded.Location {
+            // FIXME
+            return null!;
+        }
     }
 }

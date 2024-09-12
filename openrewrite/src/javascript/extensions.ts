@@ -2,14 +2,44 @@ import {J, JavaType, JavaVisitor, JContainer, JLeftPadded, JRightPadded, Space} 
 import * as java_extensions from "../java/extensions";
 import {JavaScriptVisitor} from "./visitor";
 import {JsContainer, JsLeftPadded, JsRightPadded, JsSpace} from "./support_types";
+import {JS} from "./tree";
 
 export function getJavaType<T extends J>(expr: T): JavaType | null {
-    // FIXME implement for JS types
+    if (expr instanceof JS.Alias) {
+        return expr.propertyName.type;
+    } else if (expr instanceof JS.ExpressionStatement) {
+        return expr.expression.type;
+    } else if (expr instanceof JS.ObjectBindingDeclarations) {
+        return expr.typeExpression != null ? expr.typeExpression.type : null;
+    } else if (expr instanceof JS.ObjectBindingDeclarations.Binding) {
+        return expr.variableType != null ? expr.variableType.type : null;
+    } else if (expr instanceof JS.StatementExpression) {
+        return null;
+    } else if (expr instanceof JS.TypeDeclaration) {
+        return expr.javaType;
+    } else if (expr instanceof JS.TypeOperator) {
+        return expr.expression.type;
+    }
     return java_extensions.getJavaType(expr);
 }
 
 export function withJavaType<T>(expr: T, type: JavaType): T {
-    // FIXME implement for JS types
+    if (expr instanceof JS.Alias) {
+        return expr.withPropertyName(expr.propertyName.withType(type)) as T;
+    } else if (expr instanceof JS.ExpressionStatement) {
+        return expr.withExpression(expr.expression.withType(type)) as T;
+    } else if (expr instanceof JS.ObjectBindingDeclarations) {
+        return (expr.typeExpression != null ? expr.withTypeExpression(expr.typeExpression.withType(type)) : null) as T;
+    } else if (expr instanceof JS.ObjectBindingDeclarations.Binding) {
+        return (expr.variableType != null ? expr.withVariableType(expr.variableType.withType(type)) : null) as T;
+    } else if (expr instanceof JS.StatementExpression) {
+        return expr as T;
+    } else if (expr instanceof JS.TypeDeclaration) {
+        // FIXME we should rename the `javaType` field to `type`
+        throw new Error("Cannot set `javaType` field");
+    } else if (expr instanceof JS.TypeOperator) {
+        return expr.withExpression(expr.expression.withType(type)) as T;
+    }
     return java_extensions.withJavaType(expr, type);
 }
 

@@ -1,7 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import * as extensions from "./extensions";
-import {} from "./support_types";
+import {JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./support_types";
 import {JavaScriptVisitor} from "./visitor";
 import {UUID, Checksum, FileAttributes, SourceFile, Tree, TreeVisitor, Markers, Cursor, PrintOutputCapture, PrinterFactory} from "../core";
 import {Expression, J, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypedTree, TypeTree} from "../java";
@@ -246,6 +246,14 @@ export namespace JS {
 
         public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
             return v.visitAlias(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): JS.Alias {
+            return extensions.withJavaType(this, type);
         }
 
         get padding() {
@@ -665,7 +673,7 @@ export namespace JS {
         }
 
         public withMarkers(markers: Markers): ExpressionStatement {
-            return this.withExpression(this._expression.withMarkers(markers));
+            return this.withExpression(this._expression.withMarkers(markers) as Expression);
         }
 
         private readonly _expression: Expression;
@@ -680,6 +688,14 @@ export namespace JS {
 
         public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
             return v.visitExpressionStatement(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): JS.ExpressionStatement {
+            return extensions.withJavaType(this, type);
         }
 
     }
@@ -1435,6 +1451,14 @@ export namespace JS {
 
         public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
             return v.visitStatementExpression(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): JS.StatementExpression {
+            return extensions.withJavaType(this, type);
         }
 
     }
