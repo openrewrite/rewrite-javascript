@@ -6,21 +6,26 @@ import {YamlVisitor} from "./visitor";
 import {UUID, Checksum, FileAttributes, SourceFile, Tree, TreeVisitor, Markers, Cursor, PrintOutputCapture, PrinterFactory} from "../core";
 
 export abstract class Yaml implements Tree {
-    accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
-        return null;
-    }
-
-    isAcceptable<P>(v: TreeVisitor<Tree, P>, p: P): boolean {
-        return false;
-    }
-
     abstract get id(): UUID;
-
-    abstract get markers(): Markers;
 
     abstract withId(id: UUID): Tree;
 
+    abstract get markers(): Markers;
+
     abstract withMarkers(markers: Markers): Tree;
+
+    public isAcceptable<P>(v: TreeVisitor<Tree, P>, p: P): boolean {
+        return v.isAdaptableTo(YamlVisitor);
+    }
+
+    public accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
+        return this.acceptYaml(v.adapt(YamlVisitor), p) as R | null;
+    }
+
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+        return v.defaultValue(this, p) as Yaml | null;
+    }
+
 }
 
 export namespace Yaml {
@@ -259,6 +264,7 @@ export namespace Yaml {
             }
 
         }
+
     }
 
     export interface Block extends Yaml {
@@ -350,6 +356,7 @@ export namespace Yaml {
             PLAIN = 4,
 
         }
+
     }
 
     export class Mapping extends Yaml implements Block {
@@ -431,7 +438,7 @@ export namespace Yaml {
 
     export namespace Mapping {
         export class Entry extends Yaml {
-            public constructor(id: UUID, prefix: string, markers: Markers, key: YamlKey, beforeMappingValueIndicator: string, value: Block) {
+            public constructor(id: UUID, prefix: string, markers: Markers, key: YamlKey, beforeMappingValueIndicator: string, value: Yaml.Block) {
                 super();
                 this._id = id;
                 this._prefix = prefix;
@@ -506,6 +513,7 @@ export namespace Yaml {
             }
 
         }
+
     }
 
     export class Sequence extends Yaml implements Block {
@@ -587,7 +595,7 @@ export namespace Yaml {
 
     export namespace Sequence {
         export class Entry extends Yaml {
-            public constructor(id: UUID, prefix: string, markers: Markers, block: Block, dash: boolean, trailingCommaPrefix: string | null) {
+            public constructor(id: UUID, prefix: string, markers: Markers, block: Yaml.Block, dash: boolean, trailingCommaPrefix: string | null) {
                 super();
                 this._id = id;
                 this._prefix = prefix;
@@ -662,6 +670,7 @@ export namespace Yaml {
             }
 
         }
+
     }
 
     export class Alias extends Yaml implements Block, YamlKey {
@@ -784,4 +793,5 @@ export namespace Yaml {
         }
 
     }
+
 }

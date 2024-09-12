@@ -8,6 +8,10 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
         return sourceFile instanceof Yaml;
     }
 
+    public visitYaml(yaml: Yaml, p: P): Yaml | null {
+        return yaml;
+    }
+
     public visitDocuments(documents: Yaml.Documents, p: P): Yaml | null {
         documents = documents.withMarkers(this.visitMarkers(documents.markers, p));
         documents = documents.withDocuments(ListUtils.map(documents.documents, el => this.visit(el, p) as Yaml.Document));
@@ -21,9 +25,9 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
         return document;
     }
 
-    public visitDocumentEnd(documentEnd: Yaml.Document.End, p: P): Yaml | null {
-        documentEnd = documentEnd.withMarkers(this.visitMarkers(documentEnd.markers, p));
-        return documentEnd;
+    public visitDocumentEnd(end: Yaml.Document.End, p: P): Yaml | null {
+        end = end.withMarkers(this.visitMarkers(end.markers, p));
+        return end;
     }
 
     public visitScalar(scalar: Yaml.Scalar, p: P): Yaml | null {
@@ -39,11 +43,11 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
         return mapping;
     }
 
-    public visitMappingEntry(mappingEntry: Yaml.Mapping.Entry, p: P): Yaml | null {
-        mappingEntry = mappingEntry.withMarkers(this.visitMarkers(mappingEntry.markers, p));
-        mappingEntry = mappingEntry.withKey(this.visitAndCast(mappingEntry.key, p)!);
-        mappingEntry = mappingEntry.withValue(this.visitAndCast(mappingEntry.value, p)!);
-        return mappingEntry;
+    public visitMappingEntry(entry: Yaml.Mapping.Entry, p: P): Yaml | null {
+        entry = entry.withMarkers(this.visitMarkers(entry.markers, p));
+        entry = entry.withKey(this.visitAndCast(entry.key, p)!);
+        entry = entry.withValue(this.visitAndCast(entry.value, p)!);
+        return entry;
     }
 
     public visitSequence(sequence: Yaml.Sequence, p: P): Yaml | null {
@@ -53,10 +57,10 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
         return sequence;
     }
 
-    public visitSequenceEntry(sequenceEntry: Yaml.Sequence.Entry, p: P): Yaml | null {
-        sequenceEntry = sequenceEntry.withMarkers(this.visitMarkers(sequenceEntry.markers, p));
-        sequenceEntry = sequenceEntry.withBlock(this.visitAndCast(sequenceEntry.block, p)!);
-        return sequenceEntry;
+    public visitSequenceEntry(entry: Yaml.Sequence.Entry, p: P): Yaml | null {
+        entry = entry.withMarkers(this.visitMarkers(entry.markers, p));
+        entry = entry.withBlock(this.visitAndCast(entry.block, p)!);
+        return entry;
     }
 
     public visitAlias(alias: Yaml.Alias, p: P): Yaml | null {
