@@ -8,10 +8,6 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
         return sourceFile instanceof Yaml;
     }
 
-    public visitYaml(yaml: Yaml, p: P): Yaml | null {
-        return yaml;
-    }
-
     public visitDocuments(documents: Yaml.Documents, p: P): Yaml | null {
         documents = documents.withMarkers(this.visitMarkers(documents.markers, p));
         documents = documents.withDocuments(ListUtils.map(documents.documents, el => this.visit(el, p) as Yaml.Document));
