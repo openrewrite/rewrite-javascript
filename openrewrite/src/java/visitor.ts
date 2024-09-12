@@ -16,10 +16,6 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
         return statement;
     }
 
-    public visitJ(j: J, p: P): J | null {
-        return j;
-    }
-
     public visitAnnotatedType(annotatedType: J.AnnotatedType, p: P): J | null {
         annotatedType = annotatedType.withPrefix(this.visitSpace(annotatedType.prefix, Space.Location.ANNOTATED_TYPE_PREFIX, p)!);
         let tempExpression = this.visitExpression(annotatedType, p) as Expression & J;
