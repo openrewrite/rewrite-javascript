@@ -1,21 +1,6 @@
-import {Markers, Tree, TreeVisitor, UUID} from "../core";
+import {SourceFile, Tree} from "../core";
 
-export abstract class J implements Tree {
-    accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
-        return null;
-    }
-
-    isAcceptable<P>(v: TreeVisitor<Tree, P>, p: P): boolean {
-        return false;
-    }
-
-    abstract get id(): UUID;
-
-    abstract get markers(): Markers;
-
-    abstract withId(id: UUID): Tree;
-
-    abstract withMarkers(markers: Markers): Tree;
+export interface JavaSourceFile extends SourceFile {
 }
 
 export interface Expression extends Tree {
@@ -60,6 +45,9 @@ export interface TypedTree extends Tree {
 }
 
 export class Space {
+}
+
+export class TextComment {
 }
 
 export namespace Space {
@@ -294,6 +282,25 @@ export namespace JRightPadded {
 }
 
 export class JLeftPadded<T> {
+    private _before: Space;
+    element: T;
+
+    withElement<T>(element: T | null): JLeftPadded<T> {
+        return null;
+    }
+
+    static withElement<T>(left: JLeftPadded<T> | null, element: T | null): JLeftPadded<T> {
+        return null;
+    }
+
+    get before(): Space {
+        return this._before;
+    }
+
+    withBefore(before: Space): JLeftPadded<T> {
+        // FIXME
+        return this;
+    }
 }
 
 export namespace JLeftPadded {
@@ -321,6 +328,17 @@ export namespace JLeftPadded {
 }
 
 export class JContainer<T> {
+    private _elements: JRightPadded<T>[];
+    get elements(): T[] {
+        return [];
+    }
+    static withElementsNullable<T>(__arguments: JContainer<T> | null, _arguments: T[] | null): JContainer<T> {
+        return undefined;
+    }
+
+    static withElements<T>(container: JContainer<Expression> | null, elements: T[]): JContainer<T> {
+        return undefined;
+    }
 }
 
 export namespace JContainer {
