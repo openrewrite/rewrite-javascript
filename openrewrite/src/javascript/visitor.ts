@@ -9,12 +9,12 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return sourceFile instanceof JS;
     }
 
-    public visitCompilationUnit(compilationUnit: JS.CompilationUnit, p: P): J | null {
+    public visitJsCompilationUnit(compilationUnit: JS.JsCompilationUnit, p: P): J | null {
         compilationUnit = compilationUnit.withPrefix(this.visitSpace(compilationUnit.prefix, Space.Location.COMPILATION_UNIT_PREFIX, p)!);
         compilationUnit = compilationUnit.withMarkers(this.visitMarkers(compilationUnit.markers, p));
-        compilationUnit = compilationUnit.padding.withImports(ListUtils.map(compilationUnit.padding.imports, el => this.visitRightPadded(el, JsRightPadded.Location.COMPILATION_UNIT_IMPORTS, p)));
+        compilationUnit = compilationUnit.padding.withImports(ListUtils.map(compilationUnit.padding.imports, el => this.visitRightPadded(el, JRightPadded.Location.IMPORT, p)));
         compilationUnit = compilationUnit.padding.withStatements(ListUtils.map(compilationUnit.padding.statements, el => this.visitRightPadded(el, JsRightPadded.Location.COMPILATION_UNIT_STATEMENTS, p)));
-        compilationUnit = compilationUnit.withEof(this.visitSpace(compilationUnit.eof, JsSpace.Location.COMPILATION_UNIT_EOF, p)!);
+        compilationUnit = compilationUnit.withEof(this.visitSpace(compilationUnit.eof, Space.Location.COMPILATION_UNIT_EOF, p)!);
         return compilationUnit;
     }
 
@@ -283,20 +283,20 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return typeOperator;
     }
 
-    public visitUnary(unary: JS.Unary, p: P): J | null {
+    public visitJsUnary(unary: JS.JsUnary, p: P): J | null {
         unary = unary.withPrefix(this.visitSpace(unary.prefix, JsSpace.Location.UNARY_PREFIX, p)!);
         let tempStatement = this.visitStatement(unary, p) as Statement & J;
         if (!(tempStatement instanceof JS.Unary))
         {
             return tempStatement;
         }
-        unary = tempStatement as JS.Unary;
+        unary = tempStatement as unknown as JS.JsUnary;
         let tempExpression = this.visitExpression(unary, p) as Expression & J;
         if (!(tempExpression instanceof JS.Unary))
         {
             return tempExpression;
         }
-        unary = tempExpression as JS.Unary;
+        unary = tempExpression as unknown as JS.JsUnary;
         unary = unary.withMarkers(this.visitMarkers(unary.markers, p));
         unary = unary.padding.withOperator(this.visitLeftPadded(unary.padding.operator, JsLeftPadded.Location.UNARY_OPERATOR, p)!);
         unary = unary.withExpression(this.visitAndCast(unary.expression, p)!);
@@ -316,16 +316,20 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return union;
     }
 
-    public visitJsLeftPadded(jsLeftPadded: JsLeftPadded, p: P): JsLeftPadded | null {
-        return jsLeftPadded;
+    public visitContainer<T>(container: JContainer<T> | null, loc: JContainer.Location | JsContainer.Location, p: P) {
+        return extensions.visitContainer(this, container, loc, p);
     }
 
-    public visitJsRightPadded(jsRightPadded: JsRightPadded, p: P): JsRightPadded | null {
-        return jsRightPadded;
+    public visitLeftPadded<T>(left: JLeftPadded<T> | null, loc: JLeftPadded.Location | JsLeftPadded.Location, p: P) {
+        return extensions.visitLeftPadded(this, left, loc, p);
     }
 
-    public visitJsContainer(jsContainer: JsContainer, p: P): JsContainer | null {
-        return jsContainer;
+    public visitRightPadded<T>(right: JRightPadded<T> | null, loc: JRightPadded.Location | JsRightPadded.Location, p: P) {
+        return extensions.visitRightPadded(this, right, loc, p);
+    }
+
+    public visitSpace(space: Space | null, loc: Space.Location | JsSpace.Location, p: P): Space {
+        return extensions.visitSpace(this, space, loc, p);
     }
 
 }
