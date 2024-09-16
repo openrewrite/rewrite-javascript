@@ -2,10 +2,28 @@ import {v4 as uuidv4} from 'uuid';
 import {Marker, Markers} from "./markers";
 import {ListUtils} from "./utils";
 
-export type UUID = string;
+export type UUID = string & { readonly __brand: unique symbol };
 
-export const random_id = (): UUID => {
-    return uuidv4();
+interface UUIDConstructor {
+    new (value?: any): UUID;
+    <T>(value?: T): UUID;
+    readonly prototype: UUID;
+}
+
+export declare var UUID: UUIDConstructor;
+
+export type Enum = { readonly __brand: unique symbol };
+
+interface EnumConstructor {
+    new (value?: any): Enum;
+    <T>(value?: T): Enum;
+    readonly prototype: Enum;
+}
+
+export declare var Enum: EnumConstructor;
+
+export const randomId = (): UUID => {
+    return uuidv4() as UUID;
 }
 
 export interface Tree {
@@ -41,7 +59,9 @@ export abstract class TreeVisitor<T extends Tree, P> {
         return tree as T;
     }
 
-    visit(tree: Tree | null, p: P): T | null {
+    visit(tree: Tree | null, p: P, parent?: Cursor): T | null {
+        if (parent)
+            this._cursor = parent;
         // FIXME
         return tree as T;
     }
