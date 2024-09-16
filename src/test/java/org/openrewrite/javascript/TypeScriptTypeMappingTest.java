@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.*;
+import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.COVARIANT;
+import static org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.INVARIANT;
 
 @SuppressWarnings({"DataFlowIssue", "SimplifyStreamApiCallChains", "SameParameterValue"})
 class TypeScriptTypeMappingTest {
