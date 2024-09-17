@@ -1,4 +1,5 @@
 import {randomId, UUID} from "./tree";
+import {Parser} from "./parser";
 
 export interface Marker {
     get id(): UUID;
@@ -48,7 +49,7 @@ export class Markers {
     }
 }
 
-export class ParseExceptionResult extends Marker {
+export class ParseExceptionResult implements Marker {
     private readonly _id: UUID;
     private readonly _parserType: string;
     private readonly _exceptionType: string;
@@ -62,7 +63,6 @@ export class ParseExceptionResult extends Marker {
         exceptionMessage: string,
         message: string | null
     ) {
-        super();
         this._id = id;
         this._parserType = parserType;
         this._exceptionType = exceptionType;
@@ -137,7 +137,7 @@ export class ParseExceptionResult extends Marker {
     }
 
     get message(): string {
-        return this._message;
+        return this._message!;
     }
 
     withMessage(message: string): ParseExceptionResult {

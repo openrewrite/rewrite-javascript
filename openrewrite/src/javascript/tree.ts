@@ -3,7 +3,19 @@
 import * as extensions from "./extensions";
 import {JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./support_types";
 import {JavaScriptVisitor} from "./visitor";
-import {UUID, Checksum, FileAttributes, SourceFile, Tree, TreeVisitor, Markers, Cursor, PrintOutputCapture, PrinterFactory} from "../core";
+import {
+    UUID,
+    Checksum,
+    FileAttributes,
+    SourceFile,
+    Tree,
+    TreeVisitor,
+    Markers,
+    Cursor,
+    PrintOutputCapture,
+    PrinterFactory,
+    SourceFileMixin
+} from "../core";
 import {Expression, J, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypedTree, TypeTree} from "../java";
 
 export abstract class JS extends J {
@@ -30,7 +42,7 @@ export abstract class JS extends J {
 }
 
 export namespace JS {
-    export class JsCompilationUnit extends JS implements JavaSourceFile, SourceFile {
+    export class JsCompilationUnit extends SourceFileMixin(JS) implements JavaSourceFile {
         public constructor(id: UUID, prefix: Space, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, imports: JRightPadded<J.Import>[], statements: JRightPadded<Statement>[], eof: Space) {
             super();
             this._id = id;

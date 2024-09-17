@@ -3,7 +3,7 @@
 import * as extensions from "./extensions";
 import {YamlKey} from "./support_types";
 import {YamlVisitor} from "./visitor";
-import {UUID, Checksum, FileAttributes, SourceFile, Tree, TreeVisitor, Markers, Cursor, PrintOutputCapture, PrinterFactory} from "../core";
+import {UUID, Checksum, Cursor, FileAttributes, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor} from "../core";
 
 export abstract class Yaml implements Tree {
     abstract get id(): UUID;
@@ -29,7 +29,7 @@ export abstract class Yaml implements Tree {
 }
 
 export namespace Yaml {
-    export class Documents extends Yaml implements SourceFile {
+    export class Documents extends SourceFileMixin(Yaml) {
         public constructor(id: UUID, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, documents: Document[]) {
             super();
             this._id = id;

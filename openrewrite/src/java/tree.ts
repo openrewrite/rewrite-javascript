@@ -3,7 +3,19 @@
 import * as extensions from "./extensions";
 import {Comment, Expression, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, Loop, MethodCall, NameTree, Space, Statement, TextComment, TypedTree, TypeTree} from "./support_types";
 import {JavaVisitor} from "./visitor";
-import {UUID, Checksum, FileAttributes, SourceFile, Tree, TreeVisitor, Markers, Cursor, PrintOutputCapture, PrinterFactory} from "../core";
+import {
+    UUID,
+    Checksum,
+    FileAttributes,
+    SourceFile,
+    Tree,
+    TreeVisitor,
+    Markers,
+    Cursor,
+    PrintOutputCapture,
+    PrinterFactory,
+    SourceFileMixin
+} from "../core";
 
 export abstract class J implements Tree {
 
@@ -1313,7 +1325,7 @@ export namespace J {
 
     }
 
-    export class CompilationUnit extends J implements JavaSourceFile, SourceFile {
+    export class CompilationUnit extends SourceFileMixin(J) implements JavaSourceFile {
         public constructor(id: UUID, prefix: Space, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, packageDeclaration: JRightPadded<Package> | null, imports: JRightPadded<Import>[], classes: ClassDeclaration[], eof: Space) {
             super();
             this._id = id;

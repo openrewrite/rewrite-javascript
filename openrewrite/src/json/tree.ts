@@ -3,7 +3,20 @@
 import * as extensions from "./extensions";
 import {Comment, JsonKey, JsonRightPadded, JsonValue, Space} from "./support_types";
 import {JsonVisitor} from "./visitor";
-import {UUID, Checksum, FileAttributes, SourceFile, Tree, TreeVisitor, Markers, Cursor, PrintOutputCapture, PrinterFactory} from "../core";
+import {
+    UUID,
+    Checksum,
+    FileAttributes,
+    SourceFile,
+    Tree,
+    TreeVisitor,
+    Markers,
+    Cursor,
+    PrintOutputCapture,
+    PrinterFactory,
+    SourceFileMixin
+} from "../core";
+import {Yaml} from "../yaml";
 
 export abstract class Json implements Tree {
     abstract get id(): UUID;
@@ -108,7 +121,7 @@ export namespace Json {
 
     }
 
-    export class Document extends Json implements SourceFile {
+    export class Document extends SourceFileMixin(Json) {
         public constructor(id: UUID, sourcePath: string, prefix: Space, markers: Markers, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, fileAttributes: FileAttributes | null, value: JsonValue, eof: Space) {
             super();
             this._id = id;

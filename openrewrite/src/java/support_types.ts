@@ -36,6 +36,7 @@ export interface TypedTree extends Tree {
 
 export class Space {
     static readonly EMPTY: Space = new Space();
+    static readonly SINGLE_SPACE: Space = new Space();
 }
 
 export interface Comment {
