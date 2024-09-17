@@ -1,21 +1,20 @@
-import {randomId, UUID} from "./tree";
+import {randomId, Tree, UUID} from "./tree";
 import {Parser} from "./parser";
 
+// This allows `isMarker()` to identify any `Marker` implementations
+export const MarkerSymbol = Symbol('Marker');
+
 export interface Marker {
+    [MarkerSymbol]: boolean;
     get id(): UUID;
 
     withId(id: UUID): Marker;
 }
 
-interface MarkerConstructor {
-    new (value?: any): Marker;
-    <T>(value?: T): Marker;
-    readonly prototype: Marker;
+export function isMarker(tree: any): tree is Marker {
+    // return 'sourcePath' in tree && 'printer' in tree;
+    return tree && tree[MarkerSymbol] === true;
 }
-
-// pretend like we have a class called `Marker` which we can pass around
-export declare var Marker: MarkerConstructor;
-
 
 export class Markers {
     public static readonly EMPTY: Markers = new Markers(randomId(), []);
@@ -50,6 +49,7 @@ export class Markers {
 }
 
 export class ParseExceptionResult implements Marker {
+    [MarkerSymbol] = true;
     private readonly _id: UUID;
     private readonly _parserType: string;
     private readonly _exceptionType: string;
