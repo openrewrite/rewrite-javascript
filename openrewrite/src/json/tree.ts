@@ -3,20 +3,7 @@
 import * as extensions from "./extensions";
 import {Comment, JsonKey, JsonRightPadded, JsonValue, Space} from "./support_types";
 import {JsonVisitor} from "./visitor";
-import {
-    UUID,
-    Checksum,
-    FileAttributes,
-    SourceFile,
-    Tree,
-    TreeVisitor,
-    Markers,
-    Cursor,
-    PrintOutputCapture,
-    PrinterFactory,
-    SourceFileMixin
-} from "../core";
-import {Yaml} from "../yaml";
+import {UUID, Checksum, Cursor, FileAttributes, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor} from "../core";
 
 export abstract class Json implements Tree {
     abstract get id(): UUID;
@@ -95,28 +82,16 @@ export namespace Json {
             return v.visitArray(this, p);
         }
 
-            get padding() {
-                const t = this;
-                return new class {
-                    public get values(): JsonRightPadded<JsonValue>[] {
-                        return t._values;
-                    }
-                    public withValues(values: JsonRightPadded<JsonValue>[]): Array {
-                        return t._values === values ? t : new Json.Array(t._id, t._prefix, t._markers, values);
-                    }
+        get padding() {
+            const t = this;
+            return new class {
+                public get values(): JsonRightPadded<JsonValue>[] {
+                    return t._values;
+                }
+                public withValues(values: JsonRightPadded<JsonValue>[]): Array {
+                    return t._values === values ? t : new Json.Array(t._id, t._prefix, t._markers, values);
                 }
             }
-
-    }
-
-    export namespace Array {
-        export class Padding {
-            public constructor(t: Json.Array) {
-                this._t = t;
-            }
-
-            private readonly _t: Array;
-
         }
 
     }
@@ -458,7 +433,7 @@ export namespace Json {
         }
 
         public withKey(key: JsonKey): Member {
-            return this.padding.withKey(JsonRightPadded.withElement(this._key, key));
+            return this.padding.withKey(this._key.withElement(key));
         }
 
         private readonly _value: JsonValue;
@@ -475,28 +450,16 @@ export namespace Json {
             return v.visitMember(this, p);
         }
 
-            get padding() {
-                const t = this;
-                return new class {
-                    public get key(): JsonRightPadded<JsonKey> {
-                        return t._key;
-                    }
-                    public withKey(key: JsonRightPadded<JsonKey>): Member {
-                        return t._key === key ? t : new Json.Member(t._id, t._prefix, t._markers, key, t._value);
-                    }
+        get padding() {
+            const t = this;
+            return new class {
+                public get key(): JsonRightPadded<JsonKey> {
+                    return t._key;
+                }
+                public withKey(key: JsonRightPadded<JsonKey>): Member {
+                    return t._key === key ? t : new Json.Member(t._id, t._prefix, t._markers, key, t._value);
                 }
             }
-
-    }
-
-    export namespace Member {
-        export class Padding {
-            public constructor(t: Json.Member) {
-                this._t = t;
-            }
-
-            private readonly _t: Member;
-
         }
 
     }
@@ -554,28 +517,16 @@ export namespace Json {
             return v.visitObject(this, p);
         }
 
-            get padding() {
-                const t = this;
-                return new class {
-                    public get members(): JsonRightPadded<Json>[] {
-                        return t._members;
-                    }
-                    public withMembers(members: JsonRightPadded<Json>[]): JsonObject {
-                        return t._members === members ? t : new Json.JsonObject(t._id, t._prefix, t._markers, members);
-                    }
+        get padding() {
+            const t = this;
+            return new class {
+                public get members(): JsonRightPadded<Json>[] {
+                    return t._members;
+                }
+                public withMembers(members: JsonRightPadded<Json>[]): JsonObject {
+                    return t._members === members ? t : new Json.JsonObject(t._id, t._prefix, t._markers, members);
                 }
             }
-
-    }
-
-    export namespace JsonObject {
-        export class Padding {
-            public constructor(t: Json.JsonObject) {
-                this._t = t;
-            }
-
-            private readonly _t: JsonObject;
-
         }
 
     }

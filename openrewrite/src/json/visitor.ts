@@ -8,10 +8,6 @@ export class JsonVisitor<P> extends TreeVisitor<Json, P> {
         return sourceFile instanceof Json;
     }
 
-    public visitJson(json: Json, p: P): Json | null {
-        return json;
-    }
-
     public visitArray(array: Json.Array, p: P): Json | null {
         array = array.withPrefix(this.visitSpace(array.prefix, p)!);
         array = array.withMarkers(this.visitMarkers(array.markers, p));

@@ -34,4 +34,8 @@ export class JsonRightPadded<T extends Tree> {
     static withElement<T extends Tree>(padded: JsonRightPadded<T>, element: T): JsonRightPadded<T> {
         return padded;
     }
+
+    withElement(element: T) : JsonRightPadded<T> {
+        return undefined!;
+    }
 }

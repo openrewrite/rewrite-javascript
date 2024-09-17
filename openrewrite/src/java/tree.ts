@@ -3,19 +3,7 @@
 import * as extensions from "./extensions";
 import {Comment, Expression, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, Loop, MethodCall, NameTree, Space, Statement, TextComment, TypedTree, TypeTree} from "./support_types";
 import {JavaVisitor} from "./visitor";
-import {
-    UUID,
-    Checksum,
-    FileAttributes,
-    SourceFile,
-    Tree,
-    TreeVisitor,
-    Markers,
-    Cursor,
-    PrintOutputCapture,
-    PrinterFactory,
-    SourceFileMixin
-} from "../core";
+import {UUID, Checksum, Cursor, FileAttributes, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor} from "../core";
 
 export abstract class J implements Tree {
 
