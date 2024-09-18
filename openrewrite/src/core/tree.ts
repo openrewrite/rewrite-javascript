@@ -413,11 +413,14 @@ export class PrintOutputCapture<P> {
 export abstract class PrinterFactory {
     private static _current: PrinterFactory | undefined;
 
-    static current(): PrinterFactory {
+    static get current(): PrinterFactory {
         if (PrinterFactory._current === undefined) {
             throw new Error('PrinterFactory is not initialized');
         }
         return PrinterFactory._current;
+    }
+    static set current(printerFactory: PrinterFactory) {
+        PrinterFactory._current = printerFactory;
     }
 
     abstract createPrinter<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>>;

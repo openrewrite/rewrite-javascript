@@ -169,7 +169,7 @@ export namespace JS {
         }
 
         public printer<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
-            return PrinterFactory.current().createPrinter(cursor);
+            return PrinterFactory.current.createPrinter(cursor);
         }
 
         public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {

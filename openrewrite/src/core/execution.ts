@@ -45,3 +45,17 @@ export class InMemoryExecutionContext implements ExecutionContext {
         this._messages.set(key, value);
     }
 }
+
+export class DelegatingExecutionContext implements ExecutionContext {
+    public constructor(private readonly _delegate: ExecutionContext) {
+    }
+    getMessage<T>(key: string, defaultValue?: T | null): T {
+        return this._delegate.getMessage(key, defaultValue);
+    }
+    putMessage(key: string, value: any) {
+        this._delegate.putMessage(key, value);
+    }
+}
+
+export class Recipe {
+}

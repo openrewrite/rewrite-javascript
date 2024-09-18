@@ -1451,7 +1451,7 @@ export namespace J {
         }
 
         public printer<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
-            return PrinterFactory.current().createPrinter(cursor);
+            return PrinterFactory.current.createPrinter(cursor);
         }
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {

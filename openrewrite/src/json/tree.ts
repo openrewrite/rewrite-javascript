@@ -212,7 +212,7 @@ export namespace Json {
         }
 
         public printer<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
-            return PrinterFactory.current().createPrinter(cursor);
+            return PrinterFactory.current.createPrinter(cursor);
         }
 
         public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {

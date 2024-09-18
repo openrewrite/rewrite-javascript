@@ -123,7 +123,7 @@ export namespace Yaml {
         }
 
         public printer<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
-            return PrinterFactory.current().createPrinter(cursor);
+            return PrinterFactory.current.createPrinter(cursor);
         }
 
         public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {

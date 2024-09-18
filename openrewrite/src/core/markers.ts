@@ -6,6 +6,9 @@ export const MarkerSymbol = Symbol('Marker');
 
 export interface Marker {
     [MarkerSymbol]: boolean;
+
+    [key: string]: any;
+
     get id(): UUID;
 
     withId(id: UUID): Marker;
