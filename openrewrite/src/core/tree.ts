@@ -33,6 +33,8 @@ export const randomId = (): UUID => {
     return uuidv4() as UUID;
 }
 
+export const javaType = Symbol('javaType');
+
 export interface Tree {
     get id(): UUID;
 
@@ -48,6 +50,8 @@ export interface Tree {
 }
 
 export abstract class TreeVisitor<T extends Tree, P> {
+    static [javaType] = "org.openrewrite.TreeVisitor";
+
     private _cursor: Cursor;
 
     protected constructor() {
@@ -104,6 +108,7 @@ export abstract class TreeVisitor<T extends Tree, P> {
 type Constructor<T = {}> = (abstract new(...args: any[]) => T) | ((obj: any) => obj is T) | symbol;
 
 export class Cursor {
+    static [javaType] = "org.openrewrite.Cursor";
     static ROOT_VALUE: String = "root";
 
     private readonly _parent: Cursor | null;
@@ -156,6 +161,7 @@ export class Cursor {
 }
 
 export class Checksum {
+    static [javaType] = "org.openrewrite.Checksum";
     private readonly _algorithm: string;
     private readonly _value: ArrayBuffer;
 
@@ -174,6 +180,7 @@ export class Checksum {
 }
 
 export class FileAttributes {
+    static [javaType] = "org.openrewrite.FileAttributes";
     private readonly _creationTime: Date | undefined;
     private readonly _lastModifiedTime: Date | undefined;
     private readonly _lastAccessTime: Date | undefined;
@@ -380,6 +387,7 @@ class DefaultMarkerPrinter implements MarkerPrinter {
 }
 
 export class PrintOutputCapture<P> {
+    static [javaType] = "org.openrewrite.PrintOutputCapture";
     private readonly _context: P;
     private readonly _markerPrinter: MarkerPrinter;
     private readonly _out: string[];
@@ -427,6 +435,7 @@ export abstract class PrinterFactory {
 }
 
 export class ParseError implements SourceFile {
+    static [javaType] = "org.openrewrite.tree.ParseError";
     [SourceFileSymbol]: true = true;
 
     private readonly _id: UUID;

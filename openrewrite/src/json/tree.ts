@@ -3,7 +3,7 @@
 import * as extensions from "./extensions";
 import {Comment, JsonKey, JsonRightPadded, JsonValue, Space} from "./support_types";
 import {JsonVisitor} from "./visitor";
-import {UUID, Checksum, Cursor, FileAttributes, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor} from "../core";
+import {javaType, Checksum, Cursor, FileAttributes, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
 
 export abstract class Json implements Tree {
     abstract get id(): UUID;
@@ -30,6 +30,7 @@ export abstract class Json implements Tree {
 
 export namespace Json {
     export class Array extends Json implements JsonValue {
+        static [javaType] = "org.openrewrite.json.tree.Json$Array";
         public constructor(id: UUID, prefix: Space, markers: Markers, values: JsonRightPadded<JsonValue>[]) {
             super();
             this._id = id;
@@ -97,6 +98,7 @@ export namespace Json {
     }
 
     export class Document extends SourceFileMixin(Json) {
+        static [javaType] = "org.openrewrite.json.tree.Json$Document";
         public constructor(id: UUID, sourcePath: string, prefix: Space, markers: Markers, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, fileAttributes: FileAttributes | null, value: JsonValue, eof: Space) {
             super();
             this._id = id;
@@ -222,6 +224,7 @@ export namespace Json {
     }
 
     export class Empty extends Json implements JsonValue {
+        static [javaType] = "org.openrewrite.json.tree.Json$Empty";
         public constructor(id: UUID, prefix: Space, markers: Markers) {
             super();
             this._id = id;
@@ -266,6 +269,7 @@ export namespace Json {
     }
 
     export class Identifier extends Json implements JsonKey {
+        static [javaType] = "org.openrewrite.json.tree.Json$Identifier";
         public constructor(id: UUID, prefix: Space, markers: Markers, name: string) {
             super();
             this._id = id;
@@ -321,6 +325,7 @@ export namespace Json {
     }
 
     export class Literal extends Json implements JsonValue, JsonKey {
+        static [javaType] = "org.openrewrite.json.tree.Json$Literal";
         public constructor(id: UUID, prefix: Space, markers: Markers, source: string, value: Object) {
             super();
             this._id = id;
@@ -387,6 +392,7 @@ export namespace Json {
     }
 
     export class Member extends Json {
+        static [javaType] = "org.openrewrite.json.tree.Json$Member";
         public constructor(id: UUID, prefix: Space, markers: Markers, key: JsonRightPadded<JsonKey>, value: JsonValue) {
             super();
             this._id = id;
@@ -465,6 +471,7 @@ export namespace Json {
     }
 
     export class JsonObject extends Json implements JsonValue {
+        static [javaType] = "org.openrewrite.json.tree.Json$JsonObject";
         public constructor(id: UUID, prefix: Space, markers: Markers, members: JsonRightPadded<Json>[]) {
             super();
             this._id = id;

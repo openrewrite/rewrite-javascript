@@ -1,4 +1,4 @@
-import {Tree} from "../core";
+import {javaType, Tree} from "../core";
 
 export interface JsonKey extends Tree {
 }
@@ -7,12 +7,15 @@ export interface JsonValue extends Tree {
 }
 
 export class Space {
+    static [javaType] = "org.openrewrite.json.tree.Space";
 }
 
 export class Comment {
+    static [javaType] = "org.openrewrite.json.tree.Comment";
 }
 
 export class JsonRightPadded<T extends Tree> {
+    static [javaType] = "org.openrewrite.json.tree.JsonRightPadded";
     constructor(element: T) {
         this._element = element;
     }

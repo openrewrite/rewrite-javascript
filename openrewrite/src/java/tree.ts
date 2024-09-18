@@ -3,7 +3,7 @@
 import * as extensions from "./extensions";
 import {Comment, Expression, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, Loop, MethodCall, NameTree, Space, Statement, TextComment, TypedTree, TypeTree} from "./support_types";
 import {JavaVisitor} from "./visitor";
-import {UUID, Checksum, Cursor, FileAttributes, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor} from "../core";
+import {javaType, Checksum, Cursor, FileAttributes, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
 
 export abstract class J implements Tree {
 
@@ -31,6 +31,7 @@ export abstract class J implements Tree {
 
 export namespace J {
     export class AnnotatedType extends J implements Expression, TypeTree {
+        static [javaType] = "org.openrewrite.java.tree.J$AnnotatedType";
         public constructor(id: UUID, prefix: Space, markers: Markers, annotations: Annotation[], typeExpression: TypeTree) {
             super();
             this._id = id;
@@ -105,6 +106,7 @@ export namespace J {
     }
 
     export class Annotation extends J implements Expression {
+        static [javaType] = "org.openrewrite.java.tree.J$Annotation";
         public constructor(id: UUID, prefix: Space, markers: Markers, annotationType: NameTree, _arguments: JContainer<Expression> | null) {
             super();
             this._id = id;
@@ -191,6 +193,7 @@ export namespace J {
     }
 
     export class ArrayAccess extends J implements Expression, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$ArrayAccess";
         public constructor(id: UUID, prefix: Space, markers: Markers, indexed: Expression, dimension: ArrayDimension, _type: JavaType | null) {
             super();
             this._id = id;
@@ -268,6 +271,7 @@ export namespace J {
     }
 
     export class ArrayType extends J implements TypeTree, Expression {
+        static [javaType] = "org.openrewrite.java.tree.J$ArrayType";
         public constructor(id: UUID, prefix: Space, markers: Markers, elementType: TypeTree, annotations: Annotation[] | null, dimension: JLeftPadded<Space> | null, _type: JavaType) {
             super();
             this._id = id;
@@ -356,6 +360,7 @@ export namespace J {
     }
 
     export class Assert extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Assert";
         public constructor(id: UUID, prefix: Space, markers: Markers, condition: Expression, detail: JLeftPadded<Expression> | null) {
             super();
             this._id = id;
@@ -422,6 +427,7 @@ export namespace J {
     }
 
     export class Assignment extends J implements Statement, Expression, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$Assignment";
         public constructor(id: UUID, prefix: Space, markers: Markers, variable: Expression, assignment: JLeftPadded<Expression>, _type: JavaType | null) {
             super();
             this._id = id;
@@ -511,6 +517,7 @@ export namespace J {
     }
 
     export class AssignmentOperation extends J implements Statement, Expression, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$AssignmentOperation";
         public constructor(id: UUID, prefix: Space, markers: Markers, variable: Expression, operator: JLeftPadded<AssignmentOperation.Type>, assignment: Expression, _type: JavaType | null) {
             super();
             this._id = id;
@@ -632,6 +639,7 @@ export namespace J {
     }
 
     export class Binary extends J implements Expression, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$Binary";
         public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression, operator: JLeftPadded<Binary.Type>, right: Expression, _type: JavaType | null) {
             super();
             this._id = id;
@@ -758,6 +766,7 @@ export namespace J {
     }
 
     export class Block extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Block";
         public constructor(id: UUID, prefix: Space, markers: Markers, _static: JRightPadded<boolean>, statements: JRightPadded<Statement>[], end: Space) {
             super();
             this._id = id;
@@ -853,6 +862,7 @@ export namespace J {
     }
 
     export class Break extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Break";
         public constructor(id: UUID, prefix: Space, markers: Markers, label: Identifier | null) {
             super();
             this._id = id;
@@ -908,6 +918,7 @@ export namespace J {
     }
 
     export class Case extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Case";
         public constructor(id: UUID, prefix: Space, markers: Markers, _type: Case.Type, expressions: JContainer<Expression>, statements: JContainer<Statement>, body: JRightPadded<J> | null) {
             super();
             this._id = id;
@@ -1029,6 +1040,7 @@ export namespace J {
     }
 
     export class ClassDeclaration extends J implements Statement, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$ClassDeclaration";
         public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Annotation[], modifiers: Modifier[], kind: ClassDeclaration.Kind, name: Identifier, typeParameters: JContainer<TypeParameter> | null, primaryConstructor: JContainer<Statement> | null, _extends: JLeftPadded<TypeTree> | null, _implements: JContainer<TypeTree> | null, permits: JContainer<TypeTree> | null, body: Block, _type: JavaType.FullyQualified | null) {
             super();
             this._id = id;
@@ -1233,6 +1245,7 @@ export namespace J {
 
     export namespace ClassDeclaration {
         export class Kind extends J {
+            static [javaType] = "org.openrewrite.java.tree.J$ClassDeclaration$Kind";
             public constructor(id: UUID, prefix: Space, markers: Markers, annotations: J.Annotation[], _type: Kind.Type) {
                 super();
                 this._id = id;
@@ -1314,6 +1327,7 @@ export namespace J {
     }
 
     export class CompilationUnit extends SourceFileMixin(J) implements JavaSourceFile {
+        static [javaType] = "org.openrewrite.java.tree.J$CompilationUnit";
         public constructor(id: UUID, prefix: Space, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, packageDeclaration: JRightPadded<Package> | null, imports: JRightPadded<Import>[], classes: ClassDeclaration[], eof: Space) {
             super();
             this._id = id;
@@ -1479,6 +1493,7 @@ export namespace J {
     }
 
     export class Continue extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Continue";
         public constructor(id: UUID, prefix: Space, markers: Markers, label: Identifier | null) {
             super();
             this._id = id;
@@ -1534,6 +1549,7 @@ export namespace J {
     }
 
     export class DoWhileLoop extends J implements Loop {
+        static [javaType] = "org.openrewrite.java.tree.J$DoWhileLoop";
         public constructor(id: UUID, prefix: Space, markers: Markers, body: JRightPadded<Statement>, whileCondition: JLeftPadded<J.ControlParentheses<Expression>>) {
             super();
             this._id = id;
@@ -1618,6 +1634,7 @@ export namespace J {
     }
 
     export class Empty extends J implements Statement, Expression, TypeTree {
+        static [javaType] = "org.openrewrite.java.tree.J$Empty";
         public constructor(id: UUID, prefix: Space, markers: Markers) {
             super();
             this._id = id;
@@ -1670,6 +1687,7 @@ export namespace J {
     }
 
     export class EnumValue extends J {
+        static [javaType] = "org.openrewrite.java.tree.J$EnumValue";
         public constructor(id: UUID, prefix: Space, markers: Markers, annotations: Annotation[], name: Identifier, initializer: NewClass | null) {
             super();
             this._id = id;
@@ -1747,6 +1765,7 @@ export namespace J {
     }
 
     export class EnumValueSet extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$EnumValueSet";
         public constructor(id: UUID, prefix: Space, markers: Markers, enums: JRightPadded<EnumValue>[], terminatedWithSemicolon: boolean) {
             super();
             this._id = id;
@@ -1825,6 +1844,7 @@ export namespace J {
     }
 
     export class FieldAccess extends J implements TypeTree, Expression, Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$FieldAccess";
         public constructor(id: UUID, prefix: Space, markers: Markers, target: Expression, name: JLeftPadded<Identifier>, _type: JavaType | null) {
             super();
             this._id = id;
@@ -1914,6 +1934,7 @@ export namespace J {
     }
 
     export class ForEachLoop extends J implements Loop {
+        static [javaType] = "org.openrewrite.java.tree.J$ForEachLoop";
         public constructor(id: UUID, prefix: Space, markers: Markers, control: ForEachLoop.Control, body: JRightPadded<Statement>) {
             super();
             this._id = id;
@@ -1993,6 +2014,7 @@ export namespace J {
 
     export namespace ForEachLoop {
         export class Control extends J {
+            static [javaType] = "org.openrewrite.java.tree.J$ForEachLoop$Control";
             public constructor(id: UUID, prefix: Space, markers: Markers, variable: JRightPadded<J.VariableDeclarations>, iterable: JRightPadded<Expression>) {
                 super();
                 this._id = id;
@@ -2079,6 +2101,7 @@ export namespace J {
     }
 
     export class ForLoop extends J implements Loop {
+        static [javaType] = "org.openrewrite.java.tree.J$ForLoop";
         public constructor(id: UUID, prefix: Space, markers: Markers, control: ForLoop.Control, body: JRightPadded<Statement>) {
             super();
             this._id = id;
@@ -2158,6 +2181,7 @@ export namespace J {
 
     export namespace ForLoop {
         export class Control extends J {
+            static [javaType] = "org.openrewrite.java.tree.J$ForLoop$Control";
             public constructor(id: UUID, prefix: Space, markers: Markers, init: JRightPadded<Statement>[], condition: JRightPadded<Expression>, update: JRightPadded<Statement>[]) {
                 super();
                 this._id = id;
@@ -2261,6 +2285,7 @@ export namespace J {
     }
 
     export class ParenthesizedTypeTree extends J implements TypeTree, Expression {
+        static [javaType] = "org.openrewrite.java.tree.J$ParenthesizedTypeTree";
         public constructor(id: UUID, prefix: Space, markers: Markers, annotations: Annotation[], parenthesizedType: J.Parentheses<TypeTree>) {
             super();
             this._id = id;
@@ -2335,6 +2360,7 @@ export namespace J {
     }
 
     export class Identifier extends J implements TypeTree, Expression {
+        static [javaType] = "org.openrewrite.java.tree.J$Identifier";
         public constructor(id: UUID, prefix: Space, markers: Markers, annotations: Annotation[], simpleName: string, _type: JavaType | null, fieldType: JavaType.Variable | null) {
             super();
             this._id = id;
@@ -2423,6 +2449,7 @@ export namespace J {
     }
 
     export class If extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$If";
         public constructor(id: UUID, prefix: Space, markers: Markers, ifCondition: J.ControlParentheses<Expression>, thenPart: JRightPadded<Statement>, elsePart: If.Else | null) {
             super();
             this._id = id;
@@ -2513,6 +2540,7 @@ export namespace J {
 
     export namespace If {
         export class Else extends J {
+            static [javaType] = "org.openrewrite.java.tree.J$If$Else";
             public constructor(id: UUID, prefix: Space, markers: Markers, body: JRightPadded<Statement>) {
                 super();
                 this._id = id;
@@ -2582,6 +2610,7 @@ export namespace J {
     }
 
     export class Import extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Import";
         public constructor(id: UUID, prefix: Space, markers: Markers, _static: JLeftPadded<boolean>, qualid: FieldAccess, alias: JLeftPadded<Identifier> | null) {
             super();
             this._id = id;
@@ -2677,6 +2706,7 @@ export namespace J {
     }
 
     export class InstanceOf extends J implements Expression, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$InstanceOf";
         public constructor(id: UUID, prefix: Space, markers: Markers, expression: JRightPadded<Expression>, clazz: J, pattern: J | null, _type: JavaType | null) {
             super();
             this._id = id;
@@ -2777,6 +2807,7 @@ export namespace J {
     }
 
     export class IntersectionType extends J implements TypeTree, Expression {
+        static [javaType] = "org.openrewrite.java.tree.J$IntersectionType";
         public constructor(id: UUID, prefix: Space, markers: Markers, bounds: JContainer<TypeTree>) {
             super();
             this._id = id;
@@ -2852,6 +2883,7 @@ export namespace J {
     }
 
     export class Label extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Label";
         public constructor(id: UUID, prefix: Space, markers: Markers, label: JRightPadded<Identifier>, statement: Statement) {
             super();
             this._id = id;
@@ -2930,6 +2962,7 @@ export namespace J {
     }
 
     export class Lambda extends J implements Statement, Expression, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$Lambda";
         public constructor(id: UUID, prefix: Space, markers: Markers, parameters: Lambda.Parameters, arrow: Space, body: J, _type: JavaType | null) {
             super();
             this._id = id;
@@ -3019,6 +3052,7 @@ export namespace J {
 
     export namespace Lambda {
         export class Parameters extends J {
+            static [javaType] = "org.openrewrite.java.tree.J$Lambda$Parameters";
             public constructor(id: UUID, prefix: Space, markers: Markers, parenthesized: boolean, parameters: JRightPadded<J>[]) {
                 super();
                 this._id = id;
@@ -3099,6 +3133,7 @@ export namespace J {
     }
 
     export class Literal extends J implements Expression, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$Literal";
         public constructor(id: UUID, prefix: Space, markers: Markers, value: Object | null, valueSource: string | null, unicodeEscapes: Literal.UnicodeEscape[] | null, _type: JavaType.Primitive) {
             super();
             this._id = id;
@@ -3218,6 +3253,7 @@ export namespace J {
     }
 
     export class MemberReference extends J implements TypedTree, MethodCall {
+        static [javaType] = "org.openrewrite.java.tree.J$MemberReference";
         public constructor(id: UUID, prefix: Space, markers: Markers, containing: JRightPadded<Expression>, typeParameters: JContainer<Expression> | null, reference: JLeftPadded<Identifier>, _type: JavaType | null, methodType: JavaType.Method | null, variableType: JavaType.Variable | null) {
             super();
             this._id = id;
@@ -3352,6 +3388,7 @@ export namespace J {
     }
 
     export class MethodDeclaration extends J implements Statement, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$MethodDeclaration";
         public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Annotation[], modifiers: Modifier[], typeParameters: TypeParameters | null, returnTypeExpression: TypeTree | null, name: MethodDeclaration.IdentifierWithAnnotations, parameters: JContainer<Statement>, throws: JContainer<NameTree> | null, body: Block | null, defaultValue: JLeftPadded<Expression> | null, methodType: JavaType.Method | null) {
             super();
             this._id = id;
@@ -3601,6 +3638,7 @@ export namespace J {
     }
 
     export class MethodInvocation extends J implements Statement, TypedTree, MethodCall {
+        static [javaType] = "org.openrewrite.java.tree.J$MethodInvocation";
         public constructor(id: UUID, prefix: Space, markers: Markers, select: JRightPadded<Expression> | null, typeParameters: JContainer<Expression> | null, name: Identifier, _arguments: JContainer<Expression>, methodType: JavaType.Method | null) {
             super();
             this._id = id;
@@ -3732,6 +3770,7 @@ export namespace J {
     }
 
     export class Modifier extends J {
+        static [javaType] = "org.openrewrite.java.tree.J$Modifier";
         public constructor(id: UUID, prefix: Space, markers: Markers, keyword: string | null, _type: Modifier.Type, annotations: Annotation[]) {
             super();
             this._id = id;
@@ -3834,6 +3873,7 @@ export namespace J {
     }
 
     export class MultiCatch extends J implements TypeTree {
+        static [javaType] = "org.openrewrite.java.tree.J$MultiCatch";
         public constructor(id: UUID, prefix: Space, markers: Markers, alternatives: JRightPadded<NameTree>[]) {
             super();
             this._id = id;
@@ -3909,6 +3949,7 @@ export namespace J {
     }
 
     export class NewArray extends J implements Expression, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$NewArray";
         public constructor(id: UUID, prefix: Space, markers: Markers, typeExpression: TypeTree | null, dimensions: ArrayDimension[], initializer: JContainer<Expression> | null, _type: JavaType | null) {
             super();
             this._id = id;
@@ -4009,6 +4050,7 @@ export namespace J {
     }
 
     export class ArrayDimension extends J {
+        static [javaType] = "org.openrewrite.java.tree.J$ArrayDimension";
         public constructor(id: UUID, prefix: Space, markers: Markers, index: JRightPadded<Expression>) {
             super();
             this._id = id;
@@ -4076,6 +4118,7 @@ export namespace J {
     }
 
     export class NewClass extends J implements Statement, TypedTree, MethodCall {
+        static [javaType] = "org.openrewrite.java.tree.J$NewClass";
         public constructor(id: UUID, prefix: Space, markers: Markers, enclosing: JRightPadded<Expression> | null, _new: Space, clazz: TypeTree | null, _arguments: JContainer<Expression>, body: Block | null, constructorType: JavaType.Method | null) {
             super();
             this._id = id;
@@ -4212,6 +4255,7 @@ export namespace J {
     }
 
     export class NullableType extends J implements TypeTree, Expression {
+        static [javaType] = "org.openrewrite.java.tree.J$NullableType";
         public constructor(id: UUID, prefix: Space, markers: Markers, annotations: Annotation[], typeTree: JRightPadded<TypeTree>) {
             super();
             this._id = id;
@@ -4298,6 +4342,7 @@ export namespace J {
     }
 
     export class Package extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Package";
         public constructor(id: UUID, prefix: Space, markers: Markers, expression: Expression, annotations: Annotation[]) {
             super();
             this._id = id;
@@ -4364,6 +4409,7 @@ export namespace J {
     }
 
     export class ParameterizedType extends J implements TypeTree, Expression {
+        static [javaType] = "org.openrewrite.java.tree.J$ParameterizedType";
         public constructor(id: UUID, prefix: Space, markers: Markers, clazz: NameTree, typeParameters: JContainer<Expression> | null, _type: JavaType | null) {
             super();
             this._id = id;
@@ -4453,6 +4499,7 @@ export namespace J {
     }
 
     export class Parentheses<J2 extends Tree> extends J implements Expression {
+        static [javaType] = "org.openrewrite.java.tree.J$Parentheses";
         public constructor(id: UUID, prefix: Space, markers: Markers, tree: JRightPadded<J2>) {
             super();
             this._id = id;
@@ -4528,6 +4575,7 @@ export namespace J {
     }
 
     export class ControlParentheses<J2 extends Tree> extends J implements Expression {
+        static [javaType] = "org.openrewrite.java.tree.J$ControlParentheses";
         public constructor(id: UUID, prefix: Space, markers: Markers, tree: JRightPadded<J2>) {
             super();
             this._id = id;
@@ -4603,6 +4651,7 @@ export namespace J {
     }
 
     export class Primitive extends J implements TypeTree, Expression {
+        static [javaType] = "org.openrewrite.java.tree.J$Primitive";
         public constructor(id: UUID, prefix: Space, markers: Markers, _type: JavaType.Primitive) {
             super();
             this._id = id;
@@ -4658,6 +4707,7 @@ export namespace J {
     }
 
     export class Return extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Return";
         public constructor(id: UUID, prefix: Space, markers: Markers, expression: Expression | null) {
             super();
             this._id = id;
@@ -4713,6 +4763,7 @@ export namespace J {
     }
 
     export class Switch extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Switch";
         public constructor(id: UUID, prefix: Space, markers: Markers, selector: J.ControlParentheses<Expression>, cases: Block) {
             super();
             this._id = id;
@@ -4779,6 +4830,7 @@ export namespace J {
     }
 
     export class SwitchExpression extends J implements Expression, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$SwitchExpression";
         public constructor(id: UUID, prefix: Space, markers: Markers, selector: J.ControlParentheses<Expression>, cases: Block) {
             super();
             this._id = id;
@@ -4853,6 +4905,7 @@ export namespace J {
     }
 
     export class Synchronized extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Synchronized";
         public constructor(id: UUID, prefix: Space, markers: Markers, lock: J.ControlParentheses<Expression>, body: Block) {
             super();
             this._id = id;
@@ -4919,6 +4972,7 @@ export namespace J {
     }
 
     export class Ternary extends J implements Expression, Statement, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$Ternary";
         public constructor(id: UUID, prefix: Space, markers: Markers, condition: Expression, truePart: JLeftPadded<Expression>, falsePart: JLeftPadded<Expression>, _type: JavaType | null) {
             super();
             this._id = id;
@@ -5025,6 +5079,7 @@ export namespace J {
     }
 
     export class Throw extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Throw";
         public constructor(id: UUID, prefix: Space, markers: Markers, exception: Expression) {
             super();
             this._id = id;
@@ -5080,6 +5135,7 @@ export namespace J {
     }
 
     export class Try extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Try";
         public constructor(id: UUID, prefix: Space, markers: Markers, resources: JContainer<Try.Resource> | null, body: Block, catches: Try.Catch[], _finally: JLeftPadded<Block> | null) {
             super();
             this._id = id;
@@ -5187,6 +5243,7 @@ export namespace J {
 
     export namespace Try {
         export class Resource extends J {
+            static [javaType] = "org.openrewrite.java.tree.J$Try$Resource";
             public constructor(id: UUID, prefix: Space, markers: Markers, variableDeclarations: TypedTree, terminatedWithSemicolon: boolean) {
                 super();
                 this._id = id;
@@ -5253,6 +5310,7 @@ export namespace J {
         }
 
         export class Catch extends J {
+            static [javaType] = "org.openrewrite.java.tree.J$Try$Catch";
             public constructor(id: UUID, prefix: Space, markers: Markers, parameter: J.ControlParentheses<J.VariableDeclarations>, body: J.Block) {
                 super();
                 this._id = id;
@@ -5321,6 +5379,7 @@ export namespace J {
     }
 
     export class TypeCast extends J implements Expression, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$TypeCast";
         public constructor(id: UUID, prefix: Space, markers: Markers, clazz: J.ControlParentheses<TypeTree>, expression: Expression) {
             super();
             this._id = id;
@@ -5395,6 +5454,7 @@ export namespace J {
     }
 
     export class TypeParameter extends J {
+        static [javaType] = "org.openrewrite.java.tree.J$TypeParameter";
         public constructor(id: UUID, prefix: Space, markers: Markers, annotations: Annotation[], modifiers: Modifier[], name: Expression, bounds: JContainer<TypeTree> | null) {
             super();
             this._id = id;
@@ -5495,6 +5555,7 @@ export namespace J {
     }
 
     export class TypeParameters extends J {
+        static [javaType] = "org.openrewrite.java.tree.J$TypeParameters";
         public constructor(id: UUID, prefix: Space, markers: Markers, annotations: Annotation[], typeParameters: JRightPadded<TypeParameter>[]) {
             super();
             this._id = id;
@@ -5573,6 +5634,7 @@ export namespace J {
     }
 
     export class Unary extends J implements Statement, Expression, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$Unary";
         public constructor(id: UUID, prefix: Space, markers: Markers, operator: JLeftPadded<Unary.Type>, expression: Expression, _type: JavaType | null) {
             super();
             this._id = id;
@@ -5677,6 +5739,7 @@ export namespace J {
     }
 
     export class VariableDeclarations extends J implements Statement, TypedTree {
+        static [javaType] = "org.openrewrite.java.tree.J$VariableDeclarations";
         public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Annotation[], modifiers: Modifier[], typeExpression: TypeTree | null, varargs: Space | null, dimensionsBeforeName: JLeftPadded<Space>[], variables: JRightPadded<VariableDeclarations.NamedVariable>[]) {
             super();
             this._id = id;
@@ -5808,6 +5871,7 @@ export namespace J {
 
     export namespace VariableDeclarations {
         export class NamedVariable extends J implements NameTree {
+            static [javaType] = "org.openrewrite.java.tree.J$VariableDeclarations$NamedVariable";
             public constructor(id: UUID, prefix: Space, markers: Markers, name: J.Identifier, dimensionsAfterName: JLeftPadded<Space>[], initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
                 super();
                 this._id = id;
@@ -5918,6 +5982,7 @@ export namespace J {
     }
 
     export class WhileLoop extends J implements Loop {
+        static [javaType] = "org.openrewrite.java.tree.J$WhileLoop";
         public constructor(id: UUID, prefix: Space, markers: Markers, condition: J.ControlParentheses<Expression>, body: JRightPadded<Statement>) {
             super();
             this._id = id;
@@ -5996,6 +6061,7 @@ export namespace J {
     }
 
     export class Wildcard extends J implements Expression, TypeTree {
+        static [javaType] = "org.openrewrite.java.tree.J$Wildcard";
         public constructor(id: UUID, prefix: Space, markers: Markers, bound: JLeftPadded<Wildcard.Bound> | null, boundedType: NameTree | null) {
             super();
             this._id = id;
@@ -6091,6 +6157,7 @@ export namespace J {
     }
 
     export class Yield extends J implements Statement {
+        static [javaType] = "org.openrewrite.java.tree.J$Yield";
         public constructor(id: UUID, prefix: Space, markers: Markers, implicit: boolean, value: Expression) {
             super();
             this._id = id;
@@ -6157,6 +6224,7 @@ export namespace J {
     }
 
     export class Unknown extends J implements Statement, Expression, TypeTree {
+        static [javaType] = "org.openrewrite.java.tree.J$Unknown";
         public constructor(id: UUID, prefix: Space, markers: Markers, source: Unknown.Source) {
             super();
             this._id = id;
@@ -6221,6 +6289,7 @@ export namespace J {
 
     export namespace Unknown {
         export class Source extends J {
+            static [javaType] = "org.openrewrite.java.tree.J$Unknown$Source";
             public constructor(id: UUID, prefix: Space, markers: Markers, text: string) {
                 super();
                 this._id = id;

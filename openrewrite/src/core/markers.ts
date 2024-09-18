@@ -1,4 +1,4 @@
-import {randomId, Tree, UUID} from "./tree";
+import {javaType, randomId, Tree, UUID} from "./tree";
 import {Parser} from "./parser";
 
 // This allows `isMarker()` to identify any `Marker` implementations
@@ -20,6 +20,7 @@ export function isMarker(tree: any): tree is Marker {
 }
 
 export class Markers {
+    static [javaType] = "org.openrewrite.marker.Markers";
     public static readonly EMPTY: Markers = new Markers(randomId(), []);
 
     private readonly _id: UUID;
@@ -52,6 +53,7 @@ export class Markers {
 }
 
 export class ParseExceptionResult implements Marker {
+    static [javaType] = "org.openrewrite.ParseExceptionResult";
     [MarkerSymbol] = true;
     private readonly _id: UUID;
     private readonly _parserType: string;

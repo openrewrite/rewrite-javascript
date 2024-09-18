@@ -1,4 +1,4 @@
-import {Markers, SourceFile, Tree, UUID} from "../core";
+import {javaType, Markers, SourceFile, Tree, UUID} from "../core";
 import {J} from "./tree";
 import {JavaType} from "./types";
 
@@ -35,6 +35,7 @@ export interface TypedTree extends Tree {
 }
 
 export class Space {
+    static [javaType] = "org.openrewrite.java.tree.Space";
     static readonly EMPTY: Space = new Space();
     static readonly SINGLE_SPACE: Space = new Space();
 }
@@ -43,9 +44,11 @@ export interface Comment {
 }
 
 export class TextComment implements Comment {
+    static [javaType] = "org.openrewrite.java.tree.TextComment";
 }
 
 export class JRightPadded<T> {
+    static [javaType] = "org.openrewrite.java.tree.JRightPadded";
     constructor(element: T, after: Space, markers: Markers) {
         this._element = element;
         this._after = after;
@@ -147,6 +150,8 @@ export class JRightPadded<T> {
 }
 
 export class JLeftPadded<T> {
+    static [javaType] = "org.openrewrite.java.tree.JLeftPadded";
+
     constructor(before: Space, element: T, markers: Markers) {
         this._before = before;
         this._element = element;
@@ -191,6 +196,8 @@ export class JLeftPadded<T> {
 }
 
 export class JContainer<T> {
+    static [javaType] = "org.openrewrite.java.tree.JContainer";
+
     constructor(before: Space, elements: JRightPadded<T>[], markers: Markers) {
         this._before = before;
         this._elements = elements;
