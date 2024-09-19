@@ -1,6 +1,6 @@
 import {createTwoFilesPatch} from 'diff';
 import {PathLike} from 'fs';
-import {TreeVisitor} from "./tree";
+import {Cursor, TreeVisitor} from "./tree";
 
 export class Result {
     static diff(before: string, after: string, path: PathLike): string {
@@ -50,9 +50,11 @@ export class InMemoryExecutionContext implements ExecutionContext {
 export class DelegatingExecutionContext implements ExecutionContext {
     public constructor(private readonly _delegate: ExecutionContext) {
     }
+
     getMessage<T>(key: string, defaultValue?: T | null): T {
         return this._delegate.getMessage(key, defaultValue);
     }
+
     putMessage(key: string, value: any) {
         this._delegate.putMessage(key, value);
     }
@@ -61,5 +63,16 @@ export class DelegatingExecutionContext implements ExecutionContext {
 export class Recipe {
     getVisitor(): TreeVisitor<any, ExecutionContext> {
         return TreeVisitor.noop();
+    }
+}
+
+export class RecipeRunException extends Error {
+    private readonly _cause: Error;
+    private _cursor: Cursor | undefined;
+
+    constructor(cause: Error, cursor?: Cursor) {
+        super();
+        this._cause = cause;
+        this._cursor = cursor;
     }
 }

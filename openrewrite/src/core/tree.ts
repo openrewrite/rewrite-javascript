@@ -1,7 +1,7 @@
 import {Marker, Markers, ParseExceptionResult} from "./markers";
 import {ListUtils, LstType, randomId, UUID} from "./utils";
 import {Parser, ParserInput} from "./parser";
-import {ExecutionContext} from "./execution";
+import {ExecutionContext, RecipeRunException} from "./execution";
 import path from "node:path";
 
 export interface Tree {
@@ -20,6 +20,9 @@ export interface Tree {
 
 export abstract class TreeVisitor<T extends Tree, P> {
     private _cursor: Cursor;
+    private _visitCount: number = 0;
+    private _afterVisit: TreeVisitor<any, P>[] | null = null;
+
 
     protected constructor() {
         this._cursor = new Cursor(null, Cursor.ROOT_VALUE);
@@ -38,10 +41,75 @@ export abstract class TreeVisitor<T extends Tree, P> {
     }
 
     visit(tree: Tree | null, p: P, parent?: Cursor): T | null {
-        if (parent)
+        if (parent !== undefined) {
             this._cursor = parent;
-        // FIXME
-        return tree as T;
+        }
+
+        if (tree === null) {
+            return this.defaultValue(null, p) as T | null;
+        }
+
+        let topLevel = false;
+        if (this._visitCount === 0) {
+            topLevel = true;
+        }
+
+        this._visitCount += 1;
+        this.cursor = new Cursor(this._cursor, tree);
+
+        let t: T | null = null;
+        const isAcceptable =
+            tree.isAcceptable(this, p) &&
+            (!(isSourceFile(tree)) || this.isAcceptable(tree, p));
+
+        try {
+            if (isAcceptable) {
+                t = this.preVisit(tree as T, p);
+
+                if (!this._cursor.getMessage('STOP_AFTER_PRE_VISIT', false)) {
+                    if (t !== null) {
+                        t = t.accept(this, p);
+                    }
+                    if (t !== null) {
+                        t = this.postVisit(t, p);
+                    }
+                }
+            }
+
+            this._cursor = this._cursor.parent!;
+
+            if (topLevel) {
+                if (t !== null && this._afterVisit !== null) {
+                    for (const v of this._afterVisit) {
+                        if (v !== null) {
+                            v.cursor = this.cursor;
+                            t = v.visit(t, p);
+                        }
+                    }
+                }
+                this._afterVisit = null;
+                this._visitCount = 0;
+            }
+        } catch (e) {
+            if (e instanceof RecipeRunException) {
+                throw e;
+            }
+            throw new RecipeRunException(e as Error, this.cursor);
+        }
+
+        return isAcceptable ? t : (tree as T | null);
+    }
+
+    public isAcceptable(sourceFile: SourceFile, p: P): boolean {
+        return true;
+    }
+
+    public preVisit(tree: T, p: P): T | null {
+        return this.defaultValue(tree, p);
+    }
+
+    public postVisit(tree: T, p: P): T | null {
+        return this.defaultValue(tree, p);
     }
 
     protected visitAndCast<T extends Tree>(t: T | null, p: P): T | null {
@@ -132,6 +200,10 @@ export class Cursor {
             c = c.parent;
         }
         return null;
+    }
+
+    getMessage<T>(key: string, defaultValue?: T | null): T | null {
+        return this._messages.get(key) as T || defaultValue!;
     }
 }
 
@@ -402,6 +474,7 @@ export abstract class PrinterFactory {
         }
         return PrinterFactory._current;
     }
+
     static set current(printerFactory: PrinterFactory) {
         PrinterFactory._current = printerFactory;
     }
