@@ -5,32 +5,12 @@ import {Parser, ParserInput} from "./parser";
 import {ExecutionContext} from "./execution";
 import path from "node:path";
 
-export type UUID = string & { readonly __brand: unique symbol };
-
-interface UUIDConstructor {
-    new(value?: any): UUID;
-
-    <T>(value?: T): UUID;
-
-    readonly prototype: UUID;
-}
-
-export declare var UUID: UUIDConstructor;
-
-export type Enum = { readonly __brand: unique symbol };
-
-interface EnumConstructor {
-    new(value?: any): Enum;
-
-    <T>(value?: T): Enum;
-
-    readonly prototype: Enum;
-}
-
-export declare var Enum: EnumConstructor;
+export type UUID = Uint8Array;
 
 export const randomId = (): UUID => {
-    return uuidv4() as UUID;
+    const buffer = new Uint8Array(16);
+    uuidv4({}, buffer);
+    return buffer;
 }
 
 export interface Tree {
