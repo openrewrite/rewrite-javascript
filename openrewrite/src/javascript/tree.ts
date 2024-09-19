@@ -3,19 +3,7 @@
 import * as extensions from "./extensions";
 import {JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./support_types";
 import {JavaScriptVisitor} from "./visitor";
-import {
-    UUID,
-    Checksum,
-    FileAttributes,
-    SourceFile,
-    Tree,
-    TreeVisitor,
-    Markers,
-    Cursor,
-    PrintOutputCapture,
-    PrinterFactory,
-    SourceFileMixin
-} from "../core";
+import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
 import {Expression, J, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypedTree, TypeTree} from "../java";
 
 export abstract class JS extends J {
@@ -42,6 +30,7 @@ export abstract class JS extends J {
 }
 
 export namespace JS {
+    @LstType("org.openrewrite.javascript.tree.JS$CompilationUnit")
     export class JsCompilationUnit extends SourceFileMixin(JS) implements JavaSourceFile {
         public constructor(id: UUID, prefix: Space, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, imports: JRightPadded<J.Import>[], statements: JRightPadded<Statement>[], eof: Space) {
             super();
@@ -196,6 +185,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$Alias")
     export class Alias extends JS implements Expression {
         public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<J.Identifier>, alias: J.Identifier) {
             super();
@@ -282,6 +272,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$ArrowFunction")
     export class ArrowFunction extends JS implements Statement, Expression, TypedTree {
         public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], parameters: J.Lambda.Parameters, returnTypeExpression: TypeTree | null, arrow: Space, body: J, _type: JavaType | null) {
             super();
@@ -403,6 +394,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$DefaultType")
     export class DefaultType extends JS implements Expression, TypedTree, NameTree {
         public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression, beforeEquals: Space, right: Expression, _type: JavaType | null) {
             super();
@@ -491,6 +483,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$Delete")
     export class Delete extends JS implements Expression, Statement {
         public constructor(id: UUID, prefix: Space, markers: Markers, expression: Expression, _type: JavaType | null) {
             super();
@@ -557,6 +550,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$Export")
     export class Export extends JS implements Statement {
         public constructor(id: UUID, prefix: Space, markers: Markers, exports: JContainer<Expression> | null, _from: Space | null, target: J.Literal | null, initializer: JLeftPadded<Expression> | null) {
             super();
@@ -663,6 +657,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$ExpressionStatement")
     export class ExpressionStatement extends JS implements Expression, Statement {
         public constructor(id: UUID, expression: Expression) {
             super();
@@ -712,6 +707,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$FunctionType")
     export class FunctionType extends JS implements Expression, TypeTree {
         public constructor(id: UUID, prefix: Space, markers: Markers, parameters: JContainer<Statement>, arrow: Space, returnType: Expression, _type: JavaType | null) {
             super();
@@ -812,6 +808,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$JsImport")
     export class JsImport extends JS implements Statement {
         public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<J.Identifier> | null, imports: JContainer<Expression> | null, _from: Space | null, target: J.Literal | null, initializer: JLeftPadded<Expression> | null) {
             super();
@@ -935,6 +932,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$JsBinary")
     export class JsBinary extends JS implements Expression, TypedTree {
         public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression, operator: JLeftPadded<JsBinary.Type>, right: Expression, _type: JavaType | null) {
             super();
@@ -1045,6 +1043,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$JsOperator")
     export class JsOperator extends JS implements Statement, Expression, TypedTree, NameTree {
         public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression | null, operator: JLeftPadded<JsOperator.Type>, right: Expression, _type: JavaType | null) {
             super();
@@ -1156,6 +1155,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations")
     export class ObjectBindingDeclarations extends JS implements Statement, TypedTree {
         public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<ObjectBindingDeclarations.Binding>, initializer: JLeftPadded<Expression> | null) {
             super();
@@ -1282,6 +1282,7 @@ export namespace JS {
     }
 
     export namespace ObjectBindingDeclarations {
+        @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations$Binding")
         export class Binding extends JS implements NameTree {
             public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<J.Identifier> | null, name: J.Identifier, dimensionsAfterName: JLeftPadded<Space>[], afterVararg: Space | null, initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
                 super();
@@ -1426,6 +1427,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$StatementExpression")
     export class StatementExpression extends JS implements Expression, Statement {
         public constructor(id: UUID, statement: Statement) {
             super();
@@ -1475,6 +1477,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$TemplateExpression")
     export class TemplateExpression extends JS implements Statement, Expression {
         public constructor(id: UUID, prefix: Space, markers: Markers, delimiter: string, tag: JRightPadded<Expression> | null, strings: J[], _type: JavaType | null) {
             super();
@@ -1576,6 +1579,7 @@ export namespace JS {
     }
 
     export namespace TemplateExpression {
+        @LstType("org.openrewrite.javascript.tree.JS$TemplateExpression$Value")
         export class Value extends JS {
             public constructor(id: UUID, prefix: Space, markers: Markers, tree: J, after: Space, enclosedInBraces: boolean) {
                 super();
@@ -1655,6 +1659,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$Tuple")
     export class Tuple extends JS implements Expression, TypeTree {
         public constructor(id: UUID, prefix: Space, markers: Markers, elements: JContainer<J>, _type: JavaType | null) {
             super();
@@ -1733,6 +1738,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$TypeDeclaration")
     export class TypeDeclaration extends JS implements Statement, TypedTree {
         public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], name: J.Identifier, typeParameters: J.TypeParameters | null, initializer: JLeftPadded<Expression>, javaType: JavaType | null) {
             super();
@@ -1859,6 +1865,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$TypeOperator")
     export class TypeOperator extends JS implements Expression, TypedTree, NameTree {
         public constructor(id: UUID, prefix: Space, markers: Markers, operator: TypeOperator.Type, expression: JLeftPadded<Expression>) {
             super();
@@ -1954,6 +1961,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$Unary")
     export class JsUnary extends JS implements Statement, Expression, TypedTree {
         public constructor(id: UUID, prefix: Space, markers: Markers, operator: JLeftPadded<JsUnary.Type>, expression: Expression, _type: JavaType | null) {
             super();
@@ -2051,6 +2059,7 @@ export namespace JS {
 
     }
 
+    @LstType("org.openrewrite.javascript.tree.JS$Union")
     export class Union extends JS implements Expression, TypeTree {
         public constructor(id: UUID, prefix: Space, markers: Markers, types: JRightPadded<Expression>[], _type: JavaType | null) {
             super();
