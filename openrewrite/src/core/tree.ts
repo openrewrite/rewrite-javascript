@@ -1,17 +1,8 @@
-import {v4 as uuidv4} from 'uuid';
 import {Marker, Markers, ParseExceptionResult} from "./markers";
-import {ListUtils, LstType} from "./utils";
+import {ListUtils, LstType, randomId, UUID} from "./utils";
 import {Parser, ParserInput} from "./parser";
 import {ExecutionContext} from "./execution";
 import path from "node:path";
-
-export type UUID = Uint8Array;
-
-export const randomId = (): UUID => {
-    const buffer = new Uint8Array(16);
-    uuidv4({}, buffer);
-    return buffer;
-}
 
 export interface Tree {
     get id(): UUID;
@@ -78,6 +69,14 @@ export abstract class TreeVisitor<T extends Tree, P> {
     adapt<R extends Tree, V extends TreeVisitor<R, P>>(adaptTo: Function & { prototype: V }): V {
         // FIXME
         return this as unknown as V;
+    }
+
+    static noop() {
+        return new class extends TreeVisitor<any, any> {
+            constructor() {
+                super();
+            }
+        }();
     }
 }
 

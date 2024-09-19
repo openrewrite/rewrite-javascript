@@ -1,6 +1,5 @@
-import {randomId, UUID} from "./tree";
 import {Parser} from "./parser";
-import {LstType} from "./utils";
+import {LstType, randomId, UUID} from "./utils";
 
 // This allows `isMarker()` to identify any `Marker` implementations
 export const MarkerSymbol = Symbol('Marker');

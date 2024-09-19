@@ -1,5 +1,6 @@
 import {createTwoFilesPatch} from 'diff';
 import {PathLike} from 'fs';
+import {TreeVisitor} from "./tree";
 
 export class Result {
     static diff(before: string, after: string, path: PathLike): string {
@@ -58,4 +59,7 @@ export class DelegatingExecutionContext implements ExecutionContext {
 }
 
 export class Recipe {
+    getVisitor(): TreeVisitor<any, ExecutionContext> {
+        return TreeVisitor.noop();
+    }
 }
