@@ -26,3 +26,21 @@ export class ListUtils {
         return newLs as T[];
     }
 }
+
+const typeRegistry = new Map<string, new (...args: any[]) => any>();
+
+const LST_TYPE_KEY = Symbol('lstType');
+
+export function LstType(typeName: string) {
+    return function <T extends { new (...args: any[]): {} }>(constructor: T) {
+        // Add the static symbol property to the class constructor
+        Object.defineProperty(constructor, LST_TYPE_KEY, {
+            value: typeName,
+            writable: false,
+            enumerable: false,
+        });
+
+        // Register the class in the global type registry
+        typeRegistry.set(typeName, constructor);
+    };
+}

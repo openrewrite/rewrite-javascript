@@ -3,7 +3,7 @@
 import * as extensions from "./extensions";
 import {YamlKey} from "./support_types";
 import {YamlVisitor} from "./visitor";
-import {javaType, Checksum, Cursor, FileAttributes, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
+import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
 
 export abstract class Yaml implements Tree {
     abstract get id(): UUID;
@@ -29,8 +29,8 @@ export abstract class Yaml implements Tree {
 }
 
 export namespace Yaml {
+    @LstType("org.openrewrite.yaml.tree.Yaml$Documents")
     export class Documents extends SourceFileMixin(Yaml) {
-        static [javaType] = "org.openrewrite.yaml.tree.Yaml$Documents";
         public constructor(id: UUID, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, documents: Document[]) {
             super();
             this._id = id;
@@ -133,8 +133,8 @@ export namespace Yaml {
 
     }
 
+    @LstType("org.openrewrite.yaml.tree.Yaml$Document")
     export class Document extends Yaml {
-        static [javaType] = "org.openrewrite.yaml.tree.Yaml$Document";
         public constructor(id: UUID, prefix: string, markers: Markers, explicit: boolean, block: Block, end: Document.End) {
             super();
             this._id = id;
@@ -212,8 +212,8 @@ export namespace Yaml {
     }
 
     export namespace Document {
+        @LstType("org.openrewrite.yaml.tree.Yaml$Document$End")
         export class End extends Yaml {
-            static [javaType] = "org.openrewrite.yaml.tree.Yaml$Document$End";
             public constructor(id: UUID, prefix: string, markers: Markers, explicit: boolean) {
                 super();
                 this._id = id;
@@ -273,8 +273,8 @@ export namespace Yaml {
     export interface Block extends Yaml {
     }
 
+    @LstType("org.openrewrite.yaml.tree.Yaml$Scalar")
     export class Scalar extends Yaml implements Block, YamlKey {
-        static [javaType] = "org.openrewrite.yaml.tree.Yaml$Scalar";
         public constructor(id: UUID, prefix: string, markers: Markers, style: Scalar.Style, anchor: Anchor | null, value: string) {
             super();
             this._id = id;
@@ -363,8 +363,8 @@ export namespace Yaml {
 
     }
 
+    @LstType("org.openrewrite.yaml.tree.Yaml$Mapping")
     export class Mapping extends Yaml implements Block {
-        static [javaType] = "org.openrewrite.yaml.tree.Yaml$Mapping";
         public constructor(id: UUID, markers: Markers, openingBracePrefix: string | null, entries: Mapping.Entry[], closingBracePrefix: string | null, anchor: Anchor | null) {
             super();
             this._id = id;
@@ -442,8 +442,8 @@ export namespace Yaml {
     }
 
     export namespace Mapping {
+        @LstType("org.openrewrite.yaml.tree.Yaml$Mapping$Entry")
         export class Entry extends Yaml {
-            static [javaType] = "org.openrewrite.yaml.tree.Yaml$Mapping$Entry";
             public constructor(id: UUID, prefix: string, markers: Markers, key: YamlKey, beforeMappingValueIndicator: string, value: Yaml.Block) {
                 super();
                 this._id = id;
@@ -522,8 +522,8 @@ export namespace Yaml {
 
     }
 
+    @LstType("org.openrewrite.yaml.tree.Yaml$Sequence")
     export class Sequence extends Yaml implements Block {
-        static [javaType] = "org.openrewrite.yaml.tree.Yaml$Sequence";
         public constructor(id: UUID, markers: Markers, openingBracketPrefix: string | null, entries: Sequence.Entry[], closingBracketPrefix: string | null, anchor: Anchor | null) {
             super();
             this._id = id;
@@ -601,8 +601,8 @@ export namespace Yaml {
     }
 
     export namespace Sequence {
+        @LstType("org.openrewrite.yaml.tree.Yaml$Sequence$Entry")
         export class Entry extends Yaml {
-            static [javaType] = "org.openrewrite.yaml.tree.Yaml$Sequence$Entry";
             public constructor(id: UUID, prefix: string, markers: Markers, block: Yaml.Block, dash: boolean, trailingCommaPrefix: string | null) {
                 super();
                 this._id = id;
@@ -681,8 +681,8 @@ export namespace Yaml {
 
     }
 
+    @LstType("org.openrewrite.yaml.tree.Yaml$Alias")
     export class Alias extends Yaml implements Block, YamlKey {
-        static [javaType] = "org.openrewrite.yaml.tree.Yaml$Alias";
         public constructor(id: UUID, prefix: string, markers: Markers, anchor: Anchor) {
             super();
             this._id = id;
@@ -737,8 +737,8 @@ export namespace Yaml {
 
     }
 
+    @LstType("org.openrewrite.yaml.tree.Yaml$Anchor")
     export class Anchor extends Yaml {
-        static [javaType] = "org.openrewrite.yaml.tree.Yaml$Anchor";
         public constructor(id: UUID, prefix: string, postfix: string, markers: Markers, key: string) {
             super();
             this._id = id;

@@ -1,4 +1,4 @@
-import {javaType, Tree} from "../core";
+import {LstType, Tree} from "../core";
 
 export interface JsonKey extends Tree {
 }
@@ -6,16 +6,16 @@ export interface JsonKey extends Tree {
 export interface JsonValue extends Tree {
 }
 
+@LstType("org.openrewrite.json.tree.Space")
 export class Space {
-    static [javaType] = "org.openrewrite.json.tree.Space";
 }
 
+@LstType("org.openrewrite.json.tree.Comment")
 export class Comment {
-    static [javaType] = "org.openrewrite.json.tree.Comment";
 }
 
+@LstType("org.openrewrite.json.tree.JsonRightPadded")
 export class JsonRightPadded<T extends Tree> {
-    static [javaType] = "org.openrewrite.json.tree.JsonRightPadded";
     constructor(element: T) {
         this._element = element;
     }
