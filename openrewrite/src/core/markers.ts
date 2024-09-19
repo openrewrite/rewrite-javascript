@@ -61,7 +61,7 @@ export class Markers {
             }
             return m;
         });
-        return this.withMarkers(updated ? ListUtils.concat(markers, marker) : markers);
+        return this.withMarkers(!updated ? ListUtils.concat(markers, marker) : markers);
     }
 }
 
