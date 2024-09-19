@@ -24,7 +24,7 @@ export abstract class TreeVisitor<T extends Tree, P> {
     private _afterVisit: TreeVisitor<any, P>[] | null = null;
 
 
-    protected constructor() {
+    public constructor() {
         this._cursor = new Cursor(null, Cursor.ROOT_VALUE);
     }
 
@@ -141,8 +141,8 @@ export abstract class TreeVisitor<T extends Tree, P> {
 
     static noop() {
         return new class extends TreeVisitor<any, any> {
-            constructor() {
-                super();
+            visit(tree: Tree | null, p: any, parent?: Cursor): Tree | null {
+                return tree;
             }
         }();
     }
