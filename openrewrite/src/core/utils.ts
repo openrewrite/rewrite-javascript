@@ -35,6 +35,17 @@ export class ListUtils {
 
         return newLs as T[];
     }
+
+    static concat<T>(ls: T[] | null, t: T | null): T[] {
+        if (t == null && ls == null) {
+            return [];
+        } else if (t == null) {
+            return ls!;
+        } else if (ls == null) {
+            return [t];
+        }
+        return [...ls, t];
+    }
 }
 
 const typeRegistry = new Map<string, new (...args: any[]) => any>();

@@ -1,5 +1,6 @@
 import {Parser} from "./parser";
-import {LstType, randomId, UUID} from "./utils";
+import {ListUtils, LstType, randomId, UUID} from "./utils";
+import {Tree} from "./tree";
 
 // This allows `isMarker()` to identify any `Marker` implementations
 export const MarkerSymbol = Symbol('Marker');
@@ -49,6 +50,52 @@ export class Markers {
 
     public findFirst<T extends Marker>(markerType: new () => T): T | undefined {
         return this._markers.find((marker) => marker instanceof markerType) as T || undefined;
+    }
+
+    computeByType<M extends Marker>(marker: M, remapping: (m1: M, m2: M) => M): Markers {
+        let updated: boolean = false;
+        let markers = ListUtils.map(this._markers, m => {
+            if (m.constructor === marker.constructor) {
+                updated = true;
+                return remapping(m as M, marker);
+            }
+            return m;
+        });
+        return this.withMarkers(updated ? ListUtils.concat(markers, marker) : markers);
+    }
+}
+
+@LstType("org.openrewrite.marker.SearchResult")
+export class SearchResult implements Marker {
+    [MarkerSymbol] = true;
+    private readonly _id: UUID;
+    private readonly _description: string | null;
+
+    constructor(id: UUID, description?: string | null) {
+        this._id = id;
+        this._description = description ? description : null;
+    }
+
+    static found<T extends Tree>(tree: T | null): T | null {
+        if (!tree) {
+            return null;
+        }
+        return tree.withMarkers(tree.markers.computeByType(new SearchResult(randomId()), (s1, s2) => s1 == null ? s2 : s1)) as T;
+    }
+    get id(): UUID {
+        return this._id;
+    }
+
+    withId(id: UUID): SearchResult {
+        return new SearchResult(id, this._description);
+    }
+
+    get description(): string | null {
+        return this._description;
+    }
+
+    withDescription(description: string): SearchResult {
+        return new SearchResult(this._id, description);
     }
 }
 
