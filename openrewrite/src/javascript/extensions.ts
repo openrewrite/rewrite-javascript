@@ -54,18 +54,18 @@ export function visitRightPadded<P, T>(v: JavaScriptVisitor<P>, right: JRightPad
     return java_extensions.visitRightPadded(v, right, loc as JRightPadded.Location, p)!;
 }
 
-export function visitJsSpace<P>(space: Space | null, loc: JsSpace.Location, p: P) {
+export function visitJsSpace<P>(v: JavaScriptVisitor<P>, space: Space | null, loc: JsSpace.Location, p: P): Space {
     throw new Error("Not yet implemented!");
 }
 
-export function visitJsLeftPadded<P, T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P) {
+export function visitJsLeftPadded<P, T>(v: JavaScriptVisitor<P>, left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P): JLeftPadded<T> {
     throw new Error("Not yet implemented!");
 }
 
-export function visitJsRightPadded<P, T>(right: JRightPadded<T> | null, loc: JsRightPadded.Location, p: P) {
+export function visitJsRightPadded<P, T>(v: JavaScriptVisitor<P>, right: JRightPadded<T> | null, loc: JsRightPadded.Location, p: P): JRightPadded<T> {
     throw new Error("Not yet implemented!");
 }
 
-export function visitJsContainer<P, T>(container: JContainer<T> | null, loc: JsContainer.Location, p: P) {
+export function visitJsContainer<P, T>(v: JavaScriptVisitor<P>, container: JContainer<T> | null, loc: JsContainer.Location, p: P): JContainer<T> {
     throw new Error("Not yet implemented!");
 }
