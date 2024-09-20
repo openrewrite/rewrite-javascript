@@ -36,8 +36,43 @@ export interface TypedTree extends Tree {
 
 @LstType("org.openrewrite.java.tree.Space")
 export class Space {
-    static readonly EMPTY: Space = new Space();
-    static readonly SINGLE_SPACE: Space = new Space();
+    static readonly EMPTY: Space = new Space([], '');
+    static readonly SINGLE_SPACE: Space = new Space([], ' ');
+
+    private readonly _comments: Comment[];
+    private readonly _whitespace: string | null;
+
+    static build(comments: Comment[], whitespace: string | null): Space {
+        if (comments.length == 0) {
+            if (whitespace == '') {
+                return Space.EMPTY;
+            } else if (whitespace == ' ') {
+                return Space.SINGLE_SPACE;
+            }
+        }
+        return new Space(comments, whitespace);
+    }
+
+    public constructor(comments: Comment[], whitespace: string | null) {
+        this._comments = comments;
+        this._whitespace = whitespace;
+    }
+
+    get comments(): Comment[] {
+        return this._comments;
+    }
+
+    withComments(comments: Comment[]): Space {
+        return new Space(comments, this._whitespace);
+    }
+
+    get whitespace(): string | null {
+        return this._whitespace;
+    }
+
+    withWhitespace(whitespace: string | null): Space {
+        return new Space(this.comments, whitespace);
+    }
 }
 
 export interface Comment {
@@ -45,6 +80,49 @@ export interface Comment {
 
 @LstType("org.openrewrite.java.tree.TextComment")
 export class TextComment implements Comment {
+    private readonly _multiline: boolean;
+    private readonly _text: string;
+    private readonly _suffix: string;
+    private readonly _markers: Markers;
+
+    constructor(multiline: boolean, text: string, suffix: string, markers: Markers) {
+        this._multiline = multiline;
+        this._text = text;
+        this._suffix = suffix;
+        this._markers = markers;
+    }
+
+    get multiline(): boolean {
+        return this._multiline;
+    }
+
+    withMultiline(multiline: boolean): TextComment {
+        return new TextComment(multiline, this._text, this._suffix, this._markers);
+    }
+
+    get text(): string {
+        return this._text;
+    }
+
+    withText(text: string): TextComment {
+        return new TextComment(this._multiline, text, this._suffix, this._markers);
+    }
+
+    get suffix(): string {
+        return this._suffix;
+    }
+
+    withSuffix(suffix: string): TextComment {
+        return new TextComment(this._multiline, this._text, suffix, this._markers);
+    }
+
+    get markers(): Markers {
+        return this._markers;
+    }
+
+    withMarkers(markers: Markers): TextComment {
+        return new TextComment(this._multiline, this._text, this._suffix, markers);
+    }
 }
 
 @LstType("org.openrewrite.java.tree.JRightPadded")
@@ -521,12 +599,14 @@ export namespace JContainer {
         TRY_RESOURCES,
         TYPE_BOUNDS,
         TYPE_PARAMETERS,
-}
+    }
+
     export namespace Location {
         export function beforeLocation(location: Location): Space.Location {
             // FIXME
             return null!;
         }
+
         export function elementLocation(location: Location): JRightPadded.Location {
             // FIXME
             return null!;

@@ -11,6 +11,10 @@ export namespace JavaType {
     export class Class extends FullyQualified {
     }
 
+    @LstType("org.openrewrite.java.tree.JavaType$ShallowClass")
+    export class ShallowClass extends FullyQualified {
+    }
+
     @LstType("org.openrewrite.java.tree.JavaType$Parameterized")
     export class Parameterized extends FullyQualified {
     }

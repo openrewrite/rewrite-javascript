@@ -69,3 +69,7 @@ export function LstType(typeName: string) {
 export function _getTypeNameFromClass(constructor: any): string | undefined {
     return constructor[LST_TYPE_KEY];
 }
+
+export function _getClassFromTypeName(typeName: string): new (...args: any[]) => any {
+    return typeRegistry.get(typeName)!;
+}
