@@ -1,11 +1,10 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
-import {Comment, Expression, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, Loop, MethodCall, NameTree, Space, Statement, TextComment, TypedTree, TypeTree} from "./support_types";
-import {J} from "./tree";
+import {Expression, isJava, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "./support_types";
 
 export class JavaVisitor<P> extends TreeVisitor<J, P> {
     isAcceptable(sourceFile: SourceFile, p: P): boolean {
-        return sourceFile instanceof J;
+        return isJava(sourceFile);
     }
 
     visitExpression(expression: Expression & J, p: P): J {

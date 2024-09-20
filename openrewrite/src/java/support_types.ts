@@ -1,19 +1,80 @@
-import {LstType, Markers, SourceFile, Tree, UUID} from "../core";
-import {J} from "./tree";
+import {LstType, Markers, SourceFile, Tree, TreeVisitor, UUID} from "../core";
 import {JavaType} from "./types";
+import {JavaVisitor} from "./visitor";
 
 export {JavaType} from "./types";
+export * as J from './tree'
+
+export interface J extends Tree {
+    get prefix(): Space;
+
+    withPrefix(prefix: Space): J;
+
+    get id(): UUID;
+
+    withId(id: UUID): J;
+
+    get markers(): Markers;
+
+    withMarkers(markers: Markers): J;
+
+    isAcceptable<P>(v: TreeVisitor<Tree, P>, p: P): boolean;
+
+    accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null;
+
+    acceptJava<P>(v: JavaVisitor<P>, p: P): J | null;
+}
+
+type Constructor<T = {}> = new (...args: any[]) => T;
+
+const JSymbol = Symbol('J');
+
+export function isJava(tree: any & Tree): tree is J {
+    return tree && tree[JSymbol] === true;
+}
+
+export function JMixin<TBase extends Constructor<Object>>(Base: TBase) {
+    abstract class JMixed extends Base implements J {
+        [JSymbol]: true = true;
+
+        abstract get prefix(): Space;
+
+        abstract withPrefix(prefix: Space): J;
+
+        abstract get id(): UUID;
+
+        abstract withId(id: UUID): J;
+
+        abstract get markers(): Markers;
+
+        abstract withMarkers(markers: Markers): J;
+
+        public isAcceptable<P>(v: TreeVisitor<Tree, P>, p: P): boolean {
+            return v.isAdaptableTo(JavaVisitor);
+        }
+
+        public accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
+            return this.acceptJava(v.adapt(JavaVisitor), p) as R | null;
+        }
+
+        public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
+            return v.defaultValue(this, p) as J | null;
+        }
+    }
+
+    return JMixed;
+}
 
 export interface JavaSourceFile extends SourceFile {
 }
 
-export interface Expression extends Tree {
+export interface Expression extends J {
     get type(): JavaType | null;
 
     withType(type: JavaType | null): TypedTree;
 }
 
-export interface Statement extends Tree {
+export interface Statement extends J {
 }
 
 export interface Loop extends Statement {
@@ -28,7 +89,7 @@ export interface NameTree extends TypedTree {
 export interface TypeTree extends NameTree {
 }
 
-export interface TypedTree extends Tree {
+export interface TypedTree extends J {
     get type(): JavaType | null;
 
     withType(type: JavaType | null): TypedTree;
