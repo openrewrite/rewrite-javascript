@@ -6,14 +6,17 @@ import {JavaVisitor} from "./visitor";
 import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
 
 export abstract class J implements Tree {
+    abstract get prefix(): Space;
+
+    abstract withPrefix(prefix: Space): J;
 
     abstract get id(): UUID;
 
-    abstract withId(id: UUID): Tree;
+    abstract withId(id: UUID): J;
 
     abstract get markers(): Markers;
 
-    abstract withMarkers(markers: Markers): Tree;
+    abstract withMarkers(markers: Markers): J;
 
     public isAcceptable<P>(v: TreeVisitor<Tree, P>, p: P): boolean {
         return v.isAdaptableTo(JavaVisitor);
