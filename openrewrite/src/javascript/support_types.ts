@@ -1,3 +1,70 @@
+import {J, JavaVisitor, Space} from "../java";
+import {Markers, Tree, TreeVisitor, UUID} from "../core";
+import {JavaScriptVisitor} from "./visitor";
+
+export * as JS from './tree'
+
+export interface JS extends J {
+    get id(): UUID;
+
+    withId(id: UUID): JS;
+
+    get markers(): Markers;
+
+    withMarkers(markers: Markers): JS;
+
+    isAcceptable<P>(v: TreeVisitor<Tree, P>, p: P): boolean;
+
+    accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null;
+
+    acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null;
+}
+
+type Constructor<T = {}> = new (...args: any[]) => T;
+
+const JSSymbol = Symbol('JS');
+
+export function isJavaScript(tree: any & Tree): tree is JS {
+    return tree && tree[JSSymbol] === true;
+}
+
+export function JSMixin<TBase extends Constructor<Object>>(Base: TBase) {
+    abstract class JSMixed extends Base implements JS {
+        [JSSymbol]: true = true;
+
+        abstract get prefix(): Space;
+
+        abstract withPrefix(prefix: Space): JS;
+
+        abstract get id(): UUID;
+
+        abstract withId(id: UUID): JS;
+
+        abstract get markers(): Markers;
+
+        abstract withMarkers(markers: Markers): JS;
+
+        public isAcceptable<P>(v: TreeVisitor<Tree, P>, p: P): boolean {
+            return v.isAdaptableTo(JavaScriptVisitor);
+        }
+
+        public accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
+            return this.acceptJavaScript(v.adapt(JavaScriptVisitor), p) as R | null;
+        }
+
+        public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
+            return v.defaultValue(this, p) as J | null;
+        }
+
+        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+            return v.defaultValue(this, p) as J | null;
+        }
+    }
+
+    return JSMixed;
+}
+
+
 export namespace JsSpace {
     export enum Location {
         ALIAS_PREFIX,

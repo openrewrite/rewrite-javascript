@@ -1,51 +1,27 @@
 // noinspection JSUnusedGlobalSymbols
 
 import * as extensions from "./extensions";
-import {JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./support_types";
+import {JS, JSMixin, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./support_types";
 import {JavaScriptVisitor} from "./visitor";
 import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
 import {Expression, J, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypedTree, TypeTree} from "../java";
 
-export abstract class JS extends J {
-    abstract get id(): UUID;
-
-    abstract withId(id: UUID): Tree;
-
-    abstract get markers(): Markers;
-
-    abstract withMarkers(markers: Markers): Tree;
-
-    public isAcceptable<P>(v: TreeVisitor<Tree, P>, p: P): boolean {
-        return v.isAdaptableTo(JavaScriptVisitor);
+@LstType("org.openrewrite.javascript.tree.JS$CompilationUnit")
+export class CompilationUnit extends SourceFileMixin(JSMixin(Object)) implements JavaSourceFile {
+    public constructor(id: UUID, prefix: Space, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, imports: JRightPadded<J.Import>[], statements: JRightPadded<Statement>[], eof: Space) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._sourcePath = sourcePath;
+        this._fileAttributes = fileAttributes;
+        this._charsetName = charsetName;
+        this._charsetBomMarked = charsetBomMarked;
+        this._checksum = checksum;
+        this._imports = imports;
+        this._statements = statements;
+        this._eof = eof;
     }
-
-    public accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
-        return this.acceptJavaScript(v.adapt(JavaScriptVisitor), p) as R | null;
-    }
-
-    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-        return v.defaultValue(this, p) as J | null;
-    }
-
-}
-
-export namespace JS {
-    @LstType("org.openrewrite.javascript.tree.JS$CompilationUnit")
-    export class JsCompilationUnit extends SourceFileMixin(JS) implements JavaSourceFile {
-        public constructor(id: UUID, prefix: Space, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, imports: JRightPadded<J.Import>[], statements: JRightPadded<Statement>[], eof: Space) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._sourcePath = sourcePath;
-            this._fileAttributes = fileAttributes;
-            this._charsetName = charsetName;
-            this._charsetBomMarked = charsetBomMarked;
-            this._checksum = checksum;
-            this._imports = imports;
-            this._statements = statements;
-            this._eof = eof;
-        }
 
         private readonly _id: UUID;
 
@@ -53,8 +29,8 @@ export namespace JS {
             return this._id;
         }
 
-        public withId(id: UUID): JsCompilationUnit {
-            return id === this._id ? this : new JsCompilationUnit(id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
+        public withId(id: UUID): CompilationUnit {
+            return id === this._id ? this : new CompilationUnit(id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
         }
 
         private readonly _prefix: Space;
@@ -63,8 +39,8 @@ export namespace JS {
             return this._prefix;
         }
 
-        public withPrefix(prefix: Space): JsCompilationUnit {
-            return prefix === this._prefix ? this : new JsCompilationUnit(this._id, prefix, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
+        public withPrefix(prefix: Space): CompilationUnit {
+            return prefix === this._prefix ? this : new CompilationUnit(this._id, prefix, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
         }
 
         private readonly _markers: Markers;
@@ -73,8 +49,8 @@ export namespace JS {
             return this._markers;
         }
 
-        public withMarkers(markers: Markers): JsCompilationUnit {
-            return markers === this._markers ? this : new JsCompilationUnit(this._id, this._prefix, markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
+        public withMarkers(markers: Markers): CompilationUnit {
+            return markers === this._markers ? this : new CompilationUnit(this._id, this._prefix, markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
         }
 
         private readonly _sourcePath: string;
@@ -83,8 +59,8 @@ export namespace JS {
             return this._sourcePath;
         }
 
-        public withSourcePath(sourcePath: string): JsCompilationUnit {
-            return sourcePath === this._sourcePath ? this : new JsCompilationUnit(this._id, this._prefix, this._markers, sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
+        public withSourcePath(sourcePath: string): CompilationUnit {
+            return sourcePath === this._sourcePath ? this : new CompilationUnit(this._id, this._prefix, this._markers, sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
         }
 
         private readonly _fileAttributes: FileAttributes | null;
@@ -93,8 +69,8 @@ export namespace JS {
             return this._fileAttributes;
         }
 
-        public withFileAttributes(fileAttributes: FileAttributes | null): JsCompilationUnit {
-            return fileAttributes === this._fileAttributes ? this : new JsCompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
+        public withFileAttributes(fileAttributes: FileAttributes | null): CompilationUnit {
+            return fileAttributes === this._fileAttributes ? this : new CompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
         }
 
         private readonly _charsetName: string | null;
@@ -103,8 +79,8 @@ export namespace JS {
             return this._charsetName;
         }
 
-        public withCharsetName(charsetName: string | null): JsCompilationUnit {
-            return charsetName === this._charsetName ? this : new JsCompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
+        public withCharsetName(charsetName: string | null): CompilationUnit {
+            return charsetName === this._charsetName ? this : new CompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
         }
 
         private readonly _charsetBomMarked: boolean;
@@ -113,8 +89,8 @@ export namespace JS {
             return this._charsetBomMarked;
         }
 
-        public withCharsetBomMarked(charsetBomMarked: boolean): JsCompilationUnit {
-            return charsetBomMarked === this._charsetBomMarked ? this : new JsCompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
+        public withCharsetBomMarked(charsetBomMarked: boolean): CompilationUnit {
+            return charsetBomMarked === this._charsetBomMarked ? this : new CompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, charsetBomMarked, this._checksum, this._imports, this._statements, this._eof);
         }
 
         private readonly _checksum: Checksum | null;
@@ -123,8 +99,8 @@ export namespace JS {
             return this._checksum;
         }
 
-        public withChecksum(checksum: Checksum | null): JsCompilationUnit {
-            return checksum === this._checksum ? this : new JsCompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, checksum, this._imports, this._statements, this._eof);
+        public withChecksum(checksum: Checksum | null): CompilationUnit {
+            return checksum === this._checksum ? this : new CompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, checksum, this._imports, this._statements, this._eof);
         }
 
         private readonly _imports: JRightPadded<J.Import>[];
@@ -133,7 +109,7 @@ export namespace JS {
             return JRightPadded.getElements(this._imports);
         }
 
-        public withImports(imports: J.Import[]): JsCompilationUnit {
+        public withImports(imports: J.Import[]): CompilationUnit {
             return this.padding.withImports(JRightPadded.withElements(this._imports, imports));
         }
 
@@ -143,7 +119,7 @@ export namespace JS {
             return JRightPadded.getElements(this._statements);
         }
 
-        public withStatements(statements: Statement[]): JsCompilationUnit {
+        public withStatements(statements: Statement[]): CompilationUnit {
             return this.padding.withStatements(JRightPadded.withElements(this._statements, statements));
         }
 
@@ -153,48 +129,48 @@ export namespace JS {
             return this._eof;
         }
 
-        public withEof(eof: Space): JsCompilationUnit {
-            return eof === this._eof ? this : new JsCompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, eof);
+        public withEof(eof: Space): CompilationUnit {
+            return eof === this._eof ? this : new CompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, this._imports, this._statements, eof);
         }
 
-        public printer<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
-            return PrinterFactory.current.createPrinter(cursor);
-        }
-
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitJsCompilationUnit(this, p);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get imports(): JRightPadded<J.Import>[] {
-                    return t._imports;
-                }
-                public withImports(imports: JRightPadded<J.Import>[]): JsCompilationUnit {
-                    return t._imports === imports ? t : new JS.JsCompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, imports, t._statements, t._eof);
-                }
-                public get statements(): JRightPadded<Statement>[] {
-                    return t._statements;
-                }
-                public withStatements(statements: JRightPadded<Statement>[]): JsCompilationUnit {
-                    return t._statements === statements ? t : new JS.JsCompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, t._imports, statements, t._eof);
-                }
-            }
-        }
-
+    public printer<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
+        return PrinterFactory.current.createPrinter(cursor);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$Alias")
-    export class Alias extends JS implements Expression {
-        public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<J.Identifier>, alias: J.Identifier) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._propertyName = propertyName;
-            this._alias = alias;
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitCompilationUnit(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get imports(): JRightPadded<J.Import>[] {
+                return t._imports;
+            }
+            public withImports(imports: JRightPadded<J.Import>[]): CompilationUnit {
+                return t._imports === imports ? t : new JS.CompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, imports, t._statements, t._eof);
+            }
+            public get statements(): JRightPadded<Statement>[] {
+                return t._statements;
+            }
+            public withStatements(statements: JRightPadded<Statement>[]): CompilationUnit {
+                return t._statements === statements ? t : new JS.CompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, t._imports, statements, t._eof);
+            }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$Alias")
+export class Alias extends JSMixin(Object) implements Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<J.Identifier>, alias: J.Identifier) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._propertyName = propertyName;
+        this._alias = alias;
+    }
 
         private readonly _id: UUID;
 
@@ -246,47 +222,47 @@ export namespace JS {
             return alias === this._alias ? this : new Alias(this._id, this._prefix, this._markers, this._propertyName, alias);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitAlias(this, p);
-        }
-
-        public get type(): JavaType | null {
-            return extensions.getJavaType(this);
-        }
-
-        public withType(type: JavaType): JS.Alias {
-            return extensions.withJavaType(this, type);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get propertyName(): JRightPadded<J.Identifier> {
-                    return t._propertyName;
-                }
-                public withPropertyName(propertyName: JRightPadded<J.Identifier>): Alias {
-                    return t._propertyName === propertyName ? t : new JS.Alias(t._id, t._prefix, t._markers, propertyName, t._alias);
-                }
-            }
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitAlias(this, p);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$ArrowFunction")
-    export class ArrowFunction extends JS implements Statement, Expression, TypedTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], parameters: J.Lambda.Parameters, returnTypeExpression: TypeTree | null, arrow: Space, body: J, _type: JavaType | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._leadingAnnotations = leadingAnnotations;
-            this._modifiers = modifiers;
-            this._parameters = parameters;
-            this._returnTypeExpression = returnTypeExpression;
-            this._arrow = arrow;
-            this._body = body;
-            this._type = _type;
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): JS.Alias {
+        return extensions.withJavaType(this, type);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get propertyName(): JRightPadded<J.Identifier> {
+                return t._propertyName;
+            }
+            public withPropertyName(propertyName: JRightPadded<J.Identifier>): Alias {
+                return t._propertyName === propertyName ? t : new JS.Alias(t._id, t._prefix, t._markers, propertyName, t._alias);
+            }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$ArrowFunction")
+export class ArrowFunction extends JSMixin(Object) implements Statement, Expression, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], parameters: J.Lambda.Parameters, returnTypeExpression: TypeTree | null, arrow: Space, body: J, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._leadingAnnotations = leadingAnnotations;
+        this._modifiers = modifiers;
+        this._parameters = parameters;
+        this._returnTypeExpression = returnTypeExpression;
+        this._arrow = arrow;
+        this._body = body;
+        this._type = _type;
+    }
 
         private readonly _id: UUID;
 
@@ -388,24 +364,24 @@ export namespace JS {
             return _type === this._type ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._parameters, this._returnTypeExpression, this._arrow, this._body, _type);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitArrowFunction(this, p);
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitArrowFunction(this, p);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$DefaultType")
-    export class DefaultType extends JS implements Expression, TypedTree, NameTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression, beforeEquals: Space, right: Expression, _type: JavaType | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._left = left;
-            this._beforeEquals = beforeEquals;
-            this._right = right;
-            this._type = _type;
-        }
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$DefaultType")
+export class DefaultType extends JSMixin(Object) implements Expression, TypedTree, NameTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression, beforeEquals: Space, right: Expression, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._left = left;
+        this._beforeEquals = beforeEquals;
+        this._right = right;
+        this._type = _type;
+    }
 
         private readonly _id: UUID;
 
@@ -477,22 +453,22 @@ export namespace JS {
             return _type === this._type ? this : new DefaultType(this._id, this._prefix, this._markers, this._left, this._beforeEquals, this._right, _type);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitDefaultType(this, p);
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitDefaultType(this, p);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$Delete")
-    export class Delete extends JS implements Expression, Statement {
-        public constructor(id: UUID, prefix: Space, markers: Markers, expression: Expression, _type: JavaType | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._expression = expression;
-            this._type = _type;
-        }
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$Delete")
+export class Delete extends JSMixin(Object) implements Expression, Statement {
+    public constructor(id: UUID, prefix: Space, markers: Markers, expression: Expression, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._expression = expression;
+        this._type = _type;
+    }
 
         private readonly _id: UUID;
 
@@ -544,24 +520,24 @@ export namespace JS {
             return _type === this._type ? this : new Delete(this._id, this._prefix, this._markers, this._expression, _type);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitDelete(this, p);
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitDelete(this, p);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$Export")
-    export class Export extends JS implements Statement {
-        public constructor(id: UUID, prefix: Space, markers: Markers, exports: JContainer<Expression> | null, _from: Space | null, target: J.Literal | null, initializer: JLeftPadded<Expression> | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._exports = exports;
-            this._from = _from;
-            this._target = target;
-            this._initializer = initializer;
-        }
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$Export")
+export class Export extends JSMixin(Object) implements Statement {
+    public constructor(id: UUID, prefix: Space, markers: Markers, exports: JContainer<Expression> | null, _from: Space | null, target: J.Literal | null, initializer: JLeftPadded<Expression> | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._exports = exports;
+        this._from = _from;
+        this._target = target;
+        this._initializer = initializer;
+    }
 
         private readonly _id: UUID;
 
@@ -633,37 +609,37 @@ export namespace JS {
             return this.padding.withInitializer(JLeftPadded.withElement(this._initializer, initializer));
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitExport(this, p);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get exports(): JContainer<Expression> | null {
-                    return t._exports;
-                }
-                public withExports(exports: JContainer<Expression> | null): Export {
-                    return t._exports === exports ? t : new JS.Export(t._id, t._prefix, t._markers, exports, t._from, t._target, t._initializer);
-                }
-                public get initializer(): JLeftPadded<Expression> | null {
-                    return t._initializer;
-                }
-                public withInitializer(initializer: JLeftPadded<Expression> | null): Export {
-                    return t._initializer === initializer ? t : new JS.Export(t._id, t._prefix, t._markers, t._exports, t._from, t._target, initializer);
-                }
-            }
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitExport(this, p);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$ExpressionStatement")
-    export class ExpressionStatement extends JS implements Expression, Statement {
-        public constructor(id: UUID, expression: Expression) {
-            super();
-            this._id = id;
-            this._expression = expression;
+    get padding() {
+        const t = this;
+        return new class {
+            public get exports(): JContainer<Expression> | null {
+                return t._exports;
+            }
+            public withExports(exports: JContainer<Expression> | null): Export {
+                return t._exports === exports ? t : new JS.Export(t._id, t._prefix, t._markers, exports, t._from, t._target, t._initializer);
+            }
+            public get initializer(): JLeftPadded<Expression> | null {
+                return t._initializer;
+            }
+            public withInitializer(initializer: JLeftPadded<Expression> | null): Export {
+                return t._initializer === initializer ? t : new JS.Export(t._id, t._prefix, t._markers, t._exports, t._from, t._target, initializer);
+            }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$ExpressionStatement")
+export class ExpressionStatement extends JSMixin(Object) implements Expression, Statement {
+    public constructor(id: UUID, expression: Expression) {
+        super();
+        this._id = id;
+        this._expression = expression;
+    }
 
         private readonly _id: UUID;
 
@@ -673,6 +649,14 @@ export namespace JS {
 
         public withId(id: UUID): ExpressionStatement {
             return id === this._id ? this : new ExpressionStatement(id, this._expression);
+        }
+
+        public get prefix(): Space {
+            return this._expression.prefix;
+        }
+
+        public withPrefix(prefix: Space): ExpressionStatement {
+            return this.withExpression(this._expression.withPrefix(prefix) as Expression);
         }
 
         public get markers(): Markers {
@@ -693,32 +677,32 @@ export namespace JS {
             return expression === this._expression ? this : new ExpressionStatement(this._id, expression);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitExpressionStatement(this, p);
-        }
-
-        public get type(): JavaType | null {
-            return extensions.getJavaType(this);
-        }
-
-        public withType(type: JavaType): JS.ExpressionStatement {
-            return extensions.withJavaType(this, type);
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitExpressionStatement(this, p);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$FunctionType")
-    export class FunctionType extends JS implements Expression, TypeTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, parameters: JContainer<Statement>, arrow: Space, returnType: Expression, _type: JavaType | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._parameters = parameters;
-            this._arrow = arrow;
-            this._returnType = returnType;
-            this._type = _type;
-        }
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): JS.ExpressionStatement {
+        return extensions.withJavaType(this, type);
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$FunctionType")
+export class FunctionType extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, parameters: JContainer<Statement>, arrow: Space, returnType: Expression, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._parameters = parameters;
+        this._arrow = arrow;
+        this._returnType = returnType;
+        this._type = _type;
+    }
 
         private readonly _id: UUID;
 
@@ -790,37 +774,37 @@ export namespace JS {
             return _type === this._type ? this : new FunctionType(this._id, this._prefix, this._markers, this._parameters, this._arrow, this._returnType, _type);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitFunctionType(this, p);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get parameters(): JContainer<Statement> {
-                    return t._parameters;
-                }
-                public withParameters(parameters: JContainer<Statement>): FunctionType {
-                    return t._parameters === parameters ? t : new JS.FunctionType(t._id, t._prefix, t._markers, parameters, t._arrow, t._returnType, t._type);
-                }
-            }
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitFunctionType(this, p);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$JsImport")
-    export class JsImport extends JS implements Statement {
-        public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<J.Identifier> | null, imports: JContainer<Expression> | null, _from: Space | null, target: J.Literal | null, initializer: JLeftPadded<Expression> | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._name = name;
-            this._imports = imports;
-            this._from = _from;
-            this._target = target;
-            this._initializer = initializer;
+    get padding() {
+        const t = this;
+        return new class {
+            public get parameters(): JContainer<Statement> {
+                return t._parameters;
+            }
+            public withParameters(parameters: JContainer<Statement>): FunctionType {
+                return t._parameters === parameters ? t : new JS.FunctionType(t._id, t._prefix, t._markers, parameters, t._arrow, t._returnType, t._type);
+            }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JsImport")
+export class JsImport extends JSMixin(Object) implements Statement {
+    public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<J.Identifier> | null, imports: JContainer<Expression> | null, _from: Space | null, target: J.Literal | null, initializer: JLeftPadded<Expression> | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._name = name;
+        this._imports = imports;
+        this._from = _from;
+        this._target = target;
+        this._initializer = initializer;
+    }
 
         private readonly _id: UUID;
 
@@ -902,48 +886,48 @@ export namespace JS {
             return this.padding.withInitializer(JLeftPadded.withElement(this._initializer, initializer));
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitJsImport(this, p);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get name(): JRightPadded<J.Identifier> | null {
-                    return t._name;
-                }
-                public withName(name: JRightPadded<J.Identifier> | null): JsImport {
-                    return t._name === name ? t : new JS.JsImport(t._id, t._prefix, t._markers, name, t._imports, t._from, t._target, t._initializer);
-                }
-                public get imports(): JContainer<Expression> | null {
-                    return t._imports;
-                }
-                public withImports(imports: JContainer<Expression> | null): JsImport {
-                    return t._imports === imports ? t : new JS.JsImport(t._id, t._prefix, t._markers, t._name, imports, t._from, t._target, t._initializer);
-                }
-                public get initializer(): JLeftPadded<Expression> | null {
-                    return t._initializer;
-                }
-                public withInitializer(initializer: JLeftPadded<Expression> | null): JsImport {
-                    return t._initializer === initializer ? t : new JS.JsImport(t._id, t._prefix, t._markers, t._name, t._imports, t._from, t._target, initializer);
-                }
-            }
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJsImport(this, p);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$JsBinary")
-    export class JsBinary extends JS implements Expression, TypedTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression, operator: JLeftPadded<JsBinary.Type>, right: Expression, _type: JavaType | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._left = left;
-            this._operator = operator;
-            this._right = right;
-            this._type = _type;
+    get padding() {
+        const t = this;
+        return new class {
+            public get name(): JRightPadded<J.Identifier> | null {
+                return t._name;
+            }
+            public withName(name: JRightPadded<J.Identifier> | null): JsImport {
+                return t._name === name ? t : new JS.JsImport(t._id, t._prefix, t._markers, name, t._imports, t._from, t._target, t._initializer);
+            }
+            public get imports(): JContainer<Expression> | null {
+                return t._imports;
+            }
+            public withImports(imports: JContainer<Expression> | null): JsImport {
+                return t._imports === imports ? t : new JS.JsImport(t._id, t._prefix, t._markers, t._name, imports, t._from, t._target, t._initializer);
+            }
+            public get initializer(): JLeftPadded<Expression> | null {
+                return t._initializer;
+            }
+            public withInitializer(initializer: JLeftPadded<Expression> | null): JsImport {
+                return t._initializer === initializer ? t : new JS.JsImport(t._id, t._prefix, t._markers, t._name, t._imports, t._from, t._target, initializer);
+            }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JsBinary")
+export class JsBinary extends JSMixin(Object) implements Expression, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression, operator: JLeftPadded<JsBinary.Type>, right: Expression, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._left = left;
+        this._operator = operator;
+        this._right = right;
+        this._type = _type;
+    }
 
         private readonly _id: UUID;
 
@@ -1015,46 +999,46 @@ export namespace JS {
             return _type === this._type ? this : new JsBinary(this._id, this._prefix, this._markers, this._left, this._operator, this._right, _type);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitJsBinary(this, p);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get operator(): JLeftPadded<JsBinary.Type> {
-                    return t._operator;
-                }
-                public withOperator(operator: JLeftPadded<JsBinary.Type>): JsBinary {
-                    return t._operator === operator ? t : new JS.JsBinary(t._id, t._prefix, t._markers, t._left, operator, t._right, t._type);
-                }
-            }
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJsBinary(this, p);
     }
 
-    export namespace JsBinary {
-        export enum Type {
+    get padding() {
+        const t = this;
+        return new class {
+            public get operator(): JLeftPadded<JsBinary.Type> {
+                return t._operator;
+            }
+            public withOperator(operator: JLeftPadded<JsBinary.Type>): JsBinary {
+                return t._operator === operator ? t : new JS.JsBinary(t._id, t._prefix, t._markers, t._left, operator, t._right, t._type);
+            }
+        }
+    }
+
+}
+
+export namespace JsBinary {
+    export enum Type {
             IdentityEquals = 0,
             IdentityNotEquals = 1,
             In = 2,
 
-        }
-
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$JsOperator")
-    export class JsOperator extends JS implements Statement, Expression, TypedTree, NameTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression | null, operator: JLeftPadded<JsOperator.Type>, right: Expression, _type: JavaType | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._left = left;
-            this._operator = operator;
-            this._right = right;
-            this._type = _type;
-        }
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JsOperator")
+export class JsOperator extends JSMixin(Object) implements Statement, Expression, TypedTree, NameTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression | null, operator: JLeftPadded<JsOperator.Type>, right: Expression, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._left = left;
+        this._operator = operator;
+        this._right = right;
+        this._type = _type;
+    }
 
         private readonly _id: UUID;
 
@@ -1126,48 +1110,48 @@ export namespace JS {
             return _type === this._type ? this : new JsOperator(this._id, this._prefix, this._markers, this._left, this._operator, this._right, _type);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitJsOperator(this, p);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get operator(): JLeftPadded<JsOperator.Type> {
-                    return t._operator;
-                }
-                public withOperator(operator: JLeftPadded<JsOperator.Type>): JsOperator {
-                    return t._operator === operator ? t : new JS.JsOperator(t._id, t._prefix, t._markers, t._left, operator, t._right, t._type);
-                }
-            }
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJsOperator(this, p);
     }
 
-    export namespace JsOperator {
-        export enum Type {
+    get padding() {
+        const t = this;
+        return new class {
+            public get operator(): JLeftPadded<JsOperator.Type> {
+                return t._operator;
+            }
+            public withOperator(operator: JLeftPadded<JsOperator.Type>): JsOperator {
+                return t._operator === operator ? t : new JS.JsOperator(t._id, t._prefix, t._markers, t._left, operator, t._right, t._type);
+            }
+        }
+    }
+
+}
+
+export namespace JsOperator {
+    export enum Type {
             Await = 0,
             Delete = 1,
             In = 2,
             TypeOf = 3,
 
-        }
-
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations")
-    export class ObjectBindingDeclarations extends JS implements Statement, TypedTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<ObjectBindingDeclarations.Binding>, initializer: JLeftPadded<Expression> | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._leadingAnnotations = leadingAnnotations;
-            this._modifiers = modifiers;
-            this._typeExpression = typeExpression;
-            this._bindings = bindings;
-            this._initializer = initializer;
-        }
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations")
+export class ObjectBindingDeclarations extends JSMixin(Object) implements Statement, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<ObjectBindingDeclarations.Binding>, initializer: JLeftPadded<Expression> | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._leadingAnnotations = leadingAnnotations;
+        this._modifiers = modifiers;
+        this._typeExpression = typeExpression;
+        this._bindings = bindings;
+        this._initializer = initializer;
+    }
 
         private readonly _id: UUID;
 
@@ -1249,53 +1233,53 @@ export namespace JS {
             return this.padding.withInitializer(JLeftPadded.withElement(this._initializer, initializer));
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitObjectBindingDeclarations(this, p);
-        }
-
-        public get type(): JavaType | null {
-            return extensions.getJavaType(this);
-        }
-
-        public withType(type: JavaType): JS.ObjectBindingDeclarations {
-            return extensions.withJavaType(this, type);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get bindings(): JContainer<ObjectBindingDeclarations.Binding> {
-                    return t._bindings;
-                }
-                public withBindings(bindings: JContainer<ObjectBindingDeclarations.Binding>): ObjectBindingDeclarations {
-                    return t._bindings === bindings ? t : new JS.ObjectBindingDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, bindings, t._initializer);
-                }
-                public get initializer(): JLeftPadded<Expression> | null {
-                    return t._initializer;
-                }
-                public withInitializer(initializer: JLeftPadded<Expression> | null): ObjectBindingDeclarations {
-                    return t._initializer === initializer ? t : new JS.ObjectBindingDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, t._bindings, initializer);
-                }
-            }
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitObjectBindingDeclarations(this, p);
     }
 
-    export namespace ObjectBindingDeclarations {
-        @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations$Binding")
-        export class Binding extends JS implements NameTree {
-            public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<J.Identifier> | null, name: J.Identifier, dimensionsAfterName: JLeftPadded<Space>[], afterVararg: Space | null, initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
-                super();
-                this._id = id;
-                this._prefix = prefix;
-                this._markers = markers;
-                this._propertyName = propertyName;
-                this._name = name;
-                this._dimensionsAfterName = dimensionsAfterName;
-                this._afterVararg = afterVararg;
-                this._initializer = initializer;
-                this._variableType = variableType;
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): JS.ObjectBindingDeclarations {
+        return extensions.withJavaType(this, type);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get bindings(): JContainer<ObjectBindingDeclarations.Binding> {
+                return t._bindings;
             }
+            public withBindings(bindings: JContainer<ObjectBindingDeclarations.Binding>): ObjectBindingDeclarations {
+                return t._bindings === bindings ? t : new JS.ObjectBindingDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, bindings, t._initializer);
+            }
+            public get initializer(): JLeftPadded<Expression> | null {
+                return t._initializer;
+            }
+            public withInitializer(initializer: JLeftPadded<Expression> | null): ObjectBindingDeclarations {
+                return t._initializer === initializer ? t : new JS.ObjectBindingDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, t._bindings, initializer);
+            }
+        }
+    }
+
+}
+
+export namespace ObjectBindingDeclarations {
+    @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations$Binding")
+    export class Binding extends JSMixin(Object) implements NameTree {
+        public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<J.Identifier> | null, name: J.Identifier, dimensionsAfterName: JLeftPadded<Space>[], afterVararg: Space | null, initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._propertyName = propertyName;
+            this._name = name;
+            this._dimensionsAfterName = dimensionsAfterName;
+            this._afterVararg = afterVararg;
+            this._initializer = initializer;
+            this._variableType = variableType;
+        }
 
             private readonly _id: UUID;
 
@@ -1387,53 +1371,53 @@ export namespace JS {
                 return variableType === this._variableType ? this : new ObjectBindingDeclarations.Binding(this._id, this._prefix, this._markers, this._propertyName, this._name, this._dimensionsAfterName, this._afterVararg, this._initializer, variableType);
             }
 
-            public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-                return v.visitObjectBindingDeclarationsBinding(this, p);
-            }
+        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+            return v.visitObjectBindingDeclarationsBinding(this, p);
+        }
 
-            public get type(): JavaType | null {
-                return extensions.getJavaType(this);
-            }
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
 
-            public withType(type: JavaType): JS.ObjectBindingDeclarations.Binding {
-                return extensions.withJavaType(this, type);
-            }
+        public withType(type: JavaType): JS.ObjectBindingDeclarations.Binding {
+            return extensions.withJavaType(this, type);
+        }
 
-            get padding() {
-                const t = this;
-                return new class {
-                    public get propertyName(): JRightPadded<J.Identifier> | null {
-                        return t._propertyName;
-                    }
-                    public withPropertyName(propertyName: JRightPadded<J.Identifier> | null): ObjectBindingDeclarations.Binding {
-                        return t._propertyName === propertyName ? t : new JS.ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, propertyName, t._name, t._dimensionsAfterName, t._afterVararg, t._initializer, t._variableType);
-                    }
-                    public get dimensionsAfterName(): JLeftPadded<Space>[] {
-                        return t._dimensionsAfterName;
-                    }
-                    public withDimensionsAfterName(dimensionsAfterName: JLeftPadded<Space>[]): ObjectBindingDeclarations.Binding {
-                        return t._dimensionsAfterName === dimensionsAfterName ? t : new JS.ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, t._propertyName, t._name, dimensionsAfterName, t._afterVararg, t._initializer, t._variableType);
-                    }
-                    public get initializer(): JLeftPadded<Expression> | null {
-                        return t._initializer;
-                    }
-                    public withInitializer(initializer: JLeftPadded<Expression> | null): ObjectBindingDeclarations.Binding {
-                        return t._initializer === initializer ? t : new JS.ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, t._propertyName, t._name, t._dimensionsAfterName, t._afterVararg, initializer, t._variableType);
-                    }
+        get padding() {
+            const t = this;
+            return new class {
+                public get propertyName(): JRightPadded<J.Identifier> | null {
+                    return t._propertyName;
+                }
+                public withPropertyName(propertyName: JRightPadded<J.Identifier> | null): ObjectBindingDeclarations.Binding {
+                    return t._propertyName === propertyName ? t : new JS.ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, propertyName, t._name, t._dimensionsAfterName, t._afterVararg, t._initializer, t._variableType);
+                }
+                public get dimensionsAfterName(): JLeftPadded<Space>[] {
+                    return t._dimensionsAfterName;
+                }
+                public withDimensionsAfterName(dimensionsAfterName: JLeftPadded<Space>[]): ObjectBindingDeclarations.Binding {
+                    return t._dimensionsAfterName === dimensionsAfterName ? t : new JS.ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, t._propertyName, t._name, dimensionsAfterName, t._afterVararg, t._initializer, t._variableType);
+                }
+                public get initializer(): JLeftPadded<Expression> | null {
+                    return t._initializer;
+                }
+                public withInitializer(initializer: JLeftPadded<Expression> | null): ObjectBindingDeclarations.Binding {
+                    return t._initializer === initializer ? t : new JS.ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, t._propertyName, t._name, t._dimensionsAfterName, t._afterVararg, initializer, t._variableType);
                 }
             }
-
         }
 
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$StatementExpression")
-    export class StatementExpression extends JS implements Expression, Statement {
-        public constructor(id: UUID, statement: Statement) {
-            super();
-            this._id = id;
-            this._statement = statement;
-        }
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$StatementExpression")
+export class StatementExpression extends JSMixin(Object) implements Expression, Statement {
+    public constructor(id: UUID, statement: Statement) {
+        super();
+        this._id = id;
+        this._statement = statement;
+    }
 
         private readonly _id: UUID;
 
@@ -1443,6 +1427,14 @@ export namespace JS {
 
         public withId(id: UUID): StatementExpression {
             return id === this._id ? this : new StatementExpression(id, this._statement);
+        }
+
+        public get prefix(): Space {
+            return this._statement.prefix;
+        }
+
+        public withPrefix(prefix: Space): StatementExpression {
+            return this.withStatement(this._statement.withPrefix(prefix) as Statement);
         }
 
         public get markers(): Markers {
@@ -1463,32 +1455,32 @@ export namespace JS {
             return statement === this._statement ? this : new StatementExpression(this._id, statement);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitStatementExpression(this, p);
-        }
-
-        public get type(): JavaType | null {
-            return extensions.getJavaType(this);
-        }
-
-        public withType(type: JavaType): JS.StatementExpression {
-            return extensions.withJavaType(this, type);
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitStatementExpression(this, p);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$TemplateExpression")
-    export class TemplateExpression extends JS implements Statement, Expression {
-        public constructor(id: UUID, prefix: Space, markers: Markers, delimiter: string, tag: JRightPadded<Expression> | null, strings: J[], _type: JavaType | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._delimiter = delimiter;
-            this._tag = tag;
-            this._strings = strings;
-            this._type = _type;
-        }
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): JS.StatementExpression {
+        return extensions.withJavaType(this, type);
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$TemplateExpression")
+export class TemplateExpression extends JSMixin(Object) implements Statement, Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, delimiter: string, tag: JRightPadded<Expression> | null, strings: J[], _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._delimiter = delimiter;
+        this._tag = tag;
+        this._strings = strings;
+        this._type = _type;
+    }
 
         private readonly _id: UUID;
 
@@ -1560,36 +1552,36 @@ export namespace JS {
             return _type === this._type ? this : new TemplateExpression(this._id, this._prefix, this._markers, this._delimiter, this._tag, this._strings, _type);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitTemplateExpression(this, p);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get tag(): JRightPadded<Expression> | null {
-                    return t._tag;
-                }
-                public withTag(tag: JRightPadded<Expression> | null): TemplateExpression {
-                    return t._tag === tag ? t : new JS.TemplateExpression(t._id, t._prefix, t._markers, t._delimiter, tag, t._strings, t._type);
-                }
-            }
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTemplateExpression(this, p);
     }
 
-    export namespace TemplateExpression {
-        @LstType("org.openrewrite.javascript.tree.JS$TemplateExpression$Value")
-        export class Value extends JS {
-            public constructor(id: UUID, prefix: Space, markers: Markers, tree: J, after: Space, enclosedInBraces: boolean) {
-                super();
-                this._id = id;
-                this._prefix = prefix;
-                this._markers = markers;
-                this._tree = tree;
-                this._after = after;
-                this._enclosedInBraces = enclosedInBraces;
+    get padding() {
+        const t = this;
+        return new class {
+            public get tag(): JRightPadded<Expression> | null {
+                return t._tag;
             }
+            public withTag(tag: JRightPadded<Expression> | null): TemplateExpression {
+                return t._tag === tag ? t : new JS.TemplateExpression(t._id, t._prefix, t._markers, t._delimiter, tag, t._strings, t._type);
+            }
+        }
+    }
+
+}
+
+export namespace TemplateExpression {
+    @LstType("org.openrewrite.javascript.tree.JS$TemplateExpression$Value")
+    export class Value extends JSMixin(Object) {
+        public constructor(id: UUID, prefix: Space, markers: Markers, tree: J, after: Space, enclosedInBraces: boolean) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._tree = tree;
+            this._after = after;
+            this._enclosedInBraces = enclosedInBraces;
+        }
 
             private readonly _id: UUID;
 
@@ -1651,24 +1643,24 @@ export namespace JS {
                 return enclosedInBraces === this._enclosedInBraces ? this : new TemplateExpression.Value(this._id, this._prefix, this._markers, this._tree, this._after, enclosedInBraces);
             }
 
-            public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-                return v.visitTemplateExpressionValue(this, p);
-            }
-
+        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+            return v.visitTemplateExpressionValue(this, p);
         }
 
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$Tuple")
-    export class Tuple extends JS implements Expression, TypeTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, elements: JContainer<J>, _type: JavaType | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._elements = elements;
-            this._type = _type;
-        }
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$Tuple")
+export class Tuple extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, elements: JContainer<J>, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._elements = elements;
+        this._type = _type;
+    }
 
         private readonly _id: UUID;
 
@@ -1720,38 +1712,38 @@ export namespace JS {
             return _type === this._type ? this : new Tuple(this._id, this._prefix, this._markers, this._elements, _type);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitTuple(this, p);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get elements(): JContainer<J> {
-                    return t._elements;
-                }
-                public withElements(elements: JContainer<J>): Tuple {
-                    return t._elements === elements ? t : new JS.Tuple(t._id, t._prefix, t._markers, elements, t._type);
-                }
-            }
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTuple(this, p);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$TypeDeclaration")
-    export class TypeDeclaration extends JS implements Statement, TypedTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], name: J.Identifier, typeParameters: J.TypeParameters | null, initializer: JLeftPadded<Expression>, javaType: JavaType | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._leadingAnnotations = leadingAnnotations;
-            this._modifiers = modifiers;
-            this._name = name;
-            this._typeParameters = typeParameters;
-            this._initializer = initializer;
-            this._javaType = javaType;
+    get padding() {
+        const t = this;
+        return new class {
+            public get elements(): JContainer<J> {
+                return t._elements;
+            }
+            public withElements(elements: JContainer<J>): Tuple {
+                return t._elements === elements ? t : new JS.Tuple(t._id, t._prefix, t._markers, elements, t._type);
+            }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$TypeDeclaration")
+export class TypeDeclaration extends JSMixin(Object) implements Statement, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], name: J.Identifier, typeParameters: J.TypeParameters | null, initializer: JLeftPadded<Expression>, javaType: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._leadingAnnotations = leadingAnnotations;
+        this._modifiers = modifiers;
+        this._name = name;
+        this._typeParameters = typeParameters;
+        this._initializer = initializer;
+        this._javaType = javaType;
+    }
 
         private readonly _id: UUID;
 
@@ -1839,42 +1831,42 @@ export namespace JS {
             return this._javaType;
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitTypeDeclaration(this, p);
-        }
-
-        public get type(): JavaType | null {
-            return extensions.getJavaType(this);
-        }
-
-        public withType(type: JavaType): JS.TypeDeclaration {
-            return extensions.withJavaType(this, type);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get initializer(): JLeftPadded<Expression> {
-                    return t._initializer;
-                }
-                public withInitializer(initializer: JLeftPadded<Expression>): TypeDeclaration {
-                    return t._initializer === initializer ? t : new JS.TypeDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._name, t._typeParameters, initializer, t._javaType);
-                }
-            }
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTypeDeclaration(this, p);
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$TypeOperator")
-    export class TypeOperator extends JS implements Expression, TypedTree, NameTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, operator: TypeOperator.Type, expression: JLeftPadded<Expression>) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._operator = operator;
-            this._expression = expression;
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): JS.TypeDeclaration {
+        return extensions.withJavaType(this, type);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get initializer(): JLeftPadded<Expression> {
+                return t._initializer;
+            }
+            public withInitializer(initializer: JLeftPadded<Expression>): TypeDeclaration {
+                return t._initializer === initializer ? t : new JS.TypeDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._name, t._typeParameters, initializer, t._javaType);
+            }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$TypeOperator")
+export class TypeOperator extends JSMixin(Object) implements Expression, TypedTree, NameTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, operator: TypeOperator.Type, expression: JLeftPadded<Expression>) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._operator = operator;
+        this._expression = expression;
+    }
 
         private readonly _id: UUID;
 
@@ -1926,52 +1918,52 @@ export namespace JS {
             return this.padding.withExpression(this._expression.withElement(expression));
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitTypeOperator(this, p);
-        }
-
-        public get type(): JavaType | null {
-            return extensions.getJavaType(this);
-        }
-
-        public withType(type: JavaType): JS.TypeOperator {
-            return extensions.withJavaType(this, type);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get expression(): JLeftPadded<Expression> {
-                    return t._expression;
-                }
-                public withExpression(expression: JLeftPadded<Expression>): TypeOperator {
-                    return t._expression === expression ? t : new JS.TypeOperator(t._id, t._prefix, t._markers, t._operator, expression);
-                }
-            }
-        }
-
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTypeOperator(this, p);
     }
 
-    export namespace TypeOperator {
-        export enum Type {
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): JS.TypeOperator {
+        return extensions.withJavaType(this, type);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get expression(): JLeftPadded<Expression> {
+                return t._expression;
+            }
+            public withExpression(expression: JLeftPadded<Expression>): TypeOperator {
+                return t._expression === expression ? t : new JS.TypeOperator(t._id, t._prefix, t._markers, t._operator, expression);
+            }
+        }
+    }
+
+}
+
+export namespace TypeOperator {
+    export enum Type {
             ReadOnly = 0,
             KeyOf = 1,
 
-        }
-
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$Unary")
-    export class JsUnary extends JS implements Statement, Expression, TypedTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, operator: JLeftPadded<JsUnary.Type>, expression: Expression, _type: JavaType | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._operator = operator;
-            this._expression = expression;
-            this._type = _type;
-        }
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$Unary")
+export class Unary extends JSMixin(Object) implements Statement, Expression, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, operator: JLeftPadded<Unary.Type>, expression: Expression, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._operator = operator;
+        this._expression = expression;
+        this._type = _type;
+    }
 
         private readonly _id: UUID;
 
@@ -1979,8 +1971,8 @@ export namespace JS {
             return this._id;
         }
 
-        public withId(id: UUID): JsUnary {
-            return id === this._id ? this : new JsUnary(id, this._prefix, this._markers, this._operator, this._expression, this._type);
+        public withId(id: UUID): Unary {
+            return id === this._id ? this : new Unary(id, this._prefix, this._markers, this._operator, this._expression, this._type);
         }
 
         private readonly _prefix: Space;
@@ -1989,8 +1981,8 @@ export namespace JS {
             return this._prefix;
         }
 
-        public withPrefix(prefix: Space): JsUnary {
-            return prefix === this._prefix ? this : new JsUnary(this._id, prefix, this._markers, this._operator, this._expression, this._type);
+        public withPrefix(prefix: Space): Unary {
+            return prefix === this._prefix ? this : new Unary(this._id, prefix, this._markers, this._operator, this._expression, this._type);
         }
 
         private readonly _markers: Markers;
@@ -1999,17 +1991,17 @@ export namespace JS {
             return this._markers;
         }
 
-        public withMarkers(markers: Markers): JsUnary {
-            return markers === this._markers ? this : new JsUnary(this._id, this._prefix, markers, this._operator, this._expression, this._type);
+        public withMarkers(markers: Markers): Unary {
+            return markers === this._markers ? this : new Unary(this._id, this._prefix, markers, this._operator, this._expression, this._type);
         }
 
-        private readonly _operator: JLeftPadded<JsUnary.Type>;
+        private readonly _operator: JLeftPadded<Unary.Type>;
 
-        public get operator(): JsUnary.Type {
+        public get operator(): Unary.Type {
             return this._operator.element;
         }
 
-        public withOperator(operator: JsUnary.Type): JsUnary {
+        public withOperator(operator: Unary.Type): Unary {
             return this.padding.withOperator(this._operator.withElement(operator));
         }
 
@@ -2019,8 +2011,8 @@ export namespace JS {
             return this._expression;
         }
 
-        public withExpression(expression: Expression): JsUnary {
-            return expression === this._expression ? this : new JsUnary(this._id, this._prefix, this._markers, this._operator, expression, this._type);
+        public withExpression(expression: Expression): Unary {
+            return expression === this._expression ? this : new Unary(this._id, this._prefix, this._markers, this._operator, expression, this._type);
         }
 
         private readonly _type: JavaType | null;
@@ -2029,46 +2021,46 @@ export namespace JS {
             return this._type;
         }
 
-        public withType(_type: JavaType | null): JsUnary {
-            return _type === this._type ? this : new JsUnary(this._id, this._prefix, this._markers, this._operator, this._expression, _type);
+        public withType(_type: JavaType | null): Unary {
+            return _type === this._type ? this : new Unary(this._id, this._prefix, this._markers, this._operator, this._expression, _type);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitJsUnary(this, p);
-        }
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitUnary(this, p);
+    }
 
-        get padding() {
-            const t = this;
-            return new class {
-                public get operator(): JLeftPadded<JsUnary.Type> {
-                    return t._operator;
-                }
-                public withOperator(operator: JLeftPadded<JsUnary.Type>): JsUnary {
-                    return t._operator === operator ? t : new JS.JsUnary(t._id, t._prefix, t._markers, operator, t._expression, t._type);
-                }
+    get padding() {
+        const t = this;
+        return new class {
+            public get operator(): JLeftPadded<Unary.Type> {
+                return t._operator;
+            }
+            public withOperator(operator: JLeftPadded<Unary.Type>): Unary {
+                return t._operator === operator ? t : new JS.Unary(t._id, t._prefix, t._markers, operator, t._expression, t._type);
             }
         }
-
     }
 
-    export namespace JsUnary {
-        export enum Type {
+}
+
+export namespace Unary {
+    export enum Type {
             Spread = 0,
 
-        }
-
     }
 
-    @LstType("org.openrewrite.javascript.tree.JS$Union")
-    export class Union extends JS implements Expression, TypeTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, types: JRightPadded<Expression>[], _type: JavaType | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._types = types;
-            this._type = _type;
-        }
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$Union")
+export class Union extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, types: JRightPadded<Expression>[], _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._types = types;
+        this._type = _type;
+    }
 
         private readonly _id: UUID;
 
@@ -2120,22 +2112,20 @@ export namespace JS {
             return _type === this._type ? this : new Union(this._id, this._prefix, this._markers, this._types, _type);
         }
 
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitUnion(this, p);
-        }
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitUnion(this, p);
+    }
 
-        get padding() {
-            const t = this;
-            return new class {
-                public get types(): JRightPadded<Expression>[] {
-                    return t._types;
-                }
-                public withTypes(types: JRightPadded<Expression>[]): Union {
-                    return t._types === types ? t : new JS.Union(t._id, t._prefix, t._markers, types, t._type);
-                }
+    get padding() {
+        const t = this;
+        return new class {
+            public get types(): JRightPadded<Expression>[] {
+                return t._types;
+            }
+            public withTypes(types: JRightPadded<Expression>[]): Union {
+                return t._types === types ? t : new JS.Union(t._id, t._prefix, t._markers, types, t._type);
             }
         }
-
     }
 
 }

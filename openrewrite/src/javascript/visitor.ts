@@ -1,15 +1,14 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
-import {JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./support_types";
-import {JS} from "./tree";
+import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./support_types";
 import {Expression, J, JavaVisitor, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java";
 
 export class JavaScriptVisitor<P> extends JavaVisitor<P> {
     isAcceptable(sourceFile: SourceFile, p: P): boolean {
-        return sourceFile instanceof JS;
+        return isJavaScript(sourceFile);
     }
 
-    public visitJsCompilationUnit(compilationUnit: JS.JsCompilationUnit, p: P): J | null {
+    public visitCompilationUnit(compilationUnit: JS.CompilationUnit, p: P): J | null {
         compilationUnit = compilationUnit.withPrefix(this.visitSpace(compilationUnit.prefix, Space.Location.COMPILATION_UNIT_PREFIX, p)!);
         compilationUnit = compilationUnit.withMarkers(this.visitMarkers(compilationUnit.markers, p));
         compilationUnit = compilationUnit.padding.withImports(ListUtils.map(compilationUnit.padding.imports, el => this.visitRightPadded(el, JRightPadded.Location.IMPORT, p)));
@@ -283,20 +282,20 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return typeOperator;
     }
 
-    public visitJsUnary(unary: JS.JsUnary, p: P): J | null {
+    public visitUnary(unary: JS.Unary, p: P): J | null {
         unary = unary.withPrefix(this.visitSpace(unary.prefix, JsSpace.Location.UNARY_PREFIX, p)!);
         let tempStatement = this.visitStatement(unary, p) as Statement & J;
-        if (!(tempStatement instanceof JS.JsUnary))
+        if (!(tempStatement instanceof JS.Unary))
         {
             return tempStatement;
         }
-        unary = tempStatement as JS.JsUnary;
+        unary = tempStatement as JS.Unary;
         let tempExpression = this.visitExpression(unary, p) as Expression & J;
-        if (!(tempExpression instanceof JS.JsUnary))
+        if (!(tempExpression instanceof JS.Unary))
         {
             return tempExpression;
         }
-        unary = tempExpression as JS.JsUnary;
+        unary = tempExpression as JS.Unary;
         unary = unary.withMarkers(this.visitMarkers(unary.markers, p));
         unary = unary.padding.withOperator(this.visitLeftPadded(unary.padding.operator, JsLeftPadded.Location.UNARY_OPERATOR, p)!);
         unary = unary.withExpression(this.visitAndCast(unary.expression, p)!);
