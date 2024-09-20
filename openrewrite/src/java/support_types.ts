@@ -76,6 +76,15 @@ export class Space {
 }
 
 export interface Comment {
+    get multiline(): boolean;
+
+    get suffix(): string;
+
+    withSuffix(suffix: string): Comment;
+
+    get markers(): Markers;
+
+    withMarkers(markers: Markers): Comment;
 }
 
 @LstType("org.openrewrite.java.tree.TextComment")
