@@ -200,7 +200,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         binding = binding.withMarkers(this.visitMarkers(binding.markers, p));
         binding = binding.padding.withPropertyName(this.visitRightPadded(binding.padding.propertyName, JsRightPadded.Location.OBJECT_BINDING_DECLARATIONS_BINDING_PROPERTY_NAME, p));
         binding = binding.withName(this.visitAndCast(binding.name, p)!);
-        binding = binding.padding.withDimensionsAfterName(ListUtils.map(binding.padding.dimensionsAfterName, el => this.visitLeftPadded(el, JsLeftPadded.Location.OBJECT_BINDING_DECLARATIONS_BINDING_DIMENSIONS_AFTER_NAME, p)));
+        binding = binding.withDimensionsAfterName(ListUtils.map(binding.dimensionsAfterName, el => this.visitLeftPadded(el, JsLeftPadded.Location.OBJECT_BINDING_DECLARATIONS_BINDING_DIMENSIONS_AFTER_NAME, p)));
         binding = binding.withAfterVararg(this.visitSpace(binding.afterVararg, JsSpace.Location.OBJECT_BINDING_DECLARATIONS_BINDING_AFTER_VARARG, p));
         binding = binding.padding.withInitializer(this.visitLeftPadded(binding.padding.initializer, JsLeftPadded.Location.OBJECT_BINDING_DECLARATIONS_BINDING_INITIALIZER, p));
         return binding;
@@ -315,19 +315,31 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return union;
     }
 
-    public visitContainer<T>(container: JContainer<T> | null, loc: JContainer.Location | JsContainer.Location, p: P) {
+    public visitJsLeftPadded<T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P) {
+        return extensions.visitJsLeftPadded(this, left, loc, p);
+    }
+
+    public visitJsRightPadded<T>(right: JRightPadded<T> | null, loc: JsRightPadded.Location, p: P) {
+        return extensions.visitJsRightPadded(this, right, loc, p);
+    }
+
+    public visitJsContainer<T>(container: JContainer<T> | null, loc: JsContainer.Location, p: P) {
+        return extensions.visitJsContainer(this, container, loc, p);
+    }
+
+    public visitContainer<T>(container: JContainer<T> | null, loc: JContainer.Location, p: P) {
         return extensions.visitContainer(this, container, loc, p);
     }
 
-    public visitLeftPadded<T>(left: JLeftPadded<T> | null, loc: JLeftPadded.Location | JsLeftPadded.Location, p: P) {
+    public visitLeftPadded<T>(left: JLeftPadded<T> | null, loc: JLeftPadded.Location, p: P) {
         return extensions.visitLeftPadded(this, left, loc, p);
     }
 
-    public visitRightPadded<T>(right: JRightPadded<T> | null, loc: JRightPadded.Location | JsRightPadded.Location, p: P) {
+    public visitRightPadded<T>(right: JRightPadded<T> | null, loc: JRightPadded.Location, p: P) {
         return extensions.visitRightPadded(this, right, loc, p);
     }
 
-    public visitSpace(space: Space | null, loc: Space.Location | JsSpace.Location, p: P): Space {
+    public visitSpace(space: Space | null, loc: Space.Location, p: P): Space {
         return extensions.visitSpace(this, space, loc, p);
     }
 
