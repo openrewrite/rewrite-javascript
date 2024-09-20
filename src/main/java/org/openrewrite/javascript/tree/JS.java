@@ -1551,17 +1551,17 @@ public interface JS extends J {
         }
 
         @Nullable
-        JavaType javaType;
+        JavaType type;
 
         @Override
         public @Nullable JavaType getType() {
-            return javaType;
+            return type;
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public TypeDeclaration withType(@Nullable JavaType javaType) {
-            return this.javaType == javaType ? this : new TypeDeclaration(id, prefix, markers, leadingAnnotations, modifiers, name, typeParameters, initializer, javaType);
+            return this.type == javaType ? this : new TypeDeclaration(id, prefix, markers, leadingAnnotations, modifiers, name, typeParameters, initializer, javaType);
         }
 
         @Override
@@ -1599,7 +1599,7 @@ public interface JS extends J {
             }
 
             public TypeDeclaration withInitializer(JLeftPadded<Expression> initializer) {
-                return t.initializer == initializer ? t : new TypeDeclaration(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.name, t.typeParameters, initializer, t.javaType);
+                return t.initializer == initializer ? t : new TypeDeclaration(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.name, t.typeParameters, initializer, t.type);
             }
         }
     }
