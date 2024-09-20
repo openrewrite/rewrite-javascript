@@ -44,7 +44,7 @@ export function visitSpace<P>(v: JavaVisitor<P>, space: Space | null, loc: Space
     return space!;
 }
 
-export function visitContainer<P, T>(v: JavaVisitor<P>, container: JContainer<T> | null, loc: JContainer.Location, p: P) {
+export function visitContainer<P, T>(v: JavaVisitor<P>, container: JContainer<T> | null, loc: JContainer.Location, p: P): JContainer<T> | null {
     if (container == null)
         return null;
 
@@ -60,7 +60,7 @@ export function visitContainer<P, T>(v: JavaVisitor<P>, container: JContainer<T>
         JContainer.build(before!, js, container.markers);
 }
 
-export function visitLeftPadded<P, T>(v: JavaVisitor<P>, left: JLeftPadded<T> | null, loc: JLeftPadded.Location, p: P) {
+export function visitLeftPadded<P, T>(v: JavaVisitor<P>, left: JLeftPadded<T> | null, loc: JLeftPadded.Location, p: P): JLeftPadded<T> | null {
     if (left == null)
         return null;
 
@@ -80,7 +80,7 @@ export function visitLeftPadded<P, T>(v: JavaVisitor<P>, left: JLeftPadded<T> | 
     return t == null ? null : new JLeftPadded<T>(before, t, left.markers);
 }
 
-export function visitRightPadded<P, T>(v: JavaVisitor<P>, right: JRightPadded<T> | null, loc: JRightPadded.Location, p: P) {
+export function visitRightPadded<P, T>(v: JavaVisitor<P>, right: JRightPadded<T> | null, loc: JRightPadded.Location, p: P): JRightPadded<T> | null {
     if (right == null)
         return null;
 

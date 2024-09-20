@@ -7,17 +7,17 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
         return isJava(sourceFile);
     }
 
-    visitExpression(expression: Expression & J, p: P): J {
+    visitExpression(expression: Expression, p: P): J {
         return expression;
     }
 
-    visitStatement(statement: Statement & J, p: P): J {
+    visitStatement(statement: Statement, p: P): J {
         return statement;
     }
 
     public visitAnnotatedType(annotatedType: J.AnnotatedType, p: P): J | null {
         annotatedType = annotatedType.withPrefix(this.visitSpace(annotatedType.prefix, Space.Location.ANNOTATED_TYPE_PREFIX, p)!);
-        let tempExpression = this.visitExpression(annotatedType, p) as Expression & J;
+        let tempExpression = this.visitExpression(annotatedType, p) as Expression;
         if (!(tempExpression instanceof J.AnnotatedType))
         {
             return tempExpression;
@@ -31,7 +31,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitAnnotation(annotation: J.Annotation, p: P): J | null {
         annotation = annotation.withPrefix(this.visitSpace(annotation.prefix, Space.Location.ANNOTATION_PREFIX, p)!);
-        let tempExpression = this.visitExpression(annotation, p) as Expression & J;
+        let tempExpression = this.visitExpression(annotation, p) as Expression;
         if (!(tempExpression instanceof J.Annotation))
         {
             return tempExpression;
@@ -45,7 +45,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitArrayAccess(arrayAccess: J.ArrayAccess, p: P): J | null {
         arrayAccess = arrayAccess.withPrefix(this.visitSpace(arrayAccess.prefix, Space.Location.ARRAY_ACCESS_PREFIX, p)!);
-        let tempExpression = this.visitExpression(arrayAccess, p) as Expression & J;
+        let tempExpression = this.visitExpression(arrayAccess, p) as Expression;
         if (!(tempExpression instanceof J.ArrayAccess))
         {
             return tempExpression;
@@ -59,7 +59,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitArrayType(arrayType: J.ArrayType, p: P): J | null {
         arrayType = arrayType.withPrefix(this.visitSpace(arrayType.prefix, Space.Location.ARRAY_TYPE_PREFIX, p)!);
-        let tempExpression = this.visitExpression(arrayType, p) as Expression & J;
+        let tempExpression = this.visitExpression(arrayType, p) as Expression;
         if (!(tempExpression instanceof J.ArrayType))
         {
             return tempExpression;
@@ -74,7 +74,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitAssert(assert: J.Assert, p: P): J | null {
         assert = assert.withPrefix(this.visitSpace(assert.prefix, Space.Location.ASSERT_PREFIX, p)!);
-        let tempStatement = this.visitStatement(assert, p) as Statement & J;
+        let tempStatement = this.visitStatement(assert, p) as Statement;
         if (!(tempStatement instanceof J.Assert))
         {
             return tempStatement;
@@ -88,13 +88,13 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitAssignment(assignment: J.Assignment, p: P): J | null {
         assignment = assignment.withPrefix(this.visitSpace(assignment.prefix, Space.Location.ASSIGNMENT_PREFIX, p)!);
-        let tempStatement = this.visitStatement(assignment, p) as Statement & J;
+        let tempStatement = this.visitStatement(assignment, p) as Statement;
         if (!(tempStatement instanceof J.Assignment))
         {
             return tempStatement;
         }
         assignment = tempStatement as J.Assignment;
-        let tempExpression = this.visitExpression(assignment, p) as Expression & J;
+        let tempExpression = this.visitExpression(assignment, p) as Expression;
         if (!(tempExpression instanceof J.Assignment))
         {
             return tempExpression;
@@ -108,13 +108,13 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitAssignmentOperation(assignmentOperation: J.AssignmentOperation, p: P): J | null {
         assignmentOperation = assignmentOperation.withPrefix(this.visitSpace(assignmentOperation.prefix, Space.Location.ASSIGNMENT_OPERATION_PREFIX, p)!);
-        let tempStatement = this.visitStatement(assignmentOperation, p) as Statement & J;
+        let tempStatement = this.visitStatement(assignmentOperation, p) as Statement;
         if (!(tempStatement instanceof J.AssignmentOperation))
         {
             return tempStatement;
         }
         assignmentOperation = tempStatement as J.AssignmentOperation;
-        let tempExpression = this.visitExpression(assignmentOperation, p) as Expression & J;
+        let tempExpression = this.visitExpression(assignmentOperation, p) as Expression;
         if (!(tempExpression instanceof J.AssignmentOperation))
         {
             return tempExpression;
@@ -129,7 +129,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitBinary(binary: J.Binary, p: P): J | null {
         binary = binary.withPrefix(this.visitSpace(binary.prefix, Space.Location.BINARY_PREFIX, p)!);
-        let tempExpression = this.visitExpression(binary, p) as Expression & J;
+        let tempExpression = this.visitExpression(binary, p) as Expression;
         if (!(tempExpression instanceof J.Binary))
         {
             return tempExpression;
@@ -144,7 +144,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitBlock(block: J.Block, p: P): J | null {
         block = block.withPrefix(this.visitSpace(block.prefix, Space.Location.BLOCK_PREFIX, p)!);
-        let tempStatement = this.visitStatement(block, p) as Statement & J;
+        let tempStatement = this.visitStatement(block, p) as Statement;
         if (!(tempStatement instanceof J.Block))
         {
             return tempStatement;
@@ -159,7 +159,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitBreak(_break: J.Break, p: P): J | null {
         _break = _break.withPrefix(this.visitSpace(_break.prefix, Space.Location.BREAK_PREFIX, p)!);
-        let tempStatement = this.visitStatement(_break, p) as Statement & J;
+        let tempStatement = this.visitStatement(_break, p) as Statement;
         if (!(tempStatement instanceof J.Break))
         {
             return tempStatement;
@@ -172,7 +172,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitCase(_case: J.Case, p: P): J | null {
         _case = _case.withPrefix(this.visitSpace(_case.prefix, Space.Location.CASE_PREFIX, p)!);
-        let tempStatement = this.visitStatement(_case, p) as Statement & J;
+        let tempStatement = this.visitStatement(_case, p) as Statement;
         if (!(tempStatement instanceof J.Case))
         {
             return tempStatement;
@@ -187,7 +187,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitClassDeclaration(classDeclaration: J.ClassDeclaration, p: P): J | null {
         classDeclaration = classDeclaration.withPrefix(this.visitSpace(classDeclaration.prefix, Space.Location.CLASS_DECLARATION_PREFIX, p)!);
-        let tempStatement = this.visitStatement(classDeclaration, p) as Statement & J;
+        let tempStatement = this.visitStatement(classDeclaration, p) as Statement;
         if (!(tempStatement instanceof J.ClassDeclaration))
         {
             return tempStatement;
@@ -226,7 +226,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitContinue(_continue: J.Continue, p: P): J | null {
         _continue = _continue.withPrefix(this.visitSpace(_continue.prefix, Space.Location.CONTINUE_PREFIX, p)!);
-        let tempStatement = this.visitStatement(_continue, p) as Statement & J;
+        let tempStatement = this.visitStatement(_continue, p) as Statement;
         if (!(tempStatement instanceof J.Continue))
         {
             return tempStatement;
@@ -239,7 +239,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitDoWhileLoop(doWhileLoop: J.DoWhileLoop, p: P): J | null {
         doWhileLoop = doWhileLoop.withPrefix(this.visitSpace(doWhileLoop.prefix, Space.Location.DO_WHILE_PREFIX, p)!);
-        let tempStatement = this.visitStatement(doWhileLoop, p) as Statement & J;
+        let tempStatement = this.visitStatement(doWhileLoop, p) as Statement;
         if (!(tempStatement instanceof J.DoWhileLoop))
         {
             return tempStatement;
@@ -253,13 +253,13 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitEmpty(empty: J.Empty, p: P): J | null {
         empty = empty.withPrefix(this.visitSpace(empty.prefix, Space.Location.EMPTY_PREFIX, p)!);
-        let tempStatement = this.visitStatement(empty, p) as Statement & J;
+        let tempStatement = this.visitStatement(empty, p) as Statement;
         if (!(tempStatement instanceof J.Empty))
         {
             return tempStatement;
         }
         empty = tempStatement as J.Empty;
-        let tempExpression = this.visitExpression(empty, p) as Expression & J;
+        let tempExpression = this.visitExpression(empty, p) as Expression;
         if (!(tempExpression instanceof J.Empty))
         {
             return tempExpression;
@@ -280,7 +280,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitEnumValueSet(enumValueSet: J.EnumValueSet, p: P): J | null {
         enumValueSet = enumValueSet.withPrefix(this.visitSpace(enumValueSet.prefix, Space.Location.ENUM_VALUE_SET_PREFIX, p)!);
-        let tempStatement = this.visitStatement(enumValueSet, p) as Statement & J;
+        let tempStatement = this.visitStatement(enumValueSet, p) as Statement;
         if (!(tempStatement instanceof J.EnumValueSet))
         {
             return tempStatement;
@@ -293,13 +293,13 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitFieldAccess(fieldAccess: J.FieldAccess, p: P): J | null {
         fieldAccess = fieldAccess.withPrefix(this.visitSpace(fieldAccess.prefix, Space.Location.FIELD_ACCESS_PREFIX, p)!);
-        let tempStatement = this.visitStatement(fieldAccess, p) as Statement & J;
+        let tempStatement = this.visitStatement(fieldAccess, p) as Statement;
         if (!(tempStatement instanceof J.FieldAccess))
         {
             return tempStatement;
         }
         fieldAccess = tempStatement as J.FieldAccess;
-        let tempExpression = this.visitExpression(fieldAccess, p) as Expression & J;
+        let tempExpression = this.visitExpression(fieldAccess, p) as Expression;
         if (!(tempExpression instanceof J.FieldAccess))
         {
             return tempExpression;
@@ -313,7 +313,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitForEachLoop(forEachLoop: J.ForEachLoop, p: P): J | null {
         forEachLoop = forEachLoop.withPrefix(this.visitSpace(forEachLoop.prefix, Space.Location.FOR_EACH_LOOP_PREFIX, p)!);
-        let tempStatement = this.visitStatement(forEachLoop, p) as Statement & J;
+        let tempStatement = this.visitStatement(forEachLoop, p) as Statement;
         if (!(tempStatement instanceof J.ForEachLoop))
         {
             return tempStatement;
@@ -335,7 +335,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitForLoop(forLoop: J.ForLoop, p: P): J | null {
         forLoop = forLoop.withPrefix(this.visitSpace(forLoop.prefix, Space.Location.FOR_PREFIX, p)!);
-        let tempStatement = this.visitStatement(forLoop, p) as Statement & J;
+        let tempStatement = this.visitStatement(forLoop, p) as Statement;
         if (!(tempStatement instanceof J.ForLoop))
         {
             return tempStatement;
@@ -358,7 +358,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitParenthesizedTypeTree(parenthesizedTypeTree: J.ParenthesizedTypeTree, p: P): J | null {
         parenthesizedTypeTree = parenthesizedTypeTree.withPrefix(this.visitSpace(parenthesizedTypeTree.prefix, Space.Location.PARENTHESES_PREFIX, p)!);
-        let tempExpression = this.visitExpression(parenthesizedTypeTree, p) as Expression & J;
+        let tempExpression = this.visitExpression(parenthesizedTypeTree, p) as Expression;
         if (!(tempExpression instanceof J.ParenthesizedTypeTree))
         {
             return tempExpression;
@@ -372,7 +372,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitIdentifier(identifier: J.Identifier, p: P): J | null {
         identifier = identifier.withPrefix(this.visitSpace(identifier.prefix, Space.Location.IDENTIFIER_PREFIX, p)!);
-        let tempExpression = this.visitExpression(identifier, p) as Expression & J;
+        let tempExpression = this.visitExpression(identifier, p) as Expression;
         if (!(tempExpression instanceof J.Identifier))
         {
             return tempExpression;
@@ -385,7 +385,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitIf(_if: J.If, p: P): J | null {
         _if = _if.withPrefix(this.visitSpace(_if.prefix, Space.Location.IF_PREFIX, p)!);
-        let tempStatement = this.visitStatement(_if, p) as Statement & J;
+        let tempStatement = this.visitStatement(_if, p) as Statement;
         if (!(tempStatement instanceof J.If))
         {
             return tempStatement;
@@ -407,7 +407,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitImport(_import: J.Import, p: P): J | null {
         _import = _import.withPrefix(this.visitSpace(_import.prefix, Space.Location.IMPORT_PREFIX, p)!);
-        let tempStatement = this.visitStatement(_import, p) as Statement & J;
+        let tempStatement = this.visitStatement(_import, p) as Statement;
         if (!(tempStatement instanceof J.Import))
         {
             return tempStatement;
@@ -422,7 +422,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitInstanceOf(instanceOf: J.InstanceOf, p: P): J | null {
         instanceOf = instanceOf.withPrefix(this.visitSpace(instanceOf.prefix, Space.Location.INSTANCEOF_PREFIX, p)!);
-        let tempExpression = this.visitExpression(instanceOf, p) as Expression & J;
+        let tempExpression = this.visitExpression(instanceOf, p) as Expression;
         if (!(tempExpression instanceof J.InstanceOf))
         {
             return tempExpression;
@@ -437,7 +437,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitIntersectionType(intersectionType: J.IntersectionType, p: P): J | null {
         intersectionType = intersectionType.withPrefix(this.visitSpace(intersectionType.prefix, Space.Location.INTERSECTION_TYPE_PREFIX, p)!);
-        let tempExpression = this.visitExpression(intersectionType, p) as Expression & J;
+        let tempExpression = this.visitExpression(intersectionType, p) as Expression;
         if (!(tempExpression instanceof J.IntersectionType))
         {
             return tempExpression;
@@ -450,7 +450,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitLabel(label: J.Label, p: P): J | null {
         label = label.withPrefix(this.visitSpace(label.prefix, Space.Location.LABEL_PREFIX, p)!);
-        let tempStatement = this.visitStatement(label, p) as Statement & J;
+        let tempStatement = this.visitStatement(label, p) as Statement;
         if (!(tempStatement instanceof J.Label))
         {
             return tempStatement;
@@ -464,13 +464,13 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitLambda(lambda: J.Lambda, p: P): J | null {
         lambda = lambda.withPrefix(this.visitSpace(lambda.prefix, Space.Location.LAMBDA_PREFIX, p)!);
-        let tempStatement = this.visitStatement(lambda, p) as Statement & J;
+        let tempStatement = this.visitStatement(lambda, p) as Statement;
         if (!(tempStatement instanceof J.Lambda))
         {
             return tempStatement;
         }
         lambda = tempStatement as J.Lambda;
-        let tempExpression = this.visitExpression(lambda, p) as Expression & J;
+        let tempExpression = this.visitExpression(lambda, p) as Expression;
         if (!(tempExpression instanceof J.Lambda))
         {
             return tempExpression;
@@ -492,7 +492,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitLiteral(literal: J.Literal, p: P): J | null {
         literal = literal.withPrefix(this.visitSpace(literal.prefix, Space.Location.LITERAL_PREFIX, p)!);
-        let tempExpression = this.visitExpression(literal, p) as Expression & J;
+        let tempExpression = this.visitExpression(literal, p) as Expression;
         if (!(tempExpression instanceof J.Literal))
         {
             return tempExpression;
@@ -504,7 +504,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitMemberReference(memberReference: J.MemberReference, p: P): J | null {
         memberReference = memberReference.withPrefix(this.visitSpace(memberReference.prefix, Space.Location.MEMBER_REFERENCE_PREFIX, p)!);
-        let tempExpression = this.visitExpression(memberReference, p) as Expression & J;
+        let tempExpression = this.visitExpression(memberReference, p) as Expression;
         if (!(tempExpression instanceof J.MemberReference))
         {
             return tempExpression;
@@ -519,7 +519,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitMethodDeclaration(methodDeclaration: J.MethodDeclaration, p: P): J | null {
         methodDeclaration = methodDeclaration.withPrefix(this.visitSpace(methodDeclaration.prefix, Space.Location.METHOD_DECLARATION_PREFIX, p)!);
-        let tempStatement = this.visitStatement(methodDeclaration, p) as Statement & J;
+        let tempStatement = this.visitStatement(methodDeclaration, p) as Statement;
         if (!(tempStatement instanceof J.MethodDeclaration))
         {
             return tempStatement;
@@ -540,13 +540,13 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitMethodInvocation(methodInvocation: J.MethodInvocation, p: P): J | null {
         methodInvocation = methodInvocation.withPrefix(this.visitSpace(methodInvocation.prefix, Space.Location.METHOD_INVOCATION_PREFIX, p)!);
-        let tempStatement = this.visitStatement(methodInvocation, p) as Statement & J;
+        let tempStatement = this.visitStatement(methodInvocation, p) as Statement;
         if (!(tempStatement instanceof J.MethodInvocation))
         {
             return tempStatement;
         }
         methodInvocation = tempStatement as J.MethodInvocation;
-        let tempExpression = this.visitExpression(methodInvocation, p) as Expression & J;
+        let tempExpression = this.visitExpression(methodInvocation, p) as Expression;
         if (!(tempExpression instanceof J.MethodInvocation))
         {
             return tempExpression;
@@ -576,7 +576,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitNewArray(newArray: J.NewArray, p: P): J | null {
         newArray = newArray.withPrefix(this.visitSpace(newArray.prefix, Space.Location.NEW_ARRAY_PREFIX, p)!);
-        let tempExpression = this.visitExpression(newArray, p) as Expression & J;
+        let tempExpression = this.visitExpression(newArray, p) as Expression;
         if (!(tempExpression instanceof J.NewArray))
         {
             return tempExpression;
@@ -598,13 +598,13 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitNewClass(newClass: J.NewClass, p: P): J | null {
         newClass = newClass.withPrefix(this.visitSpace(newClass.prefix, Space.Location.NEW_CLASS_PREFIX, p)!);
-        let tempStatement = this.visitStatement(newClass, p) as Statement & J;
+        let tempStatement = this.visitStatement(newClass, p) as Statement;
         if (!(tempStatement instanceof J.NewClass))
         {
             return tempStatement;
         }
         newClass = tempStatement as J.NewClass;
-        let tempExpression = this.visitExpression(newClass, p) as Expression & J;
+        let tempExpression = this.visitExpression(newClass, p) as Expression;
         if (!(tempExpression instanceof J.NewClass))
         {
             return tempExpression;
@@ -621,7 +621,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitNullableType(nullableType: J.NullableType, p: P): J | null {
         nullableType = nullableType.withPrefix(this.visitSpace(nullableType.prefix, Space.Location.NULLABLE_TYPE_PREFIX, p)!);
-        let tempExpression = this.visitExpression(nullableType, p) as Expression & J;
+        let tempExpression = this.visitExpression(nullableType, p) as Expression;
         if (!(tempExpression instanceof J.NullableType))
         {
             return tempExpression;
@@ -635,7 +635,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitPackage(_package: J.Package, p: P): J | null {
         _package = _package.withPrefix(this.visitSpace(_package.prefix, Space.Location.PACKAGE_PREFIX, p)!);
-        let tempStatement = this.visitStatement(_package, p) as Statement & J;
+        let tempStatement = this.visitStatement(_package, p) as Statement;
         if (!(tempStatement instanceof J.Package))
         {
             return tempStatement;
@@ -649,7 +649,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitParameterizedType(parameterizedType: J.ParameterizedType, p: P): J | null {
         parameterizedType = parameterizedType.withPrefix(this.visitSpace(parameterizedType.prefix, Space.Location.PARAMETERIZED_TYPE_PREFIX, p)!);
-        let tempExpression = this.visitExpression(parameterizedType, p) as Expression & J;
+        let tempExpression = this.visitExpression(parameterizedType, p) as Expression;
         if (!(tempExpression instanceof J.ParameterizedType))
         {
             return tempExpression;
@@ -663,7 +663,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitParentheses<J2 extends J>(parentheses: J.Parentheses<J2>, p: P): J | null {
         parentheses = parentheses.withPrefix(this.visitSpace(parentheses.prefix, Space.Location.PARENTHESES_PREFIX, p)!);
-        let tempExpression = this.visitExpression(parentheses, p) as Expression & J;
+        let tempExpression = this.visitExpression(parentheses, p) as Expression;
         if (!(tempExpression instanceof J.Parentheses))
         {
             return tempExpression;
@@ -676,7 +676,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitControlParentheses<J2 extends J>(controlParentheses: J.ControlParentheses<J2>, p: P): J | null {
         controlParentheses = controlParentheses.withPrefix(this.visitSpace(controlParentheses.prefix, Space.Location.CONTROL_PARENTHESES_PREFIX, p)!);
-        let tempExpression = this.visitExpression(controlParentheses, p) as Expression & J;
+        let tempExpression = this.visitExpression(controlParentheses, p) as Expression;
         if (!(tempExpression instanceof J.ControlParentheses))
         {
             return tempExpression;
@@ -689,7 +689,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitPrimitive(primitive: J.Primitive, p: P): J | null {
         primitive = primitive.withPrefix(this.visitSpace(primitive.prefix, Space.Location.PRIMITIVE_PREFIX, p)!);
-        let tempExpression = this.visitExpression(primitive, p) as Expression & J;
+        let tempExpression = this.visitExpression(primitive, p) as Expression;
         if (!(tempExpression instanceof J.Primitive))
         {
             return tempExpression;
@@ -701,7 +701,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitReturn(_return: J.Return, p: P): J | null {
         _return = _return.withPrefix(this.visitSpace(_return.prefix, Space.Location.RETURN_PREFIX, p)!);
-        let tempStatement = this.visitStatement(_return, p) as Statement & J;
+        let tempStatement = this.visitStatement(_return, p) as Statement;
         if (!(tempStatement instanceof J.Return))
         {
             return tempStatement;
@@ -714,7 +714,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitSwitch(_switch: J.Switch, p: P): J | null {
         _switch = _switch.withPrefix(this.visitSpace(_switch.prefix, Space.Location.SWITCH_PREFIX, p)!);
-        let tempStatement = this.visitStatement(_switch, p) as Statement & J;
+        let tempStatement = this.visitStatement(_switch, p) as Statement;
         if (!(tempStatement instanceof J.Switch))
         {
             return tempStatement;
@@ -728,7 +728,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitSwitchExpression(switchExpression: J.SwitchExpression, p: P): J | null {
         switchExpression = switchExpression.withPrefix(this.visitSpace(switchExpression.prefix, Space.Location.SWITCH_EXPRESSION_PREFIX, p)!);
-        let tempExpression = this.visitExpression(switchExpression, p) as Expression & J;
+        let tempExpression = this.visitExpression(switchExpression, p) as Expression;
         if (!(tempExpression instanceof J.SwitchExpression))
         {
             return tempExpression;
@@ -742,7 +742,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitSynchronized(synchronized: J.Synchronized, p: P): J | null {
         synchronized = synchronized.withPrefix(this.visitSpace(synchronized.prefix, Space.Location.SYNCHRONIZED_PREFIX, p)!);
-        let tempStatement = this.visitStatement(synchronized, p) as Statement & J;
+        let tempStatement = this.visitStatement(synchronized, p) as Statement;
         if (!(tempStatement instanceof J.Synchronized))
         {
             return tempStatement;
@@ -756,13 +756,13 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitTernary(ternary: J.Ternary, p: P): J | null {
         ternary = ternary.withPrefix(this.visitSpace(ternary.prefix, Space.Location.TERNARY_PREFIX, p)!);
-        let tempStatement = this.visitStatement(ternary, p) as Statement & J;
+        let tempStatement = this.visitStatement(ternary, p) as Statement;
         if (!(tempStatement instanceof J.Ternary))
         {
             return tempStatement;
         }
         ternary = tempStatement as J.Ternary;
-        let tempExpression = this.visitExpression(ternary, p) as Expression & J;
+        let tempExpression = this.visitExpression(ternary, p) as Expression;
         if (!(tempExpression instanceof J.Ternary))
         {
             return tempExpression;
@@ -777,7 +777,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitThrow(_throw: J.Throw, p: P): J | null {
         _throw = _throw.withPrefix(this.visitSpace(_throw.prefix, Space.Location.THROW_PREFIX, p)!);
-        let tempStatement = this.visitStatement(_throw, p) as Statement & J;
+        let tempStatement = this.visitStatement(_throw, p) as Statement;
         if (!(tempStatement instanceof J.Throw))
         {
             return tempStatement;
@@ -790,7 +790,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitTry(_try: J.Try, p: P): J | null {
         _try = _try.withPrefix(this.visitSpace(_try.prefix, Space.Location.TRY_PREFIX, p)!);
-        let tempStatement = this.visitStatement(_try, p) as Statement & J;
+        let tempStatement = this.visitStatement(_try, p) as Statement;
         if (!(tempStatement instanceof J.Try))
         {
             return tempStatement;
@@ -821,7 +821,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitTypeCast(typeCast: J.TypeCast, p: P): J | null {
         typeCast = typeCast.withPrefix(this.visitSpace(typeCast.prefix, Space.Location.TYPE_CAST_PREFIX, p)!);
-        let tempExpression = this.visitExpression(typeCast, p) as Expression & J;
+        let tempExpression = this.visitExpression(typeCast, p) as Expression;
         if (!(tempExpression instanceof J.TypeCast))
         {
             return tempExpression;
@@ -853,13 +853,13 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitUnary(unary: J.Unary, p: P): J | null {
         unary = unary.withPrefix(this.visitSpace(unary.prefix, Space.Location.UNARY_PREFIX, p)!);
-        let tempStatement = this.visitStatement(unary, p) as Statement & J;
+        let tempStatement = this.visitStatement(unary, p) as Statement;
         if (!(tempStatement instanceof J.Unary))
         {
             return tempStatement;
         }
         unary = tempStatement as J.Unary;
-        let tempExpression = this.visitExpression(unary, p) as Expression & J;
+        let tempExpression = this.visitExpression(unary, p) as Expression;
         if (!(tempExpression instanceof J.Unary))
         {
             return tempExpression;
@@ -873,7 +873,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitVariableDeclarations(variableDeclarations: J.VariableDeclarations, p: P): J | null {
         variableDeclarations = variableDeclarations.withPrefix(this.visitSpace(variableDeclarations.prefix, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p)!);
-        let tempStatement = this.visitStatement(variableDeclarations, p) as Statement & J;
+        let tempStatement = this.visitStatement(variableDeclarations, p) as Statement;
         if (!(tempStatement instanceof J.VariableDeclarations))
         {
             return tempStatement;
@@ -900,7 +900,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitWhileLoop(whileLoop: J.WhileLoop, p: P): J | null {
         whileLoop = whileLoop.withPrefix(this.visitSpace(whileLoop.prefix, Space.Location.WHILE_PREFIX, p)!);
-        let tempStatement = this.visitStatement(whileLoop, p) as Statement & J;
+        let tempStatement = this.visitStatement(whileLoop, p) as Statement;
         if (!(tempStatement instanceof J.WhileLoop))
         {
             return tempStatement;
@@ -914,7 +914,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitWildcard(wildcard: J.Wildcard, p: P): J | null {
         wildcard = wildcard.withPrefix(this.visitSpace(wildcard.prefix, Space.Location.WILDCARD_PREFIX, p)!);
-        let tempExpression = this.visitExpression(wildcard, p) as Expression & J;
+        let tempExpression = this.visitExpression(wildcard, p) as Expression;
         if (!(tempExpression instanceof J.Wildcard))
         {
             return tempExpression;
@@ -928,7 +928,7 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitYield(_yield: J.Yield, p: P): J | null {
         _yield = _yield.withPrefix(this.visitSpace(_yield.prefix, Space.Location.YIELD_PREFIX, p)!);
-        let tempStatement = this.visitStatement(_yield, p) as Statement & J;
+        let tempStatement = this.visitStatement(_yield, p) as Statement;
         if (!(tempStatement instanceof J.Yield))
         {
             return tempStatement;
@@ -941,13 +941,13 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
 
     public visitUnknown(unknown: J.Unknown, p: P): J | null {
         unknown = unknown.withPrefix(this.visitSpace(unknown.prefix, Space.Location.UNKNOWN_PREFIX, p)!);
-        let tempStatement = this.visitStatement(unknown, p) as Statement & J;
+        let tempStatement = this.visitStatement(unknown, p) as Statement;
         if (!(tempStatement instanceof J.Unknown))
         {
             return tempStatement;
         }
         unknown = tempStatement as J.Unknown;
-        let tempExpression = this.visitExpression(unknown, p) as Expression & J;
+        let tempExpression = this.visitExpression(unknown, p) as Expression;
         if (!(tempExpression instanceof J.Unknown))
         {
             return tempExpression;
@@ -964,15 +964,15 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
         return source;
     }
 
-    public visitContainer<T>(container: JContainer<T> | null, loc: JContainer.Location, p: P) {
+    public visitContainer<T>(container: JContainer<T> | null, loc: JContainer.Location, p: P): JContainer<T> | null {
         return extensions.visitContainer(this, container, loc, p);
     }
 
-    public visitLeftPadded<T>(left: JLeftPadded<T> | null, loc: JLeftPadded.Location, p: P) {
+    public visitLeftPadded<T>(left: JLeftPadded<T> | null, loc: JLeftPadded.Location, p: P): JLeftPadded<T> | null {
         return extensions.visitLeftPadded(this, left, loc, p);
     }
 
-    public visitRightPadded<T>(right: JRightPadded<T> | null, loc: JRightPadded.Location, p: P) {
+    public visitRightPadded<T>(right: JRightPadded<T> | null, loc: JRightPadded.Location, p: P): JRightPadded<T> | null {
         return extensions.visitRightPadded(this, right, loc, p);
     }
 
