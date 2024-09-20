@@ -63,7 +63,7 @@ export class Space {
     }
 
     withComments(comments: Comment[]): Space {
-        return new Space(comments, this._whitespace);
+        return Space.build(comments, this._whitespace);
     }
 
     get whitespace(): string | null {
@@ -71,7 +71,7 @@ export class Space {
     }
 
     withWhitespace(whitespace: string | null): Space {
-        return new Space(this.comments, whitespace);
+        return Space.build(this.comments, whitespace);
     }
 }
 
