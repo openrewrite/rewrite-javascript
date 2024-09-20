@@ -8,7 +8,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return isJavaScript(sourceFile);
     }
 
-    public visitCompilationUnit(compilationUnit: JS.CompilationUnit, p: P): J | null {
+    public visitJsCompilationUnit(compilationUnit: JS.CompilationUnit, p: P): J | null {
         compilationUnit = compilationUnit.withPrefix(this.visitSpace(compilationUnit.prefix, Space.Location.COMPILATION_UNIT_PREFIX, p)!);
         compilationUnit = compilationUnit.withMarkers(this.visitMarkers(compilationUnit.markers, p));
         compilationUnit = compilationUnit.padding.withImports(ListUtils.map(compilationUnit.padding.imports, el => this.visitRightPadded(el, JRightPadded.Location.IMPORT, p)));
@@ -282,7 +282,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return typeOperator;
     }
 
-    public visitUnary(unary: JS.Unary, p: P): J | null {
+    public visitJsUnary(unary: JS.Unary, p: P): J | null {
         unary = unary.withPrefix(this.visitSpace(unary.prefix, JsSpace.Location.UNARY_PREFIX, p)!);
         let tempStatement = this.visitStatement(unary, p) as Statement & J;
         if (!(tempStatement instanceof JS.Unary))

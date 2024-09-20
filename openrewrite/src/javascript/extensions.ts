@@ -1,8 +1,8 @@
-import {J, JavaType, JavaVisitor, JContainer, JLeftPadded, JRightPadded, Space} from "../java";
+import {J, JavaType, JContainer, JLeftPadded, JRightPadded, Space} from "../java";
 import * as java_extensions from "../java/extensions";
 import {JavaScriptVisitor} from "./visitor";
 import {JsContainer, JsLeftPadded, JsRightPadded, JsSpace} from "./support_types";
-import {JS} from "./tree";
+import {JS} from "./support_types";
 
 export function getJavaType<T extends J>(expr: T): JavaType | null {
     if (expr instanceof JS.Alias) {

@@ -314,7 +314,7 @@ export class FileAttributes {
 const SourceFileSymbol = Symbol('SourceFile');
 
 // This allows using `SourceFile` like a class in certain situations (e.g. `Cursor.firstEnclosing()`)
-export const SourceFile = SourceFileSymbol;
+const SourceFile = SourceFileSymbol;
 
 export function isSourceFile(tree: any & Tree): tree is SourceFile {
     // return 'sourcePath' in tree && 'printer' in tree;

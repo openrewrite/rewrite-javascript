@@ -1,12 +1,13 @@
 import {JavaVisitor} from "./visitor";
 import {
+    isJava,
+    J,
     JavaType,
     JContainer,
     JLeftPadded,
     JRightPadded,
     Space,
 } from "./support_types";
-import {J} from "./tree";
 import {Cursor, ListUtils} from "../core";
 
 export function getJavaType<T extends J>(expr: T): JavaType | null {
@@ -67,7 +68,7 @@ export function visitLeftPadded<P, T>(v: JavaVisitor<P>, left: JLeftPadded<T> | 
 
     let before = v.visitSpace(left.before, JLeftPadded.Location.beforeLocation(loc), p)!;
     let t = left.element;
-    if (left.element instanceof J)
+    if (isJava(left.element))
         t = v.visit(t as J, p) as T;
     v.cursor = v.cursor.parent!;
 
@@ -84,7 +85,7 @@ export function visitRightPadded<P, T>(v: JavaVisitor<P>, right: JRightPadded<T>
         return null;
 
     let t = right.element;
-    if (t instanceof J) {
+    if (isJava(t)) {
         v.cursor = new Cursor(v.cursor, right);
         t = v.visit(t as J, p) as T;
         v.cursor = v.cursor.parent!;

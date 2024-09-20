@@ -138,7 +138,7 @@ export class CompilationUnit extends SourceFileMixin(JSMixin(Object)) implements
     }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-        return v.visitCompilationUnit(this, p);
+        return v.visitJsCompilationUnit(this, p);
     }
 
     get padding() {
@@ -2026,7 +2026,7 @@ export class Unary extends JSMixin(Object) implements Statement, Expression, Typ
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-        return v.visitUnary(this, p);
+        return v.visitJsUnary(this, p);
     }
 
     get padding() {

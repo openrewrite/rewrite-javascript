@@ -2,8 +2,6 @@ import {J, JavaVisitor, Space} from "../java";
 import {Markers, Tree, TreeVisitor, UUID} from "../core";
 import {JavaScriptVisitor} from "./visitor";
 
-export * as JS from './tree'
-
 export interface JS extends J {
     get id(): UUID;
 
@@ -64,6 +62,7 @@ export function JSMixin<TBase extends Constructor<Object>>(Base: TBase) {
     return JSMixed;
 }
 
+export * as JS from './tree';
 
 export namespace JsSpace {
     export enum Location {

@@ -1,47 +1,23 @@
 // noinspection JSUnusedGlobalSymbols
 
 import * as extensions from "./extensions";
-import {YamlKey} from "./support_types";
+import {Yaml, YamlMixin, YamlKey} from "./support_types";
 import {YamlVisitor} from "./visitor";
 import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
 
-export abstract class Yaml implements Tree {
-    abstract get id(): UUID;
-
-    abstract withId(id: UUID): Tree;
-
-    abstract get markers(): Markers;
-
-    abstract withMarkers(markers: Markers): Tree;
-
-    public isAcceptable<P>(v: TreeVisitor<Tree, P>, p: P): boolean {
-        return v.isAdaptableTo(YamlVisitor);
+@LstType("org.openrewrite.yaml.tree.Yaml$Documents")
+export class Documents extends SourceFileMixin(YamlMixin(Object)) {
+    public constructor(id: UUID, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, documents: Document[]) {
+        super();
+        this._id = id;
+        this._markers = markers;
+        this._sourcePath = sourcePath;
+        this._fileAttributes = fileAttributes;
+        this._charsetName = charsetName;
+        this._charsetBomMarked = charsetBomMarked;
+        this._checksum = checksum;
+        this._documents = documents;
     }
-
-    public accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
-        return this.acceptYaml(v.adapt(YamlVisitor), p) as R | null;
-    }
-
-    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-        return v.defaultValue(this, p) as Yaml | null;
-    }
-
-}
-
-export namespace Yaml {
-    @LstType("org.openrewrite.yaml.tree.Yaml$Documents")
-    export class Documents extends SourceFileMixin(Yaml) {
-        public constructor(id: UUID, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, documents: Document[]) {
-            super();
-            this._id = id;
-            this._markers = markers;
-            this._sourcePath = sourcePath;
-            this._fileAttributes = fileAttributes;
-            this._charsetName = charsetName;
-            this._charsetBomMarked = charsetBomMarked;
-            this._checksum = checksum;
-            this._documents = documents;
-        }
 
         private readonly _id: UUID;
 
@@ -123,27 +99,27 @@ export namespace Yaml {
             return documents === this._documents ? this : new Documents(this._id, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, this._checksum, documents);
         }
 
-        public printer<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
-            return PrinterFactory.current.createPrinter(cursor);
-        }
-
-        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-            return v.visitDocuments(this, p);
-        }
-
+    public printer<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
+        return PrinterFactory.current.createPrinter(cursor);
     }
 
-    @LstType("org.openrewrite.yaml.tree.Yaml$Document")
-    export class Document extends Yaml {
-        public constructor(id: UUID, prefix: string, markers: Markers, explicit: boolean, block: Block, end: Document.End) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._explicit = explicit;
-            this._block = block;
-            this._end = end;
-        }
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+        return v.visitDocuments(this, p);
+    }
+
+}
+
+@LstType("org.openrewrite.yaml.tree.Yaml$Document")
+export class Document extends YamlMixin(Object) {
+    public constructor(id: UUID, prefix: string, markers: Markers, explicit: boolean, block: Block, end: Document.End) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._explicit = explicit;
+        this._block = block;
+        this._end = end;
+    }
 
         private readonly _id: UUID;
 
@@ -205,22 +181,22 @@ export namespace Yaml {
             return end === this._end ? this : new Document(this._id, this._prefix, this._markers, this._explicit, this._block, end);
         }
 
-        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-            return v.visitDocument(this, p);
-        }
-
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+        return v.visitDocument(this, p);
     }
 
-    export namespace Document {
-        @LstType("org.openrewrite.yaml.tree.Yaml$Document$End")
-        export class End extends Yaml {
-            public constructor(id: UUID, prefix: string, markers: Markers, explicit: boolean) {
-                super();
-                this._id = id;
-                this._prefix = prefix;
-                this._markers = markers;
-                this._explicit = explicit;
-            }
+}
+
+export namespace Document {
+    @LstType("org.openrewrite.yaml.tree.Yaml$Document$End")
+    export class End extends YamlMixin(Object) {
+        public constructor(id: UUID, prefix: string, markers: Markers, explicit: boolean) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._explicit = explicit;
+        }
 
             private readonly _id: UUID;
 
@@ -262,28 +238,28 @@ export namespace Yaml {
                 return explicit === this._explicit ? this : new Document.End(this._id, this._prefix, this._markers, explicit);
             }
 
-            public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-                return v.visitDocumentEnd(this, p);
-            }
-
+        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+            return v.visitDocumentEnd(this, p);
         }
 
     }
 
-    export interface Block extends Yaml {
-    }
+}
 
-    @LstType("org.openrewrite.yaml.tree.Yaml$Scalar")
-    export class Scalar extends Yaml implements Block, YamlKey {
-        public constructor(id: UUID, prefix: string, markers: Markers, style: Scalar.Style, anchor: Anchor | null, value: string) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._style = style;
-            this._anchor = anchor;
-            this._value = value;
-        }
+export interface Block extends Yaml {
+}
+
+@LstType("org.openrewrite.yaml.tree.Yaml$Scalar")
+export class Scalar extends YamlMixin(Object) implements Block, YamlKey {
+    public constructor(id: UUID, prefix: string, markers: Markers, style: Scalar.Style, anchor: Anchor | null, value: string) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._style = style;
+        this._anchor = anchor;
+        this._value = value;
+    }
 
         private readonly _id: UUID;
 
@@ -345,35 +321,35 @@ export namespace Yaml {
             return value === this._value ? this : new Scalar(this._id, this._prefix, this._markers, this._style, this._anchor, value);
         }
 
-        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-            return v.visitScalar(this, p);
-        }
-
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+        return v.visitScalar(this, p);
     }
 
-    export namespace Scalar {
-        export enum Style {
+}
+
+export namespace Scalar {
+    export enum Style {
             DOUBLE_QUOTED = 0,
             SINGLE_QUOTED = 1,
             LITERAL = 2,
             FOLDED = 3,
             PLAIN = 4,
 
-        }
-
     }
 
-    @LstType("org.openrewrite.yaml.tree.Yaml$Mapping")
-    export class Mapping extends Yaml implements Block {
-        public constructor(id: UUID, markers: Markers, openingBracePrefix: string | null, entries: Mapping.Entry[], closingBracePrefix: string | null, anchor: Anchor | null) {
-            super();
-            this._id = id;
-            this._markers = markers;
-            this._openingBracePrefix = openingBracePrefix;
-            this._entries = entries;
-            this._closingBracePrefix = closingBracePrefix;
-            this._anchor = anchor;
-        }
+}
+
+@LstType("org.openrewrite.yaml.tree.Yaml$Mapping")
+export class Mapping extends YamlMixin(Object) implements Block {
+    public constructor(id: UUID, markers: Markers, openingBracePrefix: string | null, entries: Mapping.Entry[], closingBracePrefix: string | null, anchor: Anchor | null) {
+        super();
+        this._id = id;
+        this._markers = markers;
+        this._openingBracePrefix = openingBracePrefix;
+        this._entries = entries;
+        this._closingBracePrefix = closingBracePrefix;
+        this._anchor = anchor;
+    }
 
         private readonly _id: UUID;
 
@@ -435,24 +411,24 @@ export namespace Yaml {
             return anchor === this._anchor ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, this._entries, this._closingBracePrefix, anchor);
         }
 
-        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-            return v.visitMapping(this, p);
-        }
-
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+        return v.visitMapping(this, p);
     }
 
-    export namespace Mapping {
-        @LstType("org.openrewrite.yaml.tree.Yaml$Mapping$Entry")
-        export class Entry extends Yaml {
-            public constructor(id: UUID, prefix: string, markers: Markers, key: YamlKey, beforeMappingValueIndicator: string, value: Yaml.Block) {
-                super();
-                this._id = id;
-                this._prefix = prefix;
-                this._markers = markers;
-                this._key = key;
-                this._beforeMappingValueIndicator = beforeMappingValueIndicator;
-                this._value = value;
-            }
+}
+
+export namespace Mapping {
+    @LstType("org.openrewrite.yaml.tree.Yaml$Mapping$Entry")
+    export class Entry extends YamlMixin(Object) {
+        public constructor(id: UUID, prefix: string, markers: Markers, key: YamlKey, beforeMappingValueIndicator: string, value: Yaml.Block) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._key = key;
+            this._beforeMappingValueIndicator = beforeMappingValueIndicator;
+            this._value = value;
+        }
 
             private readonly _id: UUID;
 
@@ -514,25 +490,25 @@ export namespace Yaml {
                 return value === this._value ? this : new Mapping.Entry(this._id, this._prefix, this._markers, this._key, this._beforeMappingValueIndicator, value);
             }
 
-            public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-                return v.visitMappingEntry(this, p);
-            }
-
+        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+            return v.visitMappingEntry(this, p);
         }
 
     }
 
-    @LstType("org.openrewrite.yaml.tree.Yaml$Sequence")
-    export class Sequence extends Yaml implements Block {
-        public constructor(id: UUID, markers: Markers, openingBracketPrefix: string | null, entries: Sequence.Entry[], closingBracketPrefix: string | null, anchor: Anchor | null) {
-            super();
-            this._id = id;
-            this._markers = markers;
-            this._openingBracketPrefix = openingBracketPrefix;
-            this._entries = entries;
-            this._closingBracketPrefix = closingBracketPrefix;
-            this._anchor = anchor;
-        }
+}
+
+@LstType("org.openrewrite.yaml.tree.Yaml$Sequence")
+export class Sequence extends YamlMixin(Object) implements Block {
+    public constructor(id: UUID, markers: Markers, openingBracketPrefix: string | null, entries: Sequence.Entry[], closingBracketPrefix: string | null, anchor: Anchor | null) {
+        super();
+        this._id = id;
+        this._markers = markers;
+        this._openingBracketPrefix = openingBracketPrefix;
+        this._entries = entries;
+        this._closingBracketPrefix = closingBracketPrefix;
+        this._anchor = anchor;
+    }
 
         private readonly _id: UUID;
 
@@ -594,24 +570,24 @@ export namespace Yaml {
             return anchor === this._anchor ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, this._entries, this._closingBracketPrefix, anchor);
         }
 
-        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-            return v.visitSequence(this, p);
-        }
-
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+        return v.visitSequence(this, p);
     }
 
-    export namespace Sequence {
-        @LstType("org.openrewrite.yaml.tree.Yaml$Sequence$Entry")
-        export class Entry extends Yaml {
-            public constructor(id: UUID, prefix: string, markers: Markers, block: Yaml.Block, dash: boolean, trailingCommaPrefix: string | null) {
-                super();
-                this._id = id;
-                this._prefix = prefix;
-                this._markers = markers;
-                this._block = block;
-                this._dash = dash;
-                this._trailingCommaPrefix = trailingCommaPrefix;
-            }
+}
+
+export namespace Sequence {
+    @LstType("org.openrewrite.yaml.tree.Yaml$Sequence$Entry")
+    export class Entry extends YamlMixin(Object) {
+        public constructor(id: UUID, prefix: string, markers: Markers, block: Yaml.Block, dash: boolean, trailingCommaPrefix: string | null) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._block = block;
+            this._dash = dash;
+            this._trailingCommaPrefix = trailingCommaPrefix;
+        }
 
             private readonly _id: UUID;
 
@@ -673,23 +649,23 @@ export namespace Yaml {
                 return trailingCommaPrefix === this._trailingCommaPrefix ? this : new Sequence.Entry(this._id, this._prefix, this._markers, this._block, this._dash, trailingCommaPrefix);
             }
 
-            public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-                return v.visitSequenceEntry(this, p);
-            }
-
+        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+            return v.visitSequenceEntry(this, p);
         }
 
     }
 
-    @LstType("org.openrewrite.yaml.tree.Yaml$Alias")
-    export class Alias extends Yaml implements Block, YamlKey {
-        public constructor(id: UUID, prefix: string, markers: Markers, anchor: Anchor) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._anchor = anchor;
-        }
+}
+
+@LstType("org.openrewrite.yaml.tree.Yaml$Alias")
+export class Alias extends YamlMixin(Object) implements Block, YamlKey {
+    public constructor(id: UUID, prefix: string, markers: Markers, anchor: Anchor) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._anchor = anchor;
+    }
 
         private readonly _id: UUID;
 
@@ -731,22 +707,22 @@ export namespace Yaml {
             return anchor === this._anchor ? this : new Alias(this._id, this._prefix, this._markers, anchor);
         }
 
-        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-            return v.visitAlias(this, p);
-        }
-
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+        return v.visitAlias(this, p);
     }
 
-    @LstType("org.openrewrite.yaml.tree.Yaml$Anchor")
-    export class Anchor extends Yaml {
-        public constructor(id: UUID, prefix: string, postfix: string, markers: Markers, key: string) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._postfix = postfix;
-            this._markers = markers;
-            this._key = key;
-        }
+}
+
+@LstType("org.openrewrite.yaml.tree.Yaml$Anchor")
+export class Anchor extends YamlMixin(Object) {
+    public constructor(id: UUID, prefix: string, postfix: string, markers: Markers, key: string) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._postfix = postfix;
+        this._markers = markers;
+        this._key = key;
+    }
 
         private readonly _id: UUID;
 
@@ -798,10 +774,8 @@ export namespace Yaml {
             return key === this._key ? this : new Anchor(this._id, this._prefix, this._postfix, this._markers, key);
         }
 
-        public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
-            return v.visitAnchor(this, p);
-        }
-
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+        return v.visitAnchor(this, p);
     }
 
 }

@@ -1,7 +1,6 @@
 import {Cursor, Markers, randomId, SourceFile} from '../../src/core';
-import {Yaml} from "../../src/yaml";
-import Documents = Yaml.Documents;
-import Document = Yaml.Document;
+import {isYaml, Yaml} from "../../src/yaml";
+import {isSourceFile} from "typescript";
 
 describe('tree utils', () => {
     test('new random ID', () => {
@@ -9,12 +8,12 @@ describe('tree utils', () => {
     });
 
     test('Cursor.firstEnclosing()', () => {
-        let documents = new Documents(randomId(), Markers.EMPTY, 'test.yaml', null, null, false, null, []);
+        let documents = new Yaml.Documents(randomId(), Markers.EMPTY, 'test.yaml', null, null, false, null, []);
         let c = new Cursor(null, documents);
 
-        expect(c.firstEnclosing(SourceFile)).toBeDefined();
-        expect(c.firstEnclosing(Yaml)).toBeDefined();
-        expect(c.firstEnclosing(Documents)).toBeDefined();
-        expect(c.firstEnclosing(Document)).toBeNull();
+        expect(c.firstEnclosing(isSourceFile)).toBeDefined();
+        expect(c.firstEnclosing(isYaml)).toBeDefined();
+        expect(c.firstEnclosing(Yaml.Documents)).toBeDefined();
+        expect(c.firstEnclosing(Yaml.Document)).toBeNull();
     });
 });

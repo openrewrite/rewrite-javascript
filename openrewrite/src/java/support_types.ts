@@ -3,7 +3,6 @@ import {JavaType} from "./types";
 import {JavaVisitor} from "./visitor";
 
 export {JavaType} from "./types";
-export * as J from './tree'
 
 export interface J extends Tree {
     get prefix(): Space;
@@ -64,6 +63,8 @@ export function JMixin<TBase extends Constructor<Object>>(Base: TBase) {
 
     return JMixed;
 }
+
+export * as J from './tree';
 
 export interface JavaSourceFile extends SourceFile {
 }
