@@ -15,8 +15,6 @@ export function getJavaType<T extends J>(expr: T): JavaType | null {
         return expr.variableType != null ? expr.variableType.type : null;
     } else if (expr instanceof JS.StatementExpression) {
         return null;
-    } else if (expr instanceof JS.TypeDeclaration) {
-        return expr.javaType;
     } else if (expr instanceof JS.TypeOperator) {
         return expr.expression.type;
     }
@@ -34,9 +32,6 @@ export function withJavaType<T>(expr: T, type: JavaType): T {
         return (expr.variableType != null ? expr.withVariableType(expr.variableType.withType(type)) : null) as T;
     } else if (expr instanceof JS.StatementExpression) {
         return expr as T;
-    } else if (expr instanceof JS.TypeDeclaration) {
-        // FIXME we should rename the `javaType` field to `type`
-        throw new Error("Cannot set `javaType` field");
     } else if (expr instanceof JS.TypeOperator) {
         return expr.withExpression(expr.expression.withType(type)) as T;
     }

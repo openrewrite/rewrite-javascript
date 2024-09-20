@@ -1392,12 +1392,6 @@ export namespace ObjectBindingDeclarations {
                 public withPropertyName(propertyName: JRightPadded<J.Identifier> | null): ObjectBindingDeclarations.Binding {
                     return t._propertyName === propertyName ? t : new JS.ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, propertyName, t._name, t._dimensionsAfterName, t._afterVararg, t._initializer, t._variableType);
                 }
-                public get dimensionsAfterName(): JLeftPadded<Space>[] {
-                    return t._dimensionsAfterName;
-                }
-                public withDimensionsAfterName(dimensionsAfterName: JLeftPadded<Space>[]): ObjectBindingDeclarations.Binding {
-                    return t._dimensionsAfterName === dimensionsAfterName ? t : new JS.ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, t._propertyName, t._name, dimensionsAfterName, t._afterVararg, t._initializer, t._variableType);
-                }
                 public get initializer(): JLeftPadded<Expression> | null {
                     return t._initializer;
                 }
@@ -1732,7 +1726,7 @@ export class Tuple extends JSMixin(Object) implements Expression, TypeTree {
 
 @LstType("org.openrewrite.javascript.tree.JS$TypeDeclaration")
 export class TypeDeclaration extends JSMixin(Object) implements Statement, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], name: J.Identifier, typeParameters: J.TypeParameters | null, initializer: JLeftPadded<Expression>, javaType: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], name: J.Identifier, typeParameters: J.TypeParameters | null, initializer: JLeftPadded<Expression>, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -1742,7 +1736,7 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
         this._name = name;
         this._typeParameters = typeParameters;
         this._initializer = initializer;
-        this._javaType = javaType;
+        this._type = _type;
     }
 
         private readonly _id: UUID;
@@ -1752,7 +1746,7 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
         }
 
         public withId(id: UUID): TypeDeclaration {
-            return id === this._id ? this : new TypeDeclaration(id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._name, this._typeParameters, this._initializer, this._javaType);
+            return id === this._id ? this : new TypeDeclaration(id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._name, this._typeParameters, this._initializer, this._type);
         }
 
         private readonly _prefix: Space;
@@ -1762,7 +1756,7 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
         }
 
         public withPrefix(prefix: Space): TypeDeclaration {
-            return prefix === this._prefix ? this : new TypeDeclaration(this._id, prefix, this._markers, this._leadingAnnotations, this._modifiers, this._name, this._typeParameters, this._initializer, this._javaType);
+            return prefix === this._prefix ? this : new TypeDeclaration(this._id, prefix, this._markers, this._leadingAnnotations, this._modifiers, this._name, this._typeParameters, this._initializer, this._type);
         }
 
         private readonly _markers: Markers;
@@ -1772,7 +1766,7 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
         }
 
         public withMarkers(markers: Markers): TypeDeclaration {
-            return markers === this._markers ? this : new TypeDeclaration(this._id, this._prefix, markers, this._leadingAnnotations, this._modifiers, this._name, this._typeParameters, this._initializer, this._javaType);
+            return markers === this._markers ? this : new TypeDeclaration(this._id, this._prefix, markers, this._leadingAnnotations, this._modifiers, this._name, this._typeParameters, this._initializer, this._type);
         }
 
         private readonly _leadingAnnotations: J.Annotation[];
@@ -1782,7 +1776,7 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
         }
 
         public withLeadingAnnotations(leadingAnnotations: J.Annotation[]): TypeDeclaration {
-            return leadingAnnotations === this._leadingAnnotations ? this : new TypeDeclaration(this._id, this._prefix, this._markers, leadingAnnotations, this._modifiers, this._name, this._typeParameters, this._initializer, this._javaType);
+            return leadingAnnotations === this._leadingAnnotations ? this : new TypeDeclaration(this._id, this._prefix, this._markers, leadingAnnotations, this._modifiers, this._name, this._typeParameters, this._initializer, this._type);
         }
 
         private readonly _modifiers: J.Modifier[];
@@ -1792,7 +1786,7 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
         }
 
         public withModifiers(modifiers: J.Modifier[]): TypeDeclaration {
-            return modifiers === this._modifiers ? this : new TypeDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, modifiers, this._name, this._typeParameters, this._initializer, this._javaType);
+            return modifiers === this._modifiers ? this : new TypeDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, modifiers, this._name, this._typeParameters, this._initializer, this._type);
         }
 
         private readonly _name: J.Identifier;
@@ -1802,7 +1796,7 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
         }
 
         public withName(name: J.Identifier): TypeDeclaration {
-            return name === this._name ? this : new TypeDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, name, this._typeParameters, this._initializer, this._javaType);
+            return name === this._name ? this : new TypeDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, name, this._typeParameters, this._initializer, this._type);
         }
 
         private readonly _typeParameters: J.TypeParameters | null;
@@ -1812,7 +1806,7 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
         }
 
         public withTypeParameters(typeParameters: J.TypeParameters | null): TypeDeclaration {
-            return typeParameters === this._typeParameters ? this : new TypeDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._name, typeParameters, this._initializer, this._javaType);
+            return typeParameters === this._typeParameters ? this : new TypeDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._name, typeParameters, this._initializer, this._type);
         }
 
         private readonly _initializer: JLeftPadded<Expression>;
@@ -1825,22 +1819,18 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
             return this.padding.withInitializer(this._initializer.withElement(initializer));
         }
 
-        private readonly _javaType: JavaType | null;
+        private readonly _type: JavaType | null;
 
-        public get javaType(): JavaType | null {
-            return this._javaType;
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): TypeDeclaration {
+            return _type === this._type ? this : new TypeDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._name, this._typeParameters, this._initializer, _type);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
         return v.visitTypeDeclaration(this, p);
-    }
-
-    public get type(): JavaType | null {
-        return extensions.getJavaType(this);
-    }
-
-    public withType(type: JavaType): JS.TypeDeclaration {
-        return extensions.withJavaType(this, type);
     }
 
     get padding() {
@@ -1850,7 +1840,7 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
                 return t._initializer;
             }
             public withInitializer(initializer: JLeftPadded<Expression>): TypeDeclaration {
-                return t._initializer === initializer ? t : new JS.TypeDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._name, t._typeParameters, initializer, t._javaType);
+                return t._initializer === initializer ? t : new JS.TypeDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._name, t._typeParameters, initializer, t._type);
             }
         }
     }
