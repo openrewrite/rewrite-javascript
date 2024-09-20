@@ -38,34 +38,34 @@ export function withJavaType<T>(expr: T, type: JavaType): T {
     return java_extensions.withJavaType(expr, type);
 }
 
-export function visitSpace<P>(v: JavaScriptVisitor<P>, space: Space | null, loc: Space.Location | JsSpace.Location, p: P): Space {
-    // FIXME this won't quite work
-    if (Object.values(Space.Location).includes(loc as any)) {
-        return java_extensions.visitSpace(v, space, loc as Space.Location, p);
-    }
-    return space!;
+export function visitSpace<P>(v: JavaScriptVisitor<P>, space: Space | null, loc: Space.Location, p: P): Space {
+    return java_extensions.visitSpace(v, space, loc as Space.Location, p);
 }
 
-export function visitContainer<P, T>(v: JavaScriptVisitor<P>, container: JContainer<T> | null, loc: JContainer.Location | JsContainer.Location, p: P): JContainer<T> {
-    // FIXME this won't quite work
-    if (Object.values(JContainer.Location).includes(loc as any)) {
-        return java_extensions.visitContainer(v, container, loc as JContainer.Location, p)!;
-    }
-    return container!;
+export function visitContainer<P, T>(v: JavaScriptVisitor<P>, container: JContainer<T> | null, loc: JContainer.Location, p: P): JContainer<T> {
+    return java_extensions.visitContainer(v, container, loc as JContainer.Location, p)!;
 }
 
-export function visitLeftPadded<P, T>(v: JavaScriptVisitor<P>, left: JLeftPadded<T> | null, loc: JLeftPadded.Location | JsLeftPadded.Location, p: P): JLeftPadded<T> {
-    // FIXME this won't quite work
-    if (Object.values(JLeftPadded.Location).includes(loc as any)) {
-        return java_extensions.visitLeftPadded(v, left, loc as JLeftPadded.Location, p)!;
-    }
-    return left!;
+export function visitLeftPadded<P, T>(v: JavaScriptVisitor<P>, left: JLeftPadded<T> | null, loc: JLeftPadded.Location, p: P): JLeftPadded<T> {
+    return java_extensions.visitLeftPadded(v, left, loc as JLeftPadded.Location, p)!;
 }
 
-export function visitRightPadded<P, T>(v: JavaScriptVisitor<P>, right: JRightPadded<T> | null, loc: JRightPadded.Location | JsRightPadded.Location, p: P): JRightPadded<T> {
-    // FIXME this won't quite work
-    if (Object.values(JRightPadded.Location).includes(loc as any)) {
-        return java_extensions.visitRightPadded(v, right, loc as JRightPadded.Location, p)!;
-    }
-    return right!;
+export function visitRightPadded<P, T>(v: JavaScriptVisitor<P>, right: JRightPadded<T> | null, loc: JRightPadded.Location, p: P): JRightPadded<T> {
+    return java_extensions.visitRightPadded(v, right, loc as JRightPadded.Location, p)!;
+}
+
+export function visitJsSpace<P>(space: Space | null, loc: JsSpace.Location, p: P) {
+    throw new Error("Not yet implemented!");
+}
+
+export function visitJsLeftPadded<P, T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P) {
+    throw new Error("Not yet implemented!");
+}
+
+export function visitJsRightPadded<P, T>(right: JRightPadded<T> | null, loc: JsRightPadded.Location, p: P) {
+    throw new Error("Not yet implemented!");
+}
+
+export function visitJsContainer<P, T>(container: JContainer<T> | null, loc: JsContainer.Location, p: P) {
+    throw new Error("Not yet implemented!");
 }
