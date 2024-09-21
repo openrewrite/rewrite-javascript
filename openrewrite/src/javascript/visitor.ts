@@ -195,7 +195,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return objectBindingDeclarations;
     }
 
-    public visitObjectBindingDeclarationsBinding(binding: JS.ObjectBindingDeclarations.Binding, p: P): J | null {
+    public visitBinding(binding: JS.ObjectBindingDeclarations.Binding, p: P): J | null {
         binding = binding.withPrefix(this.visitJsSpace(binding.prefix, JsSpace.Location.OBJECT_BINDING_DECLARATIONS_BINDING_PREFIX, p)!);
         binding = binding.withMarkers(this.visitMarkers(binding.markers, p));
         binding = binding.padding.withPropertyName(this.visitJsRightPadded(binding.padding.propertyName, JsRightPadded.Location.OBJECT_BINDING_DECLARATIONS_BINDING_PROPERTY_NAME, p));
