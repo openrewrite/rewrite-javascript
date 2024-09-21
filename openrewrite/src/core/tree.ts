@@ -139,12 +139,14 @@ export abstract class TreeVisitor<T extends Tree, P> {
         return this as unknown as V;
     }
 
-    static noop() {
-        return new class extends TreeVisitor<any, any> {
-            visit(tree: Tree | null, p: any, parent?: Cursor): Tree | null {
-                return tree;
-            }
-        }();
+    static noop<T extends Tree, P>() {
+        return new NoopVisitor<T, P>();
+    }
+}
+
+class NoopVisitor<T extends Tree, P> extends TreeVisitor<T, P> {
+    visit(tree: Tree | null, p: P, parent?: Cursor): T | null {
+        return tree as T;
     }
 }
 
@@ -318,12 +320,10 @@ const SourceFile = SourceFileSymbol;
 
 export function isSourceFile(tree: any & Tree): tree is SourceFile {
     // return 'sourcePath' in tree && 'printer' in tree;
-    return tree && tree[SourceFileSymbol] === true;
+    return !!tree.constructor.isSourceFile;
 }
 
 export interface SourceFile extends Tree {
-    [SourceFileSymbol]: true;
-
     get sourcePath(): string;
 
     withSourcePath(sourcePath: string): SourceFile;
@@ -357,7 +357,7 @@ type AbstractConstructor<T = {}> = abstract new (...args: any[]) => T;
 
 export function SourceFileMixin<TBase extends AbstractConstructor<Tree>>(Base: TBase) {
     abstract class SourceFileMixed extends Base implements SourceFile {
-        [SourceFileSymbol]: true = true;
+        static isSourceFile = true;
 
         abstract get sourcePath(): string;
 
@@ -723,7 +723,7 @@ export class ParseError implements SourceFile {
     }
 
     accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
-        return (v as ParseErrorVisitor<P>).visitParseError(this, p) as unknown as R;
+        return (v as unknown as ParseErrorVisitor<P>).visitParseError(this, p) as unknown as R;
     }
 }
 

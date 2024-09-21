@@ -3,36 +3,37 @@ import * as java_extensions from "../java/extensions";
 import {JavaScriptVisitor} from "./visitor";
 import {JsContainer, JsLeftPadded, JsRightPadded, JsSpace} from "./support_types";
 import {JS} from "./support_types";
+import {Alias, ExpressionStatement, ObjectBindingDeclarations, StatementExpression, TypeOperator} from "./tree";
 
 export function getJavaType<T extends J>(expr: T): JavaType | null {
-    if (expr instanceof JS.Alias) {
+    if (expr instanceof Alias) {
         return expr.propertyName.type;
-    } else if (expr instanceof JS.ExpressionStatement) {
+    } else if (expr instanceof ExpressionStatement) {
         return expr.expression.type;
-    } else if (expr instanceof JS.ObjectBindingDeclarations) {
+    } else if (expr instanceof ObjectBindingDeclarations) {
         return expr.typeExpression != null ? expr.typeExpression.type : null;
-    } else if (expr instanceof JS.ObjectBindingDeclarations.Binding) {
+    } else if (expr instanceof ObjectBindingDeclarations.Binding) {
         return expr.variableType != null ? expr.variableType.type : null;
-    } else if (expr instanceof JS.StatementExpression) {
+    } else if (expr instanceof StatementExpression) {
         return null;
-    } else if (expr instanceof JS.TypeOperator) {
+    } else if (expr instanceof TypeOperator) {
         return expr.expression.type;
     }
     return java_extensions.getJavaType(expr);
 }
 
 export function withJavaType<T>(expr: T, type: JavaType): T {
-    if (expr instanceof JS.Alias) {
+    if (expr instanceof Alias) {
         return expr.withPropertyName(expr.propertyName.withType(type)) as T;
-    } else if (expr instanceof JS.ExpressionStatement) {
+    } else if (expr instanceof ExpressionStatement) {
         return expr.withExpression(expr.expression.withType(type)) as T;
-    } else if (expr instanceof JS.ObjectBindingDeclarations) {
+    } else if (expr instanceof ObjectBindingDeclarations) {
         return (expr.typeExpression != null ? expr.withTypeExpression(expr.typeExpression.withType(type)) : null) as T;
-    } else if (expr instanceof JS.ObjectBindingDeclarations.Binding) {
+    } else if (expr instanceof ObjectBindingDeclarations.Binding) {
         return (expr.variableType != null ? expr.withVariableType(expr.variableType.withType(type)) : null) as T;
-    } else if (expr instanceof JS.StatementExpression) {
+    } else if (expr instanceof StatementExpression) {
         return expr as T;
-    } else if (expr instanceof JS.TypeOperator) {
+    } else if (expr instanceof TypeOperator) {
         return expr.withExpression(expr.expression.withType(type)) as T;
     }
     return java_extensions.withJavaType(expr, type);

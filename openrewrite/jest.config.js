@@ -10,4 +10,9 @@ module.exports = {
   },
   testMatch: ['**/__tests__/**/*.+(ts|tsx|js)', '**/?(*.)+(spec|test).+(ts|tsx|js)'],
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.test.json'
+    }
+  }
 };

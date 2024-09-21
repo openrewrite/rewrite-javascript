@@ -74,7 +74,7 @@ export class AnnotatedType extends JMixin(Object) implements Expression, TypeTre
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.AnnotatedType {
+    public withType(type: JavaType): AnnotatedType {
         return extensions.withJavaType(this, type);
     }
 
@@ -149,7 +149,7 @@ export class Annotation extends JMixin(Object) implements Expression {
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.Annotation {
+    public withType(type: JavaType): Annotation {
         return extensions.withJavaType(this, type);
     }
 
@@ -160,7 +160,7 @@ export class Annotation extends JMixin(Object) implements Expression {
                 return t._arguments;
             }
             public withArguments(_arguments: JContainer<Expression> | null): Annotation {
-                return t._arguments === _arguments ? t : new J.Annotation(t._id, t._prefix, t._markers, t._annotationType, _arguments);
+                return t._arguments === _arguments ? t : new Annotation(t._id, t._prefix, t._markers, t._annotationType, _arguments);
             }
         }
     }
@@ -484,7 +484,7 @@ export class Assignment extends JMixin(Object) implements Statement, Expression,
                 return t._assignment;
             }
             public withAssignment(assignment: JLeftPadded<Expression>): Assignment {
-                return t._assignment === assignment ? t : new J.Assignment(t._id, t._prefix, t._markers, t._variable, assignment, t._type);
+                return t._assignment === assignment ? t : new Assignment(t._id, t._prefix, t._markers, t._variable, assignment, t._type);
             }
         }
     }
@@ -585,7 +585,7 @@ export class AssignmentOperation extends JMixin(Object) implements Statement, Ex
                 return t._operator;
             }
             public withOperator(operator: JLeftPadded<AssignmentOperation.Type>): AssignmentOperation {
-                return t._operator === operator ? t : new J.AssignmentOperation(t._id, t._prefix, t._markers, t._variable, operator, t._assignment, t._type);
+                return t._operator === operator ? t : new AssignmentOperation(t._id, t._prefix, t._markers, t._variable, operator, t._assignment, t._type);
             }
         }
     }
@@ -707,7 +707,7 @@ export class Binary extends JMixin(Object) implements Expression, TypedTree {
                 return t._operator;
             }
             public withOperator(operator: JLeftPadded<Binary.Type>): Binary {
-                return t._operator === operator ? t : new J.Binary(t._id, t._prefix, t._markers, t._left, operator, t._right, t._type);
+                return t._operator === operator ? t : new Binary(t._id, t._prefix, t._markers, t._left, operator, t._right, t._type);
             }
         }
     }
@@ -823,13 +823,13 @@ export class Block extends JMixin(Object) implements Statement {
                 return t._static;
             }
             public withStatic(_static: JRightPadded<boolean>): Block {
-                return t._static === _static ? t : new J.Block(t._id, t._prefix, t._markers, _static, t._statements, t._end);
+                return t._static === _static ? t : new Block(t._id, t._prefix, t._markers, _static, t._statements, t._end);
             }
             public get statements(): JRightPadded<Statement>[] {
                 return t._statements;
             }
             public withStatements(statements: JRightPadded<Statement>[]): Block {
-                return t._statements === statements ? t : new J.Block(t._id, t._prefix, t._markers, t._static, statements, t._end);
+                return t._statements === statements ? t : new Block(t._id, t._prefix, t._markers, t._static, statements, t._end);
             }
         }
     }
@@ -986,19 +986,19 @@ export class Case extends JMixin(Object) implements Statement {
                 return t._expressions;
             }
             public withExpressions(expressions: JContainer<Expression>): Case {
-                return t._expressions === expressions ? t : new J.Case(t._id, t._prefix, t._markers, t._type, expressions, t._statements, t._body);
+                return t._expressions === expressions ? t : new Case(t._id, t._prefix, t._markers, t._type, expressions, t._statements, t._body);
             }
             public get statements(): JContainer<Statement> {
                 return t._statements;
             }
             public withStatements(statements: JContainer<Statement>): Case {
-                return t._statements === statements ? t : new J.Case(t._id, t._prefix, t._markers, t._type, t._expressions, statements, t._body);
+                return t._statements === statements ? t : new Case(t._id, t._prefix, t._markers, t._type, t._expressions, statements, t._body);
             }
             public get body(): JRightPadded<J> | null {
                 return t._body;
             }
             public withBody(body: JRightPadded<J> | null): Case {
-                return t._body === body ? t : new J.Case(t._id, t._prefix, t._markers, t._type, t._expressions, t._statements, body);
+                return t._body === body ? t : new Case(t._id, t._prefix, t._markers, t._type, t._expressions, t._statements, body);
             }
         }
     }
@@ -1181,37 +1181,37 @@ export class ClassDeclaration extends JMixin(Object) implements Statement, Typed
                 return t._kind;
             }
             public withKind(kind: ClassDeclaration.Kind): ClassDeclaration {
-                return t._kind === kind ? t : new J.ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, kind, t._name, t._typeParameters, t._primaryConstructor, t._extends, t._implements, t._permits, t._body, t._type);
+                return t._kind === kind ? t : new ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, kind, t._name, t._typeParameters, t._primaryConstructor, t._extends, t._implements, t._permits, t._body, t._type);
             }
             public get typeParameters(): JContainer<TypeParameter> | null {
                 return t._typeParameters;
             }
             public withTypeParameters(typeParameters: JContainer<TypeParameter> | null): ClassDeclaration {
-                return t._typeParameters === typeParameters ? t : new J.ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._kind, t._name, typeParameters, t._primaryConstructor, t._extends, t._implements, t._permits, t._body, t._type);
+                return t._typeParameters === typeParameters ? t : new ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._kind, t._name, typeParameters, t._primaryConstructor, t._extends, t._implements, t._permits, t._body, t._type);
             }
             public get primaryConstructor(): JContainer<Statement> | null {
                 return t._primaryConstructor;
             }
             public withPrimaryConstructor(primaryConstructor: JContainer<Statement> | null): ClassDeclaration {
-                return t._primaryConstructor === primaryConstructor ? t : new J.ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._kind, t._name, t._typeParameters, primaryConstructor, t._extends, t._implements, t._permits, t._body, t._type);
+                return t._primaryConstructor === primaryConstructor ? t : new ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._kind, t._name, t._typeParameters, primaryConstructor, t._extends, t._implements, t._permits, t._body, t._type);
             }
             public get extends(): JLeftPadded<TypeTree> | null {
                 return t._extends;
             }
             public withExtends(_extends: JLeftPadded<TypeTree> | null): ClassDeclaration {
-                return t._extends === _extends ? t : new J.ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._kind, t._name, t._typeParameters, t._primaryConstructor, _extends, t._implements, t._permits, t._body, t._type);
+                return t._extends === _extends ? t : new ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._kind, t._name, t._typeParameters, t._primaryConstructor, _extends, t._implements, t._permits, t._body, t._type);
             }
             public get implements(): JContainer<TypeTree> | null {
                 return t._implements;
             }
             public withImplements(_implements: JContainer<TypeTree> | null): ClassDeclaration {
-                return t._implements === _implements ? t : new J.ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._kind, t._name, t._typeParameters, t._primaryConstructor, t._extends, _implements, t._permits, t._body, t._type);
+                return t._implements === _implements ? t : new ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._kind, t._name, t._typeParameters, t._primaryConstructor, t._extends, _implements, t._permits, t._body, t._type);
             }
             public get permits(): JContainer<TypeTree> | null {
                 return t._permits;
             }
             public withPermits(permits: JContainer<TypeTree> | null): ClassDeclaration {
-                return t._permits === permits ? t : new J.ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._kind, t._name, t._typeParameters, t._primaryConstructor, t._extends, t._implements, permits, t._body, t._type);
+                return t._permits === permits ? t : new ClassDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._kind, t._name, t._typeParameters, t._primaryConstructor, t._extends, t._implements, permits, t._body, t._type);
             }
         }
     }
@@ -1221,7 +1221,7 @@ export class ClassDeclaration extends JMixin(Object) implements Statement, Typed
 export namespace ClassDeclaration {
     @LstType("org.openrewrite.java.tree.J$ClassDeclaration$Kind")
     export class Kind extends JMixin(Object) {
-        public constructor(id: UUID, prefix: Space, markers: Markers, annotations: J.Annotation[], _type: Kind.Type) {
+        public constructor(id: UUID, prefix: Space, markers: Markers, annotations: Annotation[], _type: ClassDeclaration.Kind.Type) {
             super();
             this._id = id;
             this._prefix = prefix;
@@ -1454,13 +1454,13 @@ export class CompilationUnit extends SourceFileMixin(JMixin(Object)) implements 
                 return t._packageDeclaration;
             }
             public withPackageDeclaration(packageDeclaration: JRightPadded<Package> | null): CompilationUnit {
-                return t._packageDeclaration === packageDeclaration ? t : new J.CompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, packageDeclaration, t._imports, t._classes, t._eof);
+                return t._packageDeclaration === packageDeclaration ? t : new CompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, packageDeclaration, t._imports, t._classes, t._eof);
             }
             public get imports(): JRightPadded<Import>[] {
                 return t._imports;
             }
             public withImports(imports: JRightPadded<Import>[]): CompilationUnit {
-                return t._imports === imports ? t : new J.CompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, t._packageDeclaration, imports, t._classes, t._eof);
+                return t._imports === imports ? t : new CompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, t._packageDeclaration, imports, t._classes, t._eof);
             }
         }
     }
@@ -1525,7 +1525,7 @@ export class Continue extends JMixin(Object) implements Statement {
 
 @LstType("org.openrewrite.java.tree.J$DoWhileLoop")
 export class DoWhileLoop extends JMixin(Object) implements Loop {
-    public constructor(id: UUID, prefix: Space, markers: Markers, body: JRightPadded<Statement>, whileCondition: JLeftPadded<J.ControlParentheses<Expression>>) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, body: JRightPadded<Statement>, whileCondition: JLeftPadded<ControlParentheses<Expression>>) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -1574,13 +1574,13 @@ export class DoWhileLoop extends JMixin(Object) implements Loop {
             return this.padding.withBody(this._body.withElement(body));
         }
 
-        private readonly _whileCondition: JLeftPadded<J.ControlParentheses<Expression>>;
+        private readonly _whileCondition: JLeftPadded<ControlParentheses<Expression>>;
 
-        public get whileCondition(): J.ControlParentheses<Expression> {
+        public get whileCondition(): ControlParentheses<Expression> {
             return this._whileCondition.element;
         }
 
-        public withWhileCondition(whileCondition: J.ControlParentheses<Expression>): DoWhileLoop {
+        public withWhileCondition(whileCondition: ControlParentheses<Expression>): DoWhileLoop {
             return this.padding.withWhileCondition(this._whileCondition.withElement(whileCondition));
         }
 
@@ -1595,13 +1595,13 @@ export class DoWhileLoop extends JMixin(Object) implements Loop {
                 return t._body;
             }
             public withBody(body: JRightPadded<Statement>): DoWhileLoop {
-                return t._body === body ? t : new J.DoWhileLoop(t._id, t._prefix, t._markers, body, t._whileCondition);
+                return t._body === body ? t : new DoWhileLoop(t._id, t._prefix, t._markers, body, t._whileCondition);
             }
-            public get whileCondition(): JLeftPadded<J.ControlParentheses<Expression>> {
+            public get whileCondition(): JLeftPadded<ControlParentheses<Expression>> {
                 return t._whileCondition;
             }
-            public withWhileCondition(whileCondition: JLeftPadded<J.ControlParentheses<Expression>>): DoWhileLoop {
-                return t._whileCondition === whileCondition ? t : new J.DoWhileLoop(t._id, t._prefix, t._markers, t._body, whileCondition);
+            public withWhileCondition(whileCondition: JLeftPadded<ControlParentheses<Expression>>): DoWhileLoop {
+                return t._whileCondition === whileCondition ? t : new DoWhileLoop(t._id, t._prefix, t._markers, t._body, whileCondition);
             }
         }
     }
@@ -1655,7 +1655,7 @@ export class Empty extends JMixin(Object) implements Statement, Expression, Type
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.Empty {
+    public withType(type: JavaType): Empty {
         return extensions.withJavaType(this, type);
     }
 
@@ -1811,7 +1811,7 @@ export class EnumValueSet extends JMixin(Object) implements Statement {
                 return t._enums;
             }
             public withEnums(enums: JRightPadded<EnumValue>[]): EnumValueSet {
-                return t._enums === enums ? t : new J.EnumValueSet(t._id, t._prefix, t._markers, enums, t._terminatedWithSemicolon);
+                return t._enums === enums ? t : new EnumValueSet(t._id, t._prefix, t._markers, enums, t._terminatedWithSemicolon);
             }
         }
     }
@@ -1901,7 +1901,7 @@ export class FieldAccess extends JMixin(Object) implements TypeTree, Expression,
                 return t._name;
             }
             public withName(name: JLeftPadded<Identifier>): FieldAccess {
-                return t._name === name ? t : new J.FieldAccess(t._id, t._prefix, t._markers, t._target, name, t._type);
+                return t._name === name ? t : new FieldAccess(t._id, t._prefix, t._markers, t._target, name, t._type);
             }
         }
     }
@@ -1980,7 +1980,7 @@ export class ForEachLoop extends JMixin(Object) implements Loop {
                 return t._body;
             }
             public withBody(body: JRightPadded<Statement>): ForEachLoop {
-                return t._body === body ? t : new J.ForEachLoop(t._id, t._prefix, t._markers, t._control, body);
+                return t._body === body ? t : new ForEachLoop(t._id, t._prefix, t._markers, t._control, body);
             }
         }
     }
@@ -1990,7 +1990,7 @@ export class ForEachLoop extends JMixin(Object) implements Loop {
 export namespace ForEachLoop {
     @LstType("org.openrewrite.java.tree.J$ForEachLoop$Control")
     export class Control extends JMixin(Object) {
-        public constructor(id: UUID, prefix: Space, markers: Markers, variable: JRightPadded<J.VariableDeclarations>, iterable: JRightPadded<Expression>) {
+        public constructor(id: UUID, prefix: Space, markers: Markers, variable: JRightPadded<VariableDeclarations>, iterable: JRightPadded<Expression>) {
             super();
             this._id = id;
             this._prefix = prefix;
@@ -2060,13 +2060,13 @@ export namespace ForEachLoop {
                     return t._variable;
                 }
                 public withVariable(variable: JRightPadded<VariableDeclarations>): ForEachLoop.Control {
-                    return t._variable === variable ? t : new J.ForEachLoop.Control(t._id, t._prefix, t._markers, variable, t._iterable);
+                    return t._variable === variable ? t : new ForEachLoop.Control(t._id, t._prefix, t._markers, variable, t._iterable);
                 }
                 public get iterable(): JRightPadded<Expression> {
                     return t._iterable;
                 }
                 public withIterable(iterable: JRightPadded<Expression>): ForEachLoop.Control {
-                    return t._iterable === iterable ? t : new J.ForEachLoop.Control(t._id, t._prefix, t._markers, t._variable, iterable);
+                    return t._iterable === iterable ? t : new ForEachLoop.Control(t._id, t._prefix, t._markers, t._variable, iterable);
                 }
             }
         }
@@ -2147,7 +2147,7 @@ export class ForLoop extends JMixin(Object) implements Loop {
                 return t._body;
             }
             public withBody(body: JRightPadded<Statement>): ForLoop {
-                return t._body === body ? t : new J.ForLoop(t._id, t._prefix, t._markers, t._control, body);
+                return t._body === body ? t : new ForLoop(t._id, t._prefix, t._markers, t._control, body);
             }
         }
     }
@@ -2238,19 +2238,19 @@ export namespace ForLoop {
                     return t._init;
                 }
                 public withInit(init: JRightPadded<Statement>[]): ForLoop.Control {
-                    return t._init === init ? t : new J.ForLoop.Control(t._id, t._prefix, t._markers, init, t._condition, t._update);
+                    return t._init === init ? t : new ForLoop.Control(t._id, t._prefix, t._markers, init, t._condition, t._update);
                 }
                 public get condition(): JRightPadded<Expression> {
                     return t._condition;
                 }
                 public withCondition(condition: JRightPadded<Expression>): ForLoop.Control {
-                    return t._condition === condition ? t : new J.ForLoop.Control(t._id, t._prefix, t._markers, t._init, condition, t._update);
+                    return t._condition === condition ? t : new ForLoop.Control(t._id, t._prefix, t._markers, t._init, condition, t._update);
                 }
                 public get update(): JRightPadded<Statement>[] {
                     return t._update;
                 }
                 public withUpdate(update: JRightPadded<Statement>[]): ForLoop.Control {
-                    return t._update === update ? t : new J.ForLoop.Control(t._id, t._prefix, t._markers, t._init, t._condition, update);
+                    return t._update === update ? t : new ForLoop.Control(t._id, t._prefix, t._markers, t._init, t._condition, update);
                 }
             }
         }
@@ -2261,7 +2261,7 @@ export namespace ForLoop {
 
 @LstType("org.openrewrite.java.tree.J$ParenthesizedTypeTree")
 export class ParenthesizedTypeTree extends JMixin(Object) implements TypeTree, Expression {
-    public constructor(id: UUID, prefix: Space, markers: Markers, annotations: Annotation[], parenthesizedType: J.Parentheses<TypeTree>) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, annotations: Annotation[], parenthesizedType: Parentheses<TypeTree>) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -2310,13 +2310,13 @@ export class ParenthesizedTypeTree extends JMixin(Object) implements TypeTree, E
             return annotations === this._annotations ? this : new ParenthesizedTypeTree(this._id, this._prefix, this._markers, annotations, this._parenthesizedType);
         }
 
-        private readonly _parenthesizedType: J.Parentheses<TypeTree>;
+        private readonly _parenthesizedType: Parentheses<TypeTree>;
 
-        public get parenthesizedType(): J.Parentheses<TypeTree> {
+        public get parenthesizedType(): Parentheses<TypeTree> {
             return this._parenthesizedType;
         }
 
-        public withParenthesizedType(parenthesizedType: J.Parentheses<TypeTree>): ParenthesizedTypeTree {
+        public withParenthesizedType(parenthesizedType: Parentheses<TypeTree>): ParenthesizedTypeTree {
             return parenthesizedType === this._parenthesizedType ? this : new ParenthesizedTypeTree(this._id, this._prefix, this._markers, this._annotations, parenthesizedType);
         }
 
@@ -2328,7 +2328,7 @@ export class ParenthesizedTypeTree extends JMixin(Object) implements TypeTree, E
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.ParenthesizedTypeTree {
+    public withType(type: JavaType): ParenthesizedTypeTree {
         return extensions.withJavaType(this, type);
     }
 
@@ -2425,7 +2425,7 @@ export class Identifier extends JMixin(Object) implements TypeTree, Expression {
 
 @LstType("org.openrewrite.java.tree.J$If")
 export class If extends JMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, ifCondition: J.ControlParentheses<Expression>, thenPart: JRightPadded<Statement>, elsePart: If.Else | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, ifCondition: ControlParentheses<Expression>, thenPart: JRightPadded<Statement>, elsePart: If.Else | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -2465,13 +2465,13 @@ export class If extends JMixin(Object) implements Statement {
             return markers === this._markers ? this : new If(this._id, this._prefix, markers, this._ifCondition, this._thenPart, this._elsePart);
         }
 
-        private readonly _ifCondition: J.ControlParentheses<Expression>;
+        private readonly _ifCondition: ControlParentheses<Expression>;
 
-        public get ifCondition(): J.ControlParentheses<Expression> {
+        public get ifCondition(): ControlParentheses<Expression> {
             return this._ifCondition;
         }
 
-        public withIfCondition(ifCondition: J.ControlParentheses<Expression>): If {
+        public withIfCondition(ifCondition: ControlParentheses<Expression>): If {
             return ifCondition === this._ifCondition ? this : new If(this._id, this._prefix, this._markers, ifCondition, this._thenPart, this._elsePart);
         }
 
@@ -2506,7 +2506,7 @@ export class If extends JMixin(Object) implements Statement {
                 return t._thenPart;
             }
             public withThenPart(thenPart: JRightPadded<Statement>): If {
-                return t._thenPart === thenPart ? t : new J.If(t._id, t._prefix, t._markers, t._ifCondition, thenPart, t._elsePart);
+                return t._thenPart === thenPart ? t : new If(t._id, t._prefix, t._markers, t._ifCondition, thenPart, t._elsePart);
             }
         }
     }
@@ -2575,7 +2575,7 @@ export namespace If {
                     return t._body;
                 }
                 public withBody(body: JRightPadded<Statement>): If.Else {
-                    return t._body === body ? t : new J.If.Else(t._id, t._prefix, t._markers, body);
+                    return t._body === body ? t : new If.Else(t._id, t._prefix, t._markers, body);
                 }
             }
         }
@@ -2667,13 +2667,13 @@ export class Import extends JMixin(Object) implements Statement {
                 return t._static;
             }
             public withStatic(_static: JLeftPadded<boolean>): Import {
-                return t._static === _static ? t : new J.Import(t._id, t._prefix, t._markers, _static, t._qualid, t._alias);
+                return t._static === _static ? t : new Import(t._id, t._prefix, t._markers, _static, t._qualid, t._alias);
             }
             public get alias(): JLeftPadded<Identifier> | null {
                 return t._alias;
             }
             public withAlias(alias: JLeftPadded<Identifier> | null): Import {
-                return t._alias === alias ? t : new J.Import(t._id, t._prefix, t._markers, t._static, t._qualid, alias);
+                return t._alias === alias ? t : new Import(t._id, t._prefix, t._markers, t._static, t._qualid, alias);
             }
         }
     }
@@ -2774,7 +2774,7 @@ export class InstanceOf extends JMixin(Object) implements Expression, TypedTree 
                 return t._expression;
             }
             public withExpression(expression: JRightPadded<Expression>): InstanceOf {
-                return t._expression === expression ? t : new J.InstanceOf(t._id, t._prefix, t._markers, expression, t._clazz, t._pattern, t._type);
+                return t._expression === expression ? t : new InstanceOf(t._id, t._prefix, t._markers, expression, t._clazz, t._pattern, t._type);
             }
         }
     }
@@ -2839,7 +2839,7 @@ export class IntersectionType extends JMixin(Object) implements TypeTree, Expres
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.IntersectionType {
+    public withType(type: JavaType): IntersectionType {
         return extensions.withJavaType(this, type);
     }
 
@@ -2850,7 +2850,7 @@ export class IntersectionType extends JMixin(Object) implements TypeTree, Expres
                 return t._bounds;
             }
             public withBounds(bounds: JContainer<TypeTree>): IntersectionType {
-                return t._bounds === bounds ? t : new J.IntersectionType(t._id, t._prefix, t._markers, bounds);
+                return t._bounds === bounds ? t : new IntersectionType(t._id, t._prefix, t._markers, bounds);
             }
         }
     }
@@ -2929,7 +2929,7 @@ export class Label extends JMixin(Object) implements Statement {
                 return t._label;
             }
             public withLabel(label: JRightPadded<Identifier>): Label {
-                return t._label === label ? t : new J.Label(t._id, t._prefix, t._markers, label, t._statement);
+                return t._label === label ? t : new Label(t._id, t._prefix, t._markers, label, t._statement);
             }
         }
     }
@@ -3098,7 +3098,7 @@ export namespace Lambda {
                     return t._parameters;
                 }
                 public withParameters(parameters: JRightPadded<J>[]): Lambda.Parameters {
-                    return t._parameters === parameters ? t : new J.Lambda.Parameters(t._id, t._prefix, t._markers, t._parenthesized, parameters);
+                    return t._parameters === parameters ? t : new Lambda.Parameters(t._id, t._prefix, t._markers, t._parenthesized, parameters);
                 }
             }
         }
@@ -3343,19 +3343,19 @@ export class MemberReference extends JMixin(Object) implements TypedTree, Method
                 return t._containing;
             }
             public withContaining(containing: JRightPadded<Expression>): MemberReference {
-                return t._containing === containing ? t : new J.MemberReference(t._id, t._prefix, t._markers, containing, t._typeParameters, t._reference, t._type, t._methodType, t._variableType);
+                return t._containing === containing ? t : new MemberReference(t._id, t._prefix, t._markers, containing, t._typeParameters, t._reference, t._type, t._methodType, t._variableType);
             }
             public get typeParameters(): JContainer<Expression> | null {
                 return t._typeParameters;
             }
             public withTypeParameters(typeParameters: JContainer<Expression> | null): MemberReference {
-                return t._typeParameters === typeParameters ? t : new J.MemberReference(t._id, t._prefix, t._markers, t._containing, typeParameters, t._reference, t._type, t._methodType, t._variableType);
+                return t._typeParameters === typeParameters ? t : new MemberReference(t._id, t._prefix, t._markers, t._containing, typeParameters, t._reference, t._type, t._methodType, t._variableType);
             }
             public get reference(): JLeftPadded<Identifier> {
                 return t._reference;
             }
             public withReference(reference: JLeftPadded<Identifier>): MemberReference {
-                return t._reference === reference ? t : new J.MemberReference(t._id, t._prefix, t._markers, t._containing, t._typeParameters, reference, t._type, t._methodType, t._variableType);
+                return t._reference === reference ? t : new MemberReference(t._id, t._prefix, t._markers, t._containing, t._typeParameters, reference, t._type, t._methodType, t._variableType);
             }
         }
     }
@@ -3503,7 +3503,7 @@ export class MethodDeclaration extends JMixin(Object) implements Statement, Type
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.MethodDeclaration {
+    public withType(type: JavaType): MethodDeclaration {
         return extensions.withJavaType(this, type);
     }
 
@@ -3514,31 +3514,31 @@ export class MethodDeclaration extends JMixin(Object) implements Statement, Type
                 return t._typeParameters;
             }
             public withTypeParameters(typeParameters: TypeParameters | null): MethodDeclaration {
-                return t._typeParameters === typeParameters ? t : new J.MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, typeParameters, t._returnTypeExpression, t._name, t._parameters, t._throws, t._body, t._defaultValue, t._methodType);
+                return t._typeParameters === typeParameters ? t : new MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, typeParameters, t._returnTypeExpression, t._name, t._parameters, t._throws, t._body, t._defaultValue, t._methodType);
             }
             public get name(): MethodDeclaration.IdentifierWithAnnotations {
                 return t._name;
             }
             public withName(name: MethodDeclaration.IdentifierWithAnnotations): MethodDeclaration {
-                return t._name === name ? t : new J.MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, name, t._parameters, t._throws, t._body, t._defaultValue, t._methodType);
+                return t._name === name ? t : new MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, name, t._parameters, t._throws, t._body, t._defaultValue, t._methodType);
             }
             public get parameters(): JContainer<Statement> {
                 return t._parameters;
             }
             public withParameters(parameters: JContainer<Statement>): MethodDeclaration {
-                return t._parameters === parameters ? t : new J.MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, parameters, t._throws, t._body, t._defaultValue, t._methodType);
+                return t._parameters === parameters ? t : new MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, parameters, t._throws, t._body, t._defaultValue, t._methodType);
             }
             public get throws(): JContainer<NameTree> | null {
                 return t._throws;
             }
             public withThrows(throws: JContainer<NameTree> | null): MethodDeclaration {
-                return t._throws === throws ? t : new J.MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, t._parameters, throws, t._body, t._defaultValue, t._methodType);
+                return t._throws === throws ? t : new MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, t._parameters, throws, t._body, t._defaultValue, t._methodType);
             }
             public get defaultValue(): JLeftPadded<Expression> | null {
                 return t._defaultValue;
             }
             public withDefaultValue(defaultValue: JLeftPadded<Expression> | null): MethodDeclaration {
-                return t._defaultValue === defaultValue ? t : new J.MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, t._parameters, t._throws, t._body, defaultValue, t._methodType);
+                return t._defaultValue === defaultValue ? t : new MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, t._parameters, t._throws, t._body, defaultValue, t._methodType);
             }
         }
     }
@@ -3550,31 +3550,31 @@ export class MethodDeclaration extends JMixin(Object) implements Statement, Type
                 return t._typeParameters;
             }
             public withTypeParameters(typeParameters: TypeParameters | null): MethodDeclaration {
-                return t._typeParameters === typeParameters ? t : new J.MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, typeParameters, t._returnTypeExpression, t._name, t._parameters, t._throws, t._body, t._defaultValue, t._methodType);
+                return t._typeParameters === typeParameters ? t : new MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, typeParameters, t._returnTypeExpression, t._name, t._parameters, t._throws, t._body, t._defaultValue, t._methodType);
             }
             public get name(): MethodDeclaration.IdentifierWithAnnotations {
                 return t._name;
             }
             public withName(name: MethodDeclaration.IdentifierWithAnnotations): MethodDeclaration {
-                return t._name === name ? t : new J.MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, name, t._parameters, t._throws, t._body, t._defaultValue, t._methodType);
+                return t._name === name ? t : new MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, name, t._parameters, t._throws, t._body, t._defaultValue, t._methodType);
             }
             public get parameters(): JContainer<Statement> {
                 return t._parameters;
             }
             public withParameters(parameters: JContainer<Statement>): MethodDeclaration {
-                return t._parameters === parameters ? t : new J.MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, parameters, t._throws, t._body, t._defaultValue, t._methodType);
+                return t._parameters === parameters ? t : new MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, parameters, t._throws, t._body, t._defaultValue, t._methodType);
             }
             public get throws(): JContainer<NameTree> | null {
                 return t._throws;
             }
             public withThrows(throws: JContainer<NameTree> | null): MethodDeclaration {
-                return t._throws === throws ? t : new J.MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, t._parameters, throws, t._body, t._defaultValue, t._methodType);
+                return t._throws === throws ? t : new MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, t._parameters, throws, t._body, t._defaultValue, t._methodType);
             }
             public get defaultValue(): JLeftPadded<Expression> | null {
                 return t._defaultValue;
             }
             public withDefaultValue(defaultValue: JLeftPadded<Expression> | null): MethodDeclaration {
-                return t._defaultValue === defaultValue ? t : new J.MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, t._parameters, t._throws, t._body, defaultValue, t._methodType);
+                return t._defaultValue === defaultValue ? t : new MethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, t._parameters, t._throws, t._body, defaultValue, t._methodType);
             }
         }
     }
@@ -3583,7 +3583,7 @@ export class MethodDeclaration extends JMixin(Object) implements Statement, Type
 
 export namespace MethodDeclaration {
     export class IdentifierWithAnnotations {
-        public constructor(identifier: J.Identifier, annotations: J.Annotation[]) {
+        public constructor(identifier: Identifier, annotations: Annotation[]) {
             this._identifier = identifier;
             this._annotations = annotations;
         }
@@ -3714,7 +3714,7 @@ export class MethodInvocation extends JMixin(Object) implements Statement, Typed
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.MethodInvocation {
+    public withType(type: JavaType): MethodInvocation {
         return extensions.withJavaType(this, type);
     }
 
@@ -3725,19 +3725,19 @@ export class MethodInvocation extends JMixin(Object) implements Statement, Typed
                 return t._select;
             }
             public withSelect(select: JRightPadded<Expression> | null): MethodInvocation {
-                return t._select === select ? t : new J.MethodInvocation(t._id, t._prefix, t._markers, select, t._typeParameters, t._name, t._arguments, t._methodType);
+                return t._select === select ? t : new MethodInvocation(t._id, t._prefix, t._markers, select, t._typeParameters, t._name, t._arguments, t._methodType);
             }
             public get typeParameters(): JContainer<Expression> | null {
                 return t._typeParameters;
             }
             public withTypeParameters(typeParameters: JContainer<Expression> | null): MethodInvocation {
-                return t._typeParameters === typeParameters ? t : new J.MethodInvocation(t._id, t._prefix, t._markers, t._select, typeParameters, t._name, t._arguments, t._methodType);
+                return t._typeParameters === typeParameters ? t : new MethodInvocation(t._id, t._prefix, t._markers, t._select, typeParameters, t._name, t._arguments, t._methodType);
             }
             public get arguments(): JContainer<Expression> {
                 return t._arguments;
             }
             public withArguments(_arguments: JContainer<Expression>): MethodInvocation {
-                return t._arguments === _arguments ? t : new J.MethodInvocation(t._id, t._prefix, t._markers, t._select, t._typeParameters, t._name, _arguments, t._methodType);
+                return t._arguments === _arguments ? t : new MethodInvocation(t._id, t._prefix, t._markers, t._select, t._typeParameters, t._name, _arguments, t._methodType);
             }
         }
     }
@@ -3905,7 +3905,7 @@ export class MultiCatch extends JMixin(Object) implements TypeTree {
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.MultiCatch {
+    public withType(type: JavaType): MultiCatch {
         return extensions.withJavaType(this, type);
     }
 
@@ -3916,7 +3916,7 @@ export class MultiCatch extends JMixin(Object) implements TypeTree {
                 return t._alternatives;
             }
             public withAlternatives(alternatives: JRightPadded<NameTree>[]): MultiCatch {
-                return t._alternatives === alternatives ? t : new J.MultiCatch(t._id, t._prefix, t._markers, alternatives);
+                return t._alternatives === alternatives ? t : new MultiCatch(t._id, t._prefix, t._markers, alternatives);
             }
         }
     }
@@ -4017,7 +4017,7 @@ export class NewArray extends JMixin(Object) implements Expression, TypedTree {
                 return t._initializer;
             }
             public withInitializer(initializer: JContainer<Expression> | null): NewArray {
-                return t._initializer === initializer ? t : new J.NewArray(t._id, t._prefix, t._markers, t._typeExpression, t._dimensions, initializer, t._type);
+                return t._initializer === initializer ? t : new NewArray(t._id, t._prefix, t._markers, t._typeExpression, t._dimensions, initializer, t._type);
             }
         }
     }
@@ -4085,7 +4085,7 @@ export class ArrayDimension extends JMixin(Object) {
                 return t._index;
             }
             public withIndex(index: JRightPadded<Expression>): ArrayDimension {
-                return t._index === index ? t : new J.ArrayDimension(t._id, t._prefix, t._markers, index);
+                return t._index === index ? t : new ArrayDimension(t._id, t._prefix, t._markers, index);
             }
         }
     }
@@ -4205,7 +4205,7 @@ export class NewClass extends JMixin(Object) implements Statement, TypedTree, Me
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.NewClass {
+    public withType(type: JavaType): NewClass {
         return extensions.withJavaType(this, type);
     }
 
@@ -4216,13 +4216,13 @@ export class NewClass extends JMixin(Object) implements Statement, TypedTree, Me
                 return t._enclosing;
             }
             public withEnclosing(enclosing: JRightPadded<Expression> | null): NewClass {
-                return t._enclosing === enclosing ? t : new J.NewClass(t._id, t._prefix, t._markers, enclosing, t._new, t._clazz, t._arguments, t._body, t._constructorType);
+                return t._enclosing === enclosing ? t : new NewClass(t._id, t._prefix, t._markers, enclosing, t._new, t._clazz, t._arguments, t._body, t._constructorType);
             }
             public get arguments(): JContainer<Expression> {
                 return t._arguments;
             }
             public withArguments(_arguments: JContainer<Expression>): NewClass {
-                return t._arguments === _arguments ? t : new J.NewClass(t._id, t._prefix, t._markers, t._enclosing, t._new, t._clazz, _arguments, t._body, t._constructorType);
+                return t._arguments === _arguments ? t : new NewClass(t._id, t._prefix, t._markers, t._enclosing, t._new, t._clazz, _arguments, t._body, t._constructorType);
             }
         }
     }
@@ -4298,7 +4298,7 @@ export class NullableType extends JMixin(Object) implements TypeTree, Expression
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.NullableType {
+    public withType(type: JavaType): NullableType {
         return extensions.withJavaType(this, type);
     }
 
@@ -4309,7 +4309,7 @@ export class NullableType extends JMixin(Object) implements TypeTree, Expression
                 return t._typeTree;
             }
             public withTypeTree(typeTree: JRightPadded<TypeTree>): NullableType {
-                return t._typeTree === typeTree ? t : new J.NullableType(t._id, t._prefix, t._markers, t._annotations, typeTree);
+                return t._typeTree === typeTree ? t : new NullableType(t._id, t._prefix, t._markers, t._annotations, typeTree);
             }
         }
     }
@@ -4466,7 +4466,7 @@ export class ParameterizedType extends JMixin(Object) implements TypeTree, Expre
                 return t._typeParameters;
             }
             public withTypeParameters(typeParameters: JContainer<Expression> | null): ParameterizedType {
-                return t._typeParameters === typeParameters ? t : new J.ParameterizedType(t._id, t._prefix, t._markers, t._clazz, typeParameters, t._type);
+                return t._typeParameters === typeParameters ? t : new ParameterizedType(t._id, t._prefix, t._markers, t._clazz, typeParameters, t._type);
             }
         }
     }
@@ -4489,8 +4489,8 @@ export class Parentheses<J2 extends J> extends JMixin(Object) implements Express
             return this._id;
         }
 
-        public withId(id: UUID): J.Parentheses<J2> {
-            return id === this._id ? this : new J.Parentheses<J2>(id, this._prefix, this._markers, this._tree);
+        public withId(id: UUID): Parentheses<J2> {
+            return id === this._id ? this : new Parentheses<J2>(id, this._prefix, this._markers, this._tree);
         }
 
         private readonly _prefix: Space;
@@ -4499,8 +4499,8 @@ export class Parentheses<J2 extends J> extends JMixin(Object) implements Express
             return this._prefix;
         }
 
-        public withPrefix(prefix: Space): J.Parentheses<J2> {
-            return prefix === this._prefix ? this : new J.Parentheses<J2>(this._id, prefix, this._markers, this._tree);
+        public withPrefix(prefix: Space): Parentheses<J2> {
+            return prefix === this._prefix ? this : new Parentheses<J2>(this._id, prefix, this._markers, this._tree);
         }
 
         private readonly _markers: Markers;
@@ -4509,8 +4509,8 @@ export class Parentheses<J2 extends J> extends JMixin(Object) implements Express
             return this._markers;
         }
 
-        public withMarkers(markers: Markers): J.Parentheses<J2> {
-            return markers === this._markers ? this : new J.Parentheses<J2>(this._id, this._prefix, markers, this._tree);
+        public withMarkers(markers: Markers): Parentheses<J2> {
+            return markers === this._markers ? this : new Parentheses<J2>(this._id, this._prefix, markers, this._tree);
         }
 
         private readonly _tree: JRightPadded<J2>;
@@ -4519,7 +4519,7 @@ export class Parentheses<J2 extends J> extends JMixin(Object) implements Express
             return this._tree.element;
         }
 
-        public withTree(tree: J2): J.Parentheses<J2> {
+        public withTree(tree: J2): Parentheses<J2> {
             return this.padding.withTree(this._tree.withElement(tree));
         }
 
@@ -4531,7 +4531,7 @@ export class Parentheses<J2 extends J> extends JMixin(Object) implements Express
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.Parentheses<J2> {
+    public withType(type: JavaType): Parentheses<J2> {
         return extensions.withJavaType(this, type);
     }
 
@@ -4541,8 +4541,8 @@ export class Parentheses<J2 extends J> extends JMixin(Object) implements Express
             public get tree(): JRightPadded<J2> {
                 return t._tree;
             }
-            public withTree(tree: JRightPadded<J2>): J.Parentheses<J2> {
-                return t._tree === tree ? t : new J.Parentheses<J2>(t._id, t._prefix, t._markers, tree);
+            public withTree(tree: JRightPadded<J2>): Parentheses<J2> {
+                return t._tree === tree ? t : new Parentheses<J2>(t._id, t._prefix, t._markers, tree);
             }
         }
     }
@@ -4565,8 +4565,8 @@ export class ControlParentheses<J2 extends J> extends JMixin(Object) implements 
             return this._id;
         }
 
-        public withId(id: UUID): J.ControlParentheses<J2> {
-            return id === this._id ? this : new J.ControlParentheses<J2>(id, this._prefix, this._markers, this._tree);
+        public withId(id: UUID): ControlParentheses<J2> {
+            return id === this._id ? this : new ControlParentheses<J2>(id, this._prefix, this._markers, this._tree);
         }
 
         private readonly _prefix: Space;
@@ -4575,8 +4575,8 @@ export class ControlParentheses<J2 extends J> extends JMixin(Object) implements 
             return this._prefix;
         }
 
-        public withPrefix(prefix: Space): J.ControlParentheses<J2> {
-            return prefix === this._prefix ? this : new J.ControlParentheses<J2>(this._id, prefix, this._markers, this._tree);
+        public withPrefix(prefix: Space): ControlParentheses<J2> {
+            return prefix === this._prefix ? this : new ControlParentheses<J2>(this._id, prefix, this._markers, this._tree);
         }
 
         private readonly _markers: Markers;
@@ -4585,8 +4585,8 @@ export class ControlParentheses<J2 extends J> extends JMixin(Object) implements 
             return this._markers;
         }
 
-        public withMarkers(markers: Markers): J.ControlParentheses<J2> {
-            return markers === this._markers ? this : new J.ControlParentheses<J2>(this._id, this._prefix, markers, this._tree);
+        public withMarkers(markers: Markers): ControlParentheses<J2> {
+            return markers === this._markers ? this : new ControlParentheses<J2>(this._id, this._prefix, markers, this._tree);
         }
 
         private readonly _tree: JRightPadded<J2>;
@@ -4595,7 +4595,7 @@ export class ControlParentheses<J2 extends J> extends JMixin(Object) implements 
             return this._tree.element;
         }
 
-        public withTree(tree: J2): J.ControlParentheses<J2> {
+        public withTree(tree: J2): ControlParentheses<J2> {
             return this.padding.withTree(this._tree.withElement(tree));
         }
 
@@ -4607,7 +4607,7 @@ export class ControlParentheses<J2 extends J> extends JMixin(Object) implements 
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.ControlParentheses<J2> {
+    public withType(type: JavaType): ControlParentheses<J2> {
         return extensions.withJavaType(this, type);
     }
 
@@ -4617,8 +4617,8 @@ export class ControlParentheses<J2 extends J> extends JMixin(Object) implements 
             public get tree(): JRightPadded<J2> {
                 return t._tree;
             }
-            public withTree(tree: JRightPadded<J2>): J.ControlParentheses<J2> {
-                return t._tree === tree ? t : new J.ControlParentheses<J2>(t._id, t._prefix, t._markers, tree);
+            public withTree(tree: JRightPadded<J2>): ControlParentheses<J2> {
+                return t._tree === tree ? t : new ControlParentheses<J2>(t._id, t._prefix, t._markers, tree);
             }
         }
     }
@@ -4739,7 +4739,7 @@ export class Return extends JMixin(Object) implements Statement {
 
 @LstType("org.openrewrite.java.tree.J$Switch")
 export class Switch extends JMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, selector: J.ControlParentheses<Expression>, cases: Block) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, selector: ControlParentheses<Expression>, cases: Block) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -4778,13 +4778,13 @@ export class Switch extends JMixin(Object) implements Statement {
             return markers === this._markers ? this : new Switch(this._id, this._prefix, markers, this._selector, this._cases);
         }
 
-        private readonly _selector: J.ControlParentheses<Expression>;
+        private readonly _selector: ControlParentheses<Expression>;
 
-        public get selector(): J.ControlParentheses<Expression> {
+        public get selector(): ControlParentheses<Expression> {
             return this._selector;
         }
 
-        public withSelector(selector: J.ControlParentheses<Expression>): Switch {
+        public withSelector(selector: ControlParentheses<Expression>): Switch {
             return selector === this._selector ? this : new Switch(this._id, this._prefix, this._markers, selector, this._cases);
         }
 
@@ -4806,7 +4806,7 @@ export class Switch extends JMixin(Object) implements Statement {
 
 @LstType("org.openrewrite.java.tree.J$SwitchExpression")
 export class SwitchExpression extends JMixin(Object) implements Expression, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, selector: J.ControlParentheses<Expression>, cases: Block) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, selector: ControlParentheses<Expression>, cases: Block) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -4845,13 +4845,13 @@ export class SwitchExpression extends JMixin(Object) implements Expression, Type
             return markers === this._markers ? this : new SwitchExpression(this._id, this._prefix, markers, this._selector, this._cases);
         }
 
-        private readonly _selector: J.ControlParentheses<Expression>;
+        private readonly _selector: ControlParentheses<Expression>;
 
-        public get selector(): J.ControlParentheses<Expression> {
+        public get selector(): ControlParentheses<Expression> {
             return this._selector;
         }
 
-        public withSelector(selector: J.ControlParentheses<Expression>): SwitchExpression {
+        public withSelector(selector: ControlParentheses<Expression>): SwitchExpression {
             return selector === this._selector ? this : new SwitchExpression(this._id, this._prefix, this._markers, selector, this._cases);
         }
 
@@ -4873,7 +4873,7 @@ export class SwitchExpression extends JMixin(Object) implements Expression, Type
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.SwitchExpression {
+    public withType(type: JavaType): SwitchExpression {
         return extensions.withJavaType(this, type);
     }
 
@@ -4881,7 +4881,7 @@ export class SwitchExpression extends JMixin(Object) implements Expression, Type
 
 @LstType("org.openrewrite.java.tree.J$Synchronized")
 export class Synchronized extends JMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, lock: J.ControlParentheses<Expression>, body: Block) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, lock: ControlParentheses<Expression>, body: Block) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -4920,13 +4920,13 @@ export class Synchronized extends JMixin(Object) implements Statement {
             return markers === this._markers ? this : new Synchronized(this._id, this._prefix, markers, this._lock, this._body);
         }
 
-        private readonly _lock: J.ControlParentheses<Expression>;
+        private readonly _lock: ControlParentheses<Expression>;
 
-        public get lock(): J.ControlParentheses<Expression> {
+        public get lock(): ControlParentheses<Expression> {
             return this._lock;
         }
 
-        public withLock(lock: J.ControlParentheses<Expression>): Synchronized {
+        public withLock(lock: ControlParentheses<Expression>): Synchronized {
             return lock === this._lock ? this : new Synchronized(this._id, this._prefix, this._markers, lock, this._body);
         }
 
@@ -5040,13 +5040,13 @@ export class Ternary extends JMixin(Object) implements Expression, Statement, Ty
                 return t._truePart;
             }
             public withTruePart(truePart: JLeftPadded<Expression>): Ternary {
-                return t._truePart === truePart ? t : new J.Ternary(t._id, t._prefix, t._markers, t._condition, truePart, t._falsePart, t._type);
+                return t._truePart === truePart ? t : new Ternary(t._id, t._prefix, t._markers, t._condition, truePart, t._falsePart, t._type);
             }
             public get falsePart(): JLeftPadded<Expression> {
                 return t._falsePart;
             }
             public withFalsePart(falsePart: JLeftPadded<Expression>): Ternary {
-                return t._falsePart === falsePart ? t : new J.Ternary(t._id, t._prefix, t._markers, t._condition, t._truePart, falsePart, t._type);
+                return t._falsePart === falsePart ? t : new Ternary(t._id, t._prefix, t._markers, t._condition, t._truePart, falsePart, t._type);
             }
         }
     }
@@ -5203,13 +5203,13 @@ export class Try extends JMixin(Object) implements Statement {
                 return t._resources;
             }
             public withResources(resources: JContainer<Try.Resource> | null): Try {
-                return t._resources === resources ? t : new J.Try(t._id, t._prefix, t._markers, resources, t._body, t._catches, t._finally);
+                return t._resources === resources ? t : new Try(t._id, t._prefix, t._markers, resources, t._body, t._catches, t._finally);
             }
             public get finally(): JLeftPadded<Block> | null {
                 return t._finally;
             }
             public withFinally(_finally: JLeftPadded<Block> | null): Try {
-                return t._finally === _finally ? t : new J.Try(t._id, t._prefix, t._markers, t._resources, t._body, t._catches, _finally);
+                return t._finally === _finally ? t : new Try(t._id, t._prefix, t._markers, t._resources, t._body, t._catches, _finally);
             }
         }
     }
@@ -5286,7 +5286,7 @@ export namespace Try {
 
     @LstType("org.openrewrite.java.tree.J$Try$Catch")
     export class Catch extends JMixin(Object) {
-        public constructor(id: UUID, prefix: Space, markers: Markers, parameter: J.ControlParentheses<J.VariableDeclarations>, body: J.Block) {
+        public constructor(id: UUID, prefix: Space, markers: Markers, parameter: ControlParentheses<VariableDeclarations>, body: Block) {
             super();
             this._id = id;
             this._prefix = prefix;
@@ -5325,13 +5325,13 @@ export namespace Try {
                 return markers === this._markers ? this : new Try.Catch(this._id, this._prefix, markers, this._parameter, this._body);
             }
 
-            private readonly _parameter: J.ControlParentheses<VariableDeclarations>;
+            private readonly _parameter: ControlParentheses<VariableDeclarations>;
 
-            public get parameter(): J.ControlParentheses<VariableDeclarations> {
+            public get parameter(): ControlParentheses<VariableDeclarations> {
                 return this._parameter;
             }
 
-            public withParameter(parameter: J.ControlParentheses<VariableDeclarations>): Try.Catch {
+            public withParameter(parameter: ControlParentheses<VariableDeclarations>): Try.Catch {
                 return parameter === this._parameter ? this : new Try.Catch(this._id, this._prefix, this._markers, parameter, this._body);
             }
 
@@ -5355,7 +5355,7 @@ export namespace Try {
 
 @LstType("org.openrewrite.java.tree.J$TypeCast")
 export class TypeCast extends JMixin(Object) implements Expression, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, clazz: J.ControlParentheses<TypeTree>, expression: Expression) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, clazz: ControlParentheses<TypeTree>, expression: Expression) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -5394,13 +5394,13 @@ export class TypeCast extends JMixin(Object) implements Expression, TypedTree {
             return markers === this._markers ? this : new TypeCast(this._id, this._prefix, markers, this._clazz, this._expression);
         }
 
-        private readonly _clazz: J.ControlParentheses<TypeTree>;
+        private readonly _clazz: ControlParentheses<TypeTree>;
 
-        public get clazz(): J.ControlParentheses<TypeTree> {
+        public get clazz(): ControlParentheses<TypeTree> {
             return this._clazz;
         }
 
-        public withClazz(clazz: J.ControlParentheses<TypeTree>): TypeCast {
+        public withClazz(clazz: ControlParentheses<TypeTree>): TypeCast {
             return clazz === this._clazz ? this : new TypeCast(this._id, this._prefix, this._markers, clazz, this._expression);
         }
 
@@ -5422,7 +5422,7 @@ export class TypeCast extends JMixin(Object) implements Expression, TypedTree {
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.TypeCast {
+    public withType(type: JavaType): TypeCast {
         return extensions.withJavaType(this, type);
     }
 
@@ -5522,7 +5522,7 @@ export class TypeParameter extends JMixin(Object) {
                 return t._bounds;
             }
             public withBounds(bounds: JContainer<TypeTree> | null): TypeParameter {
-                return t._bounds === bounds ? t : new J.TypeParameter(t._id, t._prefix, t._markers, t._annotations, t._modifiers, t._name, bounds);
+                return t._bounds === bounds ? t : new TypeParameter(t._id, t._prefix, t._markers, t._annotations, t._modifiers, t._name, bounds);
             }
         }
     }
@@ -5601,7 +5601,7 @@ export class TypeParameters extends JMixin(Object) {
                 return t._typeParameters;
             }
             public withTypeParameters(typeParameters: JRightPadded<TypeParameter>[]): TypeParameters {
-                return t._typeParameters === typeParameters ? t : new J.TypeParameters(t._id, t._prefix, t._markers, t._annotations, typeParameters);
+                return t._typeParameters === typeParameters ? t : new TypeParameters(t._id, t._prefix, t._markers, t._annotations, typeParameters);
             }
         }
     }
@@ -5691,7 +5691,7 @@ export class Unary extends JMixin(Object) implements Statement, Expression, Type
                 return t._operator;
             }
             public withOperator(operator: JLeftPadded<Unary.Type>): Unary {
-                return t._operator === operator ? t : new J.Unary(t._id, t._prefix, t._markers, operator, t._expression, t._type);
+                return t._operator === operator ? t : new Unary(t._id, t._prefix, t._markers, operator, t._expression, t._type);
             }
         }
     }
@@ -5826,7 +5826,7 @@ export class VariableDeclarations extends JMixin(Object) implements Statement, T
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.VariableDeclarations {
+    public withType(type: JavaType): VariableDeclarations {
         return extensions.withJavaType(this, type);
     }
 
@@ -5837,7 +5837,7 @@ export class VariableDeclarations extends JMixin(Object) implements Statement, T
                 return t._variables;
             }
             public withVariables(variables: JRightPadded<VariableDeclarations.NamedVariable>[]): VariableDeclarations {
-                return t._variables === variables ? t : new J.VariableDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, t._varargs, t._dimensionsBeforeName, variables);
+                return t._variables === variables ? t : new VariableDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, t._varargs, t._dimensionsBeforeName, variables);
             }
         }
     }
@@ -5847,7 +5847,7 @@ export class VariableDeclarations extends JMixin(Object) implements Statement, T
 export namespace VariableDeclarations {
     @LstType("org.openrewrite.java.tree.J$VariableDeclarations$NamedVariable")
     export class NamedVariable extends JMixin(Object) implements NameTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, name: J.Identifier, dimensionsAfterName: JLeftPadded<Space>[], initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
+        public constructor(id: UUID, prefix: Space, markers: Markers, name: Identifier, dimensionsAfterName: JLeftPadded<Space>[], initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
             super();
             this._id = id;
             this._prefix = prefix;
@@ -5936,7 +5936,7 @@ export namespace VariableDeclarations {
             return extensions.getJavaType(this);
         }
 
-        public withType(type: JavaType): J.VariableDeclarations.NamedVariable {
+        public withType(type: JavaType): VariableDeclarations.NamedVariable {
             return extensions.withJavaType(this, type);
         }
 
@@ -5947,7 +5947,7 @@ export namespace VariableDeclarations {
                     return t._initializer;
                 }
                 public withInitializer(initializer: JLeftPadded<Expression> | null): VariableDeclarations.NamedVariable {
-                    return t._initializer === initializer ? t : new J.VariableDeclarations.NamedVariable(t._id, t._prefix, t._markers, t._name, t._dimensionsAfterName, initializer, t._variableType);
+                    return t._initializer === initializer ? t : new VariableDeclarations.NamedVariable(t._id, t._prefix, t._markers, t._name, t._dimensionsAfterName, initializer, t._variableType);
                 }
             }
         }
@@ -5958,7 +5958,7 @@ export namespace VariableDeclarations {
 
 @LstType("org.openrewrite.java.tree.J$WhileLoop")
 export class WhileLoop extends JMixin(Object) implements Loop {
-    public constructor(id: UUID, prefix: Space, markers: Markers, condition: J.ControlParentheses<Expression>, body: JRightPadded<Statement>) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, condition: ControlParentheses<Expression>, body: JRightPadded<Statement>) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -5997,13 +5997,13 @@ export class WhileLoop extends JMixin(Object) implements Loop {
             return markers === this._markers ? this : new WhileLoop(this._id, this._prefix, markers, this._condition, this._body);
         }
 
-        private readonly _condition: J.ControlParentheses<Expression>;
+        private readonly _condition: ControlParentheses<Expression>;
 
-        public get condition(): J.ControlParentheses<Expression> {
+        public get condition(): ControlParentheses<Expression> {
             return this._condition;
         }
 
-        public withCondition(condition: J.ControlParentheses<Expression>): WhileLoop {
+        public withCondition(condition: ControlParentheses<Expression>): WhileLoop {
             return condition === this._condition ? this : new WhileLoop(this._id, this._prefix, this._markers, condition, this._body);
         }
 
@@ -6028,7 +6028,7 @@ export class WhileLoop extends JMixin(Object) implements Loop {
                 return t._body;
             }
             public withBody(body: JRightPadded<Statement>): WhileLoop {
-                return t._body === body ? t : new J.WhileLoop(t._id, t._prefix, t._markers, t._condition, body);
+                return t._body === body ? t : new WhileLoop(t._id, t._prefix, t._markers, t._condition, body);
             }
         }
     }
@@ -6104,7 +6104,7 @@ export class Wildcard extends JMixin(Object) implements Expression, TypeTree {
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.Wildcard {
+    public withType(type: JavaType): Wildcard {
         return extensions.withJavaType(this, type);
     }
 
@@ -6115,7 +6115,7 @@ export class Wildcard extends JMixin(Object) implements Expression, TypeTree {
                 return t._bound;
             }
             public withBound(bound: JLeftPadded<Wildcard.Bound> | null): Wildcard {
-                return t._bound === bound ? t : new J.Wildcard(t._id, t._prefix, t._markers, bound, t._boundedType);
+                return t._bound === bound ? t : new Wildcard(t._id, t._prefix, t._markers, bound, t._boundedType);
             }
         }
     }
@@ -6256,7 +6256,7 @@ export class Unknown extends JMixin(Object) implements Statement, Expression, Ty
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): J.Unknown {
+    public withType(type: JavaType): Unknown {
         return extensions.withJavaType(this, type);
     }
 

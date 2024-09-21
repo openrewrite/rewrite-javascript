@@ -4,6 +4,14 @@
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./core": "./dist/core/index.js",
+    "./java": "./dist/java/index.js",
+    "./javascript": "./dist/javascript/index.js",
+    "./json": "./dist/json/index.js",
+    "./yaml": "./dist/yaml/index.js"
+  },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "dev": "tsc --watch -p tsconfig.json",

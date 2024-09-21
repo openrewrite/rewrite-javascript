@@ -420,7 +420,7 @@ export class Mapping extends YamlMixin(Object) implements Block {
 export namespace Mapping {
     @LstType("org.openrewrite.yaml.tree.Yaml$Mapping$Entry")
     export class Entry extends YamlMixin(Object) {
-        public constructor(id: UUID, prefix: string, markers: Markers, key: YamlKey, beforeMappingValueIndicator: string, value: Yaml.Block) {
+        public constructor(id: UUID, prefix: string, markers: Markers, key: YamlKey, beforeMappingValueIndicator: string, value: Block) {
             super();
             this._id = id;
             this._prefix = prefix;
@@ -579,7 +579,7 @@ export class Sequence extends YamlMixin(Object) implements Block {
 export namespace Sequence {
     @LstType("org.openrewrite.yaml.tree.Yaml$Sequence$Entry")
     export class Entry extends YamlMixin(Object) {
-        public constructor(id: UUID, prefix: string, markers: Markers, block: Yaml.Block, dash: boolean, trailingCommaPrefix: string | null) {
+        public constructor(id: UUID, prefix: string, markers: Markers, block: Block, dash: boolean, trailingCommaPrefix: string | null) {
             super();
             this._id = id;
             this._prefix = prefix;

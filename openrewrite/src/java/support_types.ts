@@ -26,15 +26,13 @@ export interface J extends Tree {
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
-const JSymbol = Symbol('J');
-
 export function isJava(tree: any & Tree): tree is J {
-    return tree && tree[JSymbol] === true;
+    return !!tree.constructor.isJava;
 }
 
 export function JMixin<TBase extends Constructor<Object>>(Base: TBase) {
     abstract class JMixed extends Base implements J {
-        [JSymbol]: true = true;
+        static isJava = true;
 
         abstract get prefix(): Space;
 
@@ -53,7 +51,7 @@ export function JMixin<TBase extends Constructor<Object>>(Base: TBase) {
         }
 
         public accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
-            return this.acceptJava(v.adapt(JavaVisitor), p) as R | null;
+            return this.acceptJava(v.adapt(JavaVisitor), p) as unknown as R | null;
         }
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
@@ -63,8 +61,6 @@ export function JMixin<TBase extends Constructor<Object>>(Base: TBase) {
 
     return JMixed;
 }
-
-export * as J from './tree';
 
 export interface JavaSourceFile extends SourceFile {
 }

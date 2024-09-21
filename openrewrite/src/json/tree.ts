@@ -19,7 +19,7 @@ export abstract class Json implements Tree {
     }
 
     public accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
-        return this.acceptJson(v.adapt(JsonVisitor), p) as R | null;
+        return this.acceptJson(v.adapt(JsonVisitor), p) as unknown as R | null;
     }
 
     public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {

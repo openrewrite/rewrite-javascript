@@ -1,14 +1,16 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./support_types";
+import {CompilationUnit, Alias, ArrowFunction, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, JsOperator, ObjectBindingDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOperator, Unary, Union} from "./tree";
 import {Expression, J, JavaVisitor, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java";
+import * as Java from "../java/tree";
 
 export class JavaScriptVisitor<P> extends JavaVisitor<P> {
     isAcceptable(sourceFile: SourceFile, p: P): boolean {
         return isJavaScript(sourceFile);
     }
 
-    public visitJsCompilationUnit(compilationUnit: JS.CompilationUnit, p: P): J | null {
+    public visitJsCompilationUnit(compilationUnit: CompilationUnit, p: P): J | null {
         compilationUnit = compilationUnit.withPrefix(this.visitSpace(compilationUnit.prefix, Space.Location.COMPILATION_UNIT_PREFIX, p)!);
         compilationUnit = compilationUnit.withMarkers(this.visitMarkers(compilationUnit.markers, p));
         compilationUnit = compilationUnit.padding.withImports(ListUtils.map(compilationUnit.padding.imports, el => this.visitRightPadded(el, JRightPadded.Location.IMPORT, p)));
@@ -17,37 +19,37 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return compilationUnit;
     }
 
-    public visitAlias(alias: JS.Alias, p: P): J | null {
+    public visitAlias(alias: Alias, p: P): J | null {
         alias = alias.withPrefix(this.visitJsSpace(alias.prefix, JsSpace.Location.ALIAS_PREFIX, p)!);
         let tempExpression = this.visitExpression(alias, p) as Expression;
-        if (!(tempExpression instanceof JS.Alias))
+        if (!(tempExpression instanceof Alias))
         {
             return tempExpression;
         }
-        alias = tempExpression as JS.Alias;
+        alias = tempExpression as Alias;
         alias = alias.withMarkers(this.visitMarkers(alias.markers, p));
         alias = alias.padding.withPropertyName(this.visitJsRightPadded(alias.padding.propertyName, JsRightPadded.Location.ALIAS_PROPERTY_NAME, p)!);
         alias = alias.withAlias(this.visitAndCast(alias.alias, p)!);
         return alias;
     }
 
-    public visitArrowFunction(arrowFunction: JS.ArrowFunction, p: P): J | null {
+    public visitArrowFunction(arrowFunction: ArrowFunction, p: P): J | null {
         arrowFunction = arrowFunction.withPrefix(this.visitJsSpace(arrowFunction.prefix, JsSpace.Location.ARROW_FUNCTION_PREFIX, p)!);
         let tempStatement = this.visitStatement(arrowFunction, p) as Statement;
-        if (!(tempStatement instanceof JS.ArrowFunction))
+        if (!(tempStatement instanceof ArrowFunction))
         {
             return tempStatement;
         }
-        arrowFunction = tempStatement as JS.ArrowFunction;
+        arrowFunction = tempStatement as ArrowFunction;
         let tempExpression = this.visitExpression(arrowFunction, p) as Expression;
-        if (!(tempExpression instanceof JS.ArrowFunction))
+        if (!(tempExpression instanceof ArrowFunction))
         {
             return tempExpression;
         }
-        arrowFunction = tempExpression as JS.ArrowFunction;
+        arrowFunction = tempExpression as ArrowFunction;
         arrowFunction = arrowFunction.withMarkers(this.visitMarkers(arrowFunction.markers, p));
-        arrowFunction = arrowFunction.withLeadingAnnotations(ListUtils.map(arrowFunction.leadingAnnotations, el => this.visit(el, p) as J.Annotation));
-        arrowFunction = arrowFunction.withModifiers(ListUtils.map(arrowFunction.modifiers, el => this.visit(el, p) as J.Modifier));
+        arrowFunction = arrowFunction.withLeadingAnnotations(ListUtils.map(arrowFunction.leadingAnnotations, el => this.visitAndCast(el, p)));
+        arrowFunction = arrowFunction.withModifiers(ListUtils.map(arrowFunction.modifiers, el => this.visitAndCast(el, p)));
         arrowFunction = arrowFunction.withParameters(this.visitAndCast(arrowFunction.parameters, p)!);
         arrowFunction = arrowFunction.withReturnTypeExpression(this.visitAndCast(arrowFunction.returnTypeExpression, p));
         arrowFunction = arrowFunction.withArrow(this.visitJsSpace(arrowFunction.arrow, JsSpace.Location.ARROW_FUNCTION_ARROW, p)!);
@@ -55,14 +57,14 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return arrowFunction;
     }
 
-    public visitDefaultType(defaultType: JS.DefaultType, p: P): J | null {
+    public visitDefaultType(defaultType: DefaultType, p: P): J | null {
         defaultType = defaultType.withPrefix(this.visitJsSpace(defaultType.prefix, JsSpace.Location.DEFAULT_TYPE_PREFIX, p)!);
         let tempExpression = this.visitExpression(defaultType, p) as Expression;
-        if (!(tempExpression instanceof JS.DefaultType))
+        if (!(tempExpression instanceof DefaultType))
         {
             return tempExpression;
         }
-        defaultType = tempExpression as JS.DefaultType;
+        defaultType = tempExpression as DefaultType;
         defaultType = defaultType.withMarkers(this.visitMarkers(defaultType.markers, p));
         defaultType = defaultType.withLeft(this.visitAndCast(defaultType.left, p)!);
         defaultType = defaultType.withBeforeEquals(this.visitJsSpace(defaultType.beforeEquals, JsSpace.Location.DEFAULT_TYPE_BEFORE_EQUALS, p)!);
@@ -70,33 +72,33 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return defaultType;
     }
 
-    public visitDelete(_delete: JS.Delete, p: P): J | null {
+    public visitDelete(_delete: Delete, p: P): J | null {
         _delete = _delete.withPrefix(this.visitJsSpace(_delete.prefix, JsSpace.Location.DELETE_PREFIX, p)!);
         let tempStatement = this.visitStatement(_delete, p) as Statement;
-        if (!(tempStatement instanceof JS.Delete))
+        if (!(tempStatement instanceof Delete))
         {
             return tempStatement;
         }
-        _delete = tempStatement as JS.Delete;
+        _delete = tempStatement as Delete;
         let tempExpression = this.visitExpression(_delete, p) as Expression;
-        if (!(tempExpression instanceof JS.Delete))
+        if (!(tempExpression instanceof Delete))
         {
             return tempExpression;
         }
-        _delete = tempExpression as JS.Delete;
+        _delete = tempExpression as Delete;
         _delete = _delete.withMarkers(this.visitMarkers(_delete.markers, p));
         _delete = _delete.withExpression(this.visitAndCast(_delete.expression, p)!);
         return _delete;
     }
 
-    public visitExport(_export: JS.Export, p: P): J | null {
+    public visitExport(_export: Export, p: P): J | null {
         _export = _export.withPrefix(this.visitJsSpace(_export.prefix, JsSpace.Location.EXPORT_PREFIX, p)!);
         let tempStatement = this.visitStatement(_export, p) as Statement;
-        if (!(tempStatement instanceof JS.Export))
+        if (!(tempStatement instanceof Export))
         {
             return tempStatement;
         }
-        _export = tempStatement as JS.Export;
+        _export = tempStatement as Export;
         _export = _export.withMarkers(this.visitMarkers(_export.markers, p));
         _export = _export.padding.withExports(this.visitJsContainer(_export.padding.exports, JsContainer.Location.EXPORT_EXPORTS, p));
         _export = _export.withFrom(this.visitJsSpace(_export.from, JsSpace.Location.EXPORT_FROM, p));
@@ -105,19 +107,19 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return _export;
     }
 
-    public visitExpressionStatement(expressionStatement: JS.ExpressionStatement, p: P): J | null {
+    public visitExpressionStatement(expressionStatement: ExpressionStatement, p: P): J | null {
         expressionStatement = expressionStatement.withExpression(this.visitAndCast(expressionStatement.expression, p)!);
         return expressionStatement;
     }
 
-    public visitFunctionType(functionType: JS.FunctionType, p: P): J | null {
+    public visitFunctionType(functionType: FunctionType, p: P): J | null {
         functionType = functionType.withPrefix(this.visitJsSpace(functionType.prefix, JsSpace.Location.FUNCTION_TYPE_PREFIX, p)!);
         let tempExpression = this.visitExpression(functionType, p) as Expression;
-        if (!(tempExpression instanceof JS.FunctionType))
+        if (!(tempExpression instanceof FunctionType))
         {
             return tempExpression;
         }
-        functionType = tempExpression as JS.FunctionType;
+        functionType = tempExpression as FunctionType;
         functionType = functionType.withMarkers(this.visitMarkers(functionType.markers, p));
         functionType = functionType.padding.withParameters(this.visitJsContainer(functionType.padding.parameters, JsContainer.Location.FUNCTION_TYPE_PARAMETERS, p)!);
         functionType = functionType.withArrow(this.visitJsSpace(functionType.arrow, JsSpace.Location.FUNCTION_TYPE_ARROW, p)!);
@@ -125,14 +127,14 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return functionType;
     }
 
-    public visitJsImport(jsImport: JS.JsImport, p: P): J | null {
+    public visitJsImport(jsImport: JsImport, p: P): J | null {
         jsImport = jsImport.withPrefix(this.visitJsSpace(jsImport.prefix, JsSpace.Location.JS_IMPORT_PREFIX, p)!);
         let tempStatement = this.visitStatement(jsImport, p) as Statement;
-        if (!(tempStatement instanceof JS.JsImport))
+        if (!(tempStatement instanceof JsImport))
         {
             return tempStatement;
         }
-        jsImport = tempStatement as JS.JsImport;
+        jsImport = tempStatement as JsImport;
         jsImport = jsImport.withMarkers(this.visitMarkers(jsImport.markers, p));
         jsImport = jsImport.padding.withName(this.visitJsRightPadded(jsImport.padding.name, JsRightPadded.Location.JS_IMPORT_NAME, p));
         jsImport = jsImport.padding.withImports(this.visitJsContainer(jsImport.padding.imports, JsContainer.Location.JS_IMPORT_IMPORTS, p));
@@ -142,14 +144,14 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return jsImport;
     }
 
-    public visitJsBinary(jsBinary: JS.JsBinary, p: P): J | null {
+    public visitJsBinary(jsBinary: JsBinary, p: P): J | null {
         jsBinary = jsBinary.withPrefix(this.visitJsSpace(jsBinary.prefix, JsSpace.Location.JS_BINARY_PREFIX, p)!);
         let tempExpression = this.visitExpression(jsBinary, p) as Expression;
-        if (!(tempExpression instanceof JS.JsBinary))
+        if (!(tempExpression instanceof JsBinary))
         {
             return tempExpression;
         }
-        jsBinary = tempExpression as JS.JsBinary;
+        jsBinary = tempExpression as JsBinary;
         jsBinary = jsBinary.withMarkers(this.visitMarkers(jsBinary.markers, p));
         jsBinary = jsBinary.withLeft(this.visitAndCast(jsBinary.left, p)!);
         jsBinary = jsBinary.padding.withOperator(this.visitJsLeftPadded(jsBinary.padding.operator, JsLeftPadded.Location.JS_BINARY_OPERATOR, p)!);
@@ -157,20 +159,20 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return jsBinary;
     }
 
-    public visitJsOperator(jsOperator: JS.JsOperator, p: P): J | null {
+    public visitJsOperator(jsOperator: JsOperator, p: P): J | null {
         jsOperator = jsOperator.withPrefix(this.visitJsSpace(jsOperator.prefix, JsSpace.Location.JS_OPERATOR_PREFIX, p)!);
         let tempStatement = this.visitStatement(jsOperator, p) as Statement;
-        if (!(tempStatement instanceof JS.JsOperator))
+        if (!(tempStatement instanceof JsOperator))
         {
             return tempStatement;
         }
-        jsOperator = tempStatement as JS.JsOperator;
+        jsOperator = tempStatement as JsOperator;
         let tempExpression = this.visitExpression(jsOperator, p) as Expression;
-        if (!(tempExpression instanceof JS.JsOperator))
+        if (!(tempExpression instanceof JsOperator))
         {
             return tempExpression;
         }
-        jsOperator = tempExpression as JS.JsOperator;
+        jsOperator = tempExpression as JsOperator;
         jsOperator = jsOperator.withMarkers(this.visitMarkers(jsOperator.markers, p));
         jsOperator = jsOperator.withLeft(this.visitAndCast(jsOperator.left, p));
         jsOperator = jsOperator.padding.withOperator(this.visitJsLeftPadded(jsOperator.padding.operator, JsLeftPadded.Location.JS_OPERATOR_OPERATOR, p)!);
@@ -178,24 +180,24 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return jsOperator;
     }
 
-    public visitObjectBindingDeclarations(objectBindingDeclarations: JS.ObjectBindingDeclarations, p: P): J | null {
+    public visitObjectBindingDeclarations(objectBindingDeclarations: ObjectBindingDeclarations, p: P): J | null {
         objectBindingDeclarations = objectBindingDeclarations.withPrefix(this.visitJsSpace(objectBindingDeclarations.prefix, JsSpace.Location.OBJECT_BINDING_DECLARATIONS_PREFIX, p)!);
         let tempStatement = this.visitStatement(objectBindingDeclarations, p) as Statement;
-        if (!(tempStatement instanceof JS.ObjectBindingDeclarations))
+        if (!(tempStatement instanceof ObjectBindingDeclarations))
         {
             return tempStatement;
         }
-        objectBindingDeclarations = tempStatement as JS.ObjectBindingDeclarations;
+        objectBindingDeclarations = tempStatement as ObjectBindingDeclarations;
         objectBindingDeclarations = objectBindingDeclarations.withMarkers(this.visitMarkers(objectBindingDeclarations.markers, p));
-        objectBindingDeclarations = objectBindingDeclarations.withLeadingAnnotations(ListUtils.map(objectBindingDeclarations.leadingAnnotations, el => this.visit(el, p) as J.Annotation));
-        objectBindingDeclarations = objectBindingDeclarations.withModifiers(ListUtils.map(objectBindingDeclarations.modifiers, el => this.visit(el, p) as J.Modifier));
+        objectBindingDeclarations = objectBindingDeclarations.withLeadingAnnotations(ListUtils.map(objectBindingDeclarations.leadingAnnotations, el => this.visitAndCast(el, p)));
+        objectBindingDeclarations = objectBindingDeclarations.withModifiers(ListUtils.map(objectBindingDeclarations.modifiers, el => this.visitAndCast(el, p)));
         objectBindingDeclarations = objectBindingDeclarations.withTypeExpression(this.visitAndCast(objectBindingDeclarations.typeExpression, p));
         objectBindingDeclarations = objectBindingDeclarations.padding.withBindings(this.visitJsContainer(objectBindingDeclarations.padding.bindings, JsContainer.Location.OBJECT_BINDING_DECLARATIONS_BINDINGS, p)!);
         objectBindingDeclarations = objectBindingDeclarations.padding.withInitializer(this.visitJsLeftPadded(objectBindingDeclarations.padding.initializer, JsLeftPadded.Location.OBJECT_BINDING_DECLARATIONS_INITIALIZER, p));
         return objectBindingDeclarations;
     }
 
-    public visitBinding(binding: JS.ObjectBindingDeclarations.Binding, p: P): J | null {
+    public visitBinding(binding: ObjectBindingDeclarations.Binding, p: P): J | null {
         binding = binding.withPrefix(this.visitJsSpace(binding.prefix, JsSpace.Location.OBJECT_BINDING_DECLARATIONS_BINDING_PREFIX, p)!);
         binding = binding.withMarkers(this.visitMarkers(binding.markers, p));
         binding = binding.padding.withPropertyName(this.visitJsRightPadded(binding.padding.propertyName, JsRightPadded.Location.OBJECT_BINDING_DECLARATIONS_BINDING_PROPERTY_NAME, p));
@@ -206,32 +208,32 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return binding;
     }
 
-    public visitStatementExpression(statementExpression: JS.StatementExpression, p: P): J | null {
+    public visitStatementExpression(statementExpression: StatementExpression, p: P): J | null {
         statementExpression = statementExpression.withStatement(this.visitAndCast(statementExpression.statement, p)!);
         return statementExpression;
     }
 
-    public visitTemplateExpression(templateExpression: JS.TemplateExpression, p: P): J | null {
+    public visitTemplateExpression(templateExpression: TemplateExpression, p: P): J | null {
         templateExpression = templateExpression.withPrefix(this.visitJsSpace(templateExpression.prefix, JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p)!);
         let tempStatement = this.visitStatement(templateExpression, p) as Statement;
-        if (!(tempStatement instanceof JS.TemplateExpression))
+        if (!(tempStatement instanceof TemplateExpression))
         {
             return tempStatement;
         }
-        templateExpression = tempStatement as JS.TemplateExpression;
+        templateExpression = tempStatement as TemplateExpression;
         let tempExpression = this.visitExpression(templateExpression, p) as Expression;
-        if (!(tempExpression instanceof JS.TemplateExpression))
+        if (!(tempExpression instanceof TemplateExpression))
         {
             return tempExpression;
         }
-        templateExpression = tempExpression as JS.TemplateExpression;
+        templateExpression = tempExpression as TemplateExpression;
         templateExpression = templateExpression.withMarkers(this.visitMarkers(templateExpression.markers, p));
         templateExpression = templateExpression.padding.withTag(this.visitJsRightPadded(templateExpression.padding.tag, JsRightPadded.Location.TEMPLATE_EXPRESSION_TAG, p));
-        templateExpression = templateExpression.withStrings(ListUtils.map(templateExpression.strings, el => this.visit(el, p) as J));
+        templateExpression = templateExpression.withStrings(ListUtils.map(templateExpression.strings, el => this.visitAndCast(el, p)));
         return templateExpression;
     }
 
-    public visitTemplateExpressionValue(value: JS.TemplateExpression.Value, p: P): J | null {
+    public visitTemplateExpressionValue(value: TemplateExpression.Value, p: P): J | null {
         value = value.withPrefix(this.visitJsSpace(value.prefix, JsSpace.Location.TEMPLATE_EXPRESSION_VALUE_PREFIX, p)!);
         value = value.withMarkers(this.visitMarkers(value.markers, p));
         value = value.withTree(this.visitAndCast(value.tree, p)!);
@@ -239,77 +241,77 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return value;
     }
 
-    public visitTuple(tuple: JS.Tuple, p: P): J | null {
+    public visitTuple(tuple: Tuple, p: P): J | null {
         tuple = tuple.withPrefix(this.visitJsSpace(tuple.prefix, JsSpace.Location.TUPLE_PREFIX, p)!);
         let tempExpression = this.visitExpression(tuple, p) as Expression;
-        if (!(tempExpression instanceof JS.Tuple))
+        if (!(tempExpression instanceof Tuple))
         {
             return tempExpression;
         }
-        tuple = tempExpression as JS.Tuple;
+        tuple = tempExpression as Tuple;
         tuple = tuple.withMarkers(this.visitMarkers(tuple.markers, p));
         tuple = tuple.padding.withElements(this.visitJsContainer(tuple.padding.elements, JsContainer.Location.TUPLE_ELEMENTS, p)!);
         return tuple;
     }
 
-    public visitTypeDeclaration(typeDeclaration: JS.TypeDeclaration, p: P): J | null {
+    public visitTypeDeclaration(typeDeclaration: TypeDeclaration, p: P): J | null {
         typeDeclaration = typeDeclaration.withPrefix(this.visitJsSpace(typeDeclaration.prefix, JsSpace.Location.TYPE_DECLARATION_PREFIX, p)!);
         let tempStatement = this.visitStatement(typeDeclaration, p) as Statement;
-        if (!(tempStatement instanceof JS.TypeDeclaration))
+        if (!(tempStatement instanceof TypeDeclaration))
         {
             return tempStatement;
         }
-        typeDeclaration = tempStatement as JS.TypeDeclaration;
+        typeDeclaration = tempStatement as TypeDeclaration;
         typeDeclaration = typeDeclaration.withMarkers(this.visitMarkers(typeDeclaration.markers, p));
-        typeDeclaration = typeDeclaration.withLeadingAnnotations(ListUtils.map(typeDeclaration.leadingAnnotations, el => this.visit(el, p) as J.Annotation));
-        typeDeclaration = typeDeclaration.withModifiers(ListUtils.map(typeDeclaration.modifiers, el => this.visit(el, p) as J.Modifier));
+        typeDeclaration = typeDeclaration.withLeadingAnnotations(ListUtils.map(typeDeclaration.leadingAnnotations, el => this.visitAndCast(el, p)));
+        typeDeclaration = typeDeclaration.withModifiers(ListUtils.map(typeDeclaration.modifiers, el => this.visitAndCast(el, p)));
         typeDeclaration = typeDeclaration.withName(this.visitAndCast(typeDeclaration.name, p)!);
         typeDeclaration = typeDeclaration.withTypeParameters(this.visitAndCast(typeDeclaration.typeParameters, p));
         typeDeclaration = typeDeclaration.padding.withInitializer(this.visitJsLeftPadded(typeDeclaration.padding.initializer, JsLeftPadded.Location.TYPE_DECLARATION_INITIALIZER, p)!);
         return typeDeclaration;
     }
 
-    public visitTypeOperator(typeOperator: JS.TypeOperator, p: P): J | null {
+    public visitTypeOperator(typeOperator: TypeOperator, p: P): J | null {
         typeOperator = typeOperator.withPrefix(this.visitJsSpace(typeOperator.prefix, JsSpace.Location.TYPE_OPERATOR_PREFIX, p)!);
         let tempExpression = this.visitExpression(typeOperator, p) as Expression;
-        if (!(tempExpression instanceof JS.TypeOperator))
+        if (!(tempExpression instanceof TypeOperator))
         {
             return tempExpression;
         }
-        typeOperator = tempExpression as JS.TypeOperator;
+        typeOperator = tempExpression as TypeOperator;
         typeOperator = typeOperator.withMarkers(this.visitMarkers(typeOperator.markers, p));
         typeOperator = typeOperator.padding.withExpression(this.visitJsLeftPadded(typeOperator.padding.expression, JsLeftPadded.Location.TYPE_OPERATOR_EXPRESSION, p)!);
         return typeOperator;
     }
 
-    public visitJsUnary(unary: JS.Unary, p: P): J | null {
+    public visitJsUnary(unary: Unary, p: P): J | null {
         unary = unary.withPrefix(this.visitJsSpace(unary.prefix, JsSpace.Location.UNARY_PREFIX, p)!);
         let tempStatement = this.visitStatement(unary, p) as Statement;
-        if (!(tempStatement instanceof JS.Unary))
+        if (!(tempStatement instanceof Unary))
         {
             return tempStatement;
         }
-        unary = tempStatement as JS.Unary;
+        unary = tempStatement as Unary;
         let tempExpression = this.visitExpression(unary, p) as Expression;
-        if (!(tempExpression instanceof JS.Unary))
+        if (!(tempExpression instanceof Unary))
         {
             return tempExpression;
         }
-        unary = tempExpression as JS.Unary;
+        unary = tempExpression as Unary;
         unary = unary.withMarkers(this.visitMarkers(unary.markers, p));
         unary = unary.padding.withOperator(this.visitJsLeftPadded(unary.padding.operator, JsLeftPadded.Location.UNARY_OPERATOR, p)!);
         unary = unary.withExpression(this.visitAndCast(unary.expression, p)!);
         return unary;
     }
 
-    public visitUnion(union: JS.Union, p: P): J | null {
+    public visitUnion(union: Union, p: P): J | null {
         union = union.withPrefix(this.visitJsSpace(union.prefix, JsSpace.Location.UNION_PREFIX, p)!);
         let tempExpression = this.visitExpression(union, p) as Expression;
-        if (!(tempExpression instanceof JS.Union))
+        if (!(tempExpression instanceof Union))
         {
             return tempExpression;
         }
-        union = tempExpression as JS.Union;
+        union = tempExpression as Union;
         union = union.withMarkers(this.visitMarkers(union.markers, p));
         union = union.padding.withTypes(ListUtils.map(union.padding.types, el => this.visitJsRightPadded(el, JsRightPadded.Location.UNION_TYPES, p)));
         return union;

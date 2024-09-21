@@ -7,8 +7,9 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
+    "rootDir": "src",
     "outDir": "dist",
     "experimentalDecorators": true
   },
-  "include": ["src/**/*", "test/**/*"],
+  "include": ["src/**/*"],
 }

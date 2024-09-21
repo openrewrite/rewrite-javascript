@@ -19,15 +19,13 @@ export interface Yaml extends Tree {
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
-const YamlSymbol = Symbol('Yaml');
-
 export function isYaml(tree: any & Tree): tree is Yaml {
-    return tree && tree[YamlSymbol] === true;
+    return !!tree.constructor.isYaml;
 }
 
 export function YamlMixin<TBase extends Constructor<Object>>(Base: TBase) {
     abstract class YamlMixed extends Base implements Yaml {
-        [YamlSymbol]: true = true;
+        static isYaml = true;
 
         abstract get id(): UUID;
 
@@ -52,8 +50,6 @@ export function YamlMixin<TBase extends Constructor<Object>>(Base: TBase) {
 
     return YamlMixed;
 }
-
-export * as Yaml from './tree';
 
 export interface YamlKey extends Tree {
     // get value(): string;

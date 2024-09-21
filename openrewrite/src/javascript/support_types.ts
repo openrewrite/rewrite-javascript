@@ -20,15 +20,13 @@ export interface JS extends J {
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
-const JSSymbol = Symbol('JS');
-
 export function isJavaScript(tree: any & Tree): tree is JS {
-    return tree && tree[JSSymbol] === true;
+    return !!tree.constructor.isJavaScript;
 }
 
 export function JSMixin<TBase extends Constructor<Object>>(Base: TBase) {
     abstract class JSMixed extends Base implements JS {
-        [JSSymbol]: true = true;
+        static isJavaScript = true;
 
         abstract get prefix(): Space;
 
@@ -47,7 +45,7 @@ export function JSMixin<TBase extends Constructor<Object>>(Base: TBase) {
         }
 
         public accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
-            return this.acceptJavaScript(v.adapt(JavaScriptVisitor), p) as R | null;
+            return this.acceptJavaScript(v.adapt(JavaScriptVisitor), p) as unknown as R | null;
         }
 
         public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
@@ -61,8 +59,6 @@ export function JSMixin<TBase extends Constructor<Object>>(Base: TBase) {
 
     return JSMixed;
 }
-
-export * as JS from './tree';
 
 export namespace JsSpace {
     export enum Location {

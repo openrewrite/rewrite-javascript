@@ -5,10 +5,11 @@ import {JS, JSMixin, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./
 import {JavaScriptVisitor} from "./visitor";
 import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
 import {Expression, J, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypedTree, TypeTree} from "../java";
+import * as Java from "../java/tree";
 
 @LstType("org.openrewrite.javascript.tree.JS$CompilationUnit")
 export class CompilationUnit extends SourceFileMixin(JSMixin(Object)) implements JavaSourceFile {
-    public constructor(id: UUID, prefix: Space, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, imports: JRightPadded<J.Import>[], statements: JRightPadded<Statement>[], eof: Space) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, sourcePath: string, fileAttributes: FileAttributes | null, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, imports: JRightPadded<Java.Import>[], statements: JRightPadded<Statement>[], eof: Space) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -103,13 +104,13 @@ export class CompilationUnit extends SourceFileMixin(JSMixin(Object)) implements
             return checksum === this._checksum ? this : new CompilationUnit(this._id, this._prefix, this._markers, this._sourcePath, this._fileAttributes, this._charsetName, this._charsetBomMarked, checksum, this._imports, this._statements, this._eof);
         }
 
-        private readonly _imports: JRightPadded<J.Import>[];
+        private readonly _imports: JRightPadded<Java.Import>[];
 
-        public get imports(): J.Import[] {
+        public get imports(): Java.Import[] {
             return JRightPadded.getElements(this._imports);
         }
 
-        public withImports(imports: J.Import[]): CompilationUnit {
+        public withImports(imports: Java.Import[]): CompilationUnit {
             return this.padding.withImports(JRightPadded.withElements(this._imports, imports));
         }
 
@@ -144,17 +145,17 @@ export class CompilationUnit extends SourceFileMixin(JSMixin(Object)) implements
     get padding() {
         const t = this;
         return new class {
-            public get imports(): JRightPadded<J.Import>[] {
+            public get imports(): JRightPadded<Java.Import>[] {
                 return t._imports;
             }
-            public withImports(imports: JRightPadded<J.Import>[]): CompilationUnit {
-                return t._imports === imports ? t : new JS.CompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, imports, t._statements, t._eof);
+            public withImports(imports: JRightPadded<Java.Import>[]): CompilationUnit {
+                return t._imports === imports ? t : new CompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, imports, t._statements, t._eof);
             }
             public get statements(): JRightPadded<Statement>[] {
                 return t._statements;
             }
             public withStatements(statements: JRightPadded<Statement>[]): CompilationUnit {
-                return t._statements === statements ? t : new JS.CompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, t._imports, statements, t._eof);
+                return t._statements === statements ? t : new CompilationUnit(t._id, t._prefix, t._markers, t._sourcePath, t._fileAttributes, t._charsetName, t._charsetBomMarked, t._checksum, t._imports, statements, t._eof);
             }
         }
     }
@@ -163,7 +164,7 @@ export class CompilationUnit extends SourceFileMixin(JSMixin(Object)) implements
 
 @LstType("org.openrewrite.javascript.tree.JS$Alias")
 export class Alias extends JSMixin(Object) implements Expression {
-    public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<J.Identifier>, alias: J.Identifier) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<Java.Identifier>, alias: Java.Identifier) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -202,23 +203,23 @@ export class Alias extends JSMixin(Object) implements Expression {
             return markers === this._markers ? this : new Alias(this._id, this._prefix, markers, this._propertyName, this._alias);
         }
 
-        private readonly _propertyName: JRightPadded<J.Identifier>;
+        private readonly _propertyName: JRightPadded<Java.Identifier>;
 
-        public get propertyName(): J.Identifier {
+        public get propertyName(): Java.Identifier {
             return this._propertyName.element;
         }
 
-        public withPropertyName(propertyName: J.Identifier): Alias {
+        public withPropertyName(propertyName: Java.Identifier): Alias {
             return this.padding.withPropertyName(this._propertyName.withElement(propertyName));
         }
 
-        private readonly _alias: J.Identifier;
+        private readonly _alias: Java.Identifier;
 
-        public get alias(): J.Identifier {
+        public get alias(): Java.Identifier {
             return this._alias;
         }
 
-        public withAlias(alias: J.Identifier): Alias {
+        public withAlias(alias: Java.Identifier): Alias {
             return alias === this._alias ? this : new Alias(this._id, this._prefix, this._markers, this._propertyName, alias);
         }
 
@@ -230,18 +231,18 @@ export class Alias extends JSMixin(Object) implements Expression {
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): JS.Alias {
+    public withType(type: JavaType): Alias {
         return extensions.withJavaType(this, type);
     }
 
     get padding() {
         const t = this;
         return new class {
-            public get propertyName(): JRightPadded<J.Identifier> {
+            public get propertyName(): JRightPadded<Java.Identifier> {
                 return t._propertyName;
             }
-            public withPropertyName(propertyName: JRightPadded<J.Identifier>): Alias {
-                return t._propertyName === propertyName ? t : new JS.Alias(t._id, t._prefix, t._markers, propertyName, t._alias);
+            public withPropertyName(propertyName: JRightPadded<Java.Identifier>): Alias {
+                return t._propertyName === propertyName ? t : new Alias(t._id, t._prefix, t._markers, propertyName, t._alias);
             }
         }
     }
@@ -250,7 +251,7 @@ export class Alias extends JSMixin(Object) implements Expression {
 
 @LstType("org.openrewrite.javascript.tree.JS$ArrowFunction")
 export class ArrowFunction extends JSMixin(Object) implements Statement, Expression, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], parameters: J.Lambda.Parameters, returnTypeExpression: TypeTree | null, arrow: Space, body: J, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], parameters: Java.Lambda.Parameters, returnTypeExpression: TypeTree | null, arrow: Space, body: J, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -294,33 +295,33 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
             return markers === this._markers ? this : new ArrowFunction(this._id, this._prefix, markers, this._leadingAnnotations, this._modifiers, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
         }
 
-        private readonly _leadingAnnotations: J.Annotation[];
+        private readonly _leadingAnnotations: Java.Annotation[];
 
-        public get leadingAnnotations(): J.Annotation[] {
+        public get leadingAnnotations(): Java.Annotation[] {
             return this._leadingAnnotations;
         }
 
-        public withLeadingAnnotations(leadingAnnotations: J.Annotation[]): ArrowFunction {
+        public withLeadingAnnotations(leadingAnnotations: Java.Annotation[]): ArrowFunction {
             return leadingAnnotations === this._leadingAnnotations ? this : new ArrowFunction(this._id, this._prefix, this._markers, leadingAnnotations, this._modifiers, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
         }
 
-        private readonly _modifiers: J.Modifier[];
+        private readonly _modifiers: Java.Modifier[];
 
-        public get modifiers(): J.Modifier[] {
+        public get modifiers(): Java.Modifier[] {
             return this._modifiers;
         }
 
-        public withModifiers(modifiers: J.Modifier[]): ArrowFunction {
+        public withModifiers(modifiers: Java.Modifier[]): ArrowFunction {
             return modifiers === this._modifiers ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, modifiers, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
         }
 
-        private readonly _parameters: J.Lambda.Parameters;
+        private readonly _parameters: Java.Lambda.Parameters;
 
-        public get parameters(): J.Lambda.Parameters {
+        public get parameters(): Java.Lambda.Parameters {
             return this._parameters;
         }
 
-        public withParameters(parameters: J.Lambda.Parameters): ArrowFunction {
+        public withParameters(parameters: Java.Lambda.Parameters): ArrowFunction {
             return parameters === this._parameters ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
         }
 
@@ -528,7 +529,7 @@ export class Delete extends JSMixin(Object) implements Expression, Statement {
 
 @LstType("org.openrewrite.javascript.tree.JS$Export")
 export class Export extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, exports: JContainer<Expression> | null, _from: Space | null, target: J.Literal | null, initializer: JLeftPadded<Expression> | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, exports: JContainer<Expression> | null, _from: Space | null, target: Java.Literal | null, initializer: JLeftPadded<Expression> | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -589,13 +590,13 @@ export class Export extends JSMixin(Object) implements Statement {
             return _from === this._from ? this : new Export(this._id, this._prefix, this._markers, this._exports, _from, this._target, this._initializer);
         }
 
-        private readonly _target: J.Literal | null;
+        private readonly _target: Java.Literal | null;
 
-        public get target(): J.Literal | null {
+        public get target(): Java.Literal | null {
             return this._target;
         }
 
-        public withTarget(target: J.Literal | null): Export {
+        public withTarget(target: Java.Literal | null): Export {
             return target === this._target ? this : new Export(this._id, this._prefix, this._markers, this._exports, this._from, target, this._initializer);
         }
 
@@ -620,13 +621,13 @@ export class Export extends JSMixin(Object) implements Statement {
                 return t._exports;
             }
             public withExports(exports: JContainer<Expression> | null): Export {
-                return t._exports === exports ? t : new JS.Export(t._id, t._prefix, t._markers, exports, t._from, t._target, t._initializer);
+                return t._exports === exports ? t : new Export(t._id, t._prefix, t._markers, exports, t._from, t._target, t._initializer);
             }
             public get initializer(): JLeftPadded<Expression> | null {
                 return t._initializer;
             }
             public withInitializer(initializer: JLeftPadded<Expression> | null): Export {
-                return t._initializer === initializer ? t : new JS.Export(t._id, t._prefix, t._markers, t._exports, t._from, t._target, initializer);
+                return t._initializer === initializer ? t : new Export(t._id, t._prefix, t._markers, t._exports, t._from, t._target, initializer);
             }
         }
     }
@@ -685,7 +686,7 @@ export class ExpressionStatement extends JSMixin(Object) implements Expression, 
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): JS.ExpressionStatement {
+    public withType(type: JavaType): ExpressionStatement {
         return extensions.withJavaType(this, type);
     }
 
@@ -785,7 +786,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
                 return t._parameters;
             }
             public withParameters(parameters: JContainer<Statement>): FunctionType {
-                return t._parameters === parameters ? t : new JS.FunctionType(t._id, t._prefix, t._markers, parameters, t._arrow, t._returnType, t._type);
+                return t._parameters === parameters ? t : new FunctionType(t._id, t._prefix, t._markers, parameters, t._arrow, t._returnType, t._type);
             }
         }
     }
@@ -794,7 +795,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
 
 @LstType("org.openrewrite.javascript.tree.JS$JsImport")
 export class JsImport extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<J.Identifier> | null, imports: JContainer<Expression> | null, _from: Space | null, target: J.Literal | null, initializer: JLeftPadded<Expression> | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<Java.Identifier> | null, imports: JContainer<Expression> | null, _from: Space | null, target: Java.Literal | null, initializer: JLeftPadded<Expression> | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -836,13 +837,13 @@ export class JsImport extends JSMixin(Object) implements Statement {
             return markers === this._markers ? this : new JsImport(this._id, this._prefix, markers, this._name, this._imports, this._from, this._target, this._initializer);
         }
 
-        private readonly _name: JRightPadded<J.Identifier> | null;
+        private readonly _name: JRightPadded<Java.Identifier> | null;
 
-        public get name(): J.Identifier | null {
+        public get name(): Java.Identifier | null {
             return this._name === null ? null : this._name.element;
         }
 
-        public withName(name: J.Identifier | null): JsImport {
+        public withName(name: Java.Identifier | null): JsImport {
             return this.padding.withName(JRightPadded.withElement(this._name, name));
         }
 
@@ -866,13 +867,13 @@ export class JsImport extends JSMixin(Object) implements Statement {
             return _from === this._from ? this : new JsImport(this._id, this._prefix, this._markers, this._name, this._imports, _from, this._target, this._initializer);
         }
 
-        private readonly _target: J.Literal | null;
+        private readonly _target: Java.Literal | null;
 
-        public get target(): J.Literal | null {
+        public get target(): Java.Literal | null {
             return this._target;
         }
 
-        public withTarget(target: J.Literal | null): JsImport {
+        public withTarget(target: Java.Literal | null): JsImport {
             return target === this._target ? this : new JsImport(this._id, this._prefix, this._markers, this._name, this._imports, this._from, target, this._initializer);
         }
 
@@ -893,23 +894,23 @@ export class JsImport extends JSMixin(Object) implements Statement {
     get padding() {
         const t = this;
         return new class {
-            public get name(): JRightPadded<J.Identifier> | null {
+            public get name(): JRightPadded<Java.Identifier> | null {
                 return t._name;
             }
-            public withName(name: JRightPadded<J.Identifier> | null): JsImport {
-                return t._name === name ? t : new JS.JsImport(t._id, t._prefix, t._markers, name, t._imports, t._from, t._target, t._initializer);
+            public withName(name: JRightPadded<Java.Identifier> | null): JsImport {
+                return t._name === name ? t : new JsImport(t._id, t._prefix, t._markers, name, t._imports, t._from, t._target, t._initializer);
             }
             public get imports(): JContainer<Expression> | null {
                 return t._imports;
             }
             public withImports(imports: JContainer<Expression> | null): JsImport {
-                return t._imports === imports ? t : new JS.JsImport(t._id, t._prefix, t._markers, t._name, imports, t._from, t._target, t._initializer);
+                return t._imports === imports ? t : new JsImport(t._id, t._prefix, t._markers, t._name, imports, t._from, t._target, t._initializer);
             }
             public get initializer(): JLeftPadded<Expression> | null {
                 return t._initializer;
             }
             public withInitializer(initializer: JLeftPadded<Expression> | null): JsImport {
-                return t._initializer === initializer ? t : new JS.JsImport(t._id, t._prefix, t._markers, t._name, t._imports, t._from, t._target, initializer);
+                return t._initializer === initializer ? t : new JsImport(t._id, t._prefix, t._markers, t._name, t._imports, t._from, t._target, initializer);
             }
         }
     }
@@ -1010,7 +1011,7 @@ export class JsBinary extends JSMixin(Object) implements Expression, TypedTree {
                 return t._operator;
             }
             public withOperator(operator: JLeftPadded<JsBinary.Type>): JsBinary {
-                return t._operator === operator ? t : new JS.JsBinary(t._id, t._prefix, t._markers, t._left, operator, t._right, t._type);
+                return t._operator === operator ? t : new JsBinary(t._id, t._prefix, t._markers, t._left, operator, t._right, t._type);
             }
         }
     }
@@ -1121,7 +1122,7 @@ export class JsOperator extends JSMixin(Object) implements Statement, Expression
                 return t._operator;
             }
             public withOperator(operator: JLeftPadded<JsOperator.Type>): JsOperator {
-                return t._operator === operator ? t : new JS.JsOperator(t._id, t._prefix, t._markers, t._left, operator, t._right, t._type);
+                return t._operator === operator ? t : new JsOperator(t._id, t._prefix, t._markers, t._left, operator, t._right, t._type);
             }
         }
     }
@@ -1141,7 +1142,7 @@ export namespace JsOperator {
 
 @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations")
 export class ObjectBindingDeclarations extends JSMixin(Object) implements Statement, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<ObjectBindingDeclarations.Binding>, initializer: JLeftPadded<Expression> | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<ObjectBindingDeclarations.Binding>, initializer: JLeftPadded<Expression> | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -1183,23 +1184,23 @@ export class ObjectBindingDeclarations extends JSMixin(Object) implements Statem
             return markers === this._markers ? this : new ObjectBindingDeclarations(this._id, this._prefix, markers, this._leadingAnnotations, this._modifiers, this._typeExpression, this._bindings, this._initializer);
         }
 
-        private readonly _leadingAnnotations: J.Annotation[];
+        private readonly _leadingAnnotations: Java.Annotation[];
 
-        public get leadingAnnotations(): J.Annotation[] {
+        public get leadingAnnotations(): Java.Annotation[] {
             return this._leadingAnnotations;
         }
 
-        public withLeadingAnnotations(leadingAnnotations: J.Annotation[]): ObjectBindingDeclarations {
+        public withLeadingAnnotations(leadingAnnotations: Java.Annotation[]): ObjectBindingDeclarations {
             return leadingAnnotations === this._leadingAnnotations ? this : new ObjectBindingDeclarations(this._id, this._prefix, this._markers, leadingAnnotations, this._modifiers, this._typeExpression, this._bindings, this._initializer);
         }
 
-        private readonly _modifiers: J.Modifier[];
+        private readonly _modifiers: Java.Modifier[];
 
-        public get modifiers(): J.Modifier[] {
+        public get modifiers(): Java.Modifier[] {
             return this._modifiers;
         }
 
-        public withModifiers(modifiers: J.Modifier[]): ObjectBindingDeclarations {
+        public withModifiers(modifiers: Java.Modifier[]): ObjectBindingDeclarations {
             return modifiers === this._modifiers ? this : new ObjectBindingDeclarations(this._id, this._prefix, this._markers, this._leadingAnnotations, modifiers, this._typeExpression, this._bindings, this._initializer);
         }
 
@@ -1241,7 +1242,7 @@ export class ObjectBindingDeclarations extends JSMixin(Object) implements Statem
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): JS.ObjectBindingDeclarations {
+    public withType(type: JavaType): ObjectBindingDeclarations {
         return extensions.withJavaType(this, type);
     }
 
@@ -1252,13 +1253,13 @@ export class ObjectBindingDeclarations extends JSMixin(Object) implements Statem
                 return t._bindings;
             }
             public withBindings(bindings: JContainer<ObjectBindingDeclarations.Binding>): ObjectBindingDeclarations {
-                return t._bindings === bindings ? t : new JS.ObjectBindingDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, bindings, t._initializer);
+                return t._bindings === bindings ? t : new ObjectBindingDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, bindings, t._initializer);
             }
             public get initializer(): JLeftPadded<Expression> | null {
                 return t._initializer;
             }
             public withInitializer(initializer: JLeftPadded<Expression> | null): ObjectBindingDeclarations {
-                return t._initializer === initializer ? t : new JS.ObjectBindingDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, t._bindings, initializer);
+                return t._initializer === initializer ? t : new ObjectBindingDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, t._bindings, initializer);
             }
         }
     }
@@ -1268,7 +1269,7 @@ export class ObjectBindingDeclarations extends JSMixin(Object) implements Statem
 export namespace ObjectBindingDeclarations {
     @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations$Binding")
     export class Binding extends JSMixin(Object) implements NameTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<J.Identifier> | null, name: J.Identifier, dimensionsAfterName: JLeftPadded<Space>[], afterVararg: Space | null, initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
+        public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<Java.Identifier> | null, name: Java.Identifier, dimensionsAfterName: JLeftPadded<Space>[], afterVararg: Space | null, initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
             super();
             this._id = id;
             this._prefix = prefix;
@@ -1311,23 +1312,23 @@ export namespace ObjectBindingDeclarations {
                 return markers === this._markers ? this : new ObjectBindingDeclarations.Binding(this._id, this._prefix, markers, this._propertyName, this._name, this._dimensionsAfterName, this._afterVararg, this._initializer, this._variableType);
             }
 
-            private readonly _propertyName: JRightPadded<J.Identifier> | null;
+            private readonly _propertyName: JRightPadded<Java.Identifier> | null;
 
-            public get propertyName(): J.Identifier | null {
+            public get propertyName(): Java.Identifier | null {
                 return this._propertyName === null ? null : this._propertyName.element;
             }
 
-            public withPropertyName(propertyName: J.Identifier | null): ObjectBindingDeclarations.Binding {
+            public withPropertyName(propertyName: Java.Identifier | null): ObjectBindingDeclarations.Binding {
                 return this.padding.withPropertyName(JRightPadded.withElement(this._propertyName, propertyName));
             }
 
-            private readonly _name: J.Identifier;
+            private readonly _name: Java.Identifier;
 
-            public get name(): J.Identifier {
+            public get name(): Java.Identifier {
                 return this._name;
             }
 
-            public withName(name: J.Identifier): ObjectBindingDeclarations.Binding {
+            public withName(name: Java.Identifier): ObjectBindingDeclarations.Binding {
                 return name === this._name ? this : new ObjectBindingDeclarations.Binding(this._id, this._prefix, this._markers, this._propertyName, name, this._dimensionsAfterName, this._afterVararg, this._initializer, this._variableType);
             }
 
@@ -1379,24 +1380,24 @@ export namespace ObjectBindingDeclarations {
             return extensions.getJavaType(this);
         }
 
-        public withType(type: JavaType): JS.ObjectBindingDeclarations.Binding {
+        public withType(type: JavaType): ObjectBindingDeclarations.Binding {
             return extensions.withJavaType(this, type);
         }
 
         get padding() {
             const t = this;
             return new class {
-                public get propertyName(): JRightPadded<J.Identifier> | null {
+                public get propertyName(): JRightPadded<Java.Identifier> | null {
                     return t._propertyName;
                 }
-                public withPropertyName(propertyName: JRightPadded<J.Identifier> | null): ObjectBindingDeclarations.Binding {
-                    return t._propertyName === propertyName ? t : new JS.ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, propertyName, t._name, t._dimensionsAfterName, t._afterVararg, t._initializer, t._variableType);
+                public withPropertyName(propertyName: JRightPadded<Java.Identifier> | null): ObjectBindingDeclarations.Binding {
+                    return t._propertyName === propertyName ? t : new ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, propertyName, t._name, t._dimensionsAfterName, t._afterVararg, t._initializer, t._variableType);
                 }
                 public get initializer(): JLeftPadded<Expression> | null {
                     return t._initializer;
                 }
                 public withInitializer(initializer: JLeftPadded<Expression> | null): ObjectBindingDeclarations.Binding {
-                    return t._initializer === initializer ? t : new JS.ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, t._propertyName, t._name, t._dimensionsAfterName, t._afterVararg, initializer, t._variableType);
+                    return t._initializer === initializer ? t : new ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, t._propertyName, t._name, t._dimensionsAfterName, t._afterVararg, initializer, t._variableType);
                 }
             }
         }
@@ -1457,7 +1458,7 @@ export class StatementExpression extends JSMixin(Object) implements Expression, 
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): JS.StatementExpression {
+    public withType(type: JavaType): StatementExpression {
         return extensions.withJavaType(this, type);
     }
 
@@ -1557,7 +1558,7 @@ export class TemplateExpression extends JSMixin(Object) implements Statement, Ex
                 return t._tag;
             }
             public withTag(tag: JRightPadded<Expression> | null): TemplateExpression {
-                return t._tag === tag ? t : new JS.TemplateExpression(t._id, t._prefix, t._markers, t._delimiter, tag, t._strings, t._type);
+                return t._tag === tag ? t : new TemplateExpression(t._id, t._prefix, t._markers, t._delimiter, tag, t._strings, t._type);
             }
         }
     }
@@ -1717,7 +1718,7 @@ export class Tuple extends JSMixin(Object) implements Expression, TypeTree {
                 return t._elements;
             }
             public withElements(elements: JContainer<J>): Tuple {
-                return t._elements === elements ? t : new JS.Tuple(t._id, t._prefix, t._markers, elements, t._type);
+                return t._elements === elements ? t : new Tuple(t._id, t._prefix, t._markers, elements, t._type);
             }
         }
     }
@@ -1726,7 +1727,7 @@ export class Tuple extends JSMixin(Object) implements Expression, TypeTree {
 
 @LstType("org.openrewrite.javascript.tree.JS$TypeDeclaration")
 export class TypeDeclaration extends JSMixin(Object) implements Statement, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: J.Annotation[], modifiers: J.Modifier[], name: J.Identifier, typeParameters: J.TypeParameters | null, initializer: JLeftPadded<Expression>, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], name: Java.Identifier, typeParameters: Java.TypeParameters | null, initializer: JLeftPadded<Expression>, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -1769,43 +1770,43 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
             return markers === this._markers ? this : new TypeDeclaration(this._id, this._prefix, markers, this._leadingAnnotations, this._modifiers, this._name, this._typeParameters, this._initializer, this._type);
         }
 
-        private readonly _leadingAnnotations: J.Annotation[];
+        private readonly _leadingAnnotations: Java.Annotation[];
 
-        public get leadingAnnotations(): J.Annotation[] {
+        public get leadingAnnotations(): Java.Annotation[] {
             return this._leadingAnnotations;
         }
 
-        public withLeadingAnnotations(leadingAnnotations: J.Annotation[]): TypeDeclaration {
+        public withLeadingAnnotations(leadingAnnotations: Java.Annotation[]): TypeDeclaration {
             return leadingAnnotations === this._leadingAnnotations ? this : new TypeDeclaration(this._id, this._prefix, this._markers, leadingAnnotations, this._modifiers, this._name, this._typeParameters, this._initializer, this._type);
         }
 
-        private readonly _modifiers: J.Modifier[];
+        private readonly _modifiers: Java.Modifier[];
 
-        public get modifiers(): J.Modifier[] {
+        public get modifiers(): Java.Modifier[] {
             return this._modifiers;
         }
 
-        public withModifiers(modifiers: J.Modifier[]): TypeDeclaration {
+        public withModifiers(modifiers: Java.Modifier[]): TypeDeclaration {
             return modifiers === this._modifiers ? this : new TypeDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, modifiers, this._name, this._typeParameters, this._initializer, this._type);
         }
 
-        private readonly _name: J.Identifier;
+        private readonly _name: Java.Identifier;
 
-        public get name(): J.Identifier {
+        public get name(): Java.Identifier {
             return this._name;
         }
 
-        public withName(name: J.Identifier): TypeDeclaration {
+        public withName(name: Java.Identifier): TypeDeclaration {
             return name === this._name ? this : new TypeDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, name, this._typeParameters, this._initializer, this._type);
         }
 
-        private readonly _typeParameters: J.TypeParameters | null;
+        private readonly _typeParameters: Java.TypeParameters | null;
 
-        public get typeParameters(): J.TypeParameters | null {
+        public get typeParameters(): Java.TypeParameters | null {
             return this._typeParameters;
         }
 
-        public withTypeParameters(typeParameters: J.TypeParameters | null): TypeDeclaration {
+        public withTypeParameters(typeParameters: Java.TypeParameters | null): TypeDeclaration {
             return typeParameters === this._typeParameters ? this : new TypeDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._name, typeParameters, this._initializer, this._type);
         }
 
@@ -1840,7 +1841,7 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
                 return t._initializer;
             }
             public withInitializer(initializer: JLeftPadded<Expression>): TypeDeclaration {
-                return t._initializer === initializer ? t : new JS.TypeDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._name, t._typeParameters, initializer, t._type);
+                return t._initializer === initializer ? t : new TypeDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._name, t._typeParameters, initializer, t._type);
             }
         }
     }
@@ -1916,7 +1917,7 @@ export class TypeOperator extends JSMixin(Object) implements Expression, TypedTr
         return extensions.getJavaType(this);
     }
 
-    public withType(type: JavaType): JS.TypeOperator {
+    public withType(type: JavaType): TypeOperator {
         return extensions.withJavaType(this, type);
     }
 
@@ -1927,7 +1928,7 @@ export class TypeOperator extends JSMixin(Object) implements Expression, TypedTr
                 return t._expression;
             }
             public withExpression(expression: JLeftPadded<Expression>): TypeOperator {
-                return t._expression === expression ? t : new JS.TypeOperator(t._id, t._prefix, t._markers, t._operator, expression);
+                return t._expression === expression ? t : new TypeOperator(t._id, t._prefix, t._markers, t._operator, expression);
             }
         }
     }
@@ -2026,7 +2027,7 @@ export class Unary extends JSMixin(Object) implements Statement, Expression, Typ
                 return t._operator;
             }
             public withOperator(operator: JLeftPadded<Unary.Type>): Unary {
-                return t._operator === operator ? t : new JS.Unary(t._id, t._prefix, t._markers, operator, t._expression, t._type);
+                return t._operator === operator ? t : new Unary(t._id, t._prefix, t._markers, operator, t._expression, t._type);
             }
         }
     }
@@ -2113,7 +2114,7 @@ export class Union extends JSMixin(Object) implements Expression, TypeTree {
                 return t._types;
             }
             public withTypes(types: JRightPadded<Expression>[]): Union {
-                return t._types === types ? t : new JS.Union(t._id, t._prefix, t._markers, types, t._type);
+                return t._types === types ? t : new Union(t._id, t._prefix, t._markers, types, t._type);
             }
         }
     }
