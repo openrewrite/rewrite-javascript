@@ -183,6 +183,23 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return e;
     }
 
+    public J visitExpressionStatement(JS.ExpressionStatement statement, P p) {
+        JS.ExpressionStatement es = statement;
+        es = es.withMarkers(visitMarkers(es.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(es, p);
+        if (!(temp instanceof JS.ExpressionStatement)) {
+            return temp;
+        } else {
+            es = (JS.ExpressionStatement) temp;
+        }
+        J expression = visit(es.getExpression(), p);
+        if (expression instanceof Statement) {
+            return expression;
+        }
+        es = es.withExpression((Expression) expression);
+        return es;
+    }
+
     public J visitFunctionType(JS.FunctionType functionType, P p) {
         JS.FunctionType f = functionType;
         f = f.withPrefix(visitSpace(f.getPrefix(), JsSpace.Location.FUNCTION_TYPE_PREFIX, p));
@@ -283,6 +300,22 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
                     JsLeftPadded.Location.BINDING_INITIALIZER, p));
         }
         return o;
+    }
+
+    public J visitStatementExpression(JS.StatementExpression expression, P p) {
+        JS.StatementExpression se = expression;
+        Expression temp = (Expression) visitExpression(se, p);
+        if (!(temp instanceof JS.StatementExpression)) {
+            return temp;
+        } else {
+            se = (JS.StatementExpression) temp;
+        }
+        J statement = visit(se.getStatement(), p);
+        if (statement instanceof Expression) {
+            return statement;
+        }
+        se = se.withStatement((Statement) statement);
+        return se;
     }
 
     public J visitTemplateExpression(JS.TemplateExpression templateExpression, P p) {
