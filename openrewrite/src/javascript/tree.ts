@@ -1372,7 +1372,7 @@ export namespace ObjectBindingDeclarations {
             }
 
         public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitObjectBindingDeclarationsBinding(this, p);
+            return v.visitBinding(this, p);
         }
 
         public get type(): JavaType | null {
