@@ -331,15 +331,15 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return extensions.visitJsSpace(this, space, loc, p);
     }
 
-    public visitContainer<T>(container: JContainer<T> | null, loc: JContainer.Location, p: P): JContainer<T> {
+    public visitContainer<T>(container: JContainer<T> | null, loc: JContainer.Location, p: P): JContainer<T> | null {
         return extensions.visitContainer(this, container, loc, p);
     }
 
-    public visitLeftPadded<T>(left: JLeftPadded<T> | null, loc: JLeftPadded.Location, p: P): JLeftPadded<T> {
+    public visitLeftPadded<T>(left: JLeftPadded<T> | null, loc: JLeftPadded.Location, p: P): JLeftPadded<T> | null {
         return extensions.visitLeftPadded(this, left, loc, p);
     }
 
-    public visitRightPadded<T>(right: JRightPadded<T> | null, loc: JRightPadded.Location, p: P): JRightPadded<T> {
+    public visitRightPadded<T>(right: JRightPadded<T> | null, loc: JRightPadded.Location, p: P): JRightPadded<T> | null {
         return extensions.visitRightPadded(this, right, loc, p);
     }
 
