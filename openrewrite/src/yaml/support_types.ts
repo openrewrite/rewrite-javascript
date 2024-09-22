@@ -19,8 +19,8 @@ export interface Yaml extends Tree {
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
-export function isYaml(tree: any & Tree): tree is Yaml {
-    return !!tree.constructor.isYaml;
+export function isYaml(tree: any): tree is Yaml {
+    return !!tree.constructor.isYaml || !!tree.isYaml;
 }
 
 export function YamlMixin<TBase extends Constructor<Object>>(Base: TBase) {

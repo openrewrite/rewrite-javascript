@@ -20,8 +20,8 @@ export interface JS extends J {
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
-export function isJavaScript(tree: any & Tree): tree is JS {
-    return !!tree.constructor.isJavaScript;
+export function isJavaScript(tree: any): tree is JS {
+    return !!tree.constructor.isJavaScript || !!tree.isJavaScript;
 }
 
 export function JSMixin<TBase extends Constructor<Object>>(Base: TBase) {

@@ -313,11 +313,6 @@ export class FileAttributes {
     }
 }
 
-const SourceFileSymbol = Symbol('SourceFile');
-
-// This allows using `SourceFile` like a class in certain situations (e.g. `Cursor.firstEnclosing()`)
-const SourceFile = SourceFileSymbol;
-
 export function isSourceFile(tree: any & Tree): tree is SourceFile {
     // return 'sourcePath' in tree && 'printer' in tree;
     return !!tree.constructor.isSourceFile;
@@ -484,7 +479,8 @@ export abstract class PrinterFactory {
 
 @LstType("org.openrewrite.tree.ParseError")
 export class ParseError implements SourceFile {
-    [SourceFileSymbol]: true = true;
+    static isParseError = true;
+    static isSourceFile = true;
 
     private readonly _id: UUID;
     private readonly _markers: Markers;
@@ -725,6 +721,10 @@ export class ParseError implements SourceFile {
     accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
         return (v as unknown as ParseErrorVisitor<P>).visitParseError(this, p) as unknown as R;
     }
+}
+
+export function isParseError(tree: any): tree is ParseError {
+    return !!tree.constructor.isParseError || !!tree.isParseError;
 }
 
 export class ParseErrorVisitor<P> extends TreeVisitor<Tree, P> {

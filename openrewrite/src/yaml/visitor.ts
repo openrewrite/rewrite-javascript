@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
-import {isYaml, Yaml, YamlKey} from "./support_types";
-import {Alias, Anchor, Document, Documents, Mapping, Scalar, Sequence} from "./tree";
+import {Yaml, isYaml, YamlKey} from "./support_types";
+import {Documents, Document, Block, Scalar, Mapping, Sequence, Alias, Anchor} from "./tree";
 
 export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
     isAcceptable(sourceFile: SourceFile, p: P): boolean {
@@ -10,7 +10,7 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
 
     public visitDocuments(documents: Documents, p: P): Yaml | null {
         documents = documents.withMarkers(this.visitMarkers(documents.markers, p));
-        documents = documents.withDocuments(ListUtils.map(documents.documents, el => this.visit(el, p) as Document));
+        documents = documents.withDocuments(ListUtils.map(documents.documents, el => this.visitAndCast(el, p)));
         return documents;
     }
 
@@ -34,7 +34,7 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
 
     public visitMapping(mapping: Mapping, p: P): Yaml | null {
         mapping = mapping.withMarkers(this.visitMarkers(mapping.markers, p));
-        mapping = mapping.withEntries(ListUtils.map(mapping.entries, el => this.visit(el, p) as Mapping.Entry));
+        mapping = mapping.withEntries(ListUtils.map(mapping.entries, el => this.visitAndCast(el, p)));
         mapping = mapping.withAnchor(this.visitAndCast(mapping.anchor, p));
         return mapping;
     }
@@ -48,7 +48,7 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
 
     public visitSequence(sequence: Sequence, p: P): Yaml | null {
         sequence = sequence.withMarkers(this.visitMarkers(sequence.markers, p));
-        sequence = sequence.withEntries(ListUtils.map(sequence.entries, el => this.visit(el, p) as Sequence.Entry));
+        sequence = sequence.withEntries(ListUtils.map(sequence.entries, el => this.visitAndCast(el, p)));
         sequence = sequence.withAnchor(this.visitAndCast(sequence.anchor, p));
         return sequence;
     }
