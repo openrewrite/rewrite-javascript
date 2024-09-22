@@ -15,65 +15,56 @@
  */
 package org.openrewrite.javascript;
 
-import lombok.Value;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.Parser;
-import org.openrewrite.SourceFile;
+import org.openrewrite.*;
 import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.java.internal.JavaTypeCache;
-import org.openrewrite.javascript.internal.JavetNativeBridge;
-import org.openrewrite.javascript.internal.TypeScriptParserVisitor;
-import org.openrewrite.javascript.internal.tsc.TSCRuntime;
 import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.remote.ReceiverContext;
+import org.openrewrite.remote.RemotingContext;
+import org.openrewrite.remote.RemotingExecutionContextView;
+import org.openrewrite.remote.java.RemotingClient;
 import org.openrewrite.style.NamedStyles;
+import org.openrewrite.text.PlainTextParser;
 import org.openrewrite.tree.ParseError;
 import org.openrewrite.tree.ParsingEventListener;
 import org.openrewrite.tree.ParsingExecutionContextView;
 
 import java.io.ByteArrayInputStream;
-import java.nio.charset.Charset;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Objects.requireNonNull;
+
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class JavaScriptParser implements Parser {
 
-    @Nullable
-    private static TSCRuntime RUNTIME;
-
-    private static TSCRuntime runtime() {
-        if (RUNTIME == null) {
-            JavetNativeBridge.init();
-            RUNTIME = TSCRuntime.init();
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> RUNTIME.close()));
-        }
-        return RUNTIME;
-    }
-
-    @Value
-    private static class SourceWrapper {
-        Parser.Input input;
-        Path sourcePath;
-        Charset charset;
-        boolean isCharsetBomMarked;
-        String sourceText;
-    }
-
     private final Collection<NamedStyles> styles;
+    private final boolean logCompilationWarningsAndErrors;
+    private final JavaTypeCache typeCache;
+    private final List<Path> nodePath;
 
-    private JavaScriptParser(Collection<NamedStyles> styles) {
-        this.styles = styles;
-    }
+    private @Nullable Process nodeProcess;
+    private @Nullable RemotingContext remotingContext;
+    private @Nullable RemotingClient client;
 
     @Override
     public Stream<SourceFile> parse(String... sources) {
         List<Input> inputs = new ArrayList<>(sources.length);
         for (int i = 0; i < sources.length; i++) {
-            Path path = Paths.get("f" + i + ".ts");
+            Path path = Paths.get("p" + i + ".ts");
             int j = i;
             inputs.add(new Input(
                     path, null,
@@ -90,64 +81,48 @@ public class JavaScriptParser implements Parser {
     }
 
     @Override
-    public Stream<SourceFile> parseInputs(Iterable<Input> sources, @Nullable Path relativeTo, ExecutionContext ctx) {
+    public Stream<SourceFile> parseInputs(Iterable<Input> inputs, @Nullable Path relativeTo, ExecutionContext ctx) {
+        if (!ensureServerRunning(ctx)) {
+            return PlainTextParser.builder().build().parseInputs(inputs, relativeTo, ctx);
+        }
+
         ParsingExecutionContextView pctx = ParsingExecutionContextView.view(ctx);
-        Map<Path, SourceWrapper> sourcesByRelativePath = new LinkedHashMap<>();
+        ParsingEventListener parsingListener = pctx.getParsingListener();
 
-        for (Input input : sources) {
-            EncodingDetectingInputStream is = input.getSource(pctx);
-            String inputSourceText = is.readFully();
-            Path relativePath = input.getRelativePath(relativeTo);
+        return acceptedInputs(inputs).map(input -> {
+            Path path = input.getRelativePath(relativeTo);
+            parsingListener.startedParsing(input);
 
-            SourceWrapper source = new SourceWrapper(
-                    input,
-                    relativePath,
-                    is.getCharset(),
-                    is.isCharsetBomMarked(),
-                    inputSourceText
-            );
-            sourcesByRelativePath.put(relativePath, source);
-        }
+            try (EncodingDetectingInputStream is = input.getSource(ctx)) {
+                SourceFile parsed = client.runUsingSocket((socket, messenger) -> requireNonNull(messenger.sendRequest(generator -> {
+                            if (input.isSynthetic() || !Files.isRegularFile(input.getPath())) {
+                                generator.writeString("parse-javascript-source");
+                                generator.writeString(is.readFully());
+                            } else {
+                                generator.writeString("parse-javascript-file");
+                                generator.writeString(input.getPath().toString());
+                            }
+                        }, parser -> {
+                            Tree tree = new ReceiverContext(remotingContext.newReceiver(parser), remotingContext).receiveTree(null);
+                            return (SourceFile) tree;
+                        }, socket)))
+                        .withSourcePath(path)
+                        .withFileAttributes(FileAttributes.fromPath(input.getPath()))
+                        .withCharset(getCharset(ctx));
 
-        List<SourceFile> compilationUnits = new ArrayList<>(sourcesByRelativePath.size());
-        ParsingEventListener parsingListener = ParsingExecutionContextView.view(pctx).getParsingListener();
-        Map<Path, String> sourceTextsForTSC = new LinkedHashMap<>();
-        sourcesByRelativePath.forEach((relativePath, sourceText) ->
-            sourceTextsForTSC.put(relativePath, sourceText.sourceText));
+                if (parsed instanceof ParseError) {
+                    ctx.getOnError().accept(new AssertionError(parsed));
+                    return parsed;
+                }
 
-        try {
-            //noinspection resource
-            runtime().parseSourceTexts(
-                    sourceTextsForTSC,
-                    (node, context) -> {
-                        SourceWrapper source = sourcesByRelativePath.get(context.getRelativeSourcePath());
-
-                        parsingListener.startedParsing(source.getInput());
-                        TypeScriptParserVisitor fileMapper = new TypeScriptParserVisitor(
-                                node,
-                                context,
-                                source.getSourcePath(),
-                                new JavaTypeCache(),
-                                source.getCharset().toString(),
-                                source.isCharsetBomMarked(),
-                                styles
-                        );
-                        SourceFile cu;
-                        try {
-                            cu = fileMapper.visitSourceFile();
-                            parsingListener.parsed(source.getInput(), cu);
-                        } catch (Throwable t) {
-                            ((ExecutionContext) pctx).getOnError().accept(t);
-                            cu = ParseError.build(JavaScriptParser.builder().build(), source.getInput(), relativeTo, pctx, t);
-                        }
-
-                        compilationUnits.add(cu);
-                    }
-            );
-        } catch (Exception e) {
-            return acceptedInputs(sources).map(input -> ParseError.build(this, input, relativeTo, ctx, e));
-        }
-        return compilationUnits.stream();
+                JS.CompilationUnit py = (JS.CompilationUnit) parsed;
+                parsingListener.parsed(input, py);
+                return requirePrintEqualsInput(py, input, relativeTo, ctx);
+            } catch (Throwable t) {
+                ctx.getOnError().accept(t);
+                return ParseError.build(this, input, relativeTo, ctx, t);
+            }
+        });
     }
 
     private final static List<String> EXTENSIONS = Collections.unmodifiableList(Arrays.asList(
@@ -181,16 +156,43 @@ public class JavaScriptParser implements Parser {
         return prefix.resolve("file.ts");
     }
 
+    @Override
+    public JavaScriptParser reset() {
+        typeCache.clear();
+        if (remotingContext != null) {
+            remotingContext.reset();
+            remotingContext = null;
+        }
+        if (nodeProcess != null) {
+            nodeProcess.destroy();
+            nodeProcess = null;
+        }
+        client = null;
+        return this;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
     public static class Builder extends Parser.Builder {
-        // FIXME add logCompilationWarningsAndErrors.
-        Collection<NamedStyles> styles = new ArrayList<>();
+        private JavaTypeCache typeCache = new JavaTypeCache();
+        private boolean logCompilationWarningsAndErrors;
+        private final Collection<NamedStyles> styles = new ArrayList<>();
+        private List<Path> nodePath = new ArrayList<>();
 
         public Builder() {
             super(JS.CompilationUnit.class);
+        }
+
+        public Builder logCompilationWarningsAndErrors(boolean logCompilationWarningsAndErrors) {
+            this.logCompilationWarningsAndErrors = logCompilationWarningsAndErrors;
+            return this;
+        }
+
+        public Builder typeCache(JavaTypeCache typeCache) {
+            this.typeCache = typeCache;
+            return this;
         }
 
         public Builder styles(Iterable<? extends NamedStyles> styles) {
@@ -200,14 +202,107 @@ public class JavaScriptParser implements Parser {
             return this;
         }
 
+        public Builder nodePath(List<Path> path) {
+            this.nodePath = new ArrayList<>(path);
+            return this;
+        }
+
         @Override
         public JavaScriptParser build() {
-            return new JavaScriptParser(styles);
+            return new JavaScriptParser(styles, logCompilationWarningsAndErrors, typeCache, nodePath);
         }
 
         @Override
         public String getDslName() {
             return "javascript";
+        }
+    }
+
+    private boolean ensureServerRunning(ExecutionContext ctx) {
+        if (client == null || !isAlive()) {
+            try {
+                initializeRemoting(ctx);
+            } catch (IOException e) {
+                return false;
+            }
+        } else {
+            requireNonNull(remotingContext).reset();
+        }
+        return client != null && isAlive();
+    }
+
+    private boolean isAlive() {
+        try {
+            return requireNonNull(client).runUsingSocket((socket, messenger) -> {
+                messenger.sendReset(socket);
+                return true;
+            });
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void initializeRemoting(ExecutionContext ctx) throws IOException {
+        RemotingExecutionContextView view = RemotingExecutionContextView.view(ctx);
+        remotingContext = view.getRemotingContext();
+        if (remotingContext == null) {
+            remotingContext = new RemotingContext(JavaScriptParser.class.getClassLoader(), false);
+            view.setRemotingContext(remotingContext);
+        } else {
+            remotingContext.reset();
+        }
+
+        int port = 54323;
+        if (!isServerRunning(port)) {
+            ProcessBuilder processBuilder = new ProcessBuilder("node", "server.ts", Integer.toString(port));
+            if (!nodePath.isEmpty()) {
+                Map<String, String> environment = processBuilder.environment();
+                environment.compute("NODE_PATH", (k, current) ->
+                        (current != null ? current + File.pathSeparator : "") + nodePath.stream().map(Path::toString).collect(Collectors.joining(File.pathSeparator)));
+            }
+            if (System.getProperty("os.name").startsWith("Windows")) {
+                processBuilder.redirectOutput(new File("NUL"));
+                processBuilder.redirectError(new File("NUL"));
+            } else {
+                processBuilder.redirectOutput(new File("/dev/null"));
+                processBuilder.redirectError(new File("/dev/null"));
+            }
+            nodeProcess = processBuilder.start();
+            for (int i = 0; i < 5 && nodeProcess.isAlive(); i++) {
+                if (isServerRunning(port)) {
+                    break;
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException ignore) {
+                }
+            }
+
+            if (nodeProcess == null || !nodeProcess.isAlive()) {
+                remotingContext = null;
+                return;
+            }
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                if (nodeProcess != null && nodeProcess.isAlive()) {
+                    nodeProcess.destroy();
+                }
+            }));
+        }
+
+        client = RemotingClient.create(ctx, JavaScriptParser.class, () -> {
+            try {
+                return new Socket(InetAddress.getLoopbackAddress(), port);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
+    public static boolean isServerRunning(int port) {
+        try (Socket ignored = new Socket(InetAddress.getLoopbackAddress(), port)) {
+            return true;
+        } catch (IOException e) {
+            return false;
         }
     }
 
