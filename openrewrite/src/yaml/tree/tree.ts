@@ -2,8 +2,8 @@
 
 import * as extensions from "./extensions";
 import {Yaml, YamlMixin, YamlKey} from "./support_types";
-import {YamlVisitor} from "./visitor";
-import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
+import {YamlVisitor} from "../visitor";
+import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../../core";
 
 @LstType("org.openrewrite.yaml.tree.Yaml$Documents")
 export class Documents extends SourceFileMixin(YamlMixin(Object)) {

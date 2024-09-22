@@ -1,7 +1,5 @@
-import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
-import {Yaml, isYaml, YamlKey} from "./support_types";
-import {Documents, Document, Block, Scalar, Mapping, Sequence, Alias, Anchor} from "./tree";
+import {Yaml, isYaml, YamlKey, Documents, Document, Block, Scalar, Mapping, Sequence, Alias, Anchor} from "./tree";
 
 export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
     isAcceptable(sourceFile: SourceFile, p: P): boolean {

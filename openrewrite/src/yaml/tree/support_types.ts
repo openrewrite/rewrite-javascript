@@ -1,5 +1,5 @@
-import {Markers, Tree, TreeVisitor, UUID} from "../core";
-import {YamlVisitor} from "./visitor";
+import {Markers, Tree, TreeVisitor, UUID} from "../../core";
+import {YamlVisitor} from "../visitor";
 
 export interface Yaml extends Tree {
     get id(): UUID;
