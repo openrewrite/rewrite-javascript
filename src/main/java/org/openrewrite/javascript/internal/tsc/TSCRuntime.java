@@ -65,9 +65,9 @@ public class TSCRuntime implements AutoCloseable {
 
     public static TSCRuntime init(boolean forceWrappedV8Runtime) {
         try {
-            V8Runtime v8Runtime = (forceWrappedV8Runtime || USE_WRAPPED_V8_RUNTIME)
-                    ? JavetBridge.makeWrappedV8Runtime()
-                    : V8Host.getV8Instance().createV8Runtime();
+            V8Runtime v8Runtime = (forceWrappedV8Runtime || USE_WRAPPED_V8_RUNTIME) ?
+                    JavetBridge.makeWrappedV8Runtime() :
+                    V8Host.getV8Instance().createV8Runtime();
             JavetStandardConsoleInterceptor javetStandardConsoleInterceptor = new JavetStandardConsoleInterceptor(v8Runtime);
             javetStandardConsoleInterceptor.register(v8Runtime.getGlobalObject());
             return new TSCRuntime(v8Runtime, javetStandardConsoleInterceptor);
