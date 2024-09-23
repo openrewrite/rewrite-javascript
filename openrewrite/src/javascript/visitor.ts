@@ -2,8 +2,8 @@ import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
 import {CompilationUnit, Alias, ArrowFunction, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, JsOperator, ObjectBindingDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOperator, Unary, Union} from "./tree";
-import {JavaVisitor} from "../java";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
+import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
 
 export class JavaScriptVisitor<P> extends JavaVisitor<P> {
