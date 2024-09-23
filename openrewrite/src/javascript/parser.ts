@@ -35,7 +35,7 @@ export class JavaScriptParser extends Parser {
             const sourceFile = program.getSourceFile(input.path);
             if (sourceFile) {
                 try {
-                    result.push(this.visit(sourceFile, sourceFile, typeChecker) as SourceFile);
+                    result.push(visit(sourceFile, sourceFile, typeChecker) as SourceFile);
                 } catch (error) {
                     result.push(ParseError.build(
                         this,
@@ -60,23 +60,6 @@ export class JavaScriptParser extends Parser {
         return result;
     }
 
-    private visit(node: ts.Node, sourceFile: ts.SourceFile, typeChecker: ts.TypeChecker): Tree {
-        const kind = ts.SyntaxKind[node.kind];
-        return new JS.CompilationUnit(
-            randomId(),
-            Space.EMPTY,
-            Markers.EMPTY,
-            sourceFile.fileName,
-            null,
-            null,
-            false,
-            null,
-            [],
-            [],
-            Space.EMPTY
-        );
-    }
-
     accept(path: string): boolean {
         return path.endsWith('.ts') || path.endsWith('.tsx') || path.endsWith('.js') || path.endsWith('.jsx');
     }
@@ -84,4 +67,21 @@ export class JavaScriptParser extends Parser {
     sourcePathFromSourceText(prefix: string, sourceCode: string): string {
         return prefix + "/source.js";
     }
+}
+
+function visit(node: ts.Node, sourceFile: ts.SourceFile, typeChecker: ts.TypeChecker): Tree {
+    const kind = ts.SyntaxKind[node.kind];
+    return new JS.CompilationUnit(
+        randomId(),
+        Space.EMPTY,
+        Markers.EMPTY,
+        sourceFile.fileName,
+        null,
+        null,
+        false,
+        null,
+        [],
+        [],
+        Space.EMPTY
+    );
 }
