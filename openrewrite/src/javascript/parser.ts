@@ -6,6 +6,7 @@ import {Expression, JRightPadded, Space, Statement} from "../java/tree";
 import {Node} from "typescript";
 
 export class JavaScriptParser extends Parser {
+
     parseInputs(inputs: Iterable<ParserInput>, relativeTo: string | null, ctx: ExecutionContext): Iterable<SourceFile> {
         const inputsArray = Array.from(inputs);
         const compilerOptions: ts.CompilerOptions = {
@@ -68,6 +69,18 @@ export class JavaScriptParser extends Parser {
 
     sourcePathFromSourceText(prefix: string, sourceCode: string): string {
         return prefix + "/source.js";
+    }
+
+    static builder(): JavaScriptParser.Builder {
+        return new JavaScriptParser.Builder();
+    }
+}
+
+export namespace JavaScriptParser {
+    export class Builder extends Parser.Builder {
+        build(): JavaScriptParser {
+            return new JavaScriptParser();
+        }
     }
 }
 

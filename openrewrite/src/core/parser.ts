@@ -109,7 +109,7 @@ export abstract class Parser {
 }
 
 export namespace Parser {
-    abstract class Builder {
+    export abstract class Builder {
         protected _sourceFileType: any;
 
         get sourceFileType(): any {
@@ -120,7 +120,7 @@ export namespace Parser {
     }
 }
 
-function requirePrintEqualsInput(
+export function requirePrintEqualsInput(
     parser: Parser,
     sourceFile: SourceFile,
     parserInput: ParserInput,
