@@ -1,41 +1,37 @@
 rootProject.name = "rewrite-javascript"
 include("js")
 
-//enableFeaturePreview("VERSION_ORDERING_V2")
+// ---------------------------------------------------------------
+// ------ Gradle Develocity Configuration ------------------------
+// ---------------------------------------------------------------
 
-//plugins {
-//    id("com.gradle.enterprise") version "latest.release"
-//    id("com.gradle.common-custom-user-data-gradle-plugin") version "latest.release"
-//}
-//
-//gradleEnterprise {
-//    val isCiServer = System.getenv("CI")?.equals("true") ?: false
-//    server = "https://ge.openrewrite.org/"
-//    val gradleCacheRemoteUsername: String? = System.getenv("GRADLE_ENTERPRISE_CACHE_USERNAME")
-//    val gradleCacheRemotePassword: String? = System.getenv("GRADLE_ENTERPRISE_CACHE_PASSWORD")
-//
-//    buildCache {
-//        remote(HttpBuildCache::class) {
-//            url = uri("https://ge.openrewrite.org/cache/")
-//            isPush = isCiServer
-//            if (!gradleCacheRemoteUsername.isNullOrBlank() && !gradleCacheRemotePassword.isNullOrBlank()) {
-//                credentials {
-//                    username = gradleCacheRemoteUsername
-//                    password = gradleCacheRemotePassword
-//                }
-//            }
-//        }
-//    }
-//
-//    buildScan {
-//        capture {
-//            isTaskInputFiles = true
-//        }
-//
-//        isUploadInBackground = !isCiServer
-//
-//        publishAlways()
-//        this as com.gradle.enterprise.gradleplugin.internal.extension.BuildScanExtensionWithHiddenFeatures
-//        publishIfAuthenticated()
-//    }
-//}
+plugins {
+    id("com.gradle.develocity") version "latest.release"
+    id("com.gradle.common-custom-user-data-gradle-plugin") version "latest.release"
+}
+
+develocity {
+    val isCiServer = System.getenv("CI")?.equals("true") ?: false
+    server = "https://ge.openrewrite.org/"
+    val accessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY")
+    val authenticated = !accessKey.isNullOrBlank()
+    buildCache {
+        remote(develocity.buildCache) {
+            isEnabled = true
+            isPush = isCiServer && authenticated
+        }
+    }
+
+    buildScan {
+        capture {
+            fileFingerprints = true
+        }
+        publishing {
+            onlyIf {
+                authenticated
+            }
+        }
+
+        uploadInBackground = !isCiServer
+    }
+}
