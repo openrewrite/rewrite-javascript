@@ -2,10 +2,10 @@
 
 import * as extensions from "./extensions";
 import {JS, JSMixin, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./support_types";
-import {JavaScriptVisitor} from "./visitor";
-import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
-import {Expression, J, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypedTree, TypeTree} from "../java";
-import * as Java from "../java/tree";
+import {JavaScriptVisitor} from "../visitor";
+import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../../core";
+import {Expression, J, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypedTree, TypeTree} from "../../java/tree";
+import * as Java from "../../java/tree";
 
 @LstType("org.openrewrite.javascript.tree.JS$CompilationUnit")
 export class CompilationUnit extends SourceFileMixin(JSMixin(Object)) implements JavaSourceFile {
@@ -630,64 +630,6 @@ export class Export extends JSMixin(Object) implements Statement {
                 return t._initializer === initializer ? t : new Export(t._id, t._prefix, t._markers, t._exports, t._from, t._target, initializer);
             }
         }
-    }
-
-}
-
-@LstType("org.openrewrite.javascript.tree.JS$ExpressionStatement")
-export class ExpressionStatement extends JSMixin(Object) implements Expression, Statement {
-    public constructor(id: UUID, expression: Expression) {
-        super();
-        this._id = id;
-        this._expression = expression;
-    }
-
-        private readonly _id: UUID;
-
-        public get id(): UUID {
-            return this._id;
-        }
-
-        public withId(id: UUID): ExpressionStatement {
-            return id === this._id ? this : new ExpressionStatement(id, this._expression);
-        }
-
-        public get prefix(): Space {
-            return this._expression.prefix;
-        }
-
-        public withPrefix(prefix: Space): ExpressionStatement {
-            return this.withExpression(this._expression.withPrefix(prefix) as Expression);
-        }
-
-        public get markers(): Markers {
-            return this._expression.markers;
-        }
-
-        public withMarkers(markers: Markers): ExpressionStatement {
-            return this.withExpression(this._expression.withMarkers(markers) as Expression);
-        }
-
-        private readonly _expression: Expression;
-
-        public get expression(): Expression {
-            return this._expression;
-        }
-
-        public withExpression(expression: Expression): ExpressionStatement {
-            return expression === this._expression ? this : new ExpressionStatement(this._id, expression);
-        }
-
-    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-        return v.visitExpressionStatement(this, p);
-    }
-
-    public get type(): JavaType | null {
-        return extensions.getJavaType(this);
-    }
-
-    public withType(type: JavaType): ExpressionStatement {
-        return extensions.withJavaType(this, type);
     }
 
 }
@@ -1402,64 +1344,6 @@ export namespace ObjectBindingDeclarations {
             }
         }
 
-    }
-
-}
-
-@LstType("org.openrewrite.javascript.tree.JS$StatementExpression")
-export class StatementExpression extends JSMixin(Object) implements Expression, Statement {
-    public constructor(id: UUID, statement: Statement) {
-        super();
-        this._id = id;
-        this._statement = statement;
-    }
-
-        private readonly _id: UUID;
-
-        public get id(): UUID {
-            return this._id;
-        }
-
-        public withId(id: UUID): StatementExpression {
-            return id === this._id ? this : new StatementExpression(id, this._statement);
-        }
-
-        public get prefix(): Space {
-            return this._statement.prefix;
-        }
-
-        public withPrefix(prefix: Space): StatementExpression {
-            return this.withStatement(this._statement.withPrefix(prefix) as Statement);
-        }
-
-        public get markers(): Markers {
-            return this._statement.markers;
-        }
-
-        public withMarkers(markers: Markers): StatementExpression {
-            return this.withStatement(this._statement.withMarkers(markers));
-        }
-
-        private readonly _statement: Statement;
-
-        public get statement(): Statement {
-            return this._statement;
-        }
-
-        public withStatement(statement: Statement): StatementExpression {
-            return statement === this._statement ? this : new StatementExpression(this._id, statement);
-        }
-
-    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-        return v.visitStatementExpression(this, p);
-    }
-
-    public get type(): JavaType | null {
-        return extensions.getJavaType(this);
-    }
-
-    public withType(type: JavaType): StatementExpression {
-        return extensions.withJavaType(this, type);
     }
 
 }

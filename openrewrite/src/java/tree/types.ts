@@ -1,4 +1,4 @@
-import {LstType} from "../core";
+import {LstType} from "../../core";
 
 export interface JavaType {
 }

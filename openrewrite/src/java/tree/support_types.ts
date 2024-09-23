@@ -1,6 +1,6 @@
-import {LstType, Markers, SourceFile, Tree, TreeVisitor, UUID} from "../core";
+import {LstType, Markers, SourceFile, Tree, TreeVisitor, UUID} from "../../core";
 import {JavaType} from "./types";
-import {JavaVisitor} from "./visitor";
+import {JavaVisitor} from "../visitor";
 
 export {JavaType} from "./types";
 

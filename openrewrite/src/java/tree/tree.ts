@@ -2,8 +2,8 @@
 
 import * as extensions from "./extensions";
 import {J, JMixin, Comment, Expression, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, Loop, MethodCall, NameTree, Space, Statement, TextComment, TypedTree, TypeTree} from "./support_types";
-import {JavaVisitor} from "./visitor";
-import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
+import {JavaVisitor} from "../visitor";
+import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../../core";
 
 @LstType("org.openrewrite.java.tree.J$AnnotatedType")
 export class AnnotatedType extends JMixin(Object) implements Expression, TypeTree {
