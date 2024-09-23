@@ -2,8 +2,7 @@ import * as ts from 'typescript';
 import * as J from '../java/tree';
 import * as JS from './tree';
 import {ExecutionContext, Markers, ParseError, Parser, ParserInput, randomId, SourceFile, Tree} from "../core";
-import {Expression, JRightPadded, Space, Statement} from "../java/tree";
-import {Node} from "typescript";
+import {JRightPadded, Space} from "../java/tree";
 
 export class JavaScriptParser extends Parser {
 
@@ -102,13 +101,7 @@ class ParserVisitor {
                         false,
                         null,
                         [],
-                        node.statements.map((s) => {
-                            return new JRightPadded(
-                                this.visit(s) as Statement,
-                                Space.EMPTY,
-                                Markers.EMPTY
-                            );
-                        }),
+                        this.rightPaddedList<J.Statement>(node.statements),
                         Space.EMPTY
                     );
                 }
@@ -117,10 +110,23 @@ class ParserVisitor {
                 if (ts.isExpressionStatement(node)) {
                     return new JS.ExpressionStatement(
                         randomId(),
-                        this.visit(node.expression) as Expression
+                        this.visit(node.expression) as J.Expression
                     )
                 }
                 break;
+            case ts.SyntaxKind.VariableStatement:
+                let variableStatement = node as ts.VariableStatement;
+                return new J.VariableDeclarations(
+                    randomId(),
+                    this.prefix(node),
+                    Markers.EMPTY,
+                    [],
+                    this.mapModifiers(variableStatement),
+                    null,
+                    null,
+                    [],
+                    this.rightPaddedList(variableStatement.declarationList.declarations)
+                )
             default:
                 return new J.Unknown(
                     randomId(),
@@ -137,7 +143,24 @@ class ParserVisitor {
         throw new Error("Unreachable statement");
     }
 
-    private prefix(node: Node) {
-        return Space.EMPTY;
+    private prefix(node: ts.Node) {
+        if (node.getLeadingTriviaWidth(this.sourceFile) == 0) {
+            return Space.EMPTY;
+        }
+        return Space.format(this.sourceFile.text, node.getFullStart(), node.getFullStart() + node.getLeadingTriviaWidth());
+    }
+
+    private mapModifiers(node: ts.VariableStatement) {
+        return [];
+    }
+
+    private rightPaddedList<T extends J.J>(nodes: ts.NodeArray<ts.Node>) {
+        return nodes.map((s) => {
+            return new JRightPadded(
+                this.visit(s) as T,
+                Space.EMPTY,
+                Markers.EMPTY
+            );
+        });
     }
 }

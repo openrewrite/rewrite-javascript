@@ -26,7 +26,9 @@ describe('tree utils', () => {
 
     test('parse strings', () => {
         const parser = JavaScriptParser.builder().build();
-        const [sourceFile] = parser.parseStrings('const c = 1;');
+        const [sourceFile] = parser.parseStrings(`
+        const c = 1;
+        const d = 1;`);
         console.log(sourceFile);
     });
 });

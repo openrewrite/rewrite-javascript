@@ -111,6 +111,14 @@ export class Space {
         return new Space(comments, whitespace);
     }
 
+    static format(sourceText: string, start: number, end: number) {
+        if (start == end) {
+            return Space.EMPTY;
+        }
+        // FIXME
+        return new Space([], sourceText.slice(start, end));
+    }
+
     public constructor(comments: Comment[], whitespace: string | null) {
         this._comments = comments;
         this._whitespace = whitespace;
