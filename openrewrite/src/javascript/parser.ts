@@ -109,7 +109,6 @@ class ParserVisitor {
                 }
                 break;
             default:
-                console.log(node.kind + ": " + ts.SyntaxKind[node.kind]);
                 return new J.Unknown(
                     randomId(),
                     Space.EMPTY,
