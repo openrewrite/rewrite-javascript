@@ -10,6 +10,7 @@ export class JavaScriptParser extends Parser {
             target: ts.ScriptTarget.Latest,
             module: ts.ModuleKind.CommonJS,
             strict: true,
+            allowJs: true
         };
         const host = ts.createCompilerHost(compilerOptions);
         host.getSourceFile = (fileName, languageVersion) => {

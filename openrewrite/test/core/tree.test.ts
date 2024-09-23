@@ -22,4 +22,9 @@ describe('tree utils', () => {
         const parser = new JavaScriptParser();
         parser.parseInputs([new ParserInput('foo.ts', null, true, () => Buffer.from('const c = 1;', 'utf8'))], null, new InMemoryExecutionContext());
     });
+
+    test('parse strings', () => {
+        const parser = new JavaScriptParser();
+        parser.parseStrings('const c = 1;');
+    });
 });
