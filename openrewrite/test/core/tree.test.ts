@@ -20,11 +20,13 @@ describe('tree utils', () => {
 
     test('parse', () => {
         const parser = new JavaScriptParser();
-        parser.parseInputs([new ParserInput('foo.ts', null, true, () => Buffer.from('const c = 1;', 'utf8'))], null, new InMemoryExecutionContext());
+        const [sourceFile] = parser.parseInputs([new ParserInput('foo.ts', null, true, () => Buffer.from('1', 'utf8'))], null, new InMemoryExecutionContext());
+        console.log(sourceFile);
     });
 
     test('parse strings', () => {
         const parser = new JavaScriptParser();
-        parser.parseStrings('const c = 1;');
+        const [sourceFile] = parser.parseStrings('const c = 1;');
+        console.log(sourceFile);
     });
 });

@@ -1,7 +1,9 @@
 import * as ts from 'typescript';
+import * as J from '../java/tree';
 import * as JS from './tree';
 import {ExecutionContext, Markers, ParseError, Parser, ParserInput, randomId, SourceFile, Tree} from "../core";
-import {Space} from "../java/tree";
+import {Expression, JRightPadded, Space, Statement} from "../java/tree";
+import {Node} from "typescript";
 
 export class JavaScriptParser extends Parser {
     parseInputs(inputs: Iterable<ParserInput>, relativeTo: string | null, ctx: ExecutionContext): Iterable<SourceFile> {
@@ -9,7 +11,7 @@ export class JavaScriptParser extends Parser {
         const compilerOptions: ts.CompilerOptions = {
             target: ts.ScriptTarget.Latest,
             module: ts.ModuleKind.CommonJS,
-            strict: true,
+            // strict: true,
             allowJs: true
         };
         const host = ts.createCompilerHost(compilerOptions);
@@ -30,12 +32,12 @@ export class JavaScriptParser extends Parser {
         const program = ts.createProgram(Array.from(inputsArray, i => i.path), compilerOptions, host);
         const typeChecker = program.getTypeChecker();
 
-        const result = new Array(inputsArray.length);
+        const result = [];
         for (let input of inputsArray) {
             const sourceFile = program.getSourceFile(input.path);
             if (sourceFile) {
                 try {
-                    result.push(visit(sourceFile, sourceFile, typeChecker) as SourceFile);
+                    result.push(new ParserVisitor(sourceFile, typeChecker).visit(sourceFile) as SourceFile);
                 } catch (error) {
                     result.push(ParseError.build(
                         this,
@@ -69,19 +71,61 @@ export class JavaScriptParser extends Parser {
     }
 }
 
-function visit(node: ts.Node, sourceFile: ts.SourceFile, typeChecker: ts.TypeChecker): Tree {
-    const kind = ts.SyntaxKind[node.kind];
-    return new JS.CompilationUnit(
-        randomId(),
-        Space.EMPTY,
-        Markers.EMPTY,
-        sourceFile.fileName,
-        null,
-        null,
-        false,
-        null,
-        [],
-        [],
-        Space.EMPTY
-    );
+class ParserVisitor {
+    constructor(private readonly sourceFile: ts.SourceFile, private readonly typeChecker: ts.TypeChecker) {
+    }
+
+    public visit(node: ts.Node): Tree {
+        switch (node.kind) {
+            case ts.SyntaxKind.SourceFile:
+                if (ts.isSourceFile(node)) {
+                    return new JS.CompilationUnit(
+                        randomId(),
+                        this.prefix(node),
+                        Markers.EMPTY,
+                        this.sourceFile.fileName,
+                        null,
+                        null,
+                        false,
+                        null,
+                        [],
+                        node.statements.map((s) => {
+                            return new JRightPadded(
+                                this.visit(s) as Statement,
+                                Space.EMPTY,
+                                Markers.EMPTY
+                            );
+                        }),
+                        Space.EMPTY
+                    );
+                }
+                break;
+            case ts.SyntaxKind.ExpressionStatement:
+                if (ts.isExpressionStatement(node)) {
+                    return new JS.ExpressionStatement(
+                        randomId(),
+                        this.visit(node.expression) as Expression
+                    )
+                }
+                break;
+            default:
+                console.log(node.kind + ": " + ts.SyntaxKind[node.kind]);
+                return new J.Unknown(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    new J.Unknown.Source(
+                        randomId(),
+                        Space.EMPTY,
+                        Markers.EMPTY,
+                        node.getFullText()
+                    )
+                );
+        }
+        throw new Error("Unreachable statement");
+    }
+
+    private prefix(node: Node) {
+        return Space.EMPTY;
+    }
 }
