@@ -7,13 +7,13 @@ export class ParserInput {
     private readonly _path: string;
     private readonly _fileAttributes: FileAttributes | null;
     private readonly _synthetic: boolean;
-    private readonly _source: () => fs.ReadStream;
+    private readonly _source: () => Buffer;
 
     constructor(
         path: string,
         fileAttributes: FileAttributes | null,
         synthetic: boolean,
-        source: () => fs.ReadStream
+        source: () => Buffer
     ) {
         this._path = path;
         this._fileAttributes = fileAttributes;
@@ -33,7 +33,7 @@ export class ParserInput {
         return this._synthetic;
     }
 
-    get source(): () => fs.ReadStream {
+    get source(): () => Buffer {
         return this._source;
     }
 }
@@ -50,18 +50,18 @@ export abstract class Parser {
     abstract sourcePathFromSourceText(prefix: string, sourceCode: string): string;
 
     parse(
-        sourceFiles: Iterable<string>,
+        sourceFilesPaths: Iterable<string>,
         relativeTo: string | null,
         ctx: ExecutionContext
     ): Iterable<SourceFile> {
         const inputs: ParserInput[] = [];
-        for (const path of sourceFiles) {
+        for (const path of sourceFilesPaths) {
             inputs.push(
                 new ParserInput(
                     path,
                     null,
                     false,
-                    () => fs.createReadStream(path)
+                    () => fs.readFileSync(path)
                 )
             );
         }
@@ -79,13 +79,7 @@ export abstract class Parser {
                 path,
                 null,
                 true,
-                () => {
-                    // FIXME handling of streams
-                    const stream = new fs.ReadStream(null!);
-                    stream.push(source);
-                    stream.push(null);
-                    return stream;
-                }
+                () => Buffer.from(source)
             );
         });
         return this.parseInputs(inputs, null, ctx);
@@ -136,7 +130,7 @@ function requirePrintEqualsInput(
     const required = ctx.getMessage(ExecutionContext.REQUIRE_PRINT_EQUALS_INPUT, true);
     if (required && !sourceFile.printEqualsInput(parserInput, ctx)) {
         const diff = Result.diff(
-            parserInput.source().read().toString(),
+            parserInput.source().toString(),
             sourceFile.printAll(),
             parserInput.path
         );

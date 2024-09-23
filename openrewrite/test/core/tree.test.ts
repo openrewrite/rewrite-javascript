@@ -1,6 +1,7 @@
-import {Cursor, Markers, randomId} from '../../src/core';
+import {Cursor, InMemoryExecutionContext, Markers, ParserInput, randomId} from '../../src/core';
 import {isSourceFile} from "typescript";
-import {Document, Documents, isYaml} from "../../src/yaml";
+import {Document, Documents, isYaml} from "../../src/yaml/tree";
+import {JavaScriptParser} from "../../src/javascript";
 
 describe('tree utils', () => {
     test('new random ID', () => {
@@ -15,5 +16,10 @@ describe('tree utils', () => {
         expect(c.firstEnclosing(isYaml)).toBeDefined();
         expect(c.firstEnclosing(Documents)).toBeDefined();
         expect(c.firstEnclosing(Document)).toBeNull();
+    });
+
+    test('parse', () => {
+        const parser = new JavaScriptParser();
+        parser.parseInputs([new ParserInput('foo.ts', null, true, () => Buffer.from('const c = 1;', 'utf8'))], null, new InMemoryExecutionContext());
     });
 });

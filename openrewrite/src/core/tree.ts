@@ -530,7 +530,7 @@ export class ParseError implements SourceFile {
             parser.getCharset(ctx),
             false,
             null,
-            input.source().read().toString(),
+            input.source().toString(),
             erroneous
         );
     }
