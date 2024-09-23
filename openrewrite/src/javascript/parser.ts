@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import * as JS from './tree';
-import {ExecutionContext, Markers, Parser, ParserInput, randomId, SourceFile, Tree} from "../core";
+import {ExecutionContext, Markers, ParseError, Parser, ParserInput, randomId, SourceFile, Tree} from "../core";
 import {Space} from "../java/tree";
 
 export class JavaScriptParser extends Parser {
@@ -14,22 +14,50 @@ export class JavaScriptParser extends Parser {
         };
         const host = ts.createCompilerHost(compilerOptions);
         host.getSourceFile = (fileName, languageVersion) => {
-            if (!fileName.endsWith('lib.d.ts')) {
-                let sourceText = inputsArray.find(i => i.path === fileName)?.source().toString('utf8')!;
-                return sourceText ? ts.createSourceFile(fileName, sourceText, languageVersion, true) : undefined;
+            if (fileName.endsWith('lib.d.ts')) {
+                // For default library files like lib.d.ts
+                const libFilePath = ts.getDefaultLibFilePath(compilerOptions);
+                const libSource = ts.sys.readFile(libFilePath);
+                return libSource
+                    ? ts.createSourceFile(fileName, libSource, languageVersion, true)
+                    : undefined;
             }
 
-            // For default library files like lib.d.ts
-            const libFilePath = ts.getDefaultLibFilePath(compilerOptions);
-            const libSource = ts.sys.readFile(libFilePath);
-            return libSource
-                ? ts.createSourceFile(fileName, libSource, languageVersion, true)
-                : undefined;
+            let sourceText = inputsArray.find(i => i.path === fileName)?.source().toString('utf8')!;
+            return sourceText ? ts.createSourceFile(fileName, sourceText, languageVersion, true) : undefined;
         }
 
         const program = ts.createProgram(Array.from(inputsArray, i => i.path), compilerOptions, host);
         const typeChecker = program.getTypeChecker();
-        return inputsArray.map(i => program.getSourceFile(i.path)).map(sf => this.visit(sf!, sf!, typeChecker) as SourceFile);
+
+        const result = new Array(inputsArray.length);
+        for (let input of inputsArray) {
+            const sourceFile = program.getSourceFile(input.path);
+            if (sourceFile) {
+                try {
+                    result.push(this.visit(sourceFile, sourceFile, typeChecker) as SourceFile);
+                } catch (error) {
+                    result.push(ParseError.build(
+                        this,
+                        input,
+                        relativeTo,
+                        ctx,
+                        error instanceof Error ? error : new Error("Parser threw unknown error: " + error),
+                        null
+                    ));
+                }
+            } else {
+                result.push(ParseError.build(
+                    this,
+                    input,
+                    relativeTo,
+                    ctx,
+                    new Error("Parser returned undefined"),
+                    null
+                ));
+            }
+        }
+        return result;
     }
 
     private visit(node: ts.Node, sourceFile: ts.SourceFile, typeChecker: ts.TypeChecker): Tree {
