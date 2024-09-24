@@ -39,6 +39,7 @@ export class JavaScriptParser extends Parser {
                 try {
                     result.push(new JavaScriptParserVisitor(sourceFile, typeChecker).visit(sourceFile) as SourceFile);
                 } catch (error) {
+                    console.error(error);
                     result.push(ParseError.build(
                         this,
                         input,
@@ -90,7 +91,7 @@ export class JavaScriptParserVisitor {
     visit(node: ts.Node): any {
         const member = this[(`visit${ts.SyntaxKind[node.kind]}` as keyof JavaScriptParserVisitor)];
         if (typeof member === 'function') {
-            return member(node as any);
+            return member.bind(this)(node as any);
         } else {
             return this.visitUnknown(node);
         }

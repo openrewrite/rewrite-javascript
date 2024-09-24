@@ -289,9 +289,7 @@ export class JRightPadded<T> {
             return [];
         }
 
-        let after: JRightPadded<T>[] = new Array(elements.length);
         let beforeById = new Map<UUID, JRightPadded<T>>();
-
         for (let j of before) {
             if (beforeById.has((j.element as J).id)) {
                 throw new Error("Duplicate key");
@@ -299,10 +297,12 @@ export class JRightPadded<T> {
             beforeById.set((j.element as J).id, j);
         }
 
-        for (let t of elements) {
-            after.push(beforeById.has((t as J).id)
+        let after: JRightPadded<T>[] = new Array(elements.length);
+        for (let i = 0; i < elements.length; i++) {
+            let t = elements[i];
+            after[i] = beforeById.has((t as J).id)
                 ? beforeById.get((t as J).id)!.withElement(t)
-                : new JRightPadded(t, Space.EMPTY, Markers.EMPTY));
+                : new JRightPadded(t, Space.EMPTY, Markers.EMPTY);
         }
 
         return after;
@@ -322,13 +322,13 @@ export class JRightPadded<T> {
 
         let list: T[] = new Array<T>(ls.length);
 
-        for (let l of ls) {
+        for (let i = 0; i < ls.length; i++){
+            let l = ls[i];
             if (l === null) {
                 continue;
             }
 
-            let elem = l.element;
-            list.push(elem);
+            list[i] = l.element;
         }
 
         return list;
