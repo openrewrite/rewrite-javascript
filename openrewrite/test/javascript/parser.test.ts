@@ -31,7 +31,7 @@ describe('LST mapping', () => {
 
     test('parseInputs', () => {
         rewriteRun(
-            javaScript('1', (sourceFile) => {
+            javaScript('1', sourceFile => {
                 expect(sourceFile).toBeDefined();
                 expect(sourceFile.statements).toHaveLength(1);
                 expect(sourceFile.statements[0]).toBeInstanceOf(JS.ExpressionStatement);
@@ -46,7 +46,7 @@ describe('LST mapping', () => {
                 const c = 1;
                 /* c1*/  /*c2 */
                 const d = 1;
-            `, (cu) => {
+            `, cu => {
                 expect(cu).toBeDefined();
                 expect(cu.statements).toHaveLength(2);
                 cu.statements.forEach(statement => {
