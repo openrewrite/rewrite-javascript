@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import * as J from '../java/tree';
-import {Comment, JRightPadded, Space, TextComment} from '../java/tree';
+import {Comment, JavaType, JRightPadded, Space, TextComment} from '../java/tree';
 import * as JS from './tree';
 import {ExecutionContext, Markers, ParseError, Parser, ParserInput, randomId, SourceFile} from "../core";
 
@@ -84,25 +84,27 @@ export namespace JavaScriptParser {
     }
 }
 
+// we use this instead of `ts.SyntaxKind[node.kind]` because the numeric values are not unique and we want
+// the first one rather than the last one, as the last ones are things like `FirstToken`, `LastToken`, etc.
+const visitMethodMap = new Map<number, string>();
+for (const [key, value] of Object.entries(ts.SyntaxKind)) {
+    if (typeof value === 'number' && !visitMethodMap.has(value)) {
+        visitMethodMap.set(value, 'visit' + key);
+    }
+}
+
+// noinspection JSUnusedGlobalSymbols
 export class JavaScriptParserVisitor {
     constructor(private readonly sourceFile: ts.SourceFile, private readonly typeChecker: ts.TypeChecker) {
     }
 
     visit(node: ts.Node): any {
-        const member = this[(`visit${ts.SyntaxKind[node.kind]}` as keyof JavaScriptParserVisitor)];
+        const member = this[(visitMethodMap.get(node.kind) as keyof JavaScriptParserVisitor)];
         if (typeof member === 'function') {
             return member.bind(this)(node as any);
         } else {
             return this.visitUnknown(node);
         }
-    }
-
-    private prefix(node: ts.Node) {
-        if (node.getLeadingTriviaWidth(this.sourceFile) == 0) {
-            return Space.EMPTY;
-        }
-        return prefixFromNode(node, this.sourceFile);
-        // return Space.format(this.sourceFile.text, node.getFullStart(), node.getFullStart() + node.getLeadingTriviaWidth());
     }
 
     visitSourceFile(node: ts.SourceFile): JS.CompilationUnit {
@@ -151,7 +153,7 @@ export class JavaScriptParserVisitor {
 
     private semicolonPrefix = (n: ts.Node) => {
         const last = n.getLastToken();
-        return last?.kind == ts.SyntaxKind.SemicolonToken ? prefixFromNode(last, this.sourceFile) : Space.EMPTY;
+        return last?.kind == ts.SyntaxKind.SemicolonToken ? this.prefix(last) : Space.EMPTY;
     }
 
 
@@ -161,7 +163,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitNumericLiteral(node: ts.NumericLiteral) {
-        return this.visitUnknown(node)
+        return new J.Literal(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            node.text, // FIXME value not in AST
+            node.text,
+            null,
+            this.mapType(node) as JavaType.Primitive
+        );
     }
 
     visitBigIntLiteral(node: ts.BigIntLiteral) {
@@ -972,6 +982,19 @@ export class JavaScriptParserVisitor {
 
     visitSyntheticReferenceExpression(node: ts.Node) {
         return this.visitUnknown(node);
+    }
+
+    private prefix(node: ts.Node) {
+        if (node.getLeadingTriviaWidth(this.sourceFile) == 0) {
+            return Space.EMPTY;
+        }
+        // FIXME either mark ranges as consumed or implement cursor tracking
+        return prefixFromNode(node, this.sourceFile);
+        // return Space.format(this.sourceFile.text, node.getFullStart(), node.getFullStart() + node.getLeadingTriviaWidth());
+    }
+
+    private mapType(node: ts.Expression): JavaType | null {
+        return JavaType.Unknown.INSTANCE;
     }
 }
 

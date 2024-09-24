@@ -3,7 +3,6 @@ import {JavaScriptParser} from "../../src/javascript";
 import * as J from "../../src/java/tree";
 import * as JS from "../../src/javascript/tree";
 import dedent from "dedent";
-import {JRightPadded} from "../../src/java/tree";
 
 describe('Parser API', () => {
     const parser = JavaScriptParser.builder().build();
@@ -35,7 +34,11 @@ describe('LST mapping', () => {
             javaScript('1', sourceFile => {
                 expect(sourceFile).toBeDefined();
                 expect(sourceFile.statements).toHaveLength(1);
-                expect(sourceFile.statements[0]).toBeInstanceOf(JS.ExpressionStatement);
+                let statement = sourceFile.statements[0];
+                expect(statement).toBeInstanceOf(JS.ExpressionStatement);
+                let expression = (statement as JS.ExpressionStatement).expression;
+                expect(expression).toBeInstanceOf(J.Literal);
+                expect((expression as J.Literal).valueSource).toBe('1');
             }));
     });
 

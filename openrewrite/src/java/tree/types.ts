@@ -36,4 +36,9 @@ export namespace JavaType {
     export class Method implements JavaType {
         returnType: JavaType = null!;
     }
+
+    @LstType("org.openrewrite.java.tree.JavaType$Unknown")
+    export class Unknown implements JavaType {
+        static INSTANCE = new Unknown();
+    }
 }
