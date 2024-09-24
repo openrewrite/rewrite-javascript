@@ -9,9 +9,9 @@ describe('Parser API', () => {
 
     test('parseInputs', () => {
         const [sourceFile] = parser.parseInputs(
-            [new ParserInput('foo.ts', null, true, () => Buffer.from('1', 'utf8'))],
-            null,
-            new InMemoryExecutionContext()
+          [new ParserInput('foo.ts', null, true, () => Buffer.from('1', 'utf8'))],
+          null,
+          new InMemoryExecutionContext()
         ) as Iterable<JS.CompilationUnit>;
         expect(sourceFile).toBeDefined();
     });
@@ -31,25 +31,25 @@ describe('LST mapping', () => {
 
     test('parseInputs', () => {
         rewriteRun(
-            javaScript('1', sourceFile => {
-                expect(sourceFile).toBeDefined();
-                expect(sourceFile.statements).toHaveLength(1);
-                let statement = sourceFile.statements[0];
-                expect(statement).toBeInstanceOf(JS.ExpressionStatement);
-                let expression = (statement as JS.ExpressionStatement).expression;
-                expect(expression).toBeInstanceOf(J.Literal);
-                expect((expression as J.Literal).valueSource).toBe('1');
-            }));
+          javaScript('1', sourceFile => {
+              expect(sourceFile).toBeDefined();
+              expect(sourceFile.statements).toHaveLength(1);
+              let statement = sourceFile.statements[0];
+              expect(statement).toBeInstanceOf(JS.ExpressionStatement);
+              let expression = (statement as JS.ExpressionStatement).expression;
+              expect(expression).toBeInstanceOf(J.Literal);
+              expect((expression as J.Literal).valueSource).toBe('1');
+          }));
     });
 
     test('parseStrings', () => {
         rewriteRun(
-            javaScript(
-                //language=javascript
-                `
-                const c = 1 ;
+          javaScript(
+            //language=javascript
+            `
+                const c = 1;
                 /* c1*/  /*c2 */
-                const d = 1 ;
+                const d = 1;
             `, cu => {
                 expect(cu).toBeDefined();
                 expect(cu.statements).toHaveLength(2);
