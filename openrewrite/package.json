@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@types/node": "^22.5.4",
+    "dedent": "^1.5.3",
     "diff": "^7.0.0",
     "uuid": "^10.0.0"
   },
