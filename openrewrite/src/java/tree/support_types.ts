@@ -32,6 +32,7 @@ export function isJava(tree: any): tree is J {
 
 export function JMixin<TBase extends Constructor<Object>>(Base: TBase) {
     abstract class JMixed extends Base implements J {
+        static isTree = true;
         static isJava = true;
 
         abstract get prefix(): Space;
