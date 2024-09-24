@@ -116,7 +116,7 @@ export class JavaScriptParserVisitor {
             false,
             null,
             [],
-            this.rightPaddedList<J.Statement>(node.statements),
+            this.rightPaddedList(node.statements, this.semicolonPrefix),
             Space.EMPTY
         );
     }
@@ -139,15 +139,21 @@ export class JavaScriptParserVisitor {
         return [];
     }
 
-    private rightPaddedList<T extends J.J>(nodes: ts.NodeArray<ts.Node>) {
-        return nodes.map((s) => {
-            return new JRightPadded(
-                this.visit(s) as T,
-                Space.EMPTY,
+    private rightPaddedList<N extends ts.Node, T extends J.J>(nodes: ts.NodeArray<N>, trailing?: (node: N) => Space) {
+        return nodes.map(n => {
+            return new JRightPadded<T>(
+                this.visit(n) as T,
+                trailing ? trailing(n) : Space.EMPTY,
                 Markers.EMPTY
             );
         });
     }
+
+    private semicolonPrefix = (n: ts.Node) => {
+        const last = n.getLastToken();
+        return last?.kind == ts.SyntaxKind.SemicolonToken ? prefixFromNode(last, this.sourceFile) : Space.EMPTY;
+    }
+
 
     visitClassDeclaration(node: ts.ClassDeclaration) {
         // return new ClassDeclaration(randomId(), node.)
@@ -515,7 +521,9 @@ export class JavaScriptParserVisitor {
             null,
             null,
             [],
-            this.rightPaddedList(node.declarationList.declarations)
+            this.rightPaddedList(node.declarationList.declarations, n => {
+                return Space.EMPTY;
+            })
         )
     }
 

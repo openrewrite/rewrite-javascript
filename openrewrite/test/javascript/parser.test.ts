@@ -3,6 +3,7 @@ import {JavaScriptParser} from "../../src/javascript";
 import * as J from "../../src/java/tree";
 import * as JS from "../../src/javascript/tree";
 import dedent from "dedent";
+import {JRightPadded} from "../../src/java/tree";
 
 describe('Parser API', () => {
     const parser = JavaScriptParser.builder().build();
@@ -43,15 +44,19 @@ describe('LST mapping', () => {
             javaScript(
                 //language=javascript
                 `
-                const c = 1;
+                const c = 1 ;
                 /* c1*/  /*c2 */
-                const d = 1;
+                const d = 1 ;
             `, cu => {
                 expect(cu).toBeDefined();
                 expect(cu.statements).toHaveLength(2);
                 cu.statements.forEach(statement => {
                     expect(statement).toBeInstanceOf(J.Unknown);
-                })
+                });
+                cu.padding.statements.forEach(statement => {
+                    expect(statement.after.comments).toHaveLength(0);
+                    expect(statement.after.whitespace).toBe(' ');
+                });
             })
         );
     });
