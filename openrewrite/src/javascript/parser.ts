@@ -2,7 +2,7 @@ import * as ts from 'typescript';
 import * as J from '../java/tree';
 import * as JS from './tree';
 import {ExecutionContext, Markers, ParseError, Parser, ParserInput, randomId, SourceFile, Tree} from "../core";
-import {JRightPadded, Space} from "../java/tree";
+import {Comment, JRightPadded, Space, TextComment} from "../java/tree";
 
 export class JavaScriptParser extends Parser {
 
@@ -147,7 +147,45 @@ class ParserVisitor {
         if (node.getLeadingTriviaWidth(this.sourceFile) == 0) {
             return Space.EMPTY;
         }
-        return Space.format(this.sourceFile.text, node.getFullStart(), node.getFullStart() + node.getLeadingTriviaWidth());
+        return ParserVisitor.prefixFromNode(node, this.sourceFile);
+        // return Space.format(this.sourceFile.text, node.getFullStart(), node.getFullStart() + node.getLeadingTriviaWidth());
+    }
+
+    static prefixFromNode(node: ts.Node, sourceFile: ts.SourceFile): Space {
+        const comments: Comment[] = [];
+        const text = sourceFile.getFullText();
+        const nodeStart = node.getFullStart();
+
+        let leadingWhitespacePos = node.getStart();
+
+        // Step 1: Use forEachLeadingCommentRange to extract comments
+        ts.forEachLeadingCommentRange(text, nodeStart, (pos, end, kind) => {
+            leadingWhitespacePos = Math.min(leadingWhitespacePos, pos);
+
+            const isMultiline = kind === ts.SyntaxKind.MultiLineCommentTrivia;
+            const commentStart = isMultiline ? pos + 2 : pos + 2;  // Skip `/*` or `//`
+            const commentEnd = isMultiline ? end - 2 : end;  // Exclude closing `*/` or nothing for `//`
+
+            // Step 2: Capture suffix (whitespace after the comment)
+            let suffixEnd = end;
+            while (suffixEnd < text.length && (text[suffixEnd] === ' ' || text[suffixEnd] === '\t' || text[suffixEnd] === '\n' || text[suffixEnd] === '\r')) {
+                suffixEnd++;
+            }
+
+            const commentBody = text.slice(commentStart, commentEnd);  // Extract comment body
+            const suffix = text.slice(end, suffixEnd);  // Extract suffix (whitespace after comment)
+
+            comments.push(new TextComment(isMultiline, commentBody, suffix, Markers.EMPTY));
+        });
+
+        // Step 3: Extract leading whitespace (before the first comment)
+        let whitespace = '';
+        if (leadingWhitespacePos > node.getFullStart()) {
+            whitespace = text.slice(node.getFullStart(), leadingWhitespacePos);
+        }
+
+        // Step 4: Return the Space object with comments and leading whitespace
+        return new Space(comments, whitespace.length > 0 ? whitespace : null);
     }
 
     private mapModifiers(node: ts.VariableStatement) {

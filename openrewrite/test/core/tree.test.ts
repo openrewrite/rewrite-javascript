@@ -29,7 +29,7 @@ describe('tree utils', () => {
         const parser = JavaScriptParser.builder().build();
         const [sourceFile] = parser.parseStrings(`
         const c = 1;
-        const d = 1;`);
+        /* c1*/  /*c2 */const d = 1;`);
         console.log(sourceFile);
     });
 
