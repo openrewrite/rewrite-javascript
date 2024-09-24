@@ -24,40 +24,48 @@ describe('Parser API', () => {
     });
 });
 
+type SourceSpec = () => void;
+
 describe('LST mapping', () => {
     const parser = JavaScriptParser.builder().build();
 
     test('parseInputs', () => {
-        rewriteRun(() => {
-            const sourceFile = javaScript('1');
-            expect(sourceFile).toBeDefined();
-            expect(sourceFile.statements).toHaveLength(1);
-            expect(sourceFile.statements[0]).toBeInstanceOf(JS.ExpressionStatement);
-        });
+        rewriteRun(
+            javaScript('1', (sourceFile) => {
+                expect(sourceFile).toBeDefined();
+                expect(sourceFile.statements).toHaveLength(1);
+                expect(sourceFile.statements[0]).toBeInstanceOf(JS.ExpressionStatement);
+            }));
     });
 
     test('parseStrings', () => {
-        rewriteRun(() => {
-            //language=typescript
-            const sourceFile = javaScript(`
+        rewriteRun(
+            javaScript(
+                //language=javascript
+                `
                 const c = 1;
                 /* c1*/  /*c2 */
                 const d = 1;
-            `);
-            expect(sourceFile).toBeDefined();
-            expect(sourceFile.statements).toHaveLength(2);
-            sourceFile.statements.forEach(statement => {
-                expect(statement).toBeInstanceOf(J.Unknown);
+            `, (cu) => {
+                expect(cu).toBeDefined();
+                expect(cu.statements).toHaveLength(2);
+                cu.statements.forEach(statement => {
+                    expect(statement).toBeInstanceOf(J.Unknown);
+                })
             })
-        });
+        );
     });
 
-    function rewriteRun(runnable: () => void) {
-        runnable();
+    function rewriteRun(...sourceSpecs: SourceSpec[]) {
+        sourceSpecs.forEach(sourceSpec => sourceSpec());
     }
 
-    function javaScript(source: string): JS.CompilationUnit {
-        const [sourceFile] = parser.parseStrings(dedent(source)) as Iterable<JS.CompilationUnit>;
-        return sourceFile;
+    function javaScript(before: string, spec?: (sourceFile: JS.CompilationUnit) => void): SourceSpec {
+        return () => {
+            const [sourceFile] = parser.parseStrings(dedent(before)) as Iterable<JS.CompilationUnit>;
+            if (spec) {
+                spec(sourceFile);
+            }
+        };
     }
 });
