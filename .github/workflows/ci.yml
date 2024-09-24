@@ -39,5 +39,5 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
         working-directory: openrewrite
+        run: npm ci
