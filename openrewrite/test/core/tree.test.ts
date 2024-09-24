@@ -1,8 +1,7 @@
-import {Cursor, Markers, randomId} from '../../src/core';
-import {isSourceFile} from "typescript";
-import {Document, Documents, isYaml} from "../../src/yaml";
+import {Cursor, Markers, randomId, isSourceFile} from '../../src/core';
+import {Document, Documents, isYaml} from "../../src/yaml/tree";
 
-describe('tree utils', () => {
+describe('utils', () => {
     test('new random ID', () => {
         expect(randomId()).toBeDefined();
     });

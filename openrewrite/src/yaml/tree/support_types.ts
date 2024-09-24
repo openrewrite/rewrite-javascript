@@ -25,6 +25,7 @@ export function isYaml(tree: any): tree is Yaml {
 
 export function YamlMixin<TBase extends Constructor<Object>>(Base: TBase) {
     abstract class YamlMixed extends Base implements Yaml {
+        static isTree = true;
         static isYaml = true;
 
         abstract get id(): UUID;

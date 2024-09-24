@@ -18,6 +18,10 @@ export interface Tree {
     accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null;
 }
 
+export function isTree(tree: any): tree is Tree {
+    return !!tree.constructor.isTree || !!tree.isTree;
+}
+
 export abstract class TreeVisitor<T extends Tree, P> {
     private _cursor: Cursor;
     private _visitCount: number = 0;
@@ -352,6 +356,7 @@ type AbstractConstructor<T = {}> = abstract new (...args: any[]) => T;
 
 export function SourceFileMixin<TBase extends AbstractConstructor<Tree>>(Base: TBase) {
     abstract class SourceFileMixed extends Base implements SourceFile {
+        static isTree = true;
         static isSourceFile = true;
 
         abstract get sourcePath(): string;
@@ -479,6 +484,7 @@ export abstract class PrinterFactory {
 
 @LstType("org.openrewrite.tree.ParseError")
 export class ParseError implements SourceFile {
+    static isTree = true;
     static isParseError = true;
     static isSourceFile = true;
 
@@ -530,7 +536,7 @@ export class ParseError implements SourceFile {
             parser.getCharset(ctx),
             false,
             null,
-            input.source().read().toString(),
+            input.source().toString(),
             erroneous
         );
     }
