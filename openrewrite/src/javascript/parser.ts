@@ -33,16 +33,20 @@ export class JavaScriptParser extends Parser {
 
 export class JavaScriptParserVisitor {
     visit(sf: ts.SourceFile) {
-        sf.forEachChild((node) => this._visit(node));
+        return new JS.CompilationUnit(randomId(), Space.EMPTY, Markers.EMPTY, sf.fileName, null, null, false, null, [], [], Space.EMPTY);
     }
 
-    _visit(node: ts.Node) {
-        var member = this[(`visit${ts.SyntaxKind[node.kind]}` as keyof JavaScriptParserVisitor)];
+    #visit0<T extends J.J>(node: ts.Node) : T {
+        const member = this[(`visit${ts.SyntaxKind[node.kind]}` as keyof JavaScriptParserVisitor)];
         if (typeof member === 'function') {
-            return member(node as any);
+            return member(node as any) as any as T;
         } else {
-            return this.visitUnknown(node);
+            return this.visitUnknown(node) as any as T;
         }
+    }
+
+    visitUnknown(node: ts.Node) {
+        return new J.Unknown(randomId(), Space.EMPTY, Markers.EMPTY, new Source(randomId(), Space.EMPTY, Markers.EMPTY, node.getText()));
     }
 
     visitClassDeclaration(node: ts.ClassDeclaration) {
@@ -50,1551 +54,806 @@ export class JavaScriptParserVisitor {
         return this.visitUnknown(node);
     }
 
-    visitUnknown(node: ts.Node) {
-        return new J.Unknown(randomId(), Space.EMPTY, Markers.EMPTY, new Source(randomId(), Space.EMPTY, Markers.EMPTY, node.getText()));
-    }
-
-    visitEndOfFileToken(node: ts.Node) {
+    visitNumericLiteral(node: ts.NumericLiteral) {
         return this.visitUnknown(node)
     }
 
-    visitSingleLineCommentTrivia(node: ts.Node) {
+    visitBigIntLiteral(node: ts.BigIntLiteral) {
         return this.visitUnknown(node)
     }
 
-    visitMultiLineCommentTrivia(node: ts.Node) {
+    visitStringLiteral(node: ts.StringLiteral) {
         return this.visitUnknown(node)
     }
 
-    visitNewLineTrivia(node: ts.Node) {
+    visitJsxText(node: ts.JsxText) {
         return this.visitUnknown(node)
     }
 
-    visitWhitespaceTrivia(node: ts.Node) {
+    visitRegularExpressionLiteral(node: ts.RegularExpressionLiteral) {
         return this.visitUnknown(node)
     }
 
-    visitShebangTrivia(node: ts.Node) {
+    visitNoSubstitutionTemplateLiteral(node: ts.NoSubstitutionTemplateLiteral) {
         return this.visitUnknown(node)
     }
 
-    visitConflictMarkerTrivia(node: ts.Node) {
+    visitTemplateHead(node: ts.TemplateHead) {
         return this.visitUnknown(node)
     }
 
-    visitNonTextFileMarkerTrivia(node: ts.Node) {
+    visitTemplateMiddle(node: ts.TemplateMiddle) {
         return this.visitUnknown(node)
     }
 
-    visitNumericLiteral(node: ts.Node) {
+    visitTemplateTail(node: ts.TemplateTail) {
         return this.visitUnknown(node)
     }
 
-    visitBigIntLiteral(node: ts.Node) {
+    visitIdentifier(node: ts.Identifier) {
+        return this.visitUnknown(node);
+    }
+
+    visitPrivateIdentifier(node: ts.PrivateIdentifier) {
+        return this.visitUnknown(node);
+    }
+
+    visitQualifiedName(node: ts.QualifiedName) {
+        return this.visitUnknown(node);
+    }
+
+    visitComputedPropertyName(node: ts.ComputedPropertyName) {
+        return this.visitUnknown(node);
+    }
+
+    visitTypeParameter(node: ts.TypeParameterDeclaration) {
+        return this.visitUnknown(node);
+    }
+
+    visitParameter(node: ts.ParameterDeclaration) {
+        return this.visitUnknown(node);
+    }
+
+    visitDecorator(node: ts.Decorator) {
+        return this.visitUnknown(node);
+    }
+
+    visitPropertySignature(node: ts.PropertySignature) {
+        return this.visitUnknown(node);
+    }
+
+    visitPropertyDeclaration(node: ts.PropertyDeclaration) {
+        return this.visitUnknown(node);
+    }
+
+    visitMethodSignature(node: ts.MethodSignature) {
+        return this.visitUnknown(node);
+    }
+
+    visitMethodDeclaration(node: ts.MethodDeclaration) {
+        return this.visitUnknown(node);
+    }
+
+    visitClassStaticBlockDeclaration(node: ts.ClassStaticBlockDeclaration) {
+        return this.visitUnknown(node);
+    }
+
+    visitConstructor(node: ts.ConstructorDeclaration) {
+        return this.visitUnknown(node);
+    }
+
+    visitGetAccessor(node: ts.GetAccessorDeclaration) {
+        return this.visitUnknown(node);
+    }
+
+    visitSetAccessor(node: ts.SetAccessorDeclaration) {
+        return this.visitUnknown(node);
+    }
+
+    visitCallSignature(node: ts.CallSignatureDeclaration) {
+        return this.visitUnknown(node);
+    }
+
+    visitConstructSignature(node: ts.ConstructSignatureDeclaration) {
+        return this.visitUnknown(node);
+    }
+
+    visitIndexSignature(node: ts.IndexSignatureDeclaration) {
+        return this.visitUnknown(node);
+    }
+
+    visitTypePredicate(node: ts.TypePredicateNode) {
+        return this.visitUnknown(node);
+    }
+
+    visitTypeReference(node: ts.TypeReferenceNode) {
         return this.visitUnknown(node)
     }
 
-    visitStringLiteral(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitJsxText(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitJsxTextAllWhiteSpaces(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitRegularExpressionLiteral(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitNoSubstitutionTemplateLiteral(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitTemplateHead(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitTemplateMiddle(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitTemplateTail(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitOpenBraceToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitCloseBraceToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitOpenParenToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitCloseParenToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitOpenBracketToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitCloseBracketToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitDotToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitDotDotDotToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitSemicolonToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitCommaToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitQuestionDotToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitLessThanToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitLessThanSlashToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitGreaterThanToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitLessThanEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitGreaterThanEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitEqualsEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitExclamationEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitEqualsEqualsEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitExclamationEqualsEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitEqualsGreaterThanToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitPlusToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitMinusToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitAsteriskToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitAsteriskAsteriskToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitSlashToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitPercentToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitPlusPlusToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitMinusMinusToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitLessThanLessThanToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitGreaterThanGreaterThanToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitGreaterThanGreaterThanGreaterThanToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitAmpersandToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitBarToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitCaretToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitExclamationToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitTildeToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitAmpersandAmpersandToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitBarBarToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitQuestionToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitColonToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitAtToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitQuestionQuestionToken(node: ts.Node) {
-        return this.visitUnknown(node)
-    }
-
-    visitBacktickToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitHashToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitPlusEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitMinusEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAsteriskEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAsteriskAsteriskEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitSlashEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitPercentEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLessThanLessThanEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitGreaterThanGreaterThanEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitGreaterThanGreaterThanGreaterThanEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAmpersandEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitBarEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitBarBarEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAmpersandAmpersandEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitQuestionQuestionEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitCaretEqualsToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitIdentifier(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitPrivateIdentifier(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitBreakKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitCaseKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitCatchKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitClassKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitConstKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitContinueKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitDebuggerKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitDefaultKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitDeleteKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitDoKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitElseKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitEnumKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitExportKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitExtendsKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFalseKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFinallyKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitForKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFunctionKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitIfKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitImportKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitInKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitInstanceOfKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitNewKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitNullKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitReturnKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitSuperKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitSwitchKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitThisKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitThrowKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitTrueKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitTryKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitTypeOfKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitVarKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitVoidKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitWhileKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitWithKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitImplementsKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitInterfaceKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLetKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitPackageKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitPrivateKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitProtectedKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitPublicKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitStaticKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitYieldKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAbstractKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAccessorKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAsKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAssertsKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAssertKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAnyKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAsyncKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitAwaitKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitBooleanKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitConstructorKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitDeclareKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitGetKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitInferKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitIntrinsicKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitIsKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitKeyOfKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitModuleKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitNamespaceKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitNeverKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitOutKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitReadonlyKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitRequireKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitNumberKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitObjectKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitSatisfiesKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitSetKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitStringKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitSymbolKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitTypeKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitUndefinedKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitUniqueKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitUnknownKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitUsingKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFromKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitGlobalKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitBigIntKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitOverrideKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitOfKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitQualifiedName(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitComputedPropertyName(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitTypeParameter(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitParameter(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitDecorator(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitPropertySignature(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitPropertyDeclaration(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitMethodSignature(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitMethodDeclaration(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitClassStaticBlockDeclaration(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitConstructor(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitGetAccessor(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitSetAccessor(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitCallSignature(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitConstructSignature(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitIndexSignature(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitTypePredicate(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitTypeReference(node: ts.Node) {
+    visitFunctionType(node: ts.FunctionTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitFunctionType(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitConstructorType(node: ts.Node) {
-        return this.visitUnknown(node);
+    visitConstructorType(node: ts.ConstructorTypeNode) {
     }
 
-    visitTypeQuery(node: ts.Node) {
+    visitTypeQuery(node: ts.TypeQueryNode) {
         return this.visitUnknown(node);
     }
 
-    visitTypeLiteral(node: ts.Node) {
+    visitTypeLiteral(node: ts.TypeLiteralNode) {
         return this.visitUnknown(node);
     }
 
-    visitArrayType(node: ts.Node) {
+    visitArrayType(node: ts.ArrayTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitTupleType(node: ts.Node) {
+    visitTupleType(node: ts.TupleTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitOptionalType(node: ts.Node) {
+    visitOptionalType(node: ts.OptionalTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitRestType(node: ts.Node) {
+    visitRestType(node: ts.RestTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitUnionType(node: ts.Node) {
+    visitUnionType(node: ts.UnionTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitIntersectionType(node: ts.Node) {
+    visitIntersectionType(node: ts.IntersectionTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitConditionalType(node: ts.Node) {
+    visitConditionalType(node: ts.ConditionalTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitInferType(node: ts.Node) {
+    visitInferType(node: ts.InferTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitParenthesizedType(node: ts.Node) {
+    visitParenthesizedType(node: ts.ParenthesizedTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitThisType(node: ts.Node) {
+    visitThisType(node: ts.ThisTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitTypeOperator(node: ts.Node) {
+    visitTypeOperator(node: ts.TypeOperatorNode) {
         return this.visitUnknown(node);
     }
 
-    visitIndexedAccessType(node: ts.Node) {
+    visitIndexedAccessType(node: ts.IndexedAccessTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitMappedType(node: ts.Node) {
+    visitMappedType(node: ts.MappedTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitLiteralType(node: ts.Node) {
+    visitLiteralType(node: ts.LiteralTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitNamedTupleMember(node: ts.Node) {
+    visitNamedTupleMember(node: ts.NamedTupleMember) {
         return this.visitUnknown(node);
     }
 
-    visitTemplateLiteralType(node: ts.Node) {
+    visitTemplateLiteralType(node: ts.TemplateLiteralTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitTemplateLiteralTypeSpan(node: ts.Node) {
+    visitTemplateLiteralTypeSpan(node: ts.TemplateLiteralTypeSpan) {
         return this.visitUnknown(node);
     }
 
-    visitImportType(node: ts.Node) {
+    visitImportType(node: ts.ImportTypeNode) {
         return this.visitUnknown(node);
     }
 
-    visitObjectBindingPattern(node: ts.Node) {
+    visitObjectBindingPattern(node: ts.ObjectBindingPattern) {
         return this.visitUnknown(node);
     }
 
-    visitArrayBindingPattern(node: ts.Node) {
+    visitArrayBindingPattern(node: ts.ArrayBindingPattern) {
         return this.visitUnknown(node);
     }
 
-    visitBindingElement(node: ts.Node) {
+    visitBindingElement(node: ts.BindingElement) {
         return this.visitUnknown(node);
     }
 
-    visitArrayLiteralExpression(node: ts.Node) {
+    visitArrayLiteralExpression(node: ts.ArrayLiteralExpression) {
         return this.visitUnknown(node);
     }
 
-    visitObjectLiteralExpression(node: ts.Node) {
+    visitObjectLiteralExpression(node: ts.ObjectLiteralExpression) {
         return this.visitUnknown(node);
     }
 
-    visitPropertyAccessExpression(node: ts.Node) {
+    visitPropertyAccessExpression(node: ts.PropertyAccessExpression) {
         return this.visitUnknown(node);
     }
 
-    visitElementAccessExpression(node: ts.Node) {
+    visitElementAccessExpression(node: ts.ElementAccessExpression) {
         return this.visitUnknown(node);
     }
 
-    visitCallExpression(node: ts.Node) {
+    visitCallExpression(node: ts.CallExpression) {
         return this.visitUnknown(node);
     }
 
-    visitNewExpression(node: ts.Node) {
+    visitNewExpression(node: ts.NewExpression) {
         return this.visitUnknown(node);
     }
 
-    visitTaggedTemplateExpression(node: ts.Node) {
+    visitTaggedTemplateExpression(node: ts.TaggedTemplateExpression) {
         return this.visitUnknown(node);
     }
 
-    visitTypeAssertionExpression(node: ts.Node) {
+    visitTypeAssertionExpression(node: ts.TypeAssertion) {
         return this.visitUnknown(node);
     }
 
-    visitParenthesizedExpression(node: ts.Node) {
+    visitParenthesizedExpression(node: ts.ParenthesizedExpression) {
         return this.visitUnknown(node);
     }
 
-    visitFunctionExpression(node: ts.Node) {
+    visitFunctionExpression(node: ts.FunctionExpression) {
         return this.visitUnknown(node);
     }
 
-    visitArrowFunction(node: ts.Node) {
+    visitArrowFunction(node: ts.ArrowFunction) {
         return this.visitUnknown(node);
     }
 
-    visitDeleteExpression(node: ts.Node) {
+    visitDeleteExpression(node: ts.DeleteExpression) {
         return this.visitUnknown(node);
     }
 
-    visitTypeOfExpression(node: ts.Node) {
+    visitTypeOfExpression(node: ts.TypeOfExpression) {
         return this.visitUnknown(node);
     }
 
-    visitVoidExpression(node: ts.Node) {
+    visitVoidExpression(node: ts.VoidExpression) {
         return this.visitUnknown(node);
     }
 
-    visitAwaitExpression(node: ts.Node) {
+    visitAwaitExpression(node: ts.AwaitExpression) {
         return this.visitUnknown(node);
     }
 
-    visitPrefixUnaryExpression(node: ts.Node) {
+    visitPrefixUnaryExpression(node: ts.PrefixUnaryExpression) {
         return this.visitUnknown(node);
     }
 
-    visitPostfixUnaryExpression(node: ts.Node) {
+    visitPostfixUnaryExpression(node: ts.PostfixUnaryExpression) {
         return this.visitUnknown(node);
     }
 
-    visitBinaryExpression(node: ts.Node) {
+    visitBinaryExpression(node: ts.BinaryExpression) {
         return this.visitUnknown(node);
     }
 
-    visitConditionalExpression(node: ts.Node) {
+    visitConditionalExpression(node: ts.ConditionalExpression) {
         return this.visitUnknown(node);
     }
 
-    visitTemplateExpression(node: ts.Node) {
+    visitTemplateExpression(node: ts.TemplateExpression) {
         return this.visitUnknown(node);
     }
 
-    visitYieldExpression(node: ts.Node) {
+    visitYieldExpression(node: ts.YieldExpression) {
         return this.visitUnknown(node);
     }
 
-    visitSpreadElement(node: ts.Node) {
+    visitSpreadElement(node: ts.SpreadElement) {
         return this.visitUnknown(node);
     }
 
-    visitClassExpression(node: ts.Node) {
+    visitClassExpression(node: ts.ClassExpression) {
         return this.visitUnknown(node);
     }
 
-    visitOmittedExpression(node: ts.Node) {
+    visitOmittedExpression(node: ts.OmittedExpression) {
         return this.visitUnknown(node);
     }
 
-    visitExpressionWithTypeArguments(node: ts.Node) {
+    visitExpressionWithTypeArguments(node: ts.ExpressionWithTypeArguments) {
         return this.visitUnknown(node);
     }
 
-    visitAsExpression(node: ts.Node) {
+    visitAsExpression(node: ts.AsExpression) {
         return this.visitUnknown(node);
     }
 
-    visitNonNullExpression(node: ts.Node) {
+    visitNonNullExpression(node: ts.NonNullExpression) {
         return this.visitUnknown(node);
     }
 
-    visitMetaProperty(node: ts.Node) {
+    visitMetaProperty(node: ts.MetaProperty) {
         return this.visitUnknown(node);
     }
 
-    visitSyntheticExpression(node: ts.Node) {
+    visitSyntheticExpression(node: ts.SyntheticExpression) {
         return this.visitUnknown(node);
     }
 
-    visitSatisfiesExpression(node: ts.Node) {
+    visitSatisfiesExpression(node: ts.SatisfiesExpression) {
         return this.visitUnknown(node);
     }
 
-    visitTemplateSpan(node: ts.Node) {
+    visitTemplateSpan(node: ts.TemplateSpan) {
         return this.visitUnknown(node);
     }
 
-    visitSemicolonClassElement(node: ts.Node) {
+    visitSemicolonClassElement(node: ts.SemicolonClassElement) {
         return this.visitUnknown(node);
     }
 
-    visitBlock(node: ts.Node) {
+    visitBlock(node: ts.Block) {
         return this.visitUnknown(node);
     }
 
-    visitEmptyStatement(node: ts.Node) {
+    visitEmptyStatement(node: ts.EmptyStatement) {
         return this.visitUnknown(node);
     }
 
-    visitVariableStatement(node: ts.Node) {
+    visitVariableStatement(node: ts.VariableStatement) {
         return this.visitUnknown(node);
     }
 
-    visitExpressionStatement(node: ts.Node) {
+    visitExpressionStatement(node: ts.ExpressionStatement) {
         return this.visitUnknown(node);
     }
 
-    visitIfStatement(node: ts.Node) {
+    visitIfStatement(node: ts.IfStatement) {
         return this.visitUnknown(node);
     }
 
-    visitDoStatement(node: ts.Node) {
+    visitDoStatement(node: ts.DoStatement) {
         return this.visitUnknown(node);
     }
 
-    visitWhileStatement(node: ts.Node) {
+    visitWhileStatement(node: ts.WhileStatement) {
         return this.visitUnknown(node);
     }
 
-    visitForStatement(node: ts.Node) {
+    visitForStatement(node: ts.ForStatement) {
         return this.visitUnknown(node);
     }
 
-    visitForInStatement(node: ts.Node) {
+    visitForInStatement(node: ts.ForInStatement) {
         return this.visitUnknown(node);
     }
 
-    visitForOfStatement(node: ts.Node) {
+    visitForOfStatement(node: ts.ForOfStatement) {
         return this.visitUnknown(node);
     }
 
-    visitContinueStatement(node: ts.Node) {
+    visitContinueStatement(node: ts.ContinueStatement) {
         return this.visitUnknown(node);
     }
 
-    visitBreakStatement(node: ts.Node) {
+    visitBreakStatement(node: ts.BreakStatement) {
         return this.visitUnknown(node);
     }
 
-    visitReturnStatement(node: ts.Node) {
+    visitReturnStatement(node: ts.ReturnStatement) {
         return this.visitUnknown(node);
     }
 
-    visitWithStatement(node: ts.Node) {
+    visitWithStatement(node: ts.WithStatement) {
         return this.visitUnknown(node);
     }
 
-    visitSwitchStatement(node: ts.Node) {
+    visitSwitchStatement(node: ts.SwitchStatement) {
         return this.visitUnknown(node);
     }
 
-    visitLabeledStatement(node: ts.Node) {
+    visitLabeledStatement(node: ts.LabeledStatement) {
         return this.visitUnknown(node);
     }
 
-    visitThrowStatement(node: ts.Node) {
+    visitThrowStatement(node: ts.ThrowStatement) {
         return this.visitUnknown(node);
     }
 
-    visitTryStatement(node: ts.Node) {
+    visitTryStatement(node: ts.TryStatement) {
         return this.visitUnknown(node);
     }
 
-    visitDebuggerStatement(node: ts.Node) {
+    visitDebuggerStatement(node: ts.DebuggerStatement) {
         return this.visitUnknown(node);
     }
 
-    visitVariableDeclaration(node: ts.Node) {
+    visitVariableDeclaration(node: ts.VariableDeclaration) {
         return this.visitUnknown(node);
     }
 
-    visitVariableDeclarationList(node: ts.Node) {
+    visitVariableDeclarationList(node: ts.VariableDeclarationList) {
         return this.visitUnknown(node);
     }
 
-    visitFunctionDeclaration(node: ts.Node) {
+    visitFunctionDeclaration(node: ts.FunctionDeclaration) {
         return this.visitUnknown(node);
     }
 
-    visitInterfaceDeclaration(node: ts.Node) {
+    visitInterfaceDeclaration(node: ts.InterfaceDeclaration) {
         return this.visitUnknown(node);
     }
 
-    visitTypeAliasDeclaration(node: ts.Node) {
+    visitTypeAliasDeclaration(node: ts.TypeAliasDeclaration) {
         return this.visitUnknown(node);
     }
 
-    visitEnumDeclaration(node: ts.Node) {
+    visitEnumDeclaration(node: ts.EnumDeclaration) {
         return this.visitUnknown(node);
     }
 
-    visitModuleDeclaration(node: ts.Node) {
+    visitModuleDeclaration(node: ts.ModuleDeclaration) {
         return this.visitUnknown(node);
     }
 
-    visitModuleBlock(node: ts.Node) {
+    visitModuleBlock(node: ts.ModuleBlock) {
         return this.visitUnknown(node);
     }
 
-    visitCaseBlock(node: ts.Node) {
+    visitCaseBlock(node: ts.CaseBlock) {
         return this.visitUnknown(node);
     }
 
-    visitNamespaceExportDeclaration(node: ts.Node) {
+    visitNamespaceExportDeclaration(node: ts.NamespaceExportDeclaration) {
         return this.visitUnknown(node);
     }
 
-    visitImportEqualsDeclaration(node: ts.Node) {
+    visitImportEqualsDeclaration(node: ts.ImportEqualsDeclaration) {
         return this.visitUnknown(node);
     }
 
-    visitImportDeclaration(node: ts.Node) {
+    visitImportDeclaration(node: ts.ImportDeclaration) {
         return this.visitUnknown(node);
     }
 
-    visitImportClause(node: ts.Node) {
+    visitImportClause(node: ts.ImportClause) {
         return this.visitUnknown(node);
     }
 
-    visitNamespaceImport(node: ts.Node) {
+    visitNamespaceImport(node: ts.NamespaceImport) {
         return this.visitUnknown(node);
     }
 
-    visitNamedImports(node: ts.Node) {
+    visitNamedImports(node: ts.NamedImports) {
         return this.visitUnknown(node);
     }
 
-    visitImportSpecifier(node: ts.Node) {
+    visitImportSpecifier(node: ts.ImportSpecifier) {
         return this.visitUnknown(node);
     }
 
-    visitExportAssignment(node: ts.Node) {
+    visitExportAssignment(node: ts.ExportAssignment) {
         return this.visitUnknown(node);
     }
 
-    visitExportDeclaration(node: ts.Node) {
+    visitExportDeclaration(node: ts.ExportDeclaration) {
         return this.visitUnknown(node);
     }
 
-    visitNamedExports(node: ts.Node) {
+    visitNamedExports(node: ts.NamedExports) {
         return this.visitUnknown(node);
     }
 
-    visitNamespaceExport(node: ts.Node) {
+    visitNamespaceExport(node: ts.NamespaceExport) {
         return this.visitUnknown(node);
     }
 
-    visitExportSpecifier(node: ts.Node) {
+    visitExportSpecifier(node: ts.ExportSpecifier) {
         return this.visitUnknown(node);
     }
 
-    visitMissingDeclaration(node: ts.Node) {
+    visitMissingDeclaration(node: ts.MissingDeclaration) {
         return this.visitUnknown(node);
     }
 
-    visitExternalModuleReference(node: ts.Node) {
+    visitExternalModuleReference(node: ts.ExternalModuleReference) {
         return this.visitUnknown(node);
     }
 
-    visitJsxElement(node: ts.Node) {
+    visitJsxElement(node: ts.JsxElement) {
         return this.visitUnknown(node);
     }
 
-    visitJsxSelfClosingElement(node: ts.Node) {
+    visitJsxSelfClosingElement(node: ts.JsxSelfClosingElement) {
         return this.visitUnknown(node);
     }
 
-    visitJsxOpeningElement(node: ts.Node) {
+    visitJsxOpeningElement(node: ts.JsxOpeningElement) {
         return this.visitUnknown(node);
     }
 
-    visitJsxClosingElement(node: ts.Node) {
+    visitJsxClosingElement(node: ts.JsxClosingElement) {
         return this.visitUnknown(node);
     }
 
-    visitJsxFragment(node: ts.Node) {
+    visitJsxFragment(node: ts.JsxFragment) {
         return this.visitUnknown(node);
     }
 
-    visitJsxOpeningFragment(node: ts.Node) {
+    visitJsxOpeningFragment(node: ts.JsxOpeningFragment) {
         return this.visitUnknown(node);
     }
 
-    visitJsxClosingFragment(node: ts.Node) {
+    visitJsxClosingFragment(node: ts.JsxClosingFragment) {
         return this.visitUnknown(node);
     }
 
-    visitJsxAttribute(node: ts.Node) {
+    visitJsxAttribute(node: ts.JsxAttribute) {
         return this.visitUnknown(node);
     }
 
-    visitJsxAttributes(node: ts.Node) {
+    visitJsxAttributes(node: ts.JsxAttributes) {
         return this.visitUnknown(node);
     }
 
-    visitJsxSpreadAttribute(node: ts.Node) {
+    visitJsxSpreadAttribute(node: ts.JsxSpreadAttribute) {
         return this.visitUnknown(node);
     }
 
-    visitJsxExpression(node: ts.Node) {
+    visitJsxExpression(node: ts.JsxExpression) {
         return this.visitUnknown(node);
     }
 
-    visitJsxNamespacedName(node: ts.Node) {
+    visitJsxNamespacedName(node: ts.JsxNamespacedName) {
         return this.visitUnknown(node);
     }
 
-    visitCaseClause(node: ts.Node) {
+    visitCaseClause(node: ts.CaseClause) {
         return this.visitUnknown(node);
     }
 
-    visitDefaultClause(node: ts.Node) {
+    visitDefaultClause(node: ts.DefaultClause) {
         return this.visitUnknown(node);
     }
 
-    visitHeritageClause(node: ts.Node) {
+    visitHeritageClause(node: ts.HeritageClause) {
         return this.visitUnknown(node);
     }
 
-    visitCatchClause(node: ts.Node) {
+    visitCatchClause(node: ts.CatchClause) {
         return this.visitUnknown(node);
     }
 
-    visitImportAttributes(node: ts.Node) {
+    visitImportAttributes(node: ts.ImportAttributes) {
         return this.visitUnknown(node);
     }
 
-    visitImportAttribute(node: ts.Node) {
+    visitImportAttribute(node: ts.ImportAttribute) {
         return this.visitUnknown(node);
     }
 
-    visitPropertyAssignment(node: ts.Node) {
+    visitPropertyAssignment(node: ts.PropertyAssignment) {
         return this.visitUnknown(node);
     }
 
-    visitShorthandPropertyAssignment(node: ts.Node) {
+    visitShorthandPropertyAssignment(node: ts.ShorthandPropertyAssignment) {
         return this.visitUnknown(node);
     }
 
-    visitSpreadAssignment(node: ts.Node) {
+    visitSpreadAssignment(node: ts.SpreadAssignment) {
         return this.visitUnknown(node);
     }
 
-    visitEnumMember(node: ts.Node) {
+    visitEnumMember(node: ts.EnumMember) {
         return this.visitUnknown(node);
     }
 
-    visitSourceFile(node: ts.Node) {
+    visitSourceFile(node: ts.SourceFile) {
         return this.visitUnknown(node);
     }
 
-    visitBundle(node: ts.Node) {
+    visitBundle(node: ts.Bundle) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocTypeExpression(node: ts.Node) {
+    visitJSDocTypeExpression(node: ts.JSDocTypeExpression) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocNameReference(node: ts.Node) {
+    visitJSDocNameReference(node: ts.JSDocNameReference) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocMemberName(node: ts.Node) {
+    visitJSDocMemberName(node: ts.JSDocMemberName) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocAllType(node: ts.Node) {
+    visitJSDocAllType(node: ts.JSDocAllType) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocUnknownType(node: ts.Node) {
+    visitJSDocUnknownType(node: ts.JSDocUnknownType) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocNullableType(node: ts.Node) {
+    visitJSDocNullableType(node: ts.JSDocNullableType) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocNonNullableType(node: ts.Node) {
+    visitJSDocNonNullableType(node: ts.JSDocNonNullableType) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocOptionalType(node: ts.Node) {
+    visitJSDocOptionalType(node: ts.JSDocOptionalType) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocFunctionType(node: ts.Node) {
+    visitJSDocFunctionType(node: ts.JSDocFunctionType) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocVariadicType(node: ts.Node) {
+    visitJSDocVariadicType(node: ts.JSDocVariadicType) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocNamepathType(node: ts.Node) {
+    visitJSDocNamepathType(node: ts.JSDocNamepathType) {
         return this.visitUnknown(node);
     }
 
-    visitJSDoc(node: ts.Node) {
+    visitJSDoc(node: ts.JSDoc) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocType(node: ts.Node) {
+    visitJSDocType(node: ts.JSDocType) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocText(node: ts.Node) {
+    visitJSDocText(node: ts.JSDocText) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocTypeLiteral(node: ts.Node) {
+    visitJSDocTypeLiteral(node: ts.JSDocTypeLiteral) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocSignature(node: ts.Node) {
+    visitJSDocSignature(node: ts.JSDocSignature) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocLink(node: ts.Node) {
+    visitJSDocLink(node: ts.JSDocLink) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocLinkCode(node: ts.Node) {
+    visitJSDocLinkCode(node: ts.JSDocLinkCode) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocLinkPlain(node: ts.Node) {
+    visitJSDocLinkPlain(node: ts.JSDocLinkPlain) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocTag(node: ts.Node) {
+    visitJSDocTag(node: ts.JSDocTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocAugmentsTag(node: ts.Node) {
+    visitJSDocAugmentsTag(node: ts.JSDocAugmentsTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocImplementsTag(node: ts.Node) {
+    visitJSDocImplementsTag(node: ts.JSDocImplementsTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocAuthorTag(node: ts.Node) {
+    visitJSDocAuthorTag(node: ts.JSDocAuthorTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocDeprecatedTag(node: ts.Node) {
+    visitJSDocDeprecatedTag(node: ts.JSDocDeprecatedTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocClassTag(node: ts.Node) {
+    visitJSDocClassTag(node: ts.JSDocClassTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocPublicTag(node: ts.Node) {
+    visitJSDocPublicTag(node: ts.JSDocPublicTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocPrivateTag(node: ts.Node) {
+    visitJSDocPrivateTag(node: ts.JSDocPrivateTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocProtectedTag(node: ts.Node) {
+    visitJSDocProtectedTag(node: ts.JSDocProtectedTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocReadonlyTag(node: ts.Node) {
+    visitJSDocReadonlyTag(node: ts.JSDocReadonlyTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocOverrideTag(node: ts.Node) {
+    visitJSDocOverrideTag(node: ts.JSDocOverrideTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocCallbackTag(node: ts.Node) {
+    visitJSDocCallbackTag(node: ts.JSDocCallbackTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocOverloadTag(node: ts.Node) {
+    visitJSDocOverloadTag(node: ts.JSDocOverloadTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocEnumTag(node: ts.Node) {
+    visitJSDocEnumTag(node: ts.JSDocEnumTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocParameterTag(node: ts.Node) {
+    visitJSDocParameterTag(node: ts.JSDocParameterTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocReturnTag(node: ts.Node) {
+    visitJSDocReturnTag(node: ts.JSDocReturnTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocThisTag(node: ts.Node) {
+    visitJSDocThisTag(node: ts.JSDocThisTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocTypeTag(node: ts.Node) {
+    visitJSDocTypeTag(node: ts.JSDocTypeTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocTemplateTag(node: ts.Node) {
+    visitJSDocTemplateTag(node: ts.JSDocTemplateTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocTypedefTag(node: ts.Node) {
+    visitJSDocTypedefTag(node: ts.JSDocTypedefTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocSeeTag(node: ts.Node) {
+    visitJSDocSeeTag(node: ts.JSDocSeeTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocPropertyTag(node: ts.Node) {
+    visitJSDocPropertyTag(node: ts.JSDocPropertyTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocThrowsTag(node: ts.Node) {
+    visitJSDocThrowsTag(node: ts.JSDocThrowsTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocSatisfiesTag(node: ts.Node) {
+    visitJSDocSatisfiesTag(node: ts.JSDocSatisfiesTag) {
         return this.visitUnknown(node);
     }
 
-    visitJSDocImportTag(node: ts.Node) {
+    visitJSDocImportTag(node: ts.JSDocImportTag) {
         return this.visitUnknown(node);
     }
 
-    visitSyntaxList(node: ts.Node) {
+    visitSyntaxList(node: ts.SyntaxList) {
         return this.visitUnknown(node);
     }
 
-    visitNotEmittedStatement(node: ts.Node) {
+    visitNotEmittedStatement(node: ts.NotEmittedStatement) {
         return this.visitUnknown(node);
     }
 
-    visitPartiallyEmittedExpression(node: ts.Node) {
+    visitPartiallyEmittedExpression(node: ts.PartiallyEmittedExpression) {
         return this.visitUnknown(node);
     }
 
-    visitCommaListExpression(node: ts.Node) {
+    visitCommaListExpression(node: ts.CommaListExpression) {
         return this.visitUnknown(node);
     }
 
     visitSyntheticReferenceExpression(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitCount(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstAssignment(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastAssignment(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstCompoundAssignment(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastCompoundAssignment(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstReservedWord(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastReservedWord(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastKeyword(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstFutureReservedWord(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastFutureReservedWord(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstTypeNode(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastTypeNode(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstPunctuation(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastPunctuation(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstTriviaToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastTriviaToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstLiteralToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastLiteralToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstTemplateToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastTemplateToken(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstBinaryOperator(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastBinaryOperator(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstStatement(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastStatement(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstNode(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstJSDocNode(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastJSDocNode(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitFirstJSDocTagNode(node: ts.Node) {
-        return this.visitUnknown(node);
-    }
-
-    visitLastJSDocTagNode(node: ts.Node) {
         return this.visitUnknown(node);
     }
 }
