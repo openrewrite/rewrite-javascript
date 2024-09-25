@@ -13,3 +13,12 @@ To be able to make changes to both these projects and make sure that they work t
    1. For `openrewrite/rewrite-javascript` run `npm link @openrewrite/rewrite-remote`
    2. For `moderneinc/rewrite-remote` run `npm link @openrewrite/rewrite`
 4. Now you are basically all set. As the tests read the production source files from `dist` instead of `src` it is recommended to have `tsc --watch` running which you can do using `npm run dev`
+
+For development it is recommended to open the `openrewrite` subdirectory as a project in WebStorm.
+
+## Running Tests
+
+The parser tests typically use LST remoting to print the LST back to text in order to verify the print idempotence.
+In order to get this working the Java remoting server must already be running.
+Start the Java remoting server directly from IntelliJ IDEA (`rewrite-javascript` repo) by running the shared `RemotingServer` configuration.
+Now it should be possible to run the Jest tests from the terminal or from the WebStorm IDE.
