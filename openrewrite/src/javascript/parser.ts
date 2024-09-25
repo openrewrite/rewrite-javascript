@@ -4,6 +4,7 @@ import {Comment, JavaType, JRightPadded, Space, TextComment} from '../java/tree'
 import * as JS from './tree';
 import {ExecutionContext, Markers, ParseError, Parser, ParserInput, randomId, SourceFile} from "../core";
 import {Semicolon} from "../java";
+import {FalseLiteral, NullLiteral, TrueLiteral} from "typescript";
 
 export class JavaScriptParser extends Parser {
 
@@ -173,10 +174,22 @@ export class JavaScriptParserVisitor {
     }
 
     visitNumericLiteral(node: ts.NumericLiteral) {
-        return this.mapLiteral(node, node.text) // FIXME value not in AST
+        return this.mapLiteral(node, node.text); // FIXME value not in AST
     }
 
-    private mapLiteral(node: ts.LiteralExpression, value: any) {
+    visitTrueKeyword(node: ts.TrueLiteral) {
+        return this.mapLiteral(node, true);
+    }
+
+    visitFalseKeyword(node: ts.FalseLiteral) {
+        return this.mapLiteral(node, false);
+    }
+
+    visitNullKeyword(node: ts.NullLiteral) {
+        return this.mapLiteral(node, null);
+    }
+
+    private mapLiteral(node: ts.LiteralExpression | TrueLiteral | FalseLiteral | NullLiteral, value: any): J.Literal {
         return new J.Literal(
             randomId(),
             this.prefix(node),
@@ -1026,6 +1039,10 @@ export class JavaScriptParserVisitor {
                 return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
             }
             return JavaType.Primitive.of(JavaType.PrimitiveKind.Void);
+        } else if (node.kind == ts.SyntaxKind.TrueKeyword || node.kind == ts.SyntaxKind.FalseKeyword) {
+            return JavaType.Primitive.of(JavaType.PrimitiveKind.Boolean);
+        } else if (node.kind == ts.SyntaxKind.NullKeyword) {
+            return JavaType.Primitive.of(JavaType.PrimitiveKind.Null);
         }
         return JavaType.Unknown.INSTANCE;
     }
