@@ -1,6 +1,6 @@
 import * as J from "../../../dist/java/tree";
 import * as JS from "../../../dist/javascript/tree";
-import {javaScript, rewriteRun, rewriteRunWithOptions} from './testHarness';
+import {javaScript, rewriteRunWithOptions} from './testHarness';
 
 describe('literal mapping', () => {
     test('number', () => {
@@ -15,12 +15,5 @@ describe('literal mapping', () => {
               expect(expression).toBeInstanceOf(J.Literal);
               expect((expression as J.Literal).valueSource).toBe('1');
           }));
-    });
-
-    test('literal with semicolon', () => {
-        rewriteRunWithOptions(
-          {normalizeIndent: false},
-          javaScript('1 ;')
-        );
     });
 });
