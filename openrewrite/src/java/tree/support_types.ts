@@ -113,10 +113,10 @@ export class Space {
         return new Space(comments, whitespace);
     }
 
-    static format(formatting: string, beginIndex: number, toIndex: number): Space {
-        if (beginIndex == toIndex) {
+    static format(formatting: string, beginIndex: number = 0, toIndex: number = formatting.length): Space {
+        if (beginIndex === toIndex) {
             return Space.EMPTY;
-        } else if (toIndex == beginIndex + 1 && formatting[beginIndex] === ' ') {
+        } else if (toIndex === beginIndex + 1 && formatting[beginIndex] === ' ') {
             return Space.SINGLE_SPACE;
         }
 
@@ -131,7 +131,7 @@ export class Space {
         while (i < toIndex && (formatting[i] === ' ' || formatting[i] === '\t' || formatting[i] === '\n' || formatting[i] === '\r')) {
             i++;
         }
-        let whitespaceEnd = i;  // Capture end of leading whitespace
+        let whitespaceEnd = i; // Capture end of leading whitespace
 
         // Step 2: Parse comments
         while (i < toIndex) {
@@ -142,12 +142,12 @@ export class Space {
                 commentStart = i + 2;  // Skip the "//"
                 i += 2;
                 while (i < toIndex && formatting[i] !== '\n' && formatting[i] !== '\r') {
-                    i++;  // Continue until end of line or end of input
+                    i++; // Continue until end of line or end of input
                 }
                 commentEnd = i;
-                suffixStart = i;  // Capture newline as suffix
-                while (i < toIndex && (formatting[i] === '\n' || formatting[i] === '\r')) {
-                    i++;
+                suffixStart = i;  // Start of suffix
+                while (i < toIndex && (formatting[i] === ' ' || formatting[i] === '\t' || formatting[i] === '\n' || formatting[i] === '\r')) {
+                    i++; // Capture any trailing whitespace after comment
                 }
                 const commentText = formatting.slice(commentStart, commentEnd);
                 const suffix = formatting.slice(suffixStart, i);
@@ -158,20 +158,20 @@ export class Space {
                 commentStart = i + 2;  // Skip the "/*"
                 i += 2;
                 while (i + 1 < toIndex && !(formatting[i] === '*' && formatting[i + 1] === '/')) {
-                    i++;  // Continue until "*/" or end of input
+                    i++; // Continue until "*/" or end of input
                 }
                 commentEnd = i;  // Position before */
-                i += 2;  // Skip the closing "*/"
+                i += 2; // Skip the closing "*/"
 
                 suffixStart = i;
                 while (i < toIndex && (formatting[i] === ' ' || formatting[i] === '\t' || formatting[i] === '\n' || formatting[i] === '\r')) {
-                    i++;  // Capture any trailing whitespace after comment
+                    i++; // Capture any trailing whitespace after comment
                 }
                 const commentText = formatting.slice(commentStart, commentEnd);
                 const suffix = formatting.slice(suffixStart, i);
                 comments.push(new TextComment(true, commentText, suffix, Markers.EMPTY));
             } else {
-                i++;  // Skip non-comment characters
+                i++; // Skip non-comment characters
             }
         }
 
