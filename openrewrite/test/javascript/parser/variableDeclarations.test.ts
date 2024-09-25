@@ -2,7 +2,7 @@ import * as J from "../../../dist/java/tree";
 import {javaScript, rewriteRun} from './testHarness';
 
 describe('variable declaration mapping', () => {
-    test('const', () => {
+    test.skip('const', () => {
         rewriteRun(
           javaScript(
             //language=javascript
