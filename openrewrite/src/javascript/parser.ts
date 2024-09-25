@@ -202,35 +202,35 @@ export class JavaScriptParserVisitor {
     }
 
     visitBigIntLiteral(node: ts.BigIntLiteral) {
-        return this.mapLiteral(node, node.text) // FIXME value not in AST
+        return this.mapLiteral(node, node.text); // FIXME value not in AST
     }
 
     visitStringLiteral(node: ts.StringLiteral) {
-        return this.mapLiteral(node, node.text) // FIXME value not in AST
+        return this.mapLiteral(node, node.text); // FIXME value not in AST
     }
 
     visitJsxText(node: ts.JsxText) {
-        return this.visitUnknown(node)
+        return this.visitUnknown(node);
     }
 
     visitRegularExpressionLiteral(node: ts.RegularExpressionLiteral) {
-        return this.visitUnknown(node)
+        return this.mapLiteral(node, node.text); // FIXME value not in AST
     }
 
     visitNoSubstitutionTemplateLiteral(node: ts.NoSubstitutionTemplateLiteral) {
-        return this.visitUnknown(node)
+        return this.mapLiteral(node, node.text); // FIXME value not in AST
     }
 
     visitTemplateHead(node: ts.TemplateHead) {
-        return this.visitUnknown(node)
+        return this.visitUnknown(node);
     }
 
     visitTemplateMiddle(node: ts.TemplateMiddle) {
-        return this.visitUnknown(node)
+        return this.visitUnknown(node);
     }
 
     visitTemplateTail(node: ts.TemplateTail) {
-        return this.visitUnknown(node)
+        return this.visitUnknown(node);
     }
 
     visitIdentifier(node: ts.Identifier) {
@@ -310,7 +310,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitTypeReference(node: ts.TypeReferenceNode) {
-        return this.visitUnknown(node)
+        return this.visitUnknown(node);
     }
 
     visitFunctionType(node: ts.FunctionTypeNode) {
@@ -1035,7 +1035,7 @@ export class JavaScriptParserVisitor {
         if (ts.isLiteralExpression(node)) {
             if (ts.isNumericLiteral(node)) {
                 return JavaType.Primitive.of(JavaType.PrimitiveKind.Int);
-            } else if (ts.isStringLiteral(node)) {
+            } else if (ts.isStringLiteral(node) || ts.isRegularExpressionLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
                 return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
             }
             return JavaType.Primitive.of(JavaType.PrimitiveKind.Void);
