@@ -173,23 +173,27 @@ export class JavaScriptParserVisitor {
     }
 
     visitNumericLiteral(node: ts.NumericLiteral) {
+        return this.mapLiteral(node, node.text) // FIXME value not in AST
+    }
+
+    private mapLiteral(node: ts.LiteralExpression, value: any) {
         return new J.Literal(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            node.text, // FIXME value not in AST
-            node.text,
+            value,
+            node.getText(),
             null,
             this.mapType(node) as JavaType.Primitive
         );
     }
 
     visitBigIntLiteral(node: ts.BigIntLiteral) {
-        return this.visitUnknown(node)
+        return this.mapLiteral(node, node.text) // FIXME value not in AST
     }
 
     visitStringLiteral(node: ts.StringLiteral) {
-        return this.visitUnknown(node)
+        return this.mapLiteral(node, node.text) // FIXME value not in AST
     }
 
     visitJsxText(node: ts.JsxText) {
@@ -1016,7 +1020,12 @@ export class JavaScriptParserVisitor {
 
     private mapType(node: ts.Expression): JavaType | null {
         if (ts.isLiteralExpression(node)) {
-            return JavaType.Primitive.of(JavaType.PrimitiveKind.Int);
+            if (ts.isNumericLiteral(node)) {
+                return JavaType.Primitive.of(JavaType.PrimitiveKind.Int);
+            } else if (ts.isStringLiteral(node)) {
+                return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
+            }
+            return JavaType.Primitive.of(JavaType.PrimitiveKind.Void);
         }
         return JavaType.Unknown.INSTANCE;
     }

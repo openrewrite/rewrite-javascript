@@ -14,6 +14,49 @@ export interface RewriteTestOptions {
 
 export type SourceSpec = (options: RewriteTestOptions) => void;
 
+let client: net.Socket;
+let remoting: RemotingContext;
+
+export async function connect(): Promise<RemotingContext> {
+    return new Promise((resolve, reject) => {
+        SenderContext.register(JS.isJavaScript, () => new JavaScriptSender());
+        ReceiverContext.register(JS.isJavaScript, () => new JavaScriptReceiver());
+        deser.register();
+
+        client = new net.Socket();
+        client.connect(65432, 'localhost');
+
+        client.once('error', (err) => reject(err));
+        client.once('connect', () => {
+            remoting = new RemotingContext();
+            remoting.connect(client);
+            PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
+            resolve(remoting);
+        });
+        client.setTimeout(10000, () => {
+            client.destroy();
+            reject(new Error('Connection timed out'));
+        });
+    });
+}
+
+export async function disconnect(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        if (client) {
+            client.end();
+            client.destroy();
+            client.once('close', resolve);
+            client.once('error', reject);
+            if (remoting) {
+                remoting.close();
+            }
+        } else {
+            resolve();
+        }
+    });
+}
+
+
 export function rewriteRun(...sourceSpecs: SourceSpec[]) {
     rewriteRunWithOptions({}, ...sourceSpecs);
 }
@@ -38,31 +81,7 @@ export function javaScript(before: string, spec?: (sourceFile: JS.CompilationUni
 }
 
 function print(parsed: SourceFile) {
-    SenderContext.register(JS.isJavaScript, () => new JavaScriptSender());
-    ReceiverContext.register(JS.isJavaScript, () => new JavaScriptReceiver());
-    deser.register();
-
-    const client = new net.Socket();
-
-    client.on('error', (err) => {
-        console.error('Socket error:', err);
-    });
-
-    // Connect to the server
-    client.connect(65432, 'localhost');
-
-    const remoting = new RemotingContext();
-
-    try {
-        remoting.connect(client);
-        remoting.reset();
-        remoting.client?.reset();
-        PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
-
-        return parsed.print(new Cursor(null, Cursor.ROOT_VALUE), new PrintOutputCapture(0));
-    } finally {
-        client.end();
-        client.destroy();
-        remoting.close();
-    }
+    remoting.reset();
+    remoting.client?.reset();
+    return parsed.print(new Cursor(null, Cursor.ROOT_VALUE), new PrintOutputCapture(0));
 }

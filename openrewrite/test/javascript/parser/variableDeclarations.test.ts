@@ -1,7 +1,10 @@
 import * as J from "../../../dist/java/tree";
-import {javaScript, rewriteRun, rewriteRunWithOptions} from '../testHarness';
+import {connect, disconnect, javaScript, rewriteRun, rewriteRunWithOptions} from '../testHarness';
 
 describe('variable declaration mapping', () => {
+    beforeAll(() => connect());
+    afterAll(() => disconnect());
+
     test('const', () => {
         rewriteRunWithOptions(
           { validatePrintIdempotence: false},

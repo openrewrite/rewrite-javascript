@@ -1,6 +1,9 @@
-import {javaScript, rewriteRunWithOptions} from '../testHarness';
+import {connect, disconnect, javaScript, rewriteRunWithOptions} from '../testHarness';
 
 describe('expression statement mapping', () => {
+    beforeAll(() => connect());
+    afterAll(() => disconnect());
+
     test('literal with semicolon', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},

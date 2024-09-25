@@ -318,7 +318,6 @@ export class FileAttributes {
 }
 
 export function isSourceFile(tree: any & Tree): tree is SourceFile {
-    // return 'sourcePath' in tree && 'printer' in tree;
     return !!tree.constructor.isSourceFile;
 }
 

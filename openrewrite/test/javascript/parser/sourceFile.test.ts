@@ -1,6 +1,9 @@
-import {javaScript, rewriteRunWithOptions} from '../testHarness';
+import {connect, disconnect, javaScript, rewriteRunWithOptions} from '../testHarness';
 
 describe('source file mapping', () => {
+    beforeAll(() => connect());
+    afterAll(() => disconnect());
+
     test('whitespace after last statement', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
