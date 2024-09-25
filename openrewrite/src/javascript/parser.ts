@@ -122,7 +122,7 @@ export class JavaScriptParserVisitor {
             null,
             [],
             this.semicolonPaddedStatementList(node),
-            Space.EMPTY
+            this.prefix(node.endOfFileToken)
         );
     }
 
@@ -1003,13 +1003,13 @@ export class JavaScriptParserVisitor {
 
         const nodeStart = node.getFullStart();
         const span: TextSpan = [nodeStart, node.getStart()];
-        var idx = binarySearch(this._seenTriviaSpans, span, compareTextSpans);
+        let idx = binarySearch(this._seenTriviaSpans, span, compareTextSpans);
         if (idx >= 0)
             return Space.EMPTY;
         idx = ~idx;
         if (idx > 0 && this._seenTriviaSpans[idx - 1][1] > span[0])
             return Space.EMPTY;
-        this._seenTriviaSpans = binaryInsert(this._seenTriviaSpans, span, compareTextSpans);
+        this._seenTriviaSpans.splice(idx, 0, span);
         return prefixFromNode(node, this.sourceFile);
         // return Space.format(this.sourceFile.text, node.getFullStart(), node.getFullStart() + node.getLeadingTriviaWidth());
     }
@@ -1176,24 +1176,4 @@ function binarySearch<T>(arr: T[], target: T, compare: (a: T, b: T) => number) {
         }
     }
     return -1;  // Element not found
-}
-
-function binaryInsert<T>(arr: T[], value: T, compare: (a: T, b: T) => number) {
-    let low = 0;
-    let high = arr.length;
-
-    // Find the correct position using binary search logic
-    while (low < high) {
-        const mid = Math.floor((low + high) / 2);
-
-        if (compare(arr[mid], value) < 0) {
-            low = mid + 1;  // Value should go to the right half
-        } else {
-            high = mid;  // Value should go to the left half
-        }
-    }
-
-    // Insert the value at the found index
-    arr.splice(low, 0, value);
-    return arr;
 }

@@ -29,7 +29,8 @@ export function javaScript(before: string, spec?: (sourceFile: JS.CompilationUni
         const normalizeIndent = options.normalizeIndent === undefined || options.normalizeIndent;
         const [sourceFile] = parser.parseStrings(normalizeIndent ? dedent(before) : before) as Iterable<JS.CompilationUnit>;
         if (options.validatePrintIdempotence === undefined || options.validatePrintIdempotence) {
-            expect(print(sourceFile)).toBe(before);
+            let printed = print(sourceFile);
+            expect(printed).toBe(before);
         }
         if (spec) {
             spec(sourceFile);

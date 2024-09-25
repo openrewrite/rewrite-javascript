@@ -6,7 +6,7 @@ describe('literal mapping', () => {
     test('number', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript('1', sourceFile => {
+          javaScript(' 1', sourceFile => {
               expect(sourceFile).toBeDefined();
               expect(sourceFile.statements).toHaveLength(1);
               let statement = sourceFile.statements[0];
