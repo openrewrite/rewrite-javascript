@@ -3,7 +3,7 @@ import * as JS from "../../../dist/javascript/tree";
 import {connect, disconnect, javaScript, rewriteRunWithOptions} from '../testHarness';
 import {JavaType} from "../../../dist/java/tree";
 
-describe('literal mapping', () => {
+describe('identifier mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 

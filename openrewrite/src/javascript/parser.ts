@@ -4,7 +4,6 @@ import {Comment, JavaType, JRightPadded, Space, TextComment} from '../java/tree'
 import * as JS from './tree';
 import {ExecutionContext, Markers, ParseError, Parser, ParserInput, randomId, SourceFile} from "../core";
 import {Semicolon} from "../java";
-import {FalseLiteral, NullLiteral, TrueLiteral} from "typescript";
 
 export class JavaScriptParser extends Parser {
 
@@ -189,7 +188,7 @@ export class JavaScriptParserVisitor {
         return this.mapLiteral(node, null);
     }
 
-    private mapLiteral(node: ts.LiteralExpression | TrueLiteral | FalseLiteral | NullLiteral, value: any): J.Literal {
+    private mapLiteral(node: ts.LiteralExpression | ts.TrueLiteral | ts.FalseLiteral | ts.NullLiteral, value: any): J.Literal {
         return new J.Literal(
             randomId(),
             this.prefix(node),
@@ -234,17 +233,24 @@ export class JavaScriptParserVisitor {
     }
 
     visitIdentifier(node: ts.Identifier) {
+        return this.mapIdentifier(node, node.text);
+    }
+
+    private mapIdentifier(node: ts.PrimaryExpression, name: string) {
         let type = this.mapType(node);
         return new J.Identifier(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
             [], // FIXME decorators
-            node.text,
+            name,
             type instanceof JavaType.Variable ? type.type : type,
             type instanceof JavaType.Variable ? type : null
         )
-        return this.visitUnknown(node);
+    }
+
+    visitThisKeyword(node: ts.ThisExpression) {
+        return this.mapIdentifier(node, 'this');
     }
 
     visitPrivateIdentifier(node: ts.PrivateIdentifier) {
