@@ -1053,88 +1053,12 @@ function prefixFromNode(node: ts.Node, sourceFile: ts.SourceFile): Space {
 
     // Step 3: Extract leading whitespace (before the first comment)
     let whitespace = '';
-    if (leadingWhitespacePos > node.getFullStart()) {
-        whitespace = text.slice(node.getFullStart(), leadingWhitespacePos);
+    if (leadingWhitespacePos > nodeStart) {
+        whitespace = text.slice(nodeStart, leadingWhitespacePos);
     }
 
     // Step 4: Return the Space object with comments and leading whitespace
     return new Space(comments, whitespace.length > 0 ? whitespace : null);
-}
-
-function getPreviousSibling(node: ts.Node): ts.Node | null {
-    const parent = node.parent;
-    if (!parent) {
-        return null;
-    }
-
-    function findContainingSyntaxList(node: ts.Node): ts.SyntaxList | null {
-        const parent = node.parent;
-        if (!parent) {
-            return null;
-        }
-
-        const children = parent.getChildren();
-        for (const child of children) {
-            if (child.kind == ts.SyntaxKind.SyntaxList && child.getChildren().includes(node)) {
-                return child as ts.SyntaxList;
-            }
-        }
-
-        return null;
-    }
-
-    const syntaxList = findContainingSyntaxList(node);
-
-    if (syntaxList) {
-        const children = syntaxList.getChildren();
-        const nodeIndex = children.indexOf(node);
-
-        if (nodeIndex === -1) {
-            throw new Error('Node not found among SyntaxList\'s children.');
-        }
-
-        // If the node is the first child in the SyntaxList, recursively check the parent's previous sibling
-        if (nodeIndex === 0) {
-            const parentPreviousSibling = getPreviousSibling(parent);
-            if (!parentPreviousSibling) {
-                return null;
-            }
-
-            // Return the last child of the parent's previous sibling
-            const parentSyntaxList = findContainingSyntaxList(parentPreviousSibling);
-            if (parentSyntaxList) {
-                const siblings = parentSyntaxList.getChildren();
-                return siblings[siblings.length - 1] || null;
-            } else {
-                return parentPreviousSibling;
-            }
-        }
-
-        // Otherwise, return the previous sibling in the SyntaxList
-        return children[nodeIndex - 1];
-    }
-
-    const parentChildren = parent.getChildren();
-    const nodeIndex = parentChildren.indexOf(node);
-
-    if (nodeIndex === -1) {
-        throw new Error('Node not found among parent\'s children.');
-    }
-
-    // If the node is the first child, recursively check the parent's previous sibling
-    if (nodeIndex === 0) {
-        const parentPreviousSibling = getPreviousSibling(parent);
-        if (!parentPreviousSibling) {
-            return null;
-        }
-
-        // Return the last child of the parent's previous sibling
-        const siblings = parentPreviousSibling.getChildren();
-        return siblings[siblings.length - 1] || null;
-    }
-
-    // Otherwise, return the previous sibling
-    return parentChildren[nodeIndex - 1];
 }
 
 function compareTextSpans(span1: TextSpan, span2: TextSpan) {
