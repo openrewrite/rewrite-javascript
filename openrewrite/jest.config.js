@@ -3,6 +3,10 @@ module.exports = {
   testEnvironment: 'node',
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  moduleNameMapper: {
+    '^@openrewrite/rewrite/(.*)$': '<rootDir>/dist/$1',
+    '^@openrewrite/rewrite-remote(.*)$': '<rootDir>/node_modules/@openrewrite/rewrite-remote$1'
+  },
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
       tsconfig: 'tsconfig.test.json', // Adjust if your tsconfig file is named or located differently

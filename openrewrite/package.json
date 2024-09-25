@@ -30,6 +30,7 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "@openrewrite/rewrite-remote": "^1.0.0"
   }
 }
