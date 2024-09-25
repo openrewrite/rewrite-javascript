@@ -234,6 +234,16 @@ export class JavaScriptParserVisitor {
     }
 
     visitIdentifier(node: ts.Identifier) {
+        let type = this.mapType(node);
+        return new J.Identifier(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [], // FIXME decorators
+            node.text,
+            type instanceof JavaType.Variable ? type.type : type,
+            type instanceof JavaType.Variable ? type : null
+        )
         return this.visitUnknown(node);
     }
 

@@ -20,17 +20,17 @@ export function visitRightPadded<P, T>(v: JavaScriptVisitor<P>, right: JRightPad
 }
 
 export function visitJsSpace<P>(v: JavaScriptVisitor<P>, space: Space | null, loc: JsSpace.Location, p: P): Space {
-    throw new Error("Not yet implemented!");
+    return visitSpace(v, space, Space.Location.LANGUAGE_EXTENSION, p);
 }
 
 export function visitJsLeftPadded<P, T>(v: JavaScriptVisitor<P>, left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P): JLeftPadded<T> {
-    throw new Error("Not yet implemented!");
+    return visitLeftPadded(v, left, JLeftPadded.Location.LANGUAGE_EXTENSION, p);
 }
 
 export function visitJsRightPadded<P, T>(v: JavaScriptVisitor<P>, right: JRightPadded<T> | null, loc: JsRightPadded.Location, p: P): JRightPadded<T> {
-    throw new Error("Not yet implemented!");
+    return visitRightPadded(v, right, JRightPadded.Location.LANGUAGE_EXTENSION, p);
 }
 
 export function visitJsContainer<P, T>(v: JavaScriptVisitor<P>, container: JContainer<T> | null, loc: JsContainer.Location, p: P): JContainer<T> {
-    throw new Error("Not yet implemented!");
+    return visitContainer(v, container, JContainer.Location.LANGUAGE_EXTENSION, p);
 }

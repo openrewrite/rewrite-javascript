@@ -1,15 +1,17 @@
 import {Cursor, PrinterFactory, PrintOutputCapture, SourceFile} from '../../dist/core';
+import * as J from "../../dist/java/tree";
 import * as JS from "../../dist/javascript/tree";
 import dedent from "dedent";
 import {ReceiverContext, RemotePrinterFactory, RemotingContext, SenderContext} from "@openrewrite/rewrite-remote";
 import * as deser from "@openrewrite/rewrite-remote/java/serializers";
 import {JavaScriptReceiver, JavaScriptSender} from "@openrewrite/rewrite-remote/javascript";
 import net from "net";
-import {JavaScriptParser} from "../../dist/javascript";
+import {JavaScriptParser, JavaScriptVisitor} from "../../dist/javascript";
 
 export interface RewriteTestOptions {
     normalizeIndent?: boolean
     validatePrintIdempotence?: boolean
+    allowUnknowns?: boolean
 }
 
 export type SourceSpec = (options: RewriteTestOptions) => void;
@@ -70,6 +72,18 @@ const parser = JavaScriptParser.builder().build();
 export function javaScript(before: string, spec?: (sourceFile: JS.CompilationUnit) => void): SourceSpec {
     return (options: RewriteTestOptions) => {
         const [sourceFile] = parser.parseStrings(options.normalizeIndent ?? true ? dedent(before) : before) as Iterable<JS.CompilationUnit>;
+        if (!(options.allowUnknowns ?? false)) {
+            let unknowns: J.Unknown[] = [];
+            new class extends JavaScriptVisitor<number> {
+                visitUnknown(unknown: J.Unknown, p: number): J.J | null {
+                    unknowns.push(unknown);
+                    return unknown;
+                }
+            }().visit(sourceFile, 0);
+            if (unknowns.length != 0) {
+                throw new Error("No J.Unknown instances were expected: " + unknowns.map(u => u.source.text));
+            }
+        }
         if (options.validatePrintIdempotence ?? true) {
             let printed = print(sourceFile);
             expect(printed).toBe(before);

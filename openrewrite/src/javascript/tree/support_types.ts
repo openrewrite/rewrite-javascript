@@ -29,6 +29,7 @@ export function isJavaScript(tree: any): tree is JS {
 export function JSMixin<TBase extends Constructor<Object>>(Base: TBase) {
     abstract class JSMixed extends Base implements JS {
         static isTree = true;
+        static isJava = true;
         static isJavaScript = true;
 
         abstract get prefix(): Space;
