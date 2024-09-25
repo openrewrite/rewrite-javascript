@@ -1,4 +1,4 @@
-import {javaScript, rewriteRunWithOptions} from './testHarness';
+import {javaScript, rewriteRunWithOptions} from '../testHarness';
 
 describe('expression statement mapping', () => {
     test('literal with semicolon', () => {

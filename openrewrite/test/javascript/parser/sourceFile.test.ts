@@ -1,4 +1,4 @@
-import {javaScript, rewriteRunWithOptions} from './testHarness';
+import {javaScript, rewriteRunWithOptions} from '../testHarness';
 
 describe('source file mapping', () => {
     test('whitespace after last statement', () => {

@@ -1,11 +1,11 @@
-import {Cursor, PrinterFactory, PrintOutputCapture, SourceFile} from '../../../dist/core';
-import * as JS from "../../../dist/javascript/tree";
+import {Cursor, PrinterFactory, PrintOutputCapture, SourceFile} from '../../dist/core';
+import * as JS from "../../dist/javascript/tree";
 import dedent from "dedent";
 import {ReceiverContext, RemotePrinterFactory, RemotingContext, SenderContext} from "@openrewrite/rewrite-remote";
 import * as deser from "@openrewrite/rewrite-remote/java/serializers";
 import {JavaScriptReceiver, JavaScriptSender} from "@openrewrite/rewrite-remote/javascript";
 import net from "net";
-import {JavaScriptParser} from "../../../dist/javascript";
+import {JavaScriptParser} from "../../dist/javascript";
 
 export interface RewriteTestOptions {
     normalizeIndent?: boolean

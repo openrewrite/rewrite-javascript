@@ -1,6 +1,6 @@
 import * as J from "../../../dist/java/tree";
 import * as JS from "../../../dist/javascript/tree";
-import {javaScript, rewriteRunWithOptions} from './testHarness';
+import {javaScript, rewriteRunWithOptions} from '../testHarness';
 
 describe('literal mapping', () => {
     test('number', () => {

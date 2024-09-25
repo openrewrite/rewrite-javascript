@@ -1,5 +1,5 @@
 import * as J from "../../../dist/java/tree";
-import {javaScript, rewriteRun, rewriteRunWithOptions} from './testHarness';
+import {javaScript, rewriteRun, rewriteRunWithOptions} from '../testHarness';
 
 describe('variable declaration mapping', () => {
     test('const', () => {
