@@ -994,6 +994,9 @@ export class JavaScriptParserVisitor {
     }
 
     private mapType(node: ts.Expression): JavaType | null {
+        if (ts.isLiteralExpression(node)) {
+            return JavaType.Primitive.of(JavaType.PrimitiveKind.Int);
+        }
         return JavaType.Unknown.INSTANCE;
     }
 }

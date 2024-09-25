@@ -21,6 +21,31 @@ export namespace JavaType {
 
     @LstType("org.openrewrite.java.tree.JavaType$Primitive")
     export class Primitive implements JavaType {
+        public constructor(private readonly _kind: PrimitiveKind) {
+        }
+
+        static of(kind: PrimitiveKind): Primitive {
+            return new Primitive(kind);
+        }
+
+        get kind(): PrimitiveKind {
+            return this._kind;
+        }
+    }
+
+    export enum PrimitiveKind {
+        Boolean,
+        Byte,
+        Char,
+        Double,
+        Float,
+        Int,
+        Long,
+        Short,
+        Void,
+        String,
+        None,
+        Null,
     }
 
     @LstType("org.openrewrite.java.tree.JavaType$Variable")
