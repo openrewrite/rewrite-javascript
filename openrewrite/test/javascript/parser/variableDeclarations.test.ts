@@ -1,9 +1,10 @@
 import * as J from "../../../dist/java/tree";
-import {javaScript, rewriteRun} from './testHarness';
+import {javaScript, rewriteRun, rewriteRunWithOptions} from './testHarness';
 
 describe('variable declaration mapping', () => {
-    test.skip('const', () => {
-        rewriteRun(
+    test('const', () => {
+        rewriteRunWithOptions(
+          { validatePrintIdempotence: false},
           javaScript(
             //language=javascript
             `

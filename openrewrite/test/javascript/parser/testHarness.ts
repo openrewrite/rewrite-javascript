@@ -7,18 +7,28 @@ import {JavaScriptReceiver, JavaScriptSender} from "@openrewrite/rewrite-remote/
 import net from "net";
 import {JavaScriptParser} from "../../../dist/javascript";
 
-export type SourceSpec = () => void;
+export interface RewriteTestOptions {
+    validatePrintIdempotence?: boolean
+}
+
+export type SourceSpec = (options: RewriteTestOptions) => void;
 
 export function rewriteRun(...sourceSpecs: SourceSpec[]) {
-    sourceSpecs.forEach(sourceSpec => sourceSpec());
+    rewriteRunWithOptions({}, ...sourceSpecs);
+}
+
+export function rewriteRunWithOptions(options: RewriteTestOptions, ...sourceSpecs: SourceSpec[]) {
+    sourceSpecs.forEach(sourceSpec => sourceSpec(options));
 }
 
 const parser = JavaScriptParser.builder().build();
 
 export function javaScript(before: string, spec?: (sourceFile: JS.CompilationUnit) => void): SourceSpec {
-    return () => {
+    return (options: RewriteTestOptions) => {
         const [sourceFile] = parser.parseStrings(dedent(before)) as Iterable<JS.CompilationUnit>;
-        expect(print(sourceFile)).toBe(before);
+        if (options.validatePrintIdempotence === undefined || options.validatePrintIdempotence) {
+            expect(print(sourceFile)).toBe(before);
+        }
         if (spec) {
             spec(sourceFile);
         }
