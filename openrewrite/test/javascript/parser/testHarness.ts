@@ -26,9 +26,8 @@ const parser = JavaScriptParser.builder().build();
 
 export function javaScript(before: string, spec?: (sourceFile: JS.CompilationUnit) => void): SourceSpec {
     return (options: RewriteTestOptions) => {
-        const normalizeIndent = options.normalizeIndent === undefined || options.normalizeIndent;
-        const [sourceFile] = parser.parseStrings(normalizeIndent ? dedent(before) : before) as Iterable<JS.CompilationUnit>;
-        if (options.validatePrintIdempotence === undefined || options.validatePrintIdempotence) {
+        const [sourceFile] = parser.parseStrings(options.normalizeIndent ?? true ? dedent(before) : before) as Iterable<JS.CompilationUnit>;
+        if (options.validatePrintIdempotence ?? true) {
             let printed = print(sourceFile);
             expect(printed).toBe(before);
         }
