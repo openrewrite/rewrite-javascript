@@ -13,8 +13,10 @@ describe('expression statement mapping', () => {
           javaScript(
             //language=ts
             `
-                1 ; // foo
-                2 ;`
+                1; // foo
+                // bar
+                /*baz*/
+                2;`
           )
         );
     });

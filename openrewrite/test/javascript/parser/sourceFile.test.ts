@@ -4,7 +4,13 @@ describe('source file mapping', () => {
     test('whitespace after last statement', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript('1 ; // comment')
+          javaScript(
+            //language=typescript
+            `
+                1; /* comment 1 */
+                // comment 2
+            `
+          )
         );
     });
 });
