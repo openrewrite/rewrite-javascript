@@ -1,10 +1,11 @@
 import * as J from "../../../dist/java/tree";
 import * as JS from "../../../dist/javascript/tree";
-import {javaScript, rewriteRun} from './testHarness';
+import {javaScript, rewriteRun, rewriteRunWithOptions} from './testHarness';
 
 describe('literal mapping', () => {
-    test('parse number', () => {
-        rewriteRun(
+    test('number', () => {
+        rewriteRunWithOptions(
+          {normalizeIndent: false},
           javaScript('1', sourceFile => {
               expect(sourceFile).toBeDefined();
               expect(sourceFile.statements).toHaveLength(1);
@@ -14,5 +15,12 @@ describe('literal mapping', () => {
               expect(expression).toBeInstanceOf(J.Literal);
               expect((expression as J.Literal).valueSource).toBe('1');
           }));
+    });
+
+    test('literal with semicolon', () => {
+        rewriteRunWithOptions(
+          {normalizeIndent: false},
+          javaScript('1 ;')
+        );
     });
 });

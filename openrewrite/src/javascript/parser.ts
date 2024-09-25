@@ -3,6 +3,7 @@ import * as J from '../java/tree';
 import {Comment, JavaType, JRightPadded, Space, TextComment} from '../java/tree';
 import * as JS from './tree';
 import {ExecutionContext, Markers, ParseError, Parser, ParserInput, randomId, SourceFile} from "../core";
+import {Semicolon} from "../java";
 
 export class JavaScriptParser extends Parser {
 
@@ -93,6 +94,8 @@ for (const [key, value] of Object.entries(ts.SyntaxKind)) {
     }
 }
 
+type TextSpan = [number, number];
+
 // noinspection JSUnusedGlobalSymbols
 export class JavaScriptParserVisitor {
     constructor(private readonly sourceFile: ts.SourceFile, private readonly typeChecker: ts.TypeChecker) {
@@ -118,9 +121,16 @@ export class JavaScriptParserVisitor {
             false,
             null,
             [],
-            this.rightPaddedList(node.statements, this.semicolonPrefix),
+            this.semicolonPaddedStatementList(node),
             Space.EMPTY
         );
+    }
+
+    private semicolonPaddedStatementList(node: ts.SourceFile) {
+        return this.rightPaddedList(node.statements, this.semicolonPrefix, n => {
+            const last = n.getLastToken();
+            return last?.kind == ts.SyntaxKind.SemicolonToken ? Markers.EMPTY.withMarkers([new Semicolon(randomId())]) : Markers.EMPTY;
+        });
     }
 
     visitUnknown(node: ts.Node) {
@@ -141,12 +151,12 @@ export class JavaScriptParserVisitor {
         return [];
     }
 
-    private rightPaddedList<N extends ts.Node, T extends J.J>(nodes: ts.NodeArray<N>, trailing?: (node: N) => Space) {
+    private rightPaddedList<N extends ts.Node, T extends J.J>(nodes: ts.NodeArray<N>, trailing?: (node: N) => Space, markers?: (node: N) => Markers) {
         return nodes.map(n => {
             return new JRightPadded<T>(
                 this.visit(n) as T,
                 trailing ? trailing(n) : Space.EMPTY,
-                Markers.EMPTY
+                markers ? markers(n) : Markers.EMPTY
             );
         });
     }
@@ -984,11 +994,22 @@ export class JavaScriptParserVisitor {
         return this.visitUnknown(node);
     }
 
-    private prefix(node: ts.Node) {
-        if (node.getLeadingTriviaWidth(this.sourceFile) == 0) {
+    private _seenTriviaSpans: TextSpan[] = [];
+
+    private prefix(node: ts.Node): Space {
+        if (node.getFullStart() == node.getStart()) {
             return Space.EMPTY;
         }
-        // FIXME either mark ranges as consumed or implement cursor tracking
+
+        const nodeStart = node.getFullStart();
+        const span: TextSpan = [nodeStart, node.getStart()];
+        var idx = binarySearch(this._seenTriviaSpans, span, compareTextSpans);
+        if (idx >= 0)
+            return Space.EMPTY;
+        idx = ~idx;
+        if (idx > 0 && this._seenTriviaSpans[idx - 1][1] > span[0])
+            return Space.EMPTY;
+        this._seenTriviaSpans = binaryInsert(this._seenTriviaSpans, span, compareTextSpans);
         return prefixFromNode(node, this.sourceFile);
         // return Space.format(this.sourceFile.text, node.getFullStart(), node.getFullStart() + node.getLeadingTriviaWidth());
     }
@@ -1006,6 +1027,8 @@ function prefixFromNode(node: ts.Node, sourceFile: ts.SourceFile): Space {
     const text = sourceFile.getFullText();
     const nodeStart = node.getFullStart();
 
+    // FIXME merge with whitespace from previous sibling
+    // let previousSibling = getPreviousSibling(node);
     let leadingWhitespacePos = node.getStart();
 
     // Step 1: Use forEachLeadingCommentRange to extract comments
@@ -1036,4 +1059,141 @@ function prefixFromNode(node: ts.Node, sourceFile: ts.SourceFile): Space {
 
     // Step 4: Return the Space object with comments and leading whitespace
     return new Space(comments, whitespace.length > 0 ? whitespace : null);
+}
+
+function getPreviousSibling(node: ts.Node): ts.Node | null {
+    const parent = node.parent;
+    if (!parent) {
+        return null;
+    }
+
+    function findContainingSyntaxList(node: ts.Node): ts.SyntaxList | null {
+        const parent = node.parent;
+        if (!parent) {
+            return null;
+        }
+
+        const children = parent.getChildren();
+        for (const child of children) {
+            if (child.kind == ts.SyntaxKind.SyntaxList && child.getChildren().includes(node)) {
+                return child as ts.SyntaxList;
+            }
+        }
+
+        return null;
+    }
+
+    const syntaxList = findContainingSyntaxList(node);
+
+    if (syntaxList) {
+        const children = syntaxList.getChildren();
+        const nodeIndex = children.indexOf(node);
+
+        if (nodeIndex === -1) {
+            throw new Error('Node not found among SyntaxList\'s children.');
+        }
+
+        // If the node is the first child in the SyntaxList, recursively check the parent's previous sibling
+        if (nodeIndex === 0) {
+            const parentPreviousSibling = getPreviousSibling(parent);
+            if (!parentPreviousSibling) {
+                return null;
+            }
+
+            // Return the last child of the parent's previous sibling
+            const parentSyntaxList = findContainingSyntaxList(parentPreviousSibling);
+            if (parentSyntaxList) {
+                const siblings = parentSyntaxList.getChildren();
+                return siblings[siblings.length - 1] || null;
+            } else {
+                return parentPreviousSibling;
+            }
+        }
+
+        // Otherwise, return the previous sibling in the SyntaxList
+        return children[nodeIndex - 1];
+    }
+
+    const parentChildren = parent.getChildren();
+    const nodeIndex = parentChildren.indexOf(node);
+
+    if (nodeIndex === -1) {
+        throw new Error('Node not found among parent\'s children.');
+    }
+
+    // If the node is the first child, recursively check the parent's previous sibling
+    if (nodeIndex === 0) {
+        const parentPreviousSibling = getPreviousSibling(parent);
+        if (!parentPreviousSibling) {
+            return null;
+        }
+
+        // Return the last child of the parent's previous sibling
+        const siblings = parentPreviousSibling.getChildren();
+        return siblings[siblings.length - 1] || null;
+    }
+
+    // Otherwise, return the previous sibling
+    return parentChildren[nodeIndex - 1];
+}
+
+function compareTextSpans(span1: TextSpan, span2: TextSpan) {
+    // First, compare the first elements
+    if (span1[0] < span2[0]) {
+        return -1;
+    }
+    if (span1[0] > span2[0]) {
+        return 1;
+    }
+
+    // If the first elements are equal, compare the second elements
+    if (span1[1] < span2[1]) {
+        return -1;
+    }
+    if (span1[1] > span2[1]) {
+        return 1;
+    }
+
+    // If both elements are equal, the tuples are considered equal
+    return 0;
+}
+
+function binarySearch<T>(arr: T[], target: T, compare: (a: T, b: T) => number) {
+    let low = 0;
+    let high = arr.length - 1;
+
+    while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+
+        const comparison = compare(arr[mid], target);
+
+        if (comparison === 0) {
+            return mid;  // Element found, return index
+        } else if (comparison < 0) {
+            low = mid + 1;  // Search the right half
+        } else {
+            high = mid - 1;  // Search the left half
+        }
+    }
+    return -1;  // Element not found
+}
+
+function binaryInsert<T>(arr: T[], value: T, compare: (a: T, b: T) => number) {
+    let low = 0;
+    let high = arr.length;
+
+    // Find the correct position using binary search logic
+    while (low < high) {
+        const mid = Math.floor((low + high) / 2);
+
+        if (compare(arr[mid], value) < 0) {
+            low = mid + 1;  // Value should go to the right half
+        } else {
+            high = mid;  // Value should go to the left half
+        }
+    }
+
+    // Insert the value at the found index
+    arr.splice(low, 0, value);
+    return arr;
 }
