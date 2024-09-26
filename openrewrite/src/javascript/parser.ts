@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import * as J from '../java/tree';
-import {Comment, Expression, JavaType, JContainer, JRightPadded, Space, TextComment} from '../java/tree';
+import {Comment, Expression, JavaType, JContainer, JLeftPadded, JRightPadded, Space, TextComment} from '../java/tree';
 import * as JS from './tree';
 import {
     ExecutionContext,
@@ -173,16 +173,20 @@ export class JavaScriptParserVisitor {
         return [];
     }
 
-    private rightPadded<T>(t: T, trailing?: Space, markers?: Markers) {
-        return new JRightPadded<T>(
-            t,
-            trailing ?? Space.EMPTY,
-            markers ?? Markers.EMPTY
-        );
+    private rightPadded<T>(t: T, trailing: Space, markers?: Markers) {
+        return new JRightPadded<T>(t, trailing, markers ?? Markers.EMPTY);
     }
 
-    private rightPaddedList<N extends ts.Node, T extends J.J>(nodes: ts.NodeArray<N>, trailing?: (node: N) => Space, markers?: (node: N) => Markers): JRightPadded<T>[] {
-        return nodes.map(n => this.rightPadded(this.convert(n), trailing?.(n), markers?.(n)));
+    private rightPaddedList<N extends ts.Node, T extends J.J>(nodes: ts.NodeArray<N>, trailing: (node: N) => Space, markers?: (node: N) => Markers): JRightPadded<T>[] {
+        return nodes.map(n => this.rightPadded(this.convert(n), trailing(n), markers?.(n)));
+    }
+
+    private leftPadded<T>(before: Space, t: T, markers?: Markers) {
+        return new JLeftPadded<T>(before, t, markers ?? Markers.EMPTY);
+    }
+
+    private leftPaddedList<N extends ts.Node, T extends J.J>(before: (node: N) => Space, nodes: ts.NodeArray<N>, markers?: (node: N) => Markers): JLeftPadded<T>[] {
+        return nodes.map(n => this.leftPadded(before(n), this.convert(n), markers?.(n)));
     }
 
     private semicolonPrefix = (n: ts.Node) => {
@@ -469,7 +473,14 @@ export class JavaScriptParserVisitor {
     }
 
     visitPropertyAccessExpression(node: ts.PropertyAccessExpression) {
-        return this.visitUnknown(node);
+        return new J.FieldAccess(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.expression),
+            this.leftPadded(this.prefix(node.getChildAt(1)), this.convert(node.name)),
+            this.mapType(node)
+        );
     }
 
     visitElementAccessExpression(node: ts.ElementAccessExpression) {

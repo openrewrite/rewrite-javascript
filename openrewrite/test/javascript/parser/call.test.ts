@@ -1,6 +1,6 @@
 import {connect, disconnect, javaScript, rewriteRun} from '../testHarness';
 
-describe('literal mapping', () => {
+describe('call mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 

@@ -1,6 +1,6 @@
 import {connect, disconnect, javaScript, rewriteRun} from '../testHarness';
 
-describe('parenthesis mapping', () => {
+describe('array literal mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 
