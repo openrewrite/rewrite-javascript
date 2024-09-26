@@ -2,7 +2,16 @@ import * as ts from 'typescript';
 import * as J from '../java/tree';
 import {Comment, Expression, JavaType, JContainer, JRightPadded, Space, TextComment} from '../java/tree';
 import * as JS from './tree';
-import {ExecutionContext, Markers, ParseError, Parser, ParserInput, randomId, SourceFile} from "../core";
+import {
+    ExecutionContext,
+    Markers,
+    ParseError,
+    ParseExceptionResult,
+    Parser,
+    ParserInput,
+    randomId,
+    SourceFile
+} from "../core";
 import {Semicolon, TrailingComma} from "../java";
 import {getNextSibling} from "./parserUtils";
 
@@ -39,7 +48,7 @@ export class JavaScriptParser extends Parser {
             const sourceFile = program.getSourceFile(input.path);
             if (sourceFile) {
                 try {
-                    result.push(new JavaScriptParserVisitor(sourceFile, typeChecker).visit(sourceFile) as SourceFile);
+                    result.push(new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile);
                 } catch (error) {
                     console.error(error);
                     result.push(ParseError.build(
@@ -99,7 +108,10 @@ type TextSpan = [number, number];
 
 // noinspection JSUnusedGlobalSymbols
 export class JavaScriptParserVisitor {
-    constructor(private readonly sourceFile: ts.SourceFile, private readonly typeChecker: ts.TypeChecker) {
+    constructor(
+        private readonly parser: Parser,
+        private readonly sourceFile: ts.SourceFile,
+        private readonly typeChecker: ts.TypeChecker) {
     }
 
     visit(node: ts.Node): any {
@@ -134,7 +146,7 @@ export class JavaScriptParserVisitor {
     private semicolonPaddedStatementList(node: ts.SourceFile) {
         return this.rightPaddedList(node.statements, this.semicolonPrefix, n => {
             const last = n.getLastToken();
-            return last?.kind == ts.SyntaxKind.SemicolonToken ? Markers.EMPTY.withMarkers([new Semicolon(randomId())]) : Markers.EMPTY;
+            return last?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY;
         });
     }
 
@@ -146,7 +158,12 @@ export class JavaScriptParserVisitor {
             new J.Unknown.Source(
                 randomId(),
                 Space.EMPTY,
-                Markers.EMPTY,
+                Markers.build([
+                    ParseExceptionResult.build(
+                        this.parser,
+                        new Error("Unsupported AST element: " + node)
+                    ).withTreeType(visitMethodMap.get(node.kind)!.substring(5))
+                ]),
                 node.getFullText()
             )
         );
@@ -1144,7 +1161,7 @@ export class JavaScriptParserVisitor {
                 args.push(this.rightPadded(
                     this.convert(argList.getChildAt(i)),
                     this.prefix(argList.getChildAt(i + 1)),
-                    last ? Markers.EMPTY.withMarkers([new TrailingComma(randomId(), this.prefix(nodes[2]))]) : Markers.EMPTY
+                    last ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[2]))]) : Markers.EMPTY
                 ));
             }
             if ((childCount & 1) === 1) {

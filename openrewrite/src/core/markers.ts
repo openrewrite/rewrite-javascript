@@ -32,6 +32,13 @@ export class Markers {
         this._markers = markers;
     }
 
+    static build(markers: Marker[]) {
+        if (markers.length === 0) {
+            return Markers.EMPTY;
+        }
+        return new Markers(randomId(), markers);
+    }
+
     public get id(): UUID {
         return this._id;
     }
@@ -107,19 +114,22 @@ export class ParseExceptionResult implements Marker {
     private readonly _exceptionType: string;
     private readonly _exceptionMessage: string;
     private readonly _message: string | null;
+    private readonly _treeType: string | null;
 
     constructor(
         id: UUID,
         parserType: string,
         exceptionType: string,
         exceptionMessage: string,
-        message: string | null
+        message: string | null,
+        treeType?: string | null
     ) {
         this._id = id;
         this._parserType = parserType;
         this._exceptionType = exceptionType;
         this._exceptionMessage = exceptionMessage;
         this._message = message;
+        this._treeType = treeType;
     }
 
     static build(parser: Parser, exception: Error): ParseExceptionResult {
@@ -142,7 +152,8 @@ export class ParseExceptionResult implements Marker {
             this._parserType,
             this._exceptionType,
             this._exceptionMessage,
-            this._message
+            this._message,
+            this._treeType
         );
     }
 
@@ -156,7 +167,8 @@ export class ParseExceptionResult implements Marker {
             parserType,
             this._exceptionType,
             this._exceptionMessage,
-            this._message
+            this._message,
+            this._treeType
         );
     }
 
@@ -170,7 +182,8 @@ export class ParseExceptionResult implements Marker {
             this._parserType,
             exceptionType,
             this._exceptionMessage,
-            this._message
+            this._message,
+            this._treeType
         );
     }
 
@@ -184,12 +197,13 @@ export class ParseExceptionResult implements Marker {
             this._parserType,
             this._exceptionType,
             exceptionMessage,
-            this._message
+            this._message,
+            this._treeType
         );
     }
 
-    get message(): string {
-        return this._message!;
+    get message(): string | null {
+        return this._message;
     }
 
     withMessage(message: string): ParseExceptionResult {
@@ -198,7 +212,23 @@ export class ParseExceptionResult implements Marker {
             this._parserType,
             this._exceptionType,
             this._exceptionMessage,
-            message
+            message,
+            this._treeType
+        );
+    }
+
+    get treeType(): string | null {
+        return this._treeType;
+    }
+
+    withTreeType(treeType: string) {
+        return treeType === this._treeType ? this : new ParseExceptionResult(
+            this._id,
+            this._parserType,
+            this._exceptionType,
+            this._exceptionMessage,
+            this._message,
+            this._treeType
         );
     }
 }
