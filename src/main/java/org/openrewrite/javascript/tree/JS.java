@@ -884,6 +884,7 @@ public interface JS extends J {
         }
 
         public enum Type {
+            As,
             IdentityEquals,
             IdentityNotEquals,
             In

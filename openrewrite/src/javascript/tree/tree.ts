@@ -962,9 +962,10 @@ export class JsBinary extends JSMixin(Object) implements Expression, TypedTree {
 
 export namespace JsBinary {
     export enum Type {
-            IdentityEquals = 0,
-            IdentityNotEquals = 1,
-            In = 2,
+            As = 0,
+            IdentityEquals = 1,
+            IdentityNotEquals = 2,
+            In = 3,
 
     }
 

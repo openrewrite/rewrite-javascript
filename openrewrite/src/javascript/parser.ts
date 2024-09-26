@@ -79,7 +79,7 @@ export class JavaScriptParser extends Parser {
     }
 
     sourcePathFromSourceText(prefix: string, sourceCode: string): string {
-        return prefix + "/source.js";
+        return prefix + "/source.ts";
     }
 
     static builder(): JavaScriptParser.Builder {
@@ -208,6 +208,14 @@ export class JavaScriptParserVisitor {
         return this.mapLiteral(node, true);
     }
 
+    visitNumberKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'number');
+    }
+
+    visitStringKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'string');
+    }
+
     visitFalseKeyword(node: ts.FalseLiteral) {
         return this.mapLiteral(node, false);
     }
@@ -264,7 +272,7 @@ export class JavaScriptParserVisitor {
         return this.mapIdentifier(node, node.text);
     }
 
-    private mapIdentifier(node: ts.PrimaryExpression, name: string) {
+    private mapIdentifier(node: ts.Node, name: string) {
         let type = this.mapType(node);
         return new J.Identifier(
             randomId(),
@@ -529,7 +537,18 @@ export class JavaScriptParserVisitor {
     }
 
     visitTypeAssertionExpression(node: ts.TypeAssertion) {
-        return this.visitUnknown(node);
+        return new J.TypeCast(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            new J.ControlParentheses(
+                randomId(),
+                this.prefix(node.getFirstToken()!),
+                Markers.EMPTY,
+                this.rightPadded(this.convert(node.type), this.prefix(node.getChildAt(2)))
+            ),
+            this.convert(node.expression)
+        );
     }
 
     visitParenthesizedExpression(node: ts.ParenthesizedExpression) {
@@ -606,7 +625,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitAsExpression(node: ts.AsExpression) {
-        return this.visitUnknown(node);
+        return new JS.JsBinary(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.expression),
+            this.leftPadded(this.prefix(node.getChildAt(1)), JS.JsBinary.Type.As),
+            this.convert(node.type),
+            this.mapType(node)
+        );
     }
 
     visitNonNullExpression(node: ts.NonNullExpression) {
@@ -1128,7 +1155,7 @@ export class JavaScriptParserVisitor {
         return this.prefix(getNextSibling(node)!);
     }
 
-    private mapType(node: ts.Expression): JavaType | null {
+    private mapType(node: ts.Node): JavaType | null {
         if (ts.isLiteralExpression(node)) {
             if (ts.isNumericLiteral(node)) {
                 return JavaType.Primitive.of(JavaType.PrimitiveKind.Int);

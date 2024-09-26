@@ -207,6 +207,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(binary.getLeft(), p);
         String keyword = "";
         switch (binary.getOperator()) {
+            case As:
+                keyword = "as";
+                break;
             case IdentityEquals:
                 keyword = "===";
                 break;
@@ -656,13 +659,25 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
+        public <T extends J> J visitControlParentheses(J.ControlParentheses<T> controlParens, PrintOutputCapture<P> p) {
+            beforeSyntax(controlParens, Space.Location.CONTROL_PARENTHESES_PREFIX, p);
+            if (getCursor().getParentTreeCursor().getValue() instanceof J.TypeCast) {
+                p.append('<');
+                visitRightPadded(controlParens.getPadding().getTree(), JRightPadded.Location.PARENTHESES, ">", p);
+            } else {
+                p.append('(');
+                visitRightPadded(controlParens.getPadding().getTree(), JRightPadded.Location.PARENTHESES, ")", p);
+            }
+            afterSyntax(controlParens, p);
+            return controlParens;
+        }
+
+        @Override
         public J visitTypeCast(J.TypeCast typeCast, PrintOutputCapture<P> p) {
             beforeSyntax(typeCast, Space.Location.TYPE_CAST_PREFIX, p);
 
+            visit(typeCast.getClazz(), p);
             visit(typeCast.getExpression(), p);
-            visitSpace(typeCast.getClazz().getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-            p.append("as");
-            visitRightPadded(typeCast.getClazz().getPadding().getTree(), JRightPadded.Location.NAMED_VARIABLE, p);
 
             afterSyntax(typeCast, p);
             return typeCast;

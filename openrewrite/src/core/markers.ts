@@ -129,7 +129,7 @@ export class ParseExceptionResult implements Marker {
         this._exceptionType = exceptionType;
         this._exceptionMessage = exceptionMessage;
         this._message = message;
-        this._treeType = treeType;
+        this._treeType = treeType ?? null;
     }
 
     static build(parser: Parser, exception: Error): ParseExceptionResult {

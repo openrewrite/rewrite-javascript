@@ -1,4 +1,12 @@
-import {Cursor, PrinterFactory, PrintOutputCapture, RecipeRunException, SourceFile} from '../../dist/core';
+import {
+    Cursor,
+    InMemoryExecutionContext,
+    ParserInput,
+    PrinterFactory,
+    PrintOutputCapture,
+    RecipeRunException,
+    SourceFile
+} from '../../dist/core';
 import * as J from "../../dist/java/tree";
 import * as JS from "../../dist/javascript/tree";
 import dedent from "dedent";
@@ -68,9 +76,18 @@ export function rewriteRunWithOptions(options: RewriteTestOptions, ...sourceSpec
 
 const parser = JavaScriptParser.builder().build();
 
-export function javaScript(before: string, spec?: (sourceFile: JS.CompilationUnit) => void): SourceSpec {
+function sourceFile(before: string, defaultPath: string, spec?: (sourceFile: JS.CompilationUnit) => void) {
     return (options: RewriteTestOptions) => {
-        const [sourceFile] = parser.parseStrings(options.normalizeIndent ?? true ? dedent(before) : before) as Iterable<JS.CompilationUnit>;
+        const ctx = new InMemoryExecutionContext();
+        const [sourceFile] = parser.parseInputs(
+          [new ParserInput(
+            defaultPath,
+            null,
+            true,
+            () => Buffer.from(options.normalizeIndent ?? true ? dedent(before) : before)
+          )],
+          null,
+          ctx) as Iterable<JS.CompilationUnit>;
         if (!(options.allowUnknowns ?? false)) {
             try {
                 let unknowns: J.Unknown[] = [];
@@ -95,6 +112,14 @@ export function javaScript(before: string, spec?: (sourceFile: JS.CompilationUni
             spec(sourceFile);
         }
     };
+}
+
+export function javaScript(before: string, spec?: (sourceFile: JS.CompilationUnit) => void): SourceSpec {
+    return sourceFile(before, 'test.js', spec);
+}
+
+export function typeScript(before: string, spec?: (sourceFile: JS.CompilationUnit) => void): SourceSpec {
+    return sourceFile(before, 'test.ts', spec);
 }
 
 function print(parsed: SourceFile) {
