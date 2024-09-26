@@ -7,7 +7,7 @@ describe('parenthesis mapping', () => {
     test('empty', () => {
         rewriteRun(
           //language=typescript
-          javaScript('[]')
+          javaScript('[ ]')
         );
     });
 

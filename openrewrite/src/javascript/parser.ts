@@ -111,6 +111,10 @@ export class JavaScriptParserVisitor {
         }
     }
 
+    convert<T extends J.J>(node: ts.Node): T {
+        return this.visit(node) as T;
+    }
+
     visitSourceFile(node: ts.SourceFile): JS.CompilationUnit {
         return new JS.CompilationUnit(
             randomId(),
@@ -152,16 +156,16 @@ export class JavaScriptParserVisitor {
         return [];
     }
 
-    private rightPadded<N extends ts.Node, T extends J.J>(node: N, trailing?: Space, markers?: Markers) {
+    private rightPadded<T>(t: T, trailing?: Space, markers?: Markers) {
         return new JRightPadded<T>(
-            this.visit(node) as T,
+            t,
             trailing ?? Space.EMPTY,
             markers ?? Markers.EMPTY
         );
     }
 
     private rightPaddedList<N extends ts.Node, T extends J.J>(nodes: ts.NodeArray<N>, trailing?: (node: N) => Space, markers?: (node: N) => Markers): JRightPadded<T>[] {
-        return nodes.map(n => this.rightPadded(n, trailing?.(n), markers?.(n)));
+        return nodes.map(n => this.rightPadded(this.convert(n), trailing?.(n), markers?.(n)));
     }
 
     private semicolonPrefix = (n: ts.Node) => {
@@ -257,7 +261,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitPrivateIdentifier(node: ts.PrivateIdentifier) {
-        return this.visitUnknown(node);
+        return this.mapIdentifier(node, node.text);
     }
 
     visitQualifiedName(node: ts.QualifiedName) {
@@ -456,7 +460,26 @@ export class JavaScriptParserVisitor {
     }
 
     visitCallExpression(node: ts.CallExpression) {
-        return this.visitUnknown(node);
+        const prefix = this.prefix(node);
+        let select: JRightPadded<Expression> | null;
+        let name: J.Identifier;
+        if (ts.isPropertyAccessExpression(node.expression)) {
+            select = this.rightPadded(this.convert<Expression>(node.expression.expression), this.prefix(node.expression.getChildAt(1)));
+            name = this.convert(node.expression.name);
+        } else {
+            select = null;
+            name = this.convert(node.expression);
+        }
+        return new J.MethodInvocation(
+            randomId(),
+            prefix,
+            Markers.EMPTY,
+            select,
+            null, // FIXME type parameters
+            name,
+            this.mapArguments(node.getChildren().slice(-3)),
+            this.mapMethodType(node)
+        );
     }
 
     visitNewExpression(node: ts.NewExpression) {
@@ -486,7 +509,7 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.rightPadded(node.expression, this.prefix(node.getLastToken()!))
+            this.rightPadded(this.convert(node.expression), this.prefix(node.getLastToken()!))
         )
     }
 
@@ -1108,18 +1131,27 @@ export class JavaScriptParserVisitor {
         let childCount = argList.getChildCount();
 
         const args: JRightPadded<Expression>[] = [];
-        for (let i = 0; i < childCount - 1; i += 2){
-            // FIXME right padding and trailing comma
-            const last = i === childCount - 2;
+        if (childCount === 0) {
             args.push(this.rightPadded(
-                argList.getChildAt(i),
-                this.prefix(argList.getChildAt(i + 1)),
-                last ? Markers.EMPTY.withMarkers([new TrailingComma(randomId(), this.prefix(nodes[2]))]) : Markers.EMPTY
+                new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY),
+                this.prefix(nodes[2]),
+                Markers.EMPTY
             ));
+        } else {
+            for (let i = 0; i < childCount - 1; i += 2) {
+                // FIXME right padding and trailing comma
+                const last = i === childCount - 2;
+                args.push(this.rightPadded(
+                    this.convert(argList.getChildAt(i)),
+                    this.prefix(argList.getChildAt(i + 1)),
+                    last ? Markers.EMPTY.withMarkers([new TrailingComma(randomId(), this.prefix(nodes[2]))]) : Markers.EMPTY
+                ));
+            }
+            if ((childCount & 1) === 1) {
+                args.push(this.rightPadded(this.convert(argList.getChildAt(childCount - 1)), this.prefix(nodes[2])));
+            }
         }
-        if ((childCount & 1) === 1) {
-            args.push(this.rightPadded(argList.getChildAt(childCount - 1), this.prefix(nodes[2])));
-        }
+
         return new JContainer(
             prefix,
             args,

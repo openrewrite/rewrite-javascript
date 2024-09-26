@@ -1,13 +1,18 @@
-import {connect, disconnect, javaScript, rewriteRunWithOptions} from '../testHarness';
+import {connect, disconnect, javaScript, rewriteRun} from '../testHarness';
 
 describe('literal mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 
     test('simple', () => {
-        rewriteRunWithOptions(
-          {normalizeIndent: false},
+        rewriteRun(
           javaScript('foo')
+        );
+    });
+
+    test('private', () => {
+        rewriteRun(
+          javaScript('#foo')
         );
     });
 });
