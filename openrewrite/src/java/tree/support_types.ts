@@ -476,6 +476,12 @@ export class JContainer<T> {
             }
         }
     }
+
+    private static readonly EMPTY = new JContainer(Space.EMPTY, [], Markers.EMPTY);
+
+    static empty<T>(): JContainer<T> {
+        return JContainer.EMPTY as JContainer<T>;
+    }
 }
 
 export namespace Space {

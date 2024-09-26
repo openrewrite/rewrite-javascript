@@ -1,9 +1,10 @@
 import * as ts from 'typescript';
 import * as J from '../java/tree';
-import {Comment, JavaType, JRightPadded, Space, TextComment} from '../java/tree';
+import {Comment, Expression, JavaType, JContainer, JRightPadded, Space, TextComment} from '../java/tree';
 import * as JS from './tree';
 import {ExecutionContext, Markers, ParseError, Parser, ParserInput, randomId, SourceFile} from "../core";
-import {Semicolon} from "../java";
+import {Semicolon, TrailingComma} from "../java";
+import {getNextSibling} from "./parserUtils";
 
 export class JavaScriptParser extends Parser {
 
@@ -451,7 +452,17 @@ export class JavaScriptParserVisitor {
     }
 
     visitNewExpression(node: ts.NewExpression) {
-        return this.visitUnknown(node);
+        return new J.NewClass(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            null,
+            Space.EMPTY,
+            this.visit(node.expression),
+            this.mapArguments(node.arguments ? node.getChildren().slice(2) : []),
+            null,
+            this.mapMethodType(node)
+        );
     }
 
     visitTaggedTemplateExpression(node: ts.TaggedTemplateExpression) {
@@ -1054,6 +1065,10 @@ export class JavaScriptParserVisitor {
         // return Space.format(this.sourceFile.text, node.getFullStart(), node.getFullStart() + node.getLeadingTriviaWidth());
     }
 
+    private suffix(node: ts.Node): Space {
+        return this.prefix(getNextSibling(node)!);
+    }
+
     private mapType(node: ts.Expression): JavaType | null {
         if (ts.isLiteralExpression(node)) {
             if (ts.isNumericLiteral(node)) {
@@ -1068,6 +1083,40 @@ export class JavaScriptParserVisitor {
             return JavaType.Primitive.of(JavaType.PrimitiveKind.Null);
         }
         return JavaType.Unknown.INSTANCE;
+    }
+
+    private mapMethodType(node: ts.Node): JavaType.Method | null {
+        // FIXME JavaType.Method
+        return null;
+    }
+
+    private mapArguments(nodes: ts.Node[]): JContainer<Expression> {
+        if (nodes.length === 0) {
+            return JContainer.empty();
+        }
+        const prefix = this.prefix(nodes[0]);
+
+        let argList = nodes[1] as ts.SyntaxList;
+        let childCount = argList.getChildCount();
+
+        const args: JRightPadded<Expression>[] = [];
+        for (let i = 0; i < childCount - 1; i += 2){
+            // FIXME right padding and trailing comma
+            const last = i === childCount - 2;
+            args.push(this.rightPadded(
+                argList.getChildAt(i),
+                this.prefix(argList.getChildAt(i + 1)),
+                last ? Markers.EMPTY.withMarkers([new TrailingComma(randomId(), this.prefix(nodes[2]))]) : Markers.EMPTY
+            ));
+        }
+        if ((childCount & 1) === 1) {
+            args.push(this.rightPadded(argList.getChildAt(childCount - 1), this.prefix(nodes[2])));
+        }
+        return new JContainer(
+            prefix,
+            args,
+            Markers.EMPTY
+        );
     }
 }
 
