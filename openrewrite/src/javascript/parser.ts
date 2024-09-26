@@ -432,7 +432,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitArrayLiteralExpression(node: ts.ArrayLiteralExpression) {
-        return this.visitUnknown(node);
+        return new J.NewArray(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            null,
+            [],
+            this.mapArguments(node.getChildren()),
+            this.mapType(node)
+        );
     }
 
     visitObjectLiteralExpression(node: ts.ObjectLiteralExpression) {
@@ -1090,7 +1098,7 @@ export class JavaScriptParserVisitor {
         return null;
     }
 
-    private mapArguments(nodes: ts.Node[]): JContainer<Expression> {
+    private mapArguments(nodes: readonly ts.Node[]): JContainer<Expression> {
         if (nodes.length === 0) {
             return JContainer.empty();
         }
