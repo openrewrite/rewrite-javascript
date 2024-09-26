@@ -1,4 +1,4 @@
-import {connect, disconnect, javaScript, rewriteRun} from '../testHarness';
+import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
 describe('literal mapping', () => {
     beforeAll(() => connect());
@@ -6,13 +6,13 @@ describe('literal mapping', () => {
 
     test('simple', () => {
         rewriteRun(
-          javaScript('foo')
+          typeScript('foo')
         );
     });
 
     test('private', () => {
         rewriteRun(
-          javaScript('#foo')
+          typeScript('#foo')
         );
     });
 });

@@ -1,7 +1,7 @@
 import * as J from "../../../dist/java/tree";
-import * as JS from "../../../dist/javascript/tree";
-import {connect, disconnect, javaScript, rewriteRunWithOptions} from '../testHarness';
 import {JavaType} from "../../../dist/java/tree";
+import * as JS from "../../../dist/javascript/tree";
+import {connect, disconnect, rewriteRunWithOptions, typeScript} from '../testHarness';
 
 describe('identifier mapping', () => {
     beforeAll(() => connect());
@@ -10,42 +10,42 @@ describe('identifier mapping', () => {
     test('number', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript(' 1', sourceFile => {
+          typeScript(' 1', sourceFile => {
               assertLiteralLst(sourceFile, '1', JavaType.PrimitiveKind.Int);
           }));
     });
     test('string', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript('"1"', sourceFile => {
+          typeScript('"1"', sourceFile => {
               assertLiteralLst(sourceFile, '"1"', JavaType.PrimitiveKind.String);
           }));
     });
     test('boolean', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript('true', sourceFile => {
+          typeScript('true', sourceFile => {
               assertLiteralLst(sourceFile, 'true', JavaType.PrimitiveKind.Boolean);
           }));
     });
     test('null', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript('null', sourceFile => {
+          typeScript('null', sourceFile => {
               assertLiteralLst(sourceFile, 'null', JavaType.PrimitiveKind.Null);
           }));
     });
     test('regex', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript('/hello/gi', sourceFile => {
+          typeScript('/hello/gi', sourceFile => {
               assertLiteralLst(sourceFile, '/hello/gi', JavaType.PrimitiveKind.String);
           }));
     });
     test('template without substitutions', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript('`hello!`', sourceFile => {
+          typeScript('`hello!`', sourceFile => {
               assertLiteralLst(sourceFile, '`hello!`', JavaType.PrimitiveKind.String);
           }));
     });

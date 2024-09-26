@@ -1,4 +1,4 @@
-import {connect, disconnect, javaScript, rewriteRun} from '../testHarness';
+import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
 describe('property access mapping', () => {
     beforeAll(() => connect());
@@ -7,14 +7,14 @@ describe('property access mapping', () => {
     test('with array literal receiver', () => {
         rewriteRun(
           //language=typescript
-          javaScript('[1] . length')
+          typeScript('[1] . length')
         );
     });
 
     test('with array literal receiver', () => {
         rewriteRun(
           //language=typescript
-          javaScript('foo . bar . baz')
+          typeScript('foo . bar . baz')
         );
     });
 });

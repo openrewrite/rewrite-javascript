@@ -1,4 +1,4 @@
-import {connect, disconnect, javaScript, rewriteRunWithOptions} from '../testHarness';
+import {connect, disconnect, rewriteRunWithOptions, typeScript} from '../testHarness';
 
 describe('source file mapping', () => {
     beforeAll(() => connect());
@@ -7,7 +7,7 @@ describe('source file mapping', () => {
     test('whitespace after last statement', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript(
+          typeScript(
             //language=typescript
             `
                 1; /* comment 1 */

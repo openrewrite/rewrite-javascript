@@ -1,4 +1,4 @@
-import {connect, disconnect, javaScript, rewriteRun} from '../testHarness';
+import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
 describe('call mapping', () => {
     beforeAll(() => connect());
@@ -7,35 +7,35 @@ describe('call mapping', () => {
     test('single', () => {
         rewriteRun(
           //language=typescript
-          javaScript('parseInt("42")')
+          typeScript('parseInt("42")')
         );
     });
 
     test('multiple', () => {
         rewriteRun(
           //language=typescript
-          javaScript('setTimeout(null, 2000, \'Hello\');')
+          typeScript('setTimeout(null, 2000, \'Hello\');')
         );
     });
 
     test('with array literal receiver', () => {
         rewriteRun(
           //language=typescript
-          javaScript('[1] . splice(0)')
+          typeScript('[1] . splice(0)')
         );
     });
 
     test('with call receiver', () => {
         rewriteRun(
           //language=typescript
-          javaScript('"1" . substring(0) . substring(0)')
+          typeScript('"1" . substring(0) . substring(0)')
         );
     });
 
     test('trailing comma', () => {
         rewriteRun(
           //language=typescript
-          javaScript('parseInt("42" , )')
+          typeScript('parseInt("42" , )')
         );
     });
 });

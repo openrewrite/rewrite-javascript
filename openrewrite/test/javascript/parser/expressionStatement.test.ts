@@ -1,4 +1,4 @@
-import {connect, disconnect, javaScript, rewriteRunWithOptions} from '../testHarness';
+import {connect, disconnect, rewriteRunWithOptions, typeScript} from '../testHarness';
 
 describe('expression statement mapping', () => {
     beforeAll(() => connect());
@@ -7,13 +7,13 @@ describe('expression statement mapping', () => {
     test('literal with semicolon', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript('1 ;')
+          typeScript('1 ;')
         );
     });
     test('multiple', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript(
+          typeScript(
             //language=ts
             `
                 1; // foo

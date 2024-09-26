@@ -1,4 +1,4 @@
-import {connect, disconnect, javaScript, rewriteRun} from '../testHarness';
+import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
 describe('array literal mapping', () => {
     beforeAll(() => connect());
@@ -7,28 +7,28 @@ describe('array literal mapping', () => {
     test('empty', () => {
         rewriteRun(
           //language=typescript
-          javaScript('[ ]')
+          typeScript('[ ]')
         );
     });
 
     test('single', () => {
         rewriteRun(
           //language=typescript
-          javaScript('[ 1 ]')
+          typeScript('[ 1 ]')
         );
     });
 
     test('two', () => {
         rewriteRun(
           //language=typescript
-          javaScript('[ 1 , 2 ]')
+          typeScript('[ 1 , 2 ]')
         );
     });
 
     test('trailing comma', () => {
         rewriteRun(
           //language=typescript
-          javaScript('[ 1 , 2 , ]')
+          typeScript('[ 1 , 2 , ]')
         );
     });
 });

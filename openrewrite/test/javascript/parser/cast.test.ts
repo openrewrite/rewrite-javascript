@@ -1,4 +1,4 @@
-import {connect, disconnect, javaScript, rewriteRun, typeScript} from '../testHarness';
+import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
 describe('cast mapping', () => {
     beforeAll(() => connect());

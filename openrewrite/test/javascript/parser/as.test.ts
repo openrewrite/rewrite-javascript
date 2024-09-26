@@ -1,4 +1,4 @@
-import {connect, disconnect, javaScript, rewriteRun} from '../testHarness';
+import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
 describe('as mapping', () => {
     beforeAll(() => connect());
@@ -7,7 +7,7 @@ describe('as mapping', () => {
     test('primitive type', () => {
         rewriteRun(
           //language=typescript
-          javaScript('1 as number')
+          typeScript('1 as number')
         );
     });
 });

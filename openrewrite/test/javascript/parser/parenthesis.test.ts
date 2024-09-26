@@ -1,4 +1,4 @@
-import {connect, disconnect, javaScript, rewriteRun} from '../testHarness';
+import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
 describe('parenthesis mapping', () => {
     beforeAll(() => connect());
@@ -6,13 +6,13 @@ describe('parenthesis mapping', () => {
 
     test('simple', () => {
         rewriteRun(
-          javaScript('(1)')
+          typeScript('(1)')
         );
     });
 
     test('space', () => {
         rewriteRun(
-          javaScript('( 1 )')
+          typeScript('( 1 )')
         );
     });
 });

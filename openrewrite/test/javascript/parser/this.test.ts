@@ -1,4 +1,4 @@
-import {connect, disconnect, javaScript, rewriteRunWithOptions} from '../testHarness';
+import {connect, disconnect, rewriteRunWithOptions, typeScript} from '../testHarness';
 
 describe('this mapping', () => {
     beforeAll(() => connect());
@@ -7,7 +7,7 @@ describe('this mapping', () => {
     test('simple', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          javaScript('this')
+          typeScript('this')
         );
     });
 });
