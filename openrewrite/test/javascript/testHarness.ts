@@ -1,4 +1,4 @@
-import {Cursor, PrinterFactory, PrintOutputCapture, SourceFile} from '../../dist/core';
+import {Cursor, PrinterFactory, PrintOutputCapture, RecipeRunException, SourceFile} from '../../dist/core';
 import * as J from "../../dist/java/tree";
 import * as JS from "../../dist/javascript/tree";
 import dedent from "dedent";
@@ -58,7 +58,6 @@ export async function disconnect(): Promise<void> {
     });
 }
 
-
 export function rewriteRun(...sourceSpecs: SourceSpec[]) {
     rewriteRunWithOptions({}, ...sourceSpecs);
 }
@@ -73,15 +72,19 @@ export function javaScript(before: string, spec?: (sourceFile: JS.CompilationUni
     return (options: RewriteTestOptions) => {
         const [sourceFile] = parser.parseStrings(options.normalizeIndent ?? true ? dedent(before) : before) as Iterable<JS.CompilationUnit>;
         if (!(options.allowUnknowns ?? false)) {
-            let unknowns: J.Unknown[] = [];
-            new class extends JavaScriptVisitor<number> {
-                visitUnknown(unknown: J.Unknown, p: number): J.J | null {
-                    unknowns.push(unknown);
-                    return unknown;
+            try {
+                let unknowns: J.Unknown[] = [];
+                new class extends JavaScriptVisitor<number> {
+                    visitUnknown(unknown: J.Unknown, p: number): J.J | null {
+                        unknowns.push(unknown);
+                        return unknown;
+                    }
+                }().visit(sourceFile, 0);
+                if (unknowns.length != 0) {
+                    throw new Error("No J.Unknown instances were expected: " + unknowns.map(u => u.source.text));
                 }
-            }().visit(sourceFile, 0);
-            if (unknowns.length != 0) {
-                throw new Error("No J.Unknown instances were expected: " + unknowns.map(u => u.source.text));
+            } catch (e) {
+                throw e instanceof RecipeRunException ? e.cause : e;
             }
         }
         if (options.validatePrintIdempotence ?? true) {

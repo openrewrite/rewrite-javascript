@@ -479,7 +479,7 @@ export class JContainer<T> {
 }
 
 export namespace Space {
-    export enum Location {
+    export const enum Location {
         ANY,
         ANNOTATED_TYPE_PREFIX,
         ANNOTATION_ARGUMENTS,

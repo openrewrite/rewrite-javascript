@@ -68,11 +68,19 @@ export class Recipe {
 
 export class RecipeRunException extends Error {
     private readonly _cause: Error;
-    private _cursor: Cursor | undefined;
+    private readonly _cursor?: Cursor;
 
     constructor(cause: Error, cursor?: Cursor) {
         super();
         this._cause = cause;
         this._cursor = cursor;
+    }
+
+    get cause(): Error {
+        return this._cause;
+    }
+
+    get cursor(): Cursor | undefined {
+        return this._cursor;
     }
 }

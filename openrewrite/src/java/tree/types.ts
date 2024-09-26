@@ -33,7 +33,7 @@ export namespace JavaType {
         }
     }
 
-    export enum PrimitiveKind {
+    export const enum PrimitiveKind {
         Boolean,
         Byte,
         Char,
