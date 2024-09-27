@@ -13,7 +13,7 @@ import {
     SourceFile
 } from "../core";
 import {Semicolon, TrailingComma} from "../java";
-import {getNextSibling} from "./parserUtils";
+import {binarySearch, compareTextSpans, getNextSibling, TextSpan} from "./parserUtils";
 
 export class JavaScriptParser extends Parser {
 
@@ -103,8 +103,6 @@ for (const [key, value] of Object.entries(ts.SyntaxKind)) {
         visitMethodMap.set(value, 'visit' + key);
     }
 }
-
-type TextSpan = [number, number];
 
 // noinspection JSUnusedGlobalSymbols
 export class JavaScriptParserVisitor {
@@ -606,7 +604,12 @@ export class JavaScriptParserVisitor {
     }
 
     visitVoidExpression(node: ts.VoidExpression) {
-        return this.visitUnknown(node);
+        return new JS.Void(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.expression)
+        );
     }
 
     visitAwaitExpression(node: ts.AwaitExpression) {
@@ -1001,6 +1004,11 @@ export class JavaScriptParserVisitor {
 
     visitImportEqualsDeclaration(node: ts.ImportEqualsDeclaration) {
         return this.visitUnknown(node);
+    }
+
+    visitImportKeyword(node: ts.ImportExpression) {
+        // this is used for dynamic imports as in `await import('foo')`
+        return this.mapIdentifier(node, 'import');
     }
 
     visitImportDeclaration(node: ts.ImportDeclaration) {
@@ -1488,45 +1496,4 @@ function prefixFromNode(node: ts.Node, sourceFile: ts.SourceFile): Space {
 
     // Step 4: Return the Space object with comments and leading whitespace
     return new Space(comments, whitespace.length > 0 ? whitespace : null);
-}
-
-function compareTextSpans(span1: TextSpan, span2: TextSpan) {
-    // First, compare the first elements
-    if (span1[0] < span2[0]) {
-        return -1;
-    }
-    if (span1[0] > span2[0]) {
-        return 1;
-    }
-
-    // If the first elements are equal, compare the second elements
-    if (span1[1] < span2[1]) {
-        return -1;
-    }
-    if (span1[1] > span2[1]) {
-        return 1;
-    }
-
-    // If both elements are equal, the tuples are considered equal
-    return 0;
-}
-
-function binarySearch<T>(arr: T[], target: T, compare: (a: T, b: T) => number) {
-    let low = 0;
-    let high = arr.length - 1;
-
-    while (low <= high) {
-        const mid = Math.floor((low + high) / 2);
-
-        const comparison = compare(arr[mid], target);
-
-        if (comparison === 0) {
-            return mid;  // Element found, return index
-        } else if (comparison < 0) {
-            low = mid + 1;  // Search the right half
-        } else {
-            high = mid - 1;  // Search the left half
-        }
-    }
-    return -1;  // Element not found
 }

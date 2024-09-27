@@ -51,9 +51,8 @@ export function getNextSibling(node: ts.Node): ts.Node | null {
             return null;
         }
 
-        // Return the last child of the parent's previous sibling
-        const siblings = parentNextSibling.getChildren();
-        return siblings[0] || null;
+        // Return the first child of the parent's next sibling
+        return parentNextSibling.getChildCount() > 0 ? parentNextSibling.getChildAt(0) : parentNextSibling;
     }
 
     // Otherwise, return the next sibling
@@ -112,8 +111,7 @@ export function getPreviousSibling(node: ts.Node): ts.Node | null {
         }
 
         // Return the last child of the parent's previous sibling
-        const siblings = parentPreviousSibling.getChildren();
-        return siblings[siblings.length - 1] || null;
+        return parentPreviousSibling.getChildCount() > 0 ? parentPreviousSibling.getLastToken()! : parentPreviousSibling;
     }
 
     // Otherwise, return the previous sibling
@@ -134,4 +132,47 @@ function findContainingSyntaxList(node: ts.Node): ts.SyntaxList | null {
     }
 
     return null;
+}
+
+export type TextSpan = [number, number];
+
+export function compareTextSpans(span1: TextSpan, span2: TextSpan) {
+    // First, compare the first elements
+    if (span1[0] < span2[0]) {
+        return -1;
+    }
+    if (span1[0] > span2[0]) {
+        return 1;
+    }
+
+    // If the first elements are equal, compare the second elements
+    if (span1[1] < span2[1]) {
+        return -1;
+    }
+    if (span1[1] > span2[1]) {
+        return 1;
+    }
+
+    // If both elements are equal, the tuples are considered equal
+    return 0;
+}
+
+export function binarySearch<T>(arr: T[], target: T, compare: (a: T, b: T) => number) {
+    let low = 0;
+    let high = arr.length - 1;
+
+    while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+
+        const comparison = compare(arr[mid], target);
+
+        if (comparison === 0) {
+            return mid;  // Element found, return index
+        } else if (comparison < 0) {
+            low = mid + 1;  // Search the right half
+        } else {
+            high = mid - 1;  // Search the left half
+        }
+    }
+    return ~low;  // Element not found, return bitwise complement of the insertion point
 }
