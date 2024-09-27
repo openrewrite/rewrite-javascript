@@ -648,8 +648,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 p.append("new");
                 visit(newClass.getClazz(), p);
                 visitContainer("(", newClass.getPadding().getArguments(), JContainer.Location.NEW_CLASS_ARGUMENTS, ",", ")", p);
-            } else {
-                visitContainer("{", newClass.getPadding().getArguments(), JContainer.Location.NEW_CLASS_ARGUMENTS, ",", "}", p);
             }
             visit(newClass.getBody(), p);
             afterSyntax(newClass, p);
@@ -671,6 +669,19 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
+        protected void visitStatements(List<JRightPadded<Statement>> statements, JRightPadded.Location location, PrintOutputCapture<P> p) {
+            boolean objectLiteral = getCursor().getParent(0).getValue() instanceof J.Block &&
+                                    getCursor().getParent(1).getValue() instanceof J.NewClass;
+            for (int i = 0; i < statements.size(); i++) {
+                JRightPadded<Statement> paddedStat = statements.get(i);
+                visitStatement(paddedStat, location, p);
+                if (i < statements.size() - 1 && objectLiteral) {
+                    p.append(',');
+                }
+            }
+        }
+
+        @Override
         public J visitTypeCast(J.TypeCast typeCast, PrintOutputCapture<P> p) {
             beforeSyntax(typeCast, Space.Location.TYPE_CAST_PREFIX, p);
 
@@ -683,6 +694,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         @Override
         public J visitVariableDeclarations(J.VariableDeclarations multiVariable, PrintOutputCapture<P> p) {
+            boolean objectLiteral = getCursor().getParent(1).getValue() instanceof J.Block &&
+                                    getCursor().getParent(2).getValue() instanceof J.NewClass;
             beforeSyntax(multiVariable, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
             visit(multiVariable.getLeadingAnnotations(), p);
             multiVariable.getModifiers().forEach(it -> visitModifier(it, p));
@@ -708,7 +721,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 }
 
                 if (variable.getElement().getInitializer() != null) {
-                    JavaScriptPrinter.this.visitLeftPadded(variable.getElement().getMarkers().findFirst(Colon.class).isPresent() ? ":" : "=",
+                    JavaScriptPrinter.this.visitLeftPadded(objectLiteral ? ":" : "=",
                             variable.getElement().getPadding().getInitializer(), JLeftPadded.Location.VARIABLE_INITIALIZER, p);
                 }
 
