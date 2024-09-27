@@ -4,22 +4,21 @@
   "license": "Apache-2.0",
   "description": "OpenRewrite implementation for JavaScript.",
   "homepage": "https://github.com/openrewrite/rewrite-javascript",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./index.js",
-    "./core": "./core/index.js",
-    "./java": "./java/index.js",
-    "./java/tree": "./java/tree/index.js",
-    "./javascript": "./javascript/index.js",
-    "./javascript/tree": "./javascript/tree/index.js",
-    "./json": "./json/index.js",
-    "./yaml": "./yaml/index.js",
-    "./yaml/tree": "./yaml/tree/index.js"
+    ".": "./dist/index.js",
+    "./core": "./dist/core/index.js",
+    "./java": "./dist/java/index.js",
+    "./java/tree": "./dist/java/tree/index.js",
+    "./javascript": "./dist/javascript/index.js",
+    "./javascript/tree": "./dist/javascript/tree/index.js",
+    "./json": "./dist/json/index.js",
+    "./yaml": "./dist/yaml/index.js",
+    "./yaml/tree": "./dist/yaml/tree/index.js"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "postbuild": "cp package.json dist",
     "dev": "tsc --watch -p tsconfig.json",
     "test": "jest"
   },
@@ -36,7 +35,6 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.2",
-    "@openrewrite/rewrite-remote": "^1.0.0"
+    "typescript": "^5.6.2"
   }
 }

@@ -4,7 +4,8 @@ module.exports = {
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   moduleNameMapper: {
-    '^@openrewrite/rewrite/(.*)$': '<rootDir>/dist/$1'
+    '^@openrewrite/rewrite/(.*)$': '<rootDir>/dist/$1',
+    '^@openrewrite/rewrite-remote(.*)$': '<rootDir>/node_modules/@openrewrite/rewrite-remote/dist$1'
   },
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
