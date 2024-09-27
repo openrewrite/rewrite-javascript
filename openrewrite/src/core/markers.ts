@@ -55,7 +55,7 @@ export class Markers {
         return this._markers === markers ? this : new Markers(this._id, markers);
     }
 
-    public findFirst<T extends Marker>(markerType: new () => T): T | undefined {
+    public findFirst<T extends Marker>(markerType: new (...args: any[]) => T): T | undefined {
         return this._markers.find((marker) => marker instanceof markerType) as T || undefined;
     }
 

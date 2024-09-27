@@ -50,7 +50,6 @@ export class JavaScriptParser extends Parser {
                 try {
                     result.push(new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile);
                 } catch (error) {
-                    console.error(error);
                     result.push(ParseError.build(
                         this,
                         input,
