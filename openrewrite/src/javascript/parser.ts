@@ -24,6 +24,7 @@ import {
 } from "../core";
 import {Semicolon, TrailingComma} from "../java";
 import {binarySearch, compareTextSpans, getNextSibling, TextSpan} from "./parserUtils";
+import {PunctuationSyntaxKind} from "typescript";
 
 export class JavaScriptParser extends Parser {
 
@@ -204,6 +205,28 @@ export class JavaScriptParserVisitor {
 
     private rightPaddedList<N extends ts.Node, T extends J.J>(nodes: N[], trailing: (node: N) => Space, markers?: (node: N) => Markers): JRightPadded<T>[] {
         return nodes.map(n => this.rightPadded(this.convert(n), trailing(n), markers?.(n)));
+    }
+
+    private rightPaddedSeparatedList<N extends ts.Node, T extends J.J>(nodes: N[], separator: ts.PunctuationSyntaxKind, markers?: (node: N) => Markers): JRightPadded<T>[] {
+        if (nodes.length === 0) {
+            return [];
+        }
+        const ts: JRightPadded<T>[] = [];
+
+        for (let i = 0; i < nodes.length - 1; i += 2) {
+            // FIXME right padding and trailing comma
+            const last = i === nodes.length - 2;
+            ts.push(this.rightPadded(
+                this.convert(nodes[i]),
+                this.prefix(nodes[i + 1]),
+                last ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[nodes.length - 1]))]) : Markers.EMPTY
+            ));
+        }
+        if ((nodes.length & 1) === 1) {
+            ts.push(this.rightPadded(this.convert(nodes[nodes.length - 1]), Space.EMPTY));
+        }
+
+        return ts;
     }
 
     private leftPadded<T>(before: Space, t: T, markers?: Markers) {
@@ -550,8 +573,8 @@ export class JavaScriptParserVisitor {
             null,
             Space.EMPTY,
             null,
-            this.mapArguments(node.properties),
-            null,
+            JContainer.empty(),
+            this.convertBlock(node.getChildren().slice(-3)),
             this.mapMethodType(node)
         );
     }
@@ -1218,7 +1241,28 @@ export class JavaScriptParserVisitor {
     }
 
     visitPropertyAssignment(node: ts.PropertyAssignment) {
-        return this.visitUnknown(node);
+        return new J.VariableDeclarations(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            [],
+            null,
+            null,
+            [],
+            [this.rightPadded(
+                new J.VariableDeclarations.NamedVariable(
+                    randomId(),
+                    this.prefix(node),
+                    Markers.EMPTY,
+                    this.visit(node.name),
+                    [],
+                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount() - 2)), this.visit(node.initializer)) : null,
+                    this.mapVariableType(node)
+                ),
+                Space.EMPTY // FIXME check for semicolon
+            )]
+        );
     }
 
     visitShorthandPropertyAssignment(node: ts.ShorthandPropertyAssignment) {
@@ -1543,10 +1587,7 @@ export class JavaScriptParserVisitor {
         const prefix = this.prefix(nodes[0]);
         let statementList = nodes[1] as ts.SyntaxList;
 
-        const statements: JRightPadded<Statement>[] = this.rightPaddedList([...statementList.getChildren()], this.semicolonPrefix, n => {
-            const last = n.getLastToken();
-            return last?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY;
-        });
+        const statements: JRightPadded<Statement>[] = this.rightPaddedSeparatedList([...statementList.getChildren()], ts.SyntaxKind.CommaToken);
 
         return new J.Block(
             randomId(),
