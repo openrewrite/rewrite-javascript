@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2016",
-    "module": "commonjs",
+    "module": "Node16",
     "sourceMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -9,7 +9,8 @@
     "skipLibCheck": true,
     "rootDir": "./src",
     "outDir": "./dist",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "moduleResolution": "node16"
   },
   "include": ["src/**/*"],
 }
