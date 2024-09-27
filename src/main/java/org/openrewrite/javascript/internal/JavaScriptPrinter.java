@@ -179,22 +179,25 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         beforeSyntax(jsImport, JsSpace.Location.EXPORT_PREFIX, p);
         p.append("import");
 
-        visitRightPadded(jsImport.getPadding().getName(), JsRightPadded.Location.IMPORT_NAME_SUFFIX, p);
+        // for default export or `* as <alias>`
+        JS.JsImport.Padding padding = jsImport.getPadding();
+        visitRightPadded(padding.getName(), JsRightPadded.Location.IMPORT_NAME_SUFFIX, p);
 
-        if (jsImport.getName() != null && jsImport.getImports() != null) {
+        if (jsImport.getName() != null && padding.getImports() != null) {
             p.append(",");
         }
 
-        boolean printBrackets = jsImport.getPadding().getImports() != null && jsImport.getPadding().getImports().getMarkers().findFirst(Braces.class).isPresent();
-        visitContainer(printBrackets ? "{" : "", jsImport.getPadding().getImports(), JsContainer.Location.FUNCTION_TYPE_PARAMETER, ",", printBrackets ? "}" : "", p);
+        boolean braces = padding.getImports() != null &&
+                         padding.getImports().getPadding().getElements().stream().noneMatch(e -> e.getElement() instanceof JS.Alias);
+        visitContainer(braces ? "{" : "", padding.getImports(), JsContainer.Location.IMPORT_ELEMENT, ",", braces ? "}" : "", p);
 
         if (jsImport.getFrom() != null) {
             visitSpace(jsImport.getFrom(), Space.Location.LANGUAGE_EXTENSION, p);
             p.append("from");
-            visit(jsImport.getTarget(), p);
         }
+        visit(jsImport.getTarget(), p);
 
-        visitLeftPadded("=", jsImport.getPadding().getInitializer(), JsLeftPadded.Location.IMPORT_INITIALIZER, p);
+        visitLeftPadded("=", padding.getInitializer(), JsLeftPadded.Location.IMPORT_INITIALIZER, p);
         afterSyntax(jsImport, p);
         return jsImport;
     }

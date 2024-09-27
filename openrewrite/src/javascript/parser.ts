@@ -1000,11 +1000,35 @@ export class JavaScriptParserVisitor {
     }
 
     visitImportDeclaration(node: ts.ImportDeclaration) {
-        return this.visitUnknown(node);
+        const children = node.getChildren();
+        const _default = !!node.importClause?.name;
+        return new JS.JsImport(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            _default ? this.rightPadded(this.visit(node.importClause?.name), this.suffix(node.importClause?.name)) : null,
+            node.importClause ? this.visit(node.importClause) : null,
+            children[children.indexOf(node.moduleSpecifier) - 1].kind == ts.SyntaxKind.FromKeyword ? this.prefix(children[children.indexOf(node.moduleSpecifier) - 1]) : null,
+            this.convert<J.Literal>(node.moduleSpecifier),
+            null
+        );
     }
 
     visitImportClause(node: ts.ImportClause) {
-        return this.visitUnknown(node);
+        if (node.namedBindings && ts.isNamespaceImport(node.namedBindings)) {
+            return new JContainer(
+                this.prefix(node),
+                [this.rightPadded(new JS.Alias(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    this.rightPadded(this.mapIdentifier(node.namedBindings, "*"), this.prefix(node.namedBindings.getChildAt(1))),
+                    this.convert(node.namedBindings.name)
+                ), Space.EMPTY)],
+                Markers.EMPTY
+            );
+        }
+        return this.mapArguments(node.namedBindings?.getChildren()!);
     }
 
     visitNamespaceImport(node: ts.NamespaceImport) {
@@ -1016,7 +1040,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitImportSpecifier(node: ts.ImportSpecifier) {
-        return this.visitUnknown(node);
+        return this.convert(node.name);
     }
 
     visitExportAssignment(node: ts.ExportAssignment) {

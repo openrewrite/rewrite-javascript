@@ -8,9 +8,12 @@
     ".": "./dist/index.js",
     "./core": "./dist/core/index.js",
     "./java": "./dist/java/index.js",
+    "./java/tree": "./dist/java/tree/index.js",
     "./javascript": "./dist/javascript/index.js",
+    "./javascript/tree": "./dist/javascript/tree/index.js",
     "./json": "./dist/json/index.js",
-    "./yaml": "./dist/yaml/index.js"
+    "./yaml": "./dist/yaml/index.js",
+    "./yaml/tree": "./dist/yaml/tree/index.js"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
