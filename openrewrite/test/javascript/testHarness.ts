@@ -79,12 +79,13 @@ const parser = JavaScriptParser.builder().build();
 function sourceFile(before: string, defaultPath: string, spec?: (sourceFile: JS.CompilationUnit) => void) {
     return (options: RewriteTestOptions) => {
         const ctx = new InMemoryExecutionContext();
+        before = options.normalizeIndent ?? true ? dedent(before) : before;
         const [sourceFile] = parser.parseInputs(
           [new ParserInput(
             defaultPath,
             null,
             true,
-            () => Buffer.from(options.normalizeIndent ?? true ? dedent(before) : before)
+            () => Buffer.from(before)
           )],
           null,
           ctx) as Iterable<JS.CompilationUnit>;

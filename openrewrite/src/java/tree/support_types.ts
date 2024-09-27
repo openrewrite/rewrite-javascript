@@ -27,7 +27,7 @@ export interface J extends Tree {
 type Constructor<T = {}> = new (...args: any[]) => T;
 
 export function isJava(tree: any): tree is J {
-    return !!tree.constructor.isJava || !!tree.isJava;
+    return !!tree?.constructor.isJava || !!tree?.isJava;
 }
 
 export function JMixin<TBase extends Constructor<Object>>(Base: TBase) {

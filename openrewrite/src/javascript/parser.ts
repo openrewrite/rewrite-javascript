@@ -170,7 +170,14 @@ export class JavaScriptParserVisitor {
     }
 
     private mapModifiers(node: ts.VariableStatement) {
-        return [];
+        return [new J.Modifier(
+            randomId(),
+            Space.EMPTY,
+            Markers.EMPTY,
+            node.declarationList.getFirstToken()?.getText()!,
+            J.Modifier.Type.LanguageExtension,
+            []
+        )];
     }
 
     private rightPadded<T>(t: T, trailing: Space, markers?: Markers) {
@@ -477,7 +484,17 @@ export class JavaScriptParserVisitor {
     }
 
     visitObjectLiteralExpression(node: ts.ObjectLiteralExpression) {
-        return this.visitUnknown(node);
+        return new J.NewClass(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            null,
+            Space.EMPTY,
+            null,
+            this.mapArguments(node.properties),
+            null,
+            this.mapMethodType(node)
+        );
     }
 
     visitPropertyAccessExpression(node: ts.PropertyAccessExpression) {
@@ -593,7 +610,119 @@ export class JavaScriptParserVisitor {
     }
 
     visitBinaryExpression(node: ts.BinaryExpression) {
-        return this.visitUnknown(node);
+        let binaryOperator: J.Binary.Type | JS.JsBinary.Type | undefined;
+        switch (node.operatorToken.kind) {
+            case ts.SyntaxKind.EqualsEqualsEqualsToken:
+                binaryOperator = JS.JsBinary.Type.IdentityEquals;
+                break;
+            case ts.SyntaxKind.ExclamationEqualsEqualsToken:
+                binaryOperator = JS.JsBinary.Type.IdentityNotEquals;
+                break;
+        }
+
+        if (binaryOperator !== undefined) {
+            return new JS.JsBinary(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.convert(node.left),
+                this.leftPadded(this.prefix(node.operatorToken), binaryOperator as JS.JsBinary.Type),
+                this.convert(node.right),
+                this.mapType(node)
+            );
+        }
+
+        if (node.operatorToken.kind == ts.SyntaxKind.InstanceOfKeyword) {
+            return new J.InstanceOf(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.rightPadded(this.convert(node.left), this.prefix(node.operatorToken)),
+                this.convert(node.right),
+                null,
+                this.mapType(node)
+            );
+        }
+
+        binaryOperator = this.mapBinaryOperator(node);
+        if (binaryOperator === undefined) {
+            return this.visitUnknown(node);
+        }
+
+        return new J.Binary(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.left),
+            this.leftPadded(this.prefix(node.operatorToken), binaryOperator),
+            this.convert(node.right),
+            this.mapType(node)
+        )
+    }
+
+    private mapBinaryOperator(node: ts.BinaryExpression): J.Binary.Type | undefined {
+        switch (node.operatorToken.kind) {
+            case ts.SyntaxKind.PlusToken:
+                return J.Binary.Type.Addition;
+            case ts.SyntaxKind.MinusToken:
+                return J.Binary.Type.Subtraction;
+            case ts.SyntaxKind.AsteriskToken:
+                return J.Binary.Type.Multiplication;
+            case ts.SyntaxKind.SlashToken:
+                return J.Binary.Type.Division;
+            case ts.SyntaxKind.PercentToken:
+                return J.Binary.Type.Modulo;
+            case ts.SyntaxKind.LessThanLessThanToken:
+                return J.Binary.Type.LeftShift;
+            case ts.SyntaxKind.GreaterThanGreaterThanToken:
+                return J.Binary.Type.RightShift;
+            case ts.SyntaxKind.GreaterThanGreaterThanGreaterThanToken:
+                return J.Binary.Type.UnsignedRightShift;
+            // case ts.SyntaxKind.LessThanLessThanEqualsToken:
+            //     return J.Binary.Type.LeftShiftEquals;
+            // case ts.SyntaxKind.GreaterThanGreaterThanEqualsToken:
+            //     return J.Binary.Type.RightShiftEquals;
+
+            case ts.SyntaxKind.AmpersandToken:
+                return J.Binary.Type.BitAnd;
+            // case ts.SyntaxKind.AmpersandEqualsToken:
+            //     return J.Binary.Type.BitwiseAndEquals;
+            case ts.SyntaxKind.BarToken:
+                return J.Binary.Type.BitOr;
+            // case ts.SyntaxKind.BarEqualsToken:
+            //     return J.Binary.Type.BitwiseOrEquals;
+            case ts.SyntaxKind.CaretToken:
+                return J.Binary.Type.BitXor;
+            // case ts.SyntaxKind.CaretEqualsToken:
+            //     return J.Binary.Type.BitwiseXorEquals;
+
+            case ts.SyntaxKind.EqualsEqualsToken:
+                return J.Binary.Type.Equal;
+            // case ts.SyntaxKind.EqualsEqualsEqualsToken:
+            //     return J.Binary.Type.StrictEquals;
+            case ts.SyntaxKind.ExclamationEqualsToken:
+                return J.Binary.Type.NotEqual;
+            // case ts.SyntaxKind.ExclamationEqualsEqualsToken:
+            //     return J.Binary.Type.StrictNotEquals;
+            case ts.SyntaxKind.LessThanToken:
+                return J.Binary.Type.LessThan;
+            case ts.SyntaxKind.LessThanEqualsToken:
+                return J.Binary.Type.LessThanOrEqual;
+            case ts.SyntaxKind.GreaterThanToken:
+                return J.Binary.Type.GreaterThan;
+            case ts.SyntaxKind.GreaterThanEqualsToken:
+                return J.Binary.Type.GreaterThanOrEqual;
+
+            case ts.SyntaxKind.AmpersandAmpersandToken:
+                return J.Binary.Type.And;
+            case ts.SyntaxKind.BarBarToken:
+                return J.Binary.Type.Or;
+            // case ts.SyntaxKind.BarBarEqualsToken:
+            //     return J.Binary.Type.OrEquals;
+            // case ts.SyntaxKind.AmpersandEqualsToken:
+            //     return J.Binary.Type.AndEquals;
+        }
+        return undefined;
     }
 
     visitConditionalExpression(node: ts.ConditionalExpression) {
@@ -752,7 +881,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitVariableDeclaration(node: ts.VariableDeclaration) {
-        return this.visitUnknown(node);
+        return new J.VariableDeclarations.NamedVariable(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.visit(node.name),
+            [],
+            node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount() - 2)), this.visit(node.initializer)) : null,
+            this.mapVariableType(node)
+        );
     }
 
     visitVariableDeclarationList(node: ts.VariableDeclarationList) {
@@ -1169,6 +1306,10 @@ export class JavaScriptParserVisitor {
             return JavaType.Primitive.of(JavaType.PrimitiveKind.Null);
         }
         return JavaType.Unknown.INSTANCE;
+    }
+
+    private mapVariableType(node: ts.Node): JavaType.Variable | null {
+        return null;
     }
 
     private mapMethodType(node: ts.Node): JavaType.Method | null {
