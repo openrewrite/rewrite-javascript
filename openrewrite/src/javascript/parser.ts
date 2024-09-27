@@ -652,7 +652,28 @@ export class JavaScriptParserVisitor {
     }
 
     visitPostfixUnaryExpression(node: ts.PostfixUnaryExpression) {
-        return this.visitUnknown(node);
+        let unaryOperator: J.Unary.Type | undefined;
+        switch (node.operator) {
+            case ts.SyntaxKind.PlusPlusToken:
+                unaryOperator = J.Unary.Type.PostIncrement;
+                break;
+            case ts.SyntaxKind.MinusMinusToken:
+                unaryOperator = J.Unary.Type.PostDecrement;
+                break;
+        }
+
+        if (unaryOperator === undefined) {
+            return this.visitUnknown(node);
+        }
+
+        return new J.Unary(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.leftPadded(this.prefix(node.getFirstToken()!), unaryOperator),
+            this.convert(node.operand),
+            this.mapType(node)
+        );
     }
 
     visitBinaryExpression(node: ts.BinaryExpression) {

@@ -41,3 +41,21 @@ describe('prefix operator mapping', () => {
         );
     });
 });
+
+describe('postfix operator mapping', () => {
+    beforeAll(() => connect());
+    afterAll(() => disconnect());
+
+    test('increment', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('a++;')
+        );
+    });
+    test('decrement', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('a--;')
+        );
+    });
+});
