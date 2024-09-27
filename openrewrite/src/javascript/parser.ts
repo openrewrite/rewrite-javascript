@@ -1,6 +1,16 @@
 import * as ts from 'typescript';
 import * as J from '../java/tree';
-import {Comment, Expression, JavaType, JContainer, JLeftPadded, JRightPadded, Space, TextComment} from '../java/tree';
+import {
+    Comment,
+    Expression,
+    JavaType,
+    JContainer,
+    JLeftPadded,
+    JRightPadded,
+    Space,
+    Statement,
+    TextComment
+} from '../java/tree';
 import * as JS from './tree';
 import {
     ExecutionContext,
@@ -135,13 +145,13 @@ export class JavaScriptParserVisitor {
             false,
             null,
             [],
-            this.semicolonPaddedStatementList(node),
+            this.semicolonPaddedStatementList(node.statements),
             this.prefix(node.endOfFileToken)
         );
     }
 
-    private semicolonPaddedStatementList(node: ts.SourceFile) {
-        return this.rightPaddedList(node.statements, this.semicolonPrefix, n => {
+    private semicolonPaddedStatementList(statements: ts.NodeArray<ts.Statement>) {
+        return this.rightPaddedList([...statements], this.semicolonPrefix, n => {
             const last = n.getLastToken();
             return last?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY;
         });
@@ -166,22 +176,33 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapModifiers(node: ts.VariableStatement) {
-        return [new J.Modifier(
-            randomId(),
-            Space.EMPTY,
-            Markers.EMPTY,
-            node.declarationList.getFirstToken()?.getText()!,
-            J.Modifier.Type.LanguageExtension,
-            []
-        )];
+    private mapModifiers(node: ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration) {
+        if (ts.isVariableStatement(node)) {
+            return [new J.Modifier(
+                randomId(),
+                Space.EMPTY,
+                Markers.EMPTY,
+                node.declarationList.getFirstToken()?.getText()!,
+                J.Modifier.Type.LanguageExtension,
+                []
+            )];
+        } else if (ts.isClassDeclaration(node)) {
+            return []; // FIXME
+        } else if (ts.isPropertyDeclaration(node)) {
+            return []; // FIXME
+        }
+        throw new Error(`Cannot get modifiers from ${node}`);
     }
 
     private rightPadded<T>(t: T, trailing: Space, markers?: Markers) {
         return new JRightPadded<T>(t, trailing, markers ?? Markers.EMPTY);
     }
 
-    private rightPaddedList<N extends ts.Node, T extends J.J>(nodes: ts.NodeArray<N>, trailing: (node: N) => Space, markers?: (node: N) => Markers): JRightPadded<T>[] {
+    // private rightPaddedList<N extends ts.Node, T extends J.J>(nodes: ts.NodeArray<N>, trailing: (node: N) => Space, markers?: (node: N) => Markers): JRightPadded<T>[] {
+    //     return nodes.map(n => this.rightPadded(this.convert(n), trailing(n), markers?.(n)));
+    // }
+
+    private rightPaddedList<N extends ts.Node, T extends J.J>(nodes: N[], trailing: (node: N) => Space, markers?: (node: N) => Markers): JRightPadded<T>[] {
         return nodes.map(n => this.rightPadded(this.convert(n), trailing(n), markers?.(n)));
     }
 
@@ -200,8 +221,28 @@ export class JavaScriptParserVisitor {
 
 
     visitClassDeclaration(node: ts.ClassDeclaration) {
-        // return new ClassDeclaration(randomId(), node.)
-        return this.visitUnknown(node);
+        return new J.ClassDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.mapDecorators(node),
+            this.mapModifiers(node),
+            new J.ClassDeclaration.Kind(
+                randomId(),
+                Space.EMPTY, // TODO verify
+                Markers.EMPTY,
+                [],
+                J.ClassDeclaration.Kind.Type.Class
+            ),
+            node.name ? this.convert(node.name) : this.mapIdentifier(node, ""),
+            this.mapTypeParameters(node),
+            null, // FIXME primary constructor
+            node.heritageClauses ? this.visit(node.heritageClauses[0]) : null,
+            node.heritageClauses ? this.visit(node.heritageClauses[1]) : null,
+            null,
+            this.convertBlock(node.getChildren().slice(-3)),
+            this.mapType(node)
+        );
     }
 
     visitNumericLiteral(node: ts.NumericLiteral) {
@@ -322,7 +363,28 @@ export class JavaScriptParserVisitor {
     }
 
     visitPropertyDeclaration(node: ts.PropertyDeclaration) {
-        return this.visitUnknown(node);
+        return new J.VariableDeclarations(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            this.mapModifiers(node),
+            node.type ? this.visit(node.type!) : null,
+            null,
+            [],
+            [this.rightPadded(
+                new J.VariableDeclarations.NamedVariable(
+                    randomId(),
+                    this.prefix(node),
+                    Markers.EMPTY,
+                    this.visit(node.name),
+                    [],
+                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount() - 2)), this.visit(node.initializer)) : null,
+                    this.mapVariableType(node)
+                ),
+                Space.EMPTY // FIXME check for semicolon
+            )]
+        );
     }
 
     visitMethodSignature(node: ts.MethodSignature) {
@@ -880,10 +942,10 @@ export class JavaScriptParserVisitor {
             null,
             null,
             [],
-            this.rightPaddedList(node.declarationList.declarations, n => {
+            this.rightPaddedList([...node.declarationList.declarations], n => {
                 return Space.EMPTY;
             })
-        )
+        );
     }
 
     visitExpressionStatement(node: ts.ExpressionStatement): JS.ExpressionStatement {
@@ -1455,6 +1517,44 @@ export class JavaScriptParserVisitor {
             prefix,
             args,
             Markers.EMPTY
+        );
+    }
+
+    private mapDecorators(node: ts.ClassDeclaration) {
+        return []; // FIXME
+    }
+
+    private mapTypeParameters(node: ts.ClassDeclaration): JContainer<J.TypeParameter> | null {
+        return null; // FIXME
+    }
+
+    private convertBlock(nodes: ts.Node[]): J.Block {
+        if (nodes.length === 0) {
+            return new J.Block(
+                randomId(),
+                Space.EMPTY,
+                Markers.EMPTY,
+                this.rightPadded(false, Space.EMPTY),
+                [],
+                Space.EMPTY
+            );
+        }
+
+        const prefix = this.prefix(nodes[0]);
+        let statementList = nodes[1] as ts.SyntaxList;
+
+        const statements: JRightPadded<Statement>[] = this.rightPaddedList([...statementList.getChildren()], this.semicolonPrefix, n => {
+            const last = n.getLastToken();
+            return last?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY;
+        });
+
+        return new J.Block(
+            randomId(),
+            prefix,
+            Markers.EMPTY,
+            this.rightPadded(false, Space.EMPTY),
+            statements,
+            this.prefix(nodes[nodes.length - 1])
         );
     }
 }
