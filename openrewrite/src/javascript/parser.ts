@@ -9,7 +9,7 @@ import {
     JRightPadded,
     Space,
     Statement,
-    TextComment
+    TextComment, TypeTree
 } from '../java/tree';
 import * as JS from './tree';
 import {
@@ -259,12 +259,44 @@ export class JavaScriptParserVisitor {
             node.name ? this.convert(node.name) : this.mapIdentifier(node, ""),
             this.mapTypeParameters(node),
             null, // FIXME primary constructor
-            node.heritageClauses ? this.visit(node.heritageClauses[0]) : null,
-            node.heritageClauses ? this.visit(node.heritageClauses[1]) : null,
+            this.mapExtends(node),
+            this.mapImplements(node),
             null,
             this.convertBlock(node.getChildren().slice(-3)),
             this.mapType(node)
         );
+    }
+
+    private mapExtends(node: ts.ClassDeclaration): JLeftPadded<TypeTree> | null {
+        if (node.heritageClauses == undefined || node.heritageClauses.length == 0) {
+            return null;
+        }
+        for (let heritageClause of node.heritageClauses) {
+            if (heritageClause.token == ts.SyntaxKind.ExtendsKeyword) {
+                return this.leftPadded(this.prefix(heritageClause.getFirstToken()!), this.visit(heritageClause.types[0]));
+            }
+        }
+        return null;
+    }
+
+    private mapImplements(node: ts.ClassDeclaration): JContainer<TypeTree> | null {
+        if (node.heritageClauses == undefined || node.heritageClauses.length == 0) {
+            return null;
+        }
+        for (let heritageClause of node.heritageClauses) {
+            if (heritageClause.token == ts.SyntaxKind.ImplementsKeyword) {
+                const _implements: JRightPadded<TypeTree>[] = [];
+                for (let type of heritageClause.types) {
+                    _implements.push(this.rightPadded(this.visit(type), this.suffix(type)));
+                }
+                return _implements.length > 0 ? new JContainer(
+                    this.prefix(heritageClause.getFirstToken()!),
+                    _implements,
+                    Markers.EMPTY
+                ) : null;
+            }
+        }
+        return null;
     }
 
     visitNumericLiteral(node: ts.NumericLiteral) {
@@ -927,7 +959,11 @@ export class JavaScriptParserVisitor {
     }
 
     visitExpressionWithTypeArguments(node: ts.ExpressionWithTypeArguments) {
-        return this.visitUnknown(node);
+        if (node.typeArguments) {
+            // FIXME
+            return this.visitUnknown(node);
+        }
+        return this.visit(node.expression);
     }
 
     visitAsExpression(node: ts.AsExpression) {
@@ -1244,7 +1280,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitHeritageClause(node: ts.HeritageClause) {
-        return this.visitUnknown(node);
+        return this.convert(node.types[0]);
     }
 
     visitCatchClause(node: ts.CatchClause) {

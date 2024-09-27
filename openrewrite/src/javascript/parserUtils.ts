@@ -17,7 +17,11 @@ export function getNextSibling(node: ts.Node): ts.Node | null {
         }
 
         // If the node is the last child in the SyntaxList, recursively check the parent's next sibling
-        if (nodeIndex === 0) {
+        if (nodeIndex === children.length - 1) {
+            const syntaxListIndex = parent.getChildren().indexOf(syntaxList);
+            if (parent.getChildCount() > syntaxListIndex + 1) {
+                return parent.getChildAt(syntaxListIndex + 1);
+            }
             const parentNextSibling = getNextSibling(parent);
             if (!parentNextSibling) {
                 return null;
