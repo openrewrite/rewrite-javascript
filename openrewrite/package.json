@@ -2,21 +2,22 @@
   "name": "@openrewrite/rewrite",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./core": "./dist/core/index.js",
-    "./java": "./dist/java/index.js",
-    "./java/tree": "./dist/java/tree/index.js",
-    "./javascript": "./dist/javascript/index.js",
-    "./javascript/tree": "./dist/javascript/tree/index.js",
-    "./json": "./dist/json/index.js",
-    "./yaml": "./dist/yaml/index.js",
-    "./yaml/tree": "./dist/yaml/tree/index.js"
+    ".": "./index.js",
+    "./core": "./core/index.js",
+    "./java": "./java/index.js",
+    "./java/tree": "./java/tree/index.js",
+    "./javascript": "./javascript/index.js",
+    "./javascript/tree": "./javascript/tree/index.js",
+    "./json": "./json/index.js",
+    "./yaml": "./yaml/index.js",
+    "./yaml/tree": "./yaml/tree/index.js"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
+    "postbuild": "cp package.json dist",
     "dev": "tsc --watch -p tsconfig.json",
     "test": "jest"
   },
