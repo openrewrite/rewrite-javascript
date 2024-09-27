@@ -1013,12 +1013,13 @@ export class JavaScriptParserVisitor {
     visitImportDeclaration(node: ts.ImportDeclaration) {
         const children = node.getChildren();
         const _default = !!node.importClause?.name;
+        const onlyDefault = _default && node.importClause.namedBindings == undefined;
         return new JS.JsImport(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
             _default ? this.rightPadded(this.visit(node.importClause?.name), this.suffix(node.importClause?.name)) : null,
-            node.importClause ? this.visit(node.importClause) : null,
+            node.importClause && !onlyDefault ? this.visit(node.importClause) : null,
             children[children.indexOf(node.moduleSpecifier) - 1].kind == ts.SyntaxKind.FromKeyword ? this.prefix(children[children.indexOf(node.moduleSpecifier) - 1]) : null,
             this.convert<J.Literal>(node.moduleSpecifier),
             null
