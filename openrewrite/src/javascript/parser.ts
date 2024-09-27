@@ -187,11 +187,42 @@ export class JavaScriptParserVisitor {
                 []
             )];
         } else if (ts.isClassDeclaration(node)) {
-            return []; // FIXME
+            return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isPropertyDeclaration(node)) {
             return []; // FIXME
         }
         throw new Error(`Cannot get modifiers from ${node}`);
+    }
+
+    private mapModifier = (node: ts.Modifier) => {
+        let kind: J.Modifier.Type;
+        switch (node.kind) {
+            case ts.SyntaxKind.PublicKeyword:
+                kind = J.Modifier.Type.Public;
+                break;
+            case ts.SyntaxKind.PrivateKeyword:
+                kind = J.Modifier.Type.Private;
+                break;
+            case ts.SyntaxKind.ProtectedKeyword:
+                kind = J.Modifier.Type.Protected;
+                break;
+            case ts.SyntaxKind.StaticKeyword:
+                kind = J.Modifier.Type.Static;
+                break;
+            case ts.SyntaxKind.AbstractKeyword:
+                kind = J.Modifier.Type.Abstract;
+                break;
+            default:
+                kind = J.Modifier.Type.LanguageExtension;
+        }
+        return new J.Modifier(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            kind == J.Modifier.Type.LanguageExtension ? node.getText() : null,
+            kind,
+            []
+        );
     }
 
     private rightPadded<T>(t: T, trailing: Space, markers?: Markers) {
@@ -251,7 +282,7 @@ export class JavaScriptParserVisitor {
             this.mapModifiers(node),
             new J.ClassDeclaration.Kind(
                 randomId(),
-                Space.EMPTY, // TODO verify
+                node.modifiers ? this.suffix(node.modifiers[node.modifiers.length - 1]) : this.prefix(node),
                 Markers.EMPTY,
                 [],
                 J.ClassDeclaration.Kind.Type.Class

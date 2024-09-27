@@ -40,4 +40,22 @@ describe('class mapping', () => {
           typeScript('class A extends Object implements B , C,D {}')
         );
     });
+    test('export', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('export class A {}')
+        );
+    });
+    test('public', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('public class A {}')
+        );
+    });
+    test('export default', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('export default class A {}')
+        );
+    });
 });
