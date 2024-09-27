@@ -1,6 +1,6 @@
 import {
     Cursor,
-    InMemoryExecutionContext,
+    InMemoryExecutionContext, isParseError,
     ParserInput,
     PrinterFactory,
     PrintOutputCapture,
@@ -88,7 +88,10 @@ function sourceFile(before: string, defaultPath: string, spec?: (sourceFile: JS.
             () => Buffer.from(before)
           )],
           null,
-          ctx) as Iterable<JS.CompilationUnit>;
+          ctx) as Iterable<SourceFile>;
+        if (isParseError(sourceFile)) {
+            throw new Error(`Parsing failed for: ${sourceFile.sourcePath}`);
+        }
         if (!(options.allowUnknowns ?? false)) {
             try {
                 let unknowns: J.Unknown[] = [];
@@ -110,7 +113,7 @@ function sourceFile(before: string, defaultPath: string, spec?: (sourceFile: JS.
             expect(printed).toBe(before);
         }
         if (spec) {
-            spec(sourceFile);
+            spec(sourceFile as JS.CompilationUnit);
         }
     };
 }
