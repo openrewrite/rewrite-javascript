@@ -1075,9 +1075,7 @@ export class JsOperator extends JSMixin(Object) implements Statement, Expression
 export namespace JsOperator {
     export enum Type {
             Await = 0,
-            Delete = 1,
-            In = 2,
-            TypeOf = 3,
+            TypeOf = 1,
 
     }
 

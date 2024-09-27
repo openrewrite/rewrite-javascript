@@ -586,11 +586,25 @@ export class JavaScriptParserVisitor {
     }
 
     visitDeleteExpression(node: ts.DeleteExpression) {
-        return this.visitUnknown(node);
+        return new JS.Delete(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.expression),
+            this.mapType(node)
+        );
     }
 
     visitTypeOfExpression(node: ts.TypeOfExpression) {
-        return this.visitUnknown(node);
+        return new JS.JsOperator(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            null,
+            this.leftPadded(this.prefix(node.getFirstToken()!), JS.JsOperator.Type.TypeOf),
+            this.convert(node.expression),
+            this.mapType(node)
+        )
     }
 
     visitVoidExpression(node: ts.VoidExpression) {
@@ -602,7 +616,39 @@ export class JavaScriptParserVisitor {
     }
 
     visitPrefixUnaryExpression(node: ts.PrefixUnaryExpression) {
-        return this.visitUnknown(node);
+        let unaryOperator: J.Unary.Type | undefined;
+        switch (node.operator) {
+            case ts.SyntaxKind.PlusToken:
+                unaryOperator = J.Unary.Type.Positive;
+                break;
+            case ts.SyntaxKind.MinusToken:
+                unaryOperator = J.Unary.Type.Negative;
+                break;
+            case ts.SyntaxKind.ExclamationToken:
+                unaryOperator = J.Unary.Type.Not;
+                break;
+            case ts.SyntaxKind.PlusPlusToken:
+                unaryOperator = J.Unary.Type.PreIncrement;
+                break;
+            case ts.SyntaxKind.MinusMinusToken:
+                unaryOperator = J.Unary.Type.PreDecrement;
+                break;
+            case ts.SyntaxKind.TildeToken:
+                unaryOperator = J.Unary.Type.Complement;
+        }
+
+        if (unaryOperator === undefined) {
+            return this.visitUnknown(node);
+        }
+
+        return new J.Unary(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.leftPadded(this.prefix(node.getFirstToken()!), unaryOperator),
+            this.convert(node.operand),
+            this.mapType(node)
+        );
     }
 
     visitPostfixUnaryExpression(node: ts.PostfixUnaryExpression) {

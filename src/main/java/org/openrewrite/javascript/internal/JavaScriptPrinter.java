@@ -20,7 +20,6 @@ import org.openrewrite.Cursor;
 import org.openrewrite.PrintOutputCapture;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaPrinter;
-import org.openrewrite.java.marker.OmitParentheses;
 import org.openrewrite.java.marker.Semicolon;
 import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
@@ -239,12 +238,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         switch (operator.getOperator()) {
             case Await:
                 keyword = "await";
-                break;
-            case Delete:
-                keyword = "delete";
-                break;
-            case In:
-                keyword = "in";
                 break;
             case TypeOf:
                 keyword = "typeof";
@@ -645,13 +638,12 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             beforeSyntax(newClass, Space.Location.NEW_CLASS_PREFIX, p);
             visitRightPadded(newClass.getPadding().getEnclosing(), JRightPadded.Location.NEW_CLASS_ENCLOSING, ".", p);
             visitSpace(newClass.getNew(), Space.Location.NEW_PREFIX, p);
-            boolean objectLiteral = newClass.getMarkers().findFirst(ObjectLiteral.class).isPresent();
-            if (!objectLiteral) {
+            if (newClass.getClazz() != null) {
                 p.append("new");
-            }
-            visit(newClass.getClazz(), p);
-            if (!newClass.getPadding().getArguments().getMarkers().findFirst(OmitParentheses.class).isPresent()) {
-                visitContainer(objectLiteral ? "{" : "(", newClass.getPadding().getArguments(), JContainer.Location.NEW_CLASS_ARGUMENTS, ",", objectLiteral ? "}" : ")", p);
+                visit(newClass.getClazz(), p);
+                visitContainer("(", newClass.getPadding().getArguments(), JContainer.Location.NEW_CLASS_ARGUMENTS, ",", ")", p);
+            } else {
+                visitContainer("{", newClass.getPadding().getArguments(), JContainer.Location.NEW_CLASS_ARGUMENTS, ",", "}", p);
             }
             visit(newClass.getBody(), p);
             afterSyntax(newClass, p);
