@@ -24,7 +24,6 @@ import {
 } from "../core";
 import {Semicolon, TrailingComma} from "../java";
 import {binarySearch, compareTextSpans, getNextSibling, TextSpan} from "./parserUtils";
-import {PunctuationSyntaxKind} from "typescript";
 
 export class JavaScriptParser extends Parser {
 
@@ -207,7 +206,7 @@ export class JavaScriptParserVisitor {
         return nodes.map(n => this.rightPadded(this.convert(n), trailing(n), markers?.(n)));
     }
 
-    private rightPaddedSeparatedList<N extends ts.Node, T extends J.J>(nodes: N[], separator: ts.PunctuationSyntaxKind, markers?: (node: N) => Markers): JRightPadded<T>[] {
+    private rightPaddedSeparatedList<N extends ts.Node, T extends J.J>(nodes: N[], separator: ts.PunctuationSyntaxKind, markers: (nodes: N[], i: number) => Markers): JRightPadded<T>[] {
         if (nodes.length === 0) {
             return [];
         }
@@ -219,11 +218,11 @@ export class JavaScriptParserVisitor {
             ts.push(this.rightPadded(
                 this.convert(nodes[i]),
                 this.prefix(nodes[i + 1]),
-                last ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[nodes.length - 1]))]) : Markers.EMPTY
+                markers(nodes, i)
             ));
         }
         if ((nodes.length & 1) === 1) {
-            ts.push(this.rightPadded(this.convert(nodes[nodes.length - 1]), Space.EMPTY));
+            ts.push(this.rightPadded(this.convert(nodes[nodes.length - 1]), Space.EMPTY, markers(nodes, nodes.length - 1)));
         }
 
         return ts;
@@ -574,8 +573,28 @@ export class JavaScriptParserVisitor {
             Space.EMPTY,
             null,
             JContainer.empty(),
-            this.convertBlock(node.getChildren().slice(-3)),
+            this.convertObjectAssignments(node.getChildren().slice(-3)),
             this.mapMethodType(node)
+        );
+    }
+
+    private convertObjectAssignments(nodes: ts.Node[]): J.Block {
+        const prefix = this.prefix(nodes[0]);
+        let statementList = nodes[1] as ts.SyntaxList;
+
+        const statements: JRightPadded<Statement>[] = this.rightPaddedSeparatedList(
+            [...statementList.getChildren()],
+            ts.SyntaxKind.CommaToken,
+            (nodes, i) => i == nodes.length -2 && nodes[i + 1].kind == ts.SyntaxKind.CommaToken ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[i + 1]))]) : Markers.EMPTY
+        );
+
+        return new J.Block(
+            randomId(),
+            prefix,
+            Markers.EMPTY,
+            this.rightPadded(false, Space.EMPTY),
+            statements,
+            this.prefix(nodes[nodes.length - 1])
         );
     }
 
@@ -1573,21 +1592,14 @@ export class JavaScriptParserVisitor {
     }
 
     private convertBlock(nodes: ts.Node[]): J.Block {
-        if (nodes.length === 0) {
-            return new J.Block(
-                randomId(),
-                Space.EMPTY,
-                Markers.EMPTY,
-                this.rightPadded(false, Space.EMPTY),
-                [],
-                Space.EMPTY
-            );
-        }
-
         const prefix = this.prefix(nodes[0]);
         let statementList = nodes[1] as ts.SyntaxList;
 
-        const statements: JRightPadded<Statement>[] = this.rightPaddedSeparatedList([...statementList.getChildren()], ts.SyntaxKind.CommaToken);
+        const statements: JRightPadded<Statement>[] = this.rightPaddedSeparatedList(
+            [...statementList.getChildren()],
+            ts.SyntaxKind.SemicolonToken,
+            (nodes, i) => nodes[i].getLastToken()?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+        );
 
         return new J.Block(
             randomId(),
