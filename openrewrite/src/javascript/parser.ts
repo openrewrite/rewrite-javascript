@@ -596,12 +596,10 @@ export class JavaScriptParserVisitor {
     }
 
     visitTypeOfExpression(node: ts.TypeOfExpression) {
-        return new JS.JsOperator(
+        return new JS.TypeOf(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            null,
-            this.leftPadded(this.prefix(node.getFirstToken()!), JS.JsOperator.Type.TypeOf),
             this.convert(node.expression),
             this.mapType(node)
         )
@@ -612,7 +610,13 @@ export class JavaScriptParserVisitor {
     }
 
     visitAwaitExpression(node: ts.AwaitExpression) {
-        return this.visitUnknown(node);
+        return new JS.Await(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.expression),
+            this.mapType(node)
+        );
     }
 
     visitPrefixUnaryExpression(node: ts.PrefixUnaryExpression) {

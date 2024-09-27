@@ -108,6 +108,21 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return a;
     }
 
+
+    public J visitAwait(JS.Await await, P p) {
+        JS.Await a = await;
+        a = a.withPrefix(visitSpace(a.getPrefix(), JsSpace.Location.AWAIT_PREFIX, p));
+        a = a.withMarkers(visitMarkers(a.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(a, p);
+        if (!(temp instanceof JS.Await)) {
+            return temp;
+        } else {
+            a = (JS.Await) temp;
+        }
+        a = a.withExpression(visitAndCast(a.getExpression(), p));
+        return a;
+    }
+
     public J visitBinding(JS.ObjectBindingDeclarations.Binding binding, P p) {
         JS.ObjectBindingDeclarations.Binding b = binding;
         b = b.withPrefix(visitSpace(b.getPrefix(), JsSpace.Location.BINDING_PREFIX, p));
@@ -258,22 +273,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
                     JsLeftPadded.Location.IMPORT_INITIALIZER, p));
         }
         return i;
-    }
-    public J visitJsOperator(JS.JsOperator operator, P p) {
-        JS.JsOperator o = operator;
-        o = o.withPrefix(visitSpace(o.getPrefix(), JsSpace.Location.OPERATOR_PREFIX, p));
-        o = o.withMarkers(visitMarkers(o.getMarkers(), p));
-        Expression temp = (Expression) visitExpression(o, p);
-        if (!(temp instanceof JS.JsOperator)) {
-            return temp;
-        } else {
-            o = (JS.JsOperator) temp;
-        }
-        o = o.withLeft(visitAndCast(o.getLeft(), p));
-        o = o.getPadding().withOperator(visitLeftPadded(o.getPadding().getOperator(), JsLeftPadded.Location.OPERATOR, p));
-        o = o.withRight(visitAndCast(o.getRight(), p));
-        o = o.withType(visitType(o.getType(), p));
-        return o;
     }
 
     public J visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, P p) {
@@ -507,5 +506,34 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
     public <J2 extends J> JContainer<J2> visitContainer(JContainer<J2> container, JsContainer.Location loc, P p) {
         return super.visitContainer(container, JContainer.Location.LANGUAGE_EXTENSION, p);
+    }
+
+    public J visitTypeOf(JS.TypeOf typeOf, P p) {
+        JS.TypeOf t = typeOf;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.TYPEOF_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(t, p);
+        if (!(temp instanceof JS.TypeOf)) {
+            return temp;
+        } else {
+            t = (JS.TypeOf) temp;
+        }
+        t = t.withExpression(visitAndCast(t.getExpression(), p));
+        t = t.withType(visitType(t.getType(), p));
+        return t;
+    }
+
+    public J visitVoid(JS.Void aVoid, P p) {
+        JS.Void v = aVoid;
+        v = v.withPrefix(visitSpace(v.getPrefix(), JsSpace.Location.VOID_PREFIX, p));
+        v = v.withMarkers(visitMarkers(v.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(v, p);
+        if (!(temp instanceof JS.Void)) {
+            return temp;
+        } else {
+            v = (JS.Void) temp;
+        }
+        v = v.withExpression(visitAndCast(v.getExpression(), p));
+        return v;
     }
 }

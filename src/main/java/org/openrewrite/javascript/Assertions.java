@@ -96,8 +96,7 @@ public final class Assertions {
                 public J visitUnknownSource(J.Unknown.Source source, Integer integer) {
                     Optional<ParseExceptionResult> result = source.getMarkers().findFirst(ParseExceptionResult.class);
                     if (result.isPresent()) {
-                        System.out.println(result.get().getMessage());
-                        throw new AssertionFailedError("Parsing error, J.Unknown detected");
+                        throw new AssertionFailedError("Parsing error, J.Unknown detected for: " + source.getText());
                     } else {
                         throw new UnsupportedOperationException("A J.Unknown should always have a parse exception result.");
                     }

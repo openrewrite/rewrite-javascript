@@ -66,4 +66,11 @@ describe('import mapping', () => {
           typeScript('import baz, {foo1, } from "bar"')
         );
     });
+
+    test('dynamic import', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('const module = await import("module-name");')
+        )
+    });
 });

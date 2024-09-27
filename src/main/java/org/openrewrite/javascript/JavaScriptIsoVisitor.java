@@ -39,6 +39,11 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
+    public J visitAwait(JS.Await await, P p) {
+        return super.visitAwait(await, p);
+    }
+
+    @Override
     public JS.ObjectBindingDeclarations.Binding visitBinding(JS.ObjectBindingDeclarations.Binding binding, P p) {
         return (JS.ObjectBindingDeclarations.Binding) super.visitBinding(binding, p);
     }
@@ -74,11 +79,6 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
-    public JS.JsOperator visitJsOperator(JS.JsOperator operator, P p) {
-        return (JS.JsOperator) super.visitJsOperator(operator, p);
-    }
-
-    @Override
     public JS.ObjectBindingDeclarations visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, P p) {
         return (JS.ObjectBindingDeclarations) super.visitObjectBindingDeclarations(objectBindingDeclarations, p);
     }
@@ -104,6 +104,11 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
+    public J visitTypeOf(JS.TypeOf typeOf, P p) {
+        return super.visitTypeOf(typeOf, p);
+    }
+
+    @Override
     public JS.TypeOperator visitTypeOperator(JS.TypeOperator typeOperator, P p) {
         return (JS.TypeOperator) super.visitTypeOperator(typeOperator, p);
     }
@@ -111,6 +116,11 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     @Override
     public JS.Union visitUnion(JS.Union union, P p) {
         return (JS.Union) super.visitUnion(union, p);
+    }
+
+    @Override
+    public J visitVoid(JS.Void aVoid, P p) {
+        return super.visitVoid(aVoid, p);
     }
 
     // J overrides.

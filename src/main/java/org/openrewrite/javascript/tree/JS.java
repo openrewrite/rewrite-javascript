@@ -411,6 +411,35 @@ public interface JS extends J {
         }
     }
 
+    @Getter
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @With
+    final class Await implements JS, Expression {
+
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        Space prefix;
+        Markers markers;
+
+        Expression expression;
+
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitAwait(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+    }
+
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @Data
@@ -915,93 +944,6 @@ public interface JS extends J {
 
             public JS.JsBinary withOperator(JLeftPadded<JS.JsBinary.Type> operator) {
                 return t.operator == operator ? t : new JS.JsBinary(t.id, t.prefix, t.markers, t.left, operator, t.right, t.type);
-            }
-        }
-    }
-
-    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
-    @RequiredArgsConstructor
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @Data
-    final class JsOperator implements JS, Statement, Expression, TypedTree, NameTree {
-
-        @Nullable
-        @NonFinal
-        transient WeakReference<JS.JsOperator.Padding> padding;
-
-        @With
-        @EqualsAndHashCode.Include
-        UUID id;
-
-        @With
-        Space prefix;
-
-        @With
-        Markers markers;
-
-        @Nullable
-        @With
-        Expression left;
-
-        JLeftPadded<JS.JsOperator.Type> operator;
-
-        public JS.JsOperator.Type getOperator() {
-            return operator.getElement();
-        }
-
-        public JS.JsOperator withOperator(JS.JsOperator.Type operator) {
-            return getPadding().withOperator(this.operator.withElement(operator));
-        }
-
-        @With
-        Expression right;
-
-        @With
-        @Nullable
-        JavaType type;
-
-        @Override
-        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
-            return v.visitJsOperator(this, p);
-        }
-
-        @Transient
-        @Override
-        public CoordinateBuilder.Statement getCoordinates() {
-            return new CoordinateBuilder.Statement(this);
-        }
-
-        public enum Type {
-            Await,
-            TypeOf
-        }
-
-        public JS.JsOperator.Padding getPadding() {
-            JS.JsOperator.Padding p;
-            if (this.padding == null) {
-                p = new JS.JsOperator.Padding(this);
-                this.padding = new WeakReference<>(p);
-            } else {
-                p = this.padding.get();
-                if (p == null || p.t != this) {
-                    p = new JS.JsOperator.Padding(this);
-                    this.padding = new WeakReference<>(p);
-                }
-            }
-            return p;
-        }
-
-        @RequiredArgsConstructor
-        public static class Padding {
-            private final JS.JsOperator t;
-
-            public JLeftPadded<JS.JsOperator.Type> getOperator() {
-                return t.operator;
-            }
-
-            public JS.JsOperator withOperator(JLeftPadded<JS.JsOperator.Type> operator) {
-                return t.operator == operator ? t : new JS.JsOperator(t.id, t.prefix, t.markers, t.left, operator, t.right, t.type);
             }
         }
     }
@@ -1591,6 +1533,35 @@ public interface JS extends J {
         }
     }
 
+    @Getter
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @With
+    final class TypeOf implements JS, Expression {
+
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        Space prefix;
+        Markers markers;
+
+        Expression expression;
+
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTypeOf(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+    }
+
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
@@ -1862,6 +1833,41 @@ public interface JS extends J {
             public JS.Union withTypes(List<JRightPadded<Expression>> types) {
                 return t.types == types ? t : new JS.Union(t.id, t.prefix, t.markers, types, t.type);
             }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @Data
+    @With
+    final class Void implements JS, Expression, Statement {
+
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        Space prefix;
+        Markers markers;
+        Expression expression;
+
+        @Override
+        public JavaType getType() {
+            return JavaType.Primitive.Void;
+        }
+
+        @Override
+        public <T extends J> T withType(@Nullable JavaType type) {
+            return (T) this;
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitVoid(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
         }
     }
 }

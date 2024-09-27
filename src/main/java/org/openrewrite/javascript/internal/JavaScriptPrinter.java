@@ -102,6 +102,15 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitAwait(JS.Await await, PrintOutputCapture<P> p) {
+        beforeSyntax(await, JsSpace.Location.AWAIT_PREFIX, p);
+        p.append("await");
+        visit(await.getExpression(), p);
+        afterSyntax(await, p);
+        return await;
+    }
+
+    @Override
     public J visitBinding(JS.ObjectBindingDeclarations.Binding binding, PrintOutputCapture<P> p) {
         beforeSyntax(binding, JsSpace.Location.BINDING_PREFIX, p);
         if (binding.getAfterVararg() != null) {
@@ -233,30 +242,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
-    public J visitJsOperator(JS.JsOperator operator, PrintOutputCapture<P> p) {
-        beforeSyntax(operator, JsSpace.Location.BINARY_PREFIX, p);
-
-        visit(operator.getLeft(), p);
-        String keyword = "";
-        switch (operator.getOperator()) {
-            case Await:
-                keyword = "await";
-                break;
-            case TypeOf:
-                keyword = "typeof";
-                break;
-        }
-
-        visitSpace(operator.getPadding().getOperator().getBefore(), JsSpace.Location.OPERATOR_PREFIX, p);
-        p.append(keyword);
-
-        visit(operator.getRight(), p);
-
-        afterSyntax(operator, p);
-        return operator;
-    }
-
-    @Override
     public J visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, PrintOutputCapture<P> p) {
         beforeSyntax(objectBindingDeclarations, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
         visit(objectBindingDeclarations.getLeadingAnnotations(), p);
@@ -332,8 +317,17 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitTypeOf(JS.TypeOf typeOf, PrintOutputCapture<P> p) {
+        beforeSyntax(typeOf, JsSpace.Location.TYPEOF_PREFIX, p);
+        p.append("typeof");
+        visit(typeOf.getExpression(), p);
+        afterSyntax(typeOf, p);
+        return typeOf;
+    }
+
+    @Override
     public J visitTypeOperator(JS.TypeOperator typeOperator, PrintOutputCapture<P> p) {
-        beforeSyntax(typeOperator, JsSpace.Location.BINARY_PREFIX, p);
+        beforeSyntax(typeOperator, JsSpace.Location.TYPE_OPERATOR_PREFIX, p);
 
         String keyword = "";
         if (typeOperator.getOperator() == JS.TypeOperator.Type.ReadOnly) {
@@ -374,6 +368,15 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         afterSyntax(union, p);
         return union;
+    }
+
+    @Override
+    public J visitVoid(JS.Void aVoid, PrintOutputCapture<P> p) {
+        beforeSyntax(aVoid, JsSpace.Location.VOID_PREFIX, p);
+        p.append("void");
+        visit(aVoid.getExpression(), p);
+        afterSyntax(aVoid, p);
+        return aVoid;
     }
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {

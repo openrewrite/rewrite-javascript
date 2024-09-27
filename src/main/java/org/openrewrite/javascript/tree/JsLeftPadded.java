@@ -24,9 +24,9 @@ public class JsLeftPadded {
         BINDING_INITIALIZER(JsSpace.Location.BINDING_INITIALIZER_PREFIX),
         EXPORT_INITIALIZER(JsSpace.Location.EXPORT_INITIALIZER_PREFIX),
         IMPORT_INITIALIZER(JsSpace.Location.IMPORT_INITIALIZER_PREFIX),
-        OPERATOR(JsSpace.Location.OPERATOR_PREFIX),
         TYPE_DECLARATION_INITIALIZER(JsSpace.Location.TYPE_DECLARATION_INITIALIZER_PREFIX),
-        TYPE_OPERATOR(JsSpace.Location.TYPE_OPERATOR_PREFIX);
+        TYPE_OPERATOR(JsSpace.Location.TYPE_OPERATOR_PREFIX)
+        ;
 
         private final JsSpace.Location beforeLocation;
 

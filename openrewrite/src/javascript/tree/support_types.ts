@@ -185,6 +185,7 @@ export namespace JsSpace {
         ALIAS_PREFIX,
         ARROW_FUNCTION_PREFIX,
         ARROW_FUNCTION_ARROW,
+        AWAIT_PREFIX,
         DEFAULT_TYPE_PREFIX,
         DEFAULT_TYPE_BEFORE_EQUALS,
         DELETE_PREFIX,
@@ -195,7 +196,6 @@ export namespace JsSpace {
         JS_IMPORT_PREFIX,
         JS_IMPORT_FROM,
         JS_BINARY_PREFIX,
-        JS_OPERATOR_PREFIX,
         OBJECT_BINDING_DECLARATIONS_PREFIX,
         OBJECT_BINDING_DECLARATIONS_BINDING_PREFIX,
         OBJECT_BINDING_DECLARATIONS_BINDING_AFTER_VARARG,
@@ -204,9 +204,11 @@ export namespace JsSpace {
         TEMPLATE_EXPRESSION_VALUE_AFTER,
         TUPLE_PREFIX,
         TYPE_DECLARATION_PREFIX,
+        TYPE_OF_PREFIX,
         TYPE_OPERATOR_PREFIX,
         UNARY_PREFIX,
         UNION_PREFIX,
+        VOID_PREFIX,
     }
 }
 export namespace JsLeftPadded {

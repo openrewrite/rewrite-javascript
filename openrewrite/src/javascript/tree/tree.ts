@@ -371,6 +371,73 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$Await")
+export class Await extends JSMixin(Object) implements Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, expression: Expression, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._expression = expression;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): Await {
+            return id === this._id ? this : new Await(id, this._prefix, this._markers, this._expression, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): Await {
+            return prefix === this._prefix ? this : new Await(this._id, prefix, this._markers, this._expression, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): Await {
+            return markers === this._markers ? this : new Await(this._id, this._prefix, markers, this._expression, this._type);
+        }
+
+        private readonly _expression: Expression;
+
+        public get expression(): Expression {
+            return this._expression;
+        }
+
+        public withExpression(expression: Expression): Await {
+            return expression === this._expression ? this : new Await(this._id, this._prefix, this._markers, expression, this._type);
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): Await {
+            return _type === this._type ? this : new Await(this._id, this._prefix, this._markers, this._expression, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitAwait(this, p);
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$DefaultType")
 export class DefaultType extends JSMixin(Object) implements Expression, TypedTree, NameTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression, beforeEquals: Space, right: Expression, _type: JavaType | null) {
@@ -966,116 +1033,6 @@ export namespace JsBinary {
             IdentityEquals = 1,
             IdentityNotEquals = 2,
             In = 3,
-
-    }
-
-}
-
-@LstType("org.openrewrite.javascript.tree.JS$JsOperator")
-export class JsOperator extends JSMixin(Object) implements Statement, Expression, TypedTree, NameTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression | null, operator: JLeftPadded<JsOperator.Type>, right: Expression, _type: JavaType | null) {
-        super();
-        this._id = id;
-        this._prefix = prefix;
-        this._markers = markers;
-        this._left = left;
-        this._operator = operator;
-        this._right = right;
-        this._type = _type;
-    }
-
-        private readonly _id: UUID;
-
-        public get id(): UUID {
-            return this._id;
-        }
-
-        public withId(id: UUID): JsOperator {
-            return id === this._id ? this : new JsOperator(id, this._prefix, this._markers, this._left, this._operator, this._right, this._type);
-        }
-
-        private readonly _prefix: Space;
-
-        public get prefix(): Space {
-            return this._prefix;
-        }
-
-        public withPrefix(prefix: Space): JsOperator {
-            return prefix === this._prefix ? this : new JsOperator(this._id, prefix, this._markers, this._left, this._operator, this._right, this._type);
-        }
-
-        private readonly _markers: Markers;
-
-        public get markers(): Markers {
-            return this._markers;
-        }
-
-        public withMarkers(markers: Markers): JsOperator {
-            return markers === this._markers ? this : new JsOperator(this._id, this._prefix, markers, this._left, this._operator, this._right, this._type);
-        }
-
-        private readonly _left: Expression | null;
-
-        public get left(): Expression | null {
-            return this._left;
-        }
-
-        public withLeft(left: Expression | null): JsOperator {
-            return left === this._left ? this : new JsOperator(this._id, this._prefix, this._markers, left, this._operator, this._right, this._type);
-        }
-
-        private readonly _operator: JLeftPadded<JsOperator.Type>;
-
-        public get operator(): JsOperator.Type {
-            return this._operator.element;
-        }
-
-        public withOperator(operator: JsOperator.Type): JsOperator {
-            return this.padding.withOperator(this._operator.withElement(operator));
-        }
-
-        private readonly _right: Expression;
-
-        public get right(): Expression {
-            return this._right;
-        }
-
-        public withRight(right: Expression): JsOperator {
-            return right === this._right ? this : new JsOperator(this._id, this._prefix, this._markers, this._left, this._operator, right, this._type);
-        }
-
-        private readonly _type: JavaType | null;
-
-        public get type(): JavaType | null {
-            return this._type;
-        }
-
-        public withType(_type: JavaType | null): JsOperator {
-            return _type === this._type ? this : new JsOperator(this._id, this._prefix, this._markers, this._left, this._operator, this._right, _type);
-        }
-
-    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-        return v.visitJsOperator(this, p);
-    }
-
-    get padding() {
-        const t = this;
-        return new class {
-            public get operator(): JLeftPadded<JsOperator.Type> {
-                return t._operator;
-            }
-            public withOperator(operator: JLeftPadded<JsOperator.Type>): JsOperator {
-                return t._operator === operator ? t : new JsOperator(t._id, t._prefix, t._markers, t._left, operator, t._right, t._type);
-            }
-        }
-    }
-
-}
-
-export namespace JsOperator {
-    export enum Type {
-            Await = 0,
-            TypeOf = 1,
 
     }
 
@@ -1731,6 +1688,73 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$TypeOf")
+export class TypeOf extends JSMixin(Object) implements Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, expression: Expression, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._expression = expression;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): TypeOf {
+            return id === this._id ? this : new TypeOf(id, this._prefix, this._markers, this._expression, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): TypeOf {
+            return prefix === this._prefix ? this : new TypeOf(this._id, prefix, this._markers, this._expression, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): TypeOf {
+            return markers === this._markers ? this : new TypeOf(this._id, this._prefix, markers, this._expression, this._type);
+        }
+
+        private readonly _expression: Expression;
+
+        public get expression(): Expression {
+            return this._expression;
+        }
+
+        public withExpression(expression: Expression): TypeOf {
+            return expression === this._expression ? this : new TypeOf(this._id, this._prefix, this._markers, expression, this._type);
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): TypeOf {
+            return _type === this._type ? this : new TypeOf(this._id, this._prefix, this._markers, this._expression, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTypeOf(this, p);
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$TypeOperator")
 export class TypeOperator extends JSMixin(Object) implements Expression, TypedTree, NameTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, operator: TypeOperator.Type, expression: JLeftPadded<Expression>) {
@@ -2000,6 +2024,70 @@ export class Union extends JSMixin(Object) implements Expression, TypeTree {
                 return t._types === types ? t : new Union(t._id, t._prefix, t._markers, types, t._type);
             }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$Void")
+export class Void extends JSMixin(Object) implements Expression, Statement {
+    public constructor(id: UUID, prefix: Space, markers: Markers, expression: Expression) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._expression = expression;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): Void {
+            return id === this._id ? this : new Void(id, this._prefix, this._markers, this._expression);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): Void {
+            return prefix === this._prefix ? this : new Void(this._id, prefix, this._markers, this._expression);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): Void {
+            return markers === this._markers ? this : new Void(this._id, this._prefix, markers, this._expression);
+        }
+
+        private readonly _expression: Expression;
+
+        public get expression(): Expression {
+            return this._expression;
+        }
+
+        public withExpression(expression: Expression): Void {
+            return expression === this._expression ? this : new Void(this._id, this._prefix, this._markers, expression);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitVoid(this, p);
+    }
+
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): Void {
+        return extensions.withJavaType(this, type);
     }
 
 }

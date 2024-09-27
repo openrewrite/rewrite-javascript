@@ -2308,29 +2308,6 @@ public class TypeScriptParserVisitor {
         );
     }
 
-    private JS.JsOperator visitTsOperator(TSCNode node) {
-        Space prefix = whitespace();
-        Expression left = null; // placeholder for 'bar' in foo. Remove left expression if it is unnecessary.
-        JLeftPadded<JS.JsOperator.Type> op = null;
-        if (node.syntaxKind() == TSCSyntaxKind.AwaitExpression) {
-            op = padLeft(sourceBefore(TSCSyntaxKind.AwaitKeyword), JS.JsOperator.Type.Await);
-        } else if (node.syntaxKind() == TSCSyntaxKind.TypeOfExpression) {
-            op = padLeft(sourceBefore(TSCSyntaxKind.TypeOfKeyword), JS.JsOperator.Type.TypeOf);
-        } else {
-            implementMe(node);
-        }
-        Expression right = (Expression) visitNode(node.getNodeProperty("expression"));
-        return new JS.JsOperator(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                left,
-                op,
-                right,
-                typeMapping.type(node)
-        );
-    }
-
     private J visitTypeLiteral(TSCNode node) {
         Space prefix = whitespace();
         return mapPropertyNodesToNewClass( node.getOptionalNodeListProperty("members"), prefix);
@@ -2409,40 +2386,6 @@ public class TypeScriptParserVisitor {
                 modifiers,
                 name,
                 bounds
-        );
-    }
-
-    private J.ParameterizedType visitTypeQuery(TSCNode node) {
-        Space prefix = whitespace();
-        Space typeOfPrefix = sourceBefore(TSCSyntaxKind.TypeOfKeyword);
-        Expression name = (Expression) visitNode(node.getNodeProperty("exprName"));
-
-        JS.JsOperator op = new JS.JsOperator(
-                randomId(),
-                typeOfPrefix,
-                Markers.EMPTY,
-                null,
-                padLeft(EMPTY, JS.JsOperator.Type.TypeOf),
-                name,
-                typeMapping.type(node)
-        );
-
-        TSCNodeList typeArguments = node.getOptionalNodeListProperty("typeArguments");
-        return new J.ParameterizedType(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                op,
-                typeArguments == null ? null :
-                        mapContainer(
-                                TSCSyntaxKind.LessThanToken,
-                                typeArguments,
-                                TSCSyntaxKind.CommaToken,
-                                TSCSyntaxKind.GreaterThanToken,
-                                t -> (Expression) visitNode(t),
-                                true
-                        ),
-                typeMapping.type(node)
         );
     }
 
@@ -2887,10 +2830,6 @@ public class TypeScriptParserVisitor {
             case TemplateExpression:
                 j = visitTemplateExpression(node);
                 break;
-            case AwaitExpression:
-            case TypeOfExpression:
-                j = visitTsOperator(node);
-                break;
             case PostfixUnaryExpression:
             case PrefixUnaryExpression:
                 j = visitUnaryExpression(node);
@@ -3055,9 +2994,6 @@ public class TypeScriptParserVisitor {
                 break;
             case TypeParameter:
                 j = visitTypeParameter(node);
-                break;
-            case TypeQuery:
-                j = visitTypeQuery(node);
                 break;
             case TypeReference:
                 j = visitTypeReference(node);
