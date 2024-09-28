@@ -13,7 +13,7 @@ import * as J from "../../dist/java/tree";
 import * as JS from "../../dist/javascript/tree";
 import dedent from "dedent";
 import {ReceiverContext, RemotePrinterFactory, RemotingContext, SenderContext} from "@openrewrite/rewrite-remote";
-import * as deser from "@openrewrite/rewrite-remote/java/serializers";
+import * as deser from "@openrewrite/rewrite-remote/java";
 import {JavaScriptReceiver, JavaScriptSender} from "@openrewrite/rewrite-remote/javascript";
 import net from "net";
 import {JavaScriptParser, JavaScriptVisitor} from "../../dist/javascript";
