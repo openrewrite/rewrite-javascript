@@ -1,17 +1,13 @@
 import * as ts from 'typescript';
-import * as J from '../java/tree';
+import * as J from '../java';
 import {
-    Comment,
-    Expression,
     JavaType,
     JContainer,
     JLeftPadded,
     JRightPadded,
     Space,
-    Statement,
-    TextComment, TypeTree
-} from '../java/tree';
-import * as JS from './tree';
+} from '../java';
+import * as JS from '.';
 import {
     ExecutionContext,
     Markers,
@@ -298,7 +294,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapExtends(node: ts.ClassDeclaration): JLeftPadded<TypeTree> | null {
+    private mapExtends(node: ts.ClassDeclaration): JLeftPadded<J.TypeTree> | null {
         if (node.heritageClauses == undefined || node.heritageClauses.length == 0) {
             return null;
         }
@@ -310,13 +306,13 @@ export class JavaScriptParserVisitor {
         return null;
     }
 
-    private mapImplements(node: ts.ClassDeclaration): JContainer<TypeTree> | null {
+    private mapImplements(node: ts.ClassDeclaration): JContainer<J.TypeTree> | null {
         if (node.heritageClauses == undefined || node.heritageClauses.length == 0) {
             return null;
         }
         for (let heritageClause of node.heritageClauses) {
             if (heritageClause.token == ts.SyntaxKind.ImplementsKeyword) {
-                const _implements: JRightPadded<TypeTree>[] = [];
+                const _implements: JRightPadded<J.TypeTree>[] = [];
                 for (let type of heritageClause.types) {
                     _implements.push(this.rightPadded(this.visit(type), this.suffix(type)));
                 }
@@ -645,7 +641,7 @@ export class JavaScriptParserVisitor {
         const prefix = this.prefix(nodes[0]);
         let statementList = nodes[1] as ts.SyntaxList;
 
-        const statements: JRightPadded<Statement>[] = this.rightPaddedSeparatedList(
+        const statements: JRightPadded<J.Statement>[] = this.rightPaddedSeparatedList(
             [...statementList.getChildren()],
             ts.SyntaxKind.CommaToken,
             (nodes, i) => i == nodes.length -2 && nodes[i + 1].kind == ts.SyntaxKind.CommaToken ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[i + 1]))]) : Markers.EMPTY
@@ -678,10 +674,10 @@ export class JavaScriptParserVisitor {
 
     visitCallExpression(node: ts.CallExpression) {
         const prefix = this.prefix(node);
-        let select: JRightPadded<Expression> | null;
+        let select: JRightPadded<J.Expression> | null;
         let name: J.Identifier;
         if (ts.isPropertyAccessExpression(node.expression)) {
-            select = this.rightPadded(this.convert<Expression>(node.expression.expression), this.prefix(node.expression.getChildAt(1)));
+            select = this.rightPadded(this.convert<J.Expression>(node.expression.expression), this.prefix(node.expression.getChildAt(1)));
             name = this.convert(node.expression.name);
         } else {
             select = null;
@@ -1612,7 +1608,7 @@ export class JavaScriptParserVisitor {
         return null;
     }
 
-    private mapArguments(nodes: readonly ts.Node[]): JContainer<Expression> {
+    private mapArguments(nodes: readonly ts.Node[]): JContainer<J.Expression> {
         if (nodes.length === 0) {
             return JContainer.empty();
         }
@@ -1621,7 +1617,7 @@ export class JavaScriptParserVisitor {
         let argList = nodes[1] as ts.SyntaxList;
         let childCount = argList.getChildCount();
 
-        const args: JRightPadded<Expression>[] = [];
+        const args: JRightPadded<J.Expression>[] = [];
         if (childCount === 0) {
             args.push(this.rightPadded(
                 new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY),
@@ -1662,7 +1658,7 @@ export class JavaScriptParserVisitor {
         const prefix = this.prefix(nodes[0]);
         let statementList = nodes[1] as ts.SyntaxList;
 
-        const statements: JRightPadded<Statement>[] = this.rightPaddedSeparatedList(
+        const statements: JRightPadded<J.Statement>[] = this.rightPaddedSeparatedList(
             [...statementList.getChildren()],
             ts.SyntaxKind.SemicolonToken,
             (nodes, i) => nodes[i].getLastToken()?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
@@ -1680,7 +1676,7 @@ export class JavaScriptParserVisitor {
 }
 
 function prefixFromNode(node: ts.Node, sourceFile: ts.SourceFile): Space {
-    const comments: Comment[] = [];
+    const comments: J.Comment[] = [];
     const text = sourceFile.getFullText();
     const nodeStart = node.getFullStart();
 
@@ -1705,7 +1701,7 @@ function prefixFromNode(node: ts.Node, sourceFile: ts.SourceFile): Space {
         const commentBody = text.slice(commentStart, commentEnd);  // Extract comment body
         const suffix = text.slice(end, suffixEnd);  // Extract suffix (whitespace after comment)
 
-        comments.push(new TextComment(isMultiline, commentBody, suffix, Markers.EMPTY));
+        comments.push(new J.TextComment(isMultiline, commentBody, suffix, Markers.EMPTY));
     });
 
     // Step 3: Extract leading whitespace (before the first comment)
