@@ -43,6 +43,23 @@ export class JavaScriptParser extends Parser {
         return this;
     }
 
+    parseProgramSources(program: ts.Program, relativeTo: string | null, ctx: ExecutionContext): Iterable<SourceFile> {
+        const typeChecker = program.getTypeChecker();
+
+        const result: SourceFile[] = [];
+        for (const filePath of program.getRootFileNames()) {
+            const sourceFile = program.getSourceFile(filePath)!;
+            const input = new ParserInput(filePath, null, false, () =>  Buffer.from(ts.sys.readFile(filePath)!));
+            try {
+                const parsed = new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile;
+                result.push(parsed);
+            } catch (error) {
+                result.push(ParseError.build(this, input, relativeTo, ctx, error instanceof Error ? error : new Error('Parser threw unknown error: ' + error), null));
+            }
+        }
+        return result;
+    }
+
     parseInputs(
         inputs: Iterable<ParserInput>,
         relativeTo: string | null,

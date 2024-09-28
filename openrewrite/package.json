@@ -19,6 +19,7 @@
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
+    "postinstall": "npm link @openrewrite/rewrite-remote",
     "dev": "tsc --watch -p tsconfig.json",
     "test": "jest"
   },
