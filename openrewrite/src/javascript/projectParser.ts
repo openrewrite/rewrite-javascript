@@ -61,20 +61,9 @@ export class Subproject {
 
         if (!installedPackageManagers.has(this.packageManager)) {
             console.log(`Installing package manager: ${this.packageManager} globally...`);
-            if (this.packageManager === PackageManager.Yarn) {
-                let result = spawnSync('npm', ['install', 'corepack'], { stdio: 'inherit' });
-                if (result.status !== 0) {
-                    throw new Error(`Failed to install ${this.packageManager} globally.`);
-                }
-                result = spawnSync('corepack', ['enable'], { stdio: 'inherit' });
-                if (result.status !== 0) {
-                    throw new Error(`Failed to enable corepack.`);
-                }
-            } else {
-                const result = spawnSync('npm', ['install', '-g', this.packageManager], {stdio: 'inherit'});
-                if (result.status !== 0) {
-                    throw new Error(`Failed to install ${this.packageManager} globally.`);
-                }
+            const result = spawnSync('corepack', ['enable', this.packageManager], {stdio: 'inherit'});
+            if (result.status !== 0) {
+                throw new Error(`Failed to install ${this.packageManager} globally.`);
             }
             installedPackageManagers.add(this.packageManager);
         }
@@ -86,18 +75,10 @@ export class Subproject {
         if (this.dependenciesInstalled) return;
 
         console.log(`Installing dependencies for subproject at ${this.rootDir} using ${this.packageManager}...`);
-        if (this.packageManager === PackageManager.Yarn) {
-            let args = ['-c', 'yes " " | yarn install'];
-            const result = spawnSync('bash', args, { cwd: this.rootDir, stdio: 'inherit' });
-            if (result.status !== 0) {
-                throw new Error(`Failed to install dependencies in ${this.rootDir} using ${this.packageManager}.`);
-            }
-        } else {
-            let args = ['install'];
-            const result = spawnSync(this.packageManager, args, {cwd: this.rootDir, stdio: 'inherit'});
-            if (result.status !== 0) {
-                throw new Error(`Failed to install dependencies in ${this.rootDir} using ${this.packageManager}.`);
-            }
+        let args = ['-c', `yes " " | ${this.packageManager} install`];
+        const result = spawnSync('bash', args, {cwd: this.rootDir, stdio: 'inherit'});
+        if (result.status !== 0) {
+            throw new Error(`Failed to install dependencies in ${this.rootDir} using ${this.packageManager}.`);
         }
 
         this.dependenciesInstalled = true;
@@ -160,7 +141,7 @@ export function findSubprojects(rootDir: string): string[] {
     const subprojects: string[] = [];
 
     function searchDirectory(directory: string): void {
-        const entries = fs.readdirSync(directory, { withFileTypes: true });
+        const entries = fs.readdirSync(directory, {withFileTypes: true});
 
         if (entries.some((entry) => entry.name === 'package.json')) {
             subprojects.push(directory);
