@@ -1,3 +1,7 @@
+// for side-effects (`java` must come after `javascript`)
+import "@openrewrite/rewrite-remote/javascript";
+import "@openrewrite/rewrite-remote/java";
+
 import {
     Cursor,
     InMemoryExecutionContext,
@@ -12,9 +16,7 @@ import {
 import * as J from "../../dist/java/tree";
 import * as JS from "../../dist/javascript/tree";
 import dedent from "dedent";
-import {ReceiverContext, RemotePrinterFactory, RemotingContext, SenderContext} from "@openrewrite/rewrite-remote";
-import * as deser from "@openrewrite/rewrite-remote/java";
-import {JavaScriptReceiver, JavaScriptSender} from "@openrewrite/rewrite-remote/javascript";
+import {RemotePrinterFactory, RemotingContext} from "@openrewrite/rewrite-remote";
 import net from "net";
 import {JavaScriptParser, JavaScriptVisitor} from "../../dist/javascript";
 
@@ -31,10 +33,6 @@ let remoting: RemotingContext;
 
 export async function connect(): Promise<RemotingContext> {
     return new Promise((resolve, reject) => {
-        SenderContext.register(JS.isJavaScript, () => new JavaScriptSender());
-        ReceiverContext.register(JS.isJavaScript, () => new JavaScriptReceiver());
-        deser.register();
-
         client = new net.Socket();
         client.connect(65432, 'localhost');
 
