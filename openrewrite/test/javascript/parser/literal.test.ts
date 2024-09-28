@@ -1,6 +1,6 @@
-import * as J from "../../../dist/java/tree";
-import {JavaType} from "../../../dist/java/tree";
-import * as JS from "../../../dist/javascript/tree";
+import * as J from "../../../dist/src/java/tree";
+import {JavaType} from "../../../dist/src/java";
+import * as JS from "../../../dist/src/javascript";
 import {connect, disconnect, rewriteRunWithOptions, typeScript} from '../testHarness';
 
 describe('identifier mapping', () => {

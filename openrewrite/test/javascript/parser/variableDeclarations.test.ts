@@ -1,4 +1,4 @@
-import * as J from "../../../dist/java/tree";
+import * as J from "../../../dist/src/java";
 import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
 describe('variable declaration mapping', () => {

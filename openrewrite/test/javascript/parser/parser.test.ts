@@ -1,6 +1,6 @@
-import {InMemoryExecutionContext, ParserInput} from '../../../dist/core';
-import {JavaScriptParser} from "../../../dist/javascript";
-import * as JS from "../../../dist/javascript/tree";
+import {InMemoryExecutionContext, ParserInput} from '../../../dist/src/core';
+import {JavaScriptParser} from "../../../dist/src/javascript";
+import * as JS from "../../../dist/src/javascript";
 
 describe('Parser API', () => {
     const parser = JavaScriptParser.builder().build();

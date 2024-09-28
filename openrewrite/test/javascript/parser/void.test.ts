@@ -1,6 +1,6 @@
 import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
-import * as JS from '../../../dist/javascript/tree';
-import {JavaType} from "../../../dist/java/tree";
+import * as JS from '../../../dist/src/javascript';
+import {JavaType} from "../../../dist/src/java";
 
 describe('void operator mapping', () => {
     beforeAll(() => connect());

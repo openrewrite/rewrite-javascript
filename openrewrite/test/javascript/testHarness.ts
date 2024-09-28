@@ -12,13 +12,13 @@ import {
     PrintOutputCapture,
     RecipeRunException,
     SourceFile
-} from '../../dist/core';
-import * as J from "../../dist/java/tree";
-import * as JS from "../../dist/javascript/tree";
+} from '../../dist/src/core';
+import * as J from "../../dist/src/java/tree";
+import * as JS from "../../dist/src/javascript/tree";
 import dedent from "dedent";
 import {RemotePrinterFactory, RemotingContext} from "@openrewrite/rewrite-remote";
 import net from "net";
-import {JavaScriptParser, JavaScriptVisitor} from "../../dist/javascript";
+import {JavaScriptParser, JavaScriptVisitor} from "../../dist/src/javascript";
 
 export interface RewriteTestOptions {
     normalizeIndent?: boolean

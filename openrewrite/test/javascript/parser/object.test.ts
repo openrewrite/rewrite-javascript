@@ -24,7 +24,6 @@ describe('object literal mapping', () => {
           typeScript('const c = { foo: 1, bar: 2 }')
         );
     });
-
     test('trailing comma', () => {
         rewriteRun(
           //language=typescript
