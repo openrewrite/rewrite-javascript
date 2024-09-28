@@ -4,8 +4,10 @@ import {JavaType} from "../java";
 export class JavaScriptTypeMapping {
 
     private readonly typeCache: Map<string, JavaType> = new Map();
+    private readonly regExpSymbol: ts.Symbol | undefined;
 
     constructor(private readonly checker: ts.TypeChecker) {
+        this.regExpSymbol = checker.resolveName('RegExp', undefined, ts.SymbolFlags.Type, false);
     }
 
     type(node: ts.Node): JavaType | null {
@@ -54,19 +56,21 @@ export class JavaScriptTypeMapping {
             } else if (type.isStringLiteral()) {
                 return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
             }
-            console.log(type);
         }
+
         if (type.flags === ts.TypeFlags.Null) {
             return JavaType.Primitive.of(JavaType.PrimitiveKind.Null);
         } else if (type.flags === ts.TypeFlags.BooleanLiteral) {
             return JavaType.Primitive.of(JavaType.PrimitiveKind.Boolean);
         } else if (type.flags === ts.TypeFlags.Void) {
             return JavaType.Primitive.of(JavaType.PrimitiveKind.Void);
-        // } else if (signature === 'RegExp') {
-        //     return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
-        } else if (ts.isRegularExpressionLiteral(node)) {
+        } else if (type.symbol === this.regExpSymbol) {
             return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
         }
+
+        // if (ts.isRegularExpressionLiteral(node)) {
+        //     return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
+        // }
         return JavaType.Unknown.INSTANCE;
     }
 }

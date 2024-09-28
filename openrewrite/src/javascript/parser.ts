@@ -33,18 +33,22 @@ export class JavaScriptParser extends Parser {
             allowJs: true
         };
         const host = ts.createCompilerHost(compilerOptions);
+        const libFilePath = ts.getDefaultLibFilePath(compilerOptions);
         host.getSourceFile = (fileName, languageVersion) => {
-            if (fileName.endsWith('lib.d.ts')) {
+            let sourceText = inputsArray.find(i => i.path === fileName)?.source().toString('utf8');
+            if (sourceText) {
+                return ts.createSourceFile(fileName, sourceText, languageVersion, true);
+            }
+
+            // FIXME we probably also want to load all other files from the file system
+            if (fileName === libFilePath) {
                 // For default library files like lib.d.ts
-                const libFilePath = ts.getDefaultLibFilePath(compilerOptions);
                 const libSource = ts.sys.readFile(libFilePath);
                 return libSource
                     ? ts.createSourceFile(fileName, libSource, languageVersion, true)
                     : undefined;
             }
-
-            let sourceText = inputsArray.find(i => i.path === fileName)?.source().toString('utf8')!;
-            return sourceText ? ts.createSourceFile(fileName, sourceText, languageVersion, true) : undefined;
+            return undefined;
         }
 
         const program = ts.createProgram(Array.from(inputsArray, i => i.path), compilerOptions, host);
