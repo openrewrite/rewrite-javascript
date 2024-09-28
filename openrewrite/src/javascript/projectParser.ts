@@ -11,20 +11,22 @@ export enum PackageManager {
 
 export class Subproject {
     rootDir: string;
-    packageManager: PackageManager;
+    packageManager: PackageManager | undefined;
     packageManagerInstalled: boolean;
     dependenciesInstalled: boolean;
     tsConfigPath?: string;
     tsTestConfigPath?: string;
 
-    constructor(rootDir: string) {
+    constructor(rootDir: string, packageManager: PackageManager | undefined = undefined) {
         this.rootDir = rootDir;
-        this.packageManager = PackageManager.Npm; // Default to NPM
         this.packageManagerInstalled = false;
         this.dependenciesInstalled = false;
+        this.packageManager = packageManager;
     }
 
-    detectPackageManager(): void {
+    detectPackageManager(): PackageManager {
+        if (this.packageManager) return this.packageManager;
+
         const hasYarnLock = fs.existsSync(path.join(this.rootDir, 'yarn.lock'));
         const hasPnpmLock = fs.existsSync(path.join(this.rootDir, 'pnpm-lock.yaml'));
 
@@ -35,6 +37,7 @@ export class Subproject {
         } else {
             this.packageManager = PackageManager.Npm;
         }
+        return this.packageManager;
     }
 
     locateTsConfigs(): void {
@@ -59,13 +62,13 @@ export class Subproject {
             return;
         }
 
-        if (!installedPackageManagers.has(this.packageManager)) {
+        if (!installedPackageManagers.has(this.packageManager!)) {
             console.log(`Installing package manager: ${this.packageManager} globally...`);
-            const result = spawnSync('corepack', ['enable', this.packageManager], {stdio: 'inherit'});
+            const result = spawnSync('corepack', ['enable', this.packageManager!], {stdio: 'inherit'});
             if (result.status !== 0) {
                 throw new Error(`Failed to install ${this.packageManager} globally.`);
             }
-            installedPackageManagers.add(this.packageManager);
+            installedPackageManagers.add(this.packageManager!);
         }
 
         this.packageManagerInstalled = true;
@@ -145,11 +148,10 @@ export function findSubprojects(rootDir: string): string[] {
 
         if (entries.some((entry) => entry.name === 'package.json')) {
             subprojects.push(directory);
-        } else {
-            for (const entry of entries) {
-                if (entry.isDirectory() && !entry.name.startsWith('.')) {
-                    searchDirectory(path.join(directory, entry.name));
-                }
+        }
+        for (const entry of entries) {
+            if (entry.isDirectory() && !entry.name.startsWith('.')) {
+                searchDirectory(path.join(directory, entry.name));
             }
         }
     }

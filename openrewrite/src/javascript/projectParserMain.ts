@@ -25,32 +25,37 @@ function main(): void {
 
     const installedPackageManagers = new Set<PackageManager>();
     const tsParser = new TypeScriptParser();
+    let detectedPackageManager: PackageManager | undefined = undefined;
 
     for (const subprojectPath of subprojectPaths) {
-        console.log(`\nProcessing subproject at ${subprojectPath}...`);
-        const subproject = new Subproject(subprojectPath);
-        subproject.detectPackageManager();
-        subproject.locateTsConfigs();
-        subproject.installPackageManager(installedPackageManagers);
-        subproject.installDependencies();
+        try {
+            console.log(`\nProcessing subproject at ${subprojectPath}...`);
+            const subproject: Subproject = new Subproject(subprojectPath, detectedPackageManager);
+            detectedPackageManager = subproject.detectPackageManager();
+            subproject.locateTsConfigs();
+            subproject.installPackageManager(installedPackageManagers);
+            subproject.installDependencies();
 
-        let productionProgram: ts.Program | undefined = undefined;
+            let productionProgram: ts.Program | undefined = undefined;
 
-        const parser = JavaScriptParser.builder().build();
-        const sourceFiles: SourceFile[] = [];
-        if (subproject.tsConfigPath) {
-            productionProgram = tsParser.parseProject(subproject.tsConfigPath);
-            sourceFiles.push(...parser.parseProgramSources(productionProgram, rootDir, new InMemoryExecutionContext()));
-        }
+            const parser = JavaScriptParser.builder().build();
+            const sourceFiles: SourceFile[] = [];
+            if (subproject.tsConfigPath) {
+                productionProgram = tsParser.parseProject(subproject.tsConfigPath);
+                sourceFiles.push(...parser.parseProgramSources(productionProgram, rootDir, new InMemoryExecutionContext()));
+            }
 
-        if (subproject.tsTestConfigPath) {
-            let testProgram = tsParser.parseProject(subproject.tsTestConfigPath, productionProgram);
-            sourceFiles.push(...parser.parseProgramSources(testProgram, rootDir, new InMemoryExecutionContext()));
-        }
+            if (subproject.tsTestConfigPath) {
+                let testProgram = tsParser.parseProject(subproject.tsTestConfigPath, productionProgram);
+                sourceFiles.push(...parser.parseProgramSources(testProgram, rootDir, new InMemoryExecutionContext()));
+            }
 
-        console.log(`\nParsed ${sourceFiles.length} source files:`);
-        for (let sourceFile of sourceFiles) {
-            console.log(`\t${sourceFile.sourcePath}`);
+            console.log(`\nParsed ${sourceFiles.length} source files:`);
+            for (let sourceFile of sourceFiles) {
+                console.log(`\t${sourceFile.sourcePath}`);
+            }
+        } catch (e) {
+            console.log('\nSkipping subproject.');
         }
     }
 
