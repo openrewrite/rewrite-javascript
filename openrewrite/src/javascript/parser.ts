@@ -25,9 +25,8 @@ import {JavaScriptTypeMapping} from "./typeMapping";
 export class JavaScriptParser extends Parser {
 
     private readonly compilerOptions: ts.CompilerOptions;
-    private readonly host: ts.CompilerHost;
+    private readonly sourceFileCache: Map<string, ts.SourceFile> = new Map();
     private oldProgram: ts.Program | undefined;
-    private sourceFileCache: Map<string, ts.SourceFile>;
 
     constructor() {
         super();
@@ -36,11 +35,33 @@ export class JavaScriptParser extends Parser {
             module: ts.ModuleKind.CommonJS,
             allowJs: true,
         };
-        this.sourceFileCache = new Map();
-        this.host = ts.createCompilerHost(this.compilerOptions);
+    }
+
+    reset(): this {
+        this.sourceFileCache.clear();
+        this.oldProgram = undefined;
+        return this;
+    }
+
+    parseInputs(
+        inputs: Iterable<ParserInput>,
+        relativeTo: string | null,
+        ctx: ExecutionContext
+    ): Iterable<SourceFile> {
+        const inputFiles = new Map<string, ParserInput>();
+
+        // Populate inputFiles map and remove from cache if necessary
+        for (const input of inputs) {
+            inputFiles.set(input.path, input);
+            // Remove from cache if previously cached
+            this.sourceFileCache.delete(input.path);
+        }
+
+        // Create a new CompilerHost within parseInputs
+        const host = ts.createCompilerHost(this.compilerOptions);
 
         // Override getSourceFile
-        this.host.getSourceFile = (fileName, languageVersion, onError) => {
+        host.getSourceFile = (fileName, languageVersion, onError) => {
             // Check if the SourceFile is in the cache
             let sourceFile = this.sourceFileCache.get(fileName);
             if (sourceFile) {
@@ -51,8 +72,9 @@ export class JavaScriptParser extends Parser {
             let sourceText: string | undefined;
 
             // For input files
-            if (this.inputFiles.has(fileName)) {
-                sourceText = this.inputFiles.get(fileName)!;
+            const input = inputFiles.get(fileName);
+            if (input) {
+                sourceText = input.source().toString('utf8');
             } else {
                 // For dependency files
                 sourceText = ts.sys.readFile(fileName);
@@ -61,7 +83,7 @@ export class JavaScriptParser extends Parser {
             if (sourceText !== undefined) {
                 sourceFile = ts.createSourceFile(fileName, sourceText, languageVersion, true);
                 // Cache the SourceFile if it's a dependency
-                if (!this.inputFiles.has(fileName)) {
+                if (!input) {
                     this.sourceFileCache.set(fileName, sourceFile);
                 }
                 return sourceFile;
@@ -70,35 +92,22 @@ export class JavaScriptParser extends Parser {
             if (onError) onError(`File not found: ${fileName}`);
             return undefined;
         };
-    }
 
-    reset(): this {
-        this.sourceFileCache.clear();
-        this.inputFiles.clear();
-        return this;
-    }
+        // Override fileExists
+        host.fileExists = (fileName) => {
+            return inputFiles.has(fileName) || ts.sys.fileExists(fileName);
+        };
 
-    private inputFiles: Map<string, string> = new Map();
-
-    parseInputs(inputs: Iterable<ParserInput>, relativeTo: string | null, ctx: ExecutionContext): Iterable<SourceFile> {
-        // Clear inputFiles map
-        this.inputFiles.clear();
-
-        const inputsArray = Array.from(inputs);
-
-        // Populate inputFiles map
-        for (const input of inputsArray) {
-            const sourceText = input.source().toString('utf8');
-            this.inputFiles.set(input.path, sourceText);
-            // Remove from cache if previously cached
-            this.sourceFileCache.delete(input.path);
-        }
-
-        // Collect all file names (input files and cached dependencies)
-        const fileNames = [...this.inputFiles.keys(), ...this.sourceFileCache.keys()];
+        // Override readFile
+        host.readFile = (fileName) => {
+            const input = inputFiles.get(fileName);
+            return input
+                ? input.source().toString('utf8')
+                : ts.sys.readFile(fileName);
+        };
 
         // Create a new Program, passing the oldProgram for incremental parsing
-        const program = ts.createProgram(fileNames, this.compilerOptions, this.host, this.oldProgram);
+        const program = ts.createProgram([...inputFiles.keys()], this.compilerOptions, host, this.oldProgram);
 
         // Update the oldProgram reference
         this.oldProgram = program;
@@ -106,35 +115,21 @@ export class JavaScriptParser extends Parser {
         const typeChecker = program.getTypeChecker();
 
         const result: SourceFile[] = [];
-        for (const input of inputsArray) {
-            const sourceFile = program.getSourceFile(input.path);
+        for (const input of inputFiles.values()) {
+            const filePath = input.path;
+            const sourceFile = program.getSourceFile(filePath);
             if (sourceFile) {
                 try {
                     const parsed = new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile;
                     result.push(parsed);
                 } catch (error) {
-                    result.push(ParseError.build(
-                        this,
-                        input,
-                        relativeTo,
-                        ctx,
-                        error instanceof Error ? error : new Error("Parser threw unknown error: " + error),
-                        null
-                    ));
+                    result.push(ParseError.build(this, input, relativeTo, ctx, error instanceof Error ? error : new Error('Parser threw unknown error: ' + error), null));
                 }
             } else {
-                result.push(ParseError.build(
-                    this,
-                    input,
-                    relativeTo,
-                    ctx,
-                    new Error("Parser returned undefined"),
-                    null
-                ));
+                result.push(ParseError.build(this, input, relativeTo, ctx, new Error('Parser returned undefined'), null));
             }
         }
 
-        this.inputFiles.clear();
         return result;
     }
 
