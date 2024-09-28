@@ -24,42 +24,94 @@ import {JavaScriptTypeMapping} from "./typeMapping";
 
 export class JavaScriptParser extends Parser {
 
-    parseInputs(inputs: Iterable<ParserInput>, relativeTo: string | null, ctx: ExecutionContext): Iterable<SourceFile> {
-        const inputsArray = Array.from(inputs);
-        const compilerOptions: ts.CompilerOptions = {
+    private readonly compilerOptions: ts.CompilerOptions;
+    private readonly host: ts.CompilerHost;
+    private oldProgram: ts.Program | undefined;
+    private sourceFileCache: Map<string, ts.SourceFile>;
+
+    constructor() {
+        super();
+        this.compilerOptions = {
             target: ts.ScriptTarget.Latest,
             module: ts.ModuleKind.CommonJS,
-            // strict: true,
-            allowJs: true
+            allowJs: true,
         };
-        const host = ts.createCompilerHost(compilerOptions);
-        const libFilePath = ts.getDefaultLibFilePath(compilerOptions);
-        host.getSourceFile = (fileName, languageVersion) => {
-            let sourceText = inputsArray.find(i => i.path === fileName)?.source().toString('utf8');
-            if (sourceText) {
-                return ts.createSourceFile(fileName, sourceText, languageVersion, true);
+        this.sourceFileCache = new Map();
+        this.host = ts.createCompilerHost(this.compilerOptions);
+
+        // Override getSourceFile
+        this.host.getSourceFile = (fileName, languageVersion, onError) => {
+            // Check if the SourceFile is in the cache
+            let sourceFile = this.sourceFileCache.get(fileName);
+            if (sourceFile) {
+                return sourceFile;
             }
 
-            // FIXME we probably also want to load all other files from the file system
-            if (fileName === libFilePath) {
-                // For default library files like lib.d.ts
-                const libSource = ts.sys.readFile(libFilePath);
-                return libSource
-                    ? ts.createSourceFile(fileName, libSource, languageVersion, true)
-                    : undefined;
+            // Read the file content
+            let sourceText: string | undefined;
+
+            // For input files
+            if (this.inputFiles.has(fileName)) {
+                sourceText = this.inputFiles.get(fileName)!;
+            } else {
+                // For dependency files
+                sourceText = ts.sys.readFile(fileName);
             }
+
+            if (sourceText !== undefined) {
+                sourceFile = ts.createSourceFile(fileName, sourceText, languageVersion, true);
+                // Cache the SourceFile if it's a dependency
+                if (!this.inputFiles.has(fileName)) {
+                    this.sourceFileCache.set(fileName, sourceFile);
+                }
+                return sourceFile;
+            }
+
+            if (onError) onError(`File not found: ${fileName}`);
             return undefined;
+        };
+    }
+
+    reset(): this {
+        this.sourceFileCache.clear();
+        this.inputFiles.clear();
+        return this;
+    }
+
+    private inputFiles: Map<string, string> = new Map();
+
+    parseInputs(inputs: Iterable<ParserInput>, relativeTo: string | null, ctx: ExecutionContext): Iterable<SourceFile> {
+        // Clear inputFiles map
+        this.inputFiles.clear();
+
+        const inputsArray = Array.from(inputs);
+
+        // Populate inputFiles map
+        for (const input of inputsArray) {
+            const sourceText = input.source().toString('utf8');
+            this.inputFiles.set(input.path, sourceText);
+            // Remove from cache if previously cached
+            this.sourceFileCache.delete(input.path);
         }
 
-        const program = ts.createProgram(Array.from(inputsArray, i => i.path), compilerOptions, host);
+        // Collect all file names (input files and cached dependencies)
+        const fileNames = [...this.inputFiles.keys(), ...this.sourceFileCache.keys()];
+
+        // Create a new Program, passing the oldProgram for incremental parsing
+        const program = ts.createProgram(fileNames, this.compilerOptions, this.host, this.oldProgram);
+
+        // Update the oldProgram reference
+        this.oldProgram = program;
+
         const typeChecker = program.getTypeChecker();
 
-        const result = [];
-        for (let input of inputsArray) {
+        const result: SourceFile[] = [];
+        for (const input of inputsArray) {
             const sourceFile = program.getSourceFile(input.path);
             if (sourceFile) {
                 try {
-                    result.push(new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile);
+                    const parsed = new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile;
+                    result.push(parsed);
                 } catch (error) {
                     result.push(ParseError.build(
                         this,
@@ -81,6 +133,8 @@ export class JavaScriptParser extends Parser {
                 ));
             }
         }
+
+        this.inputFiles.clear();
         return result;
     }
 
