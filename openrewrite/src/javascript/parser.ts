@@ -20,6 +20,7 @@ import {
 } from "../core";
 import {Semicolon, TrailingComma} from "../java";
 import {binarySearch, compareTextSpans, getNextSibling, TextSpan} from "./parserUtils";
+import {JavaScriptTypeMapping} from "./typeMapping";
 
 export class JavaScriptParser extends Parser {
 
@@ -111,10 +112,13 @@ for (const [key, value] of Object.entries(ts.SyntaxKind)) {
 
 // noinspection JSUnusedGlobalSymbols
 export class JavaScriptParserVisitor {
+    private readonly typeMapping: JavaScriptTypeMapping;
+
     constructor(
         private readonly parser: Parser,
         private readonly sourceFile: ts.SourceFile,
-        private readonly typeChecker: ts.TypeChecker) {
+        typeChecker: ts.TypeChecker) {
+        this.typeMapping = new JavaScriptTypeMapping(typeChecker);
     }
 
     visit(node: ts.Node): any {
@@ -358,7 +362,7 @@ export class JavaScriptParserVisitor {
             value,
             node.getText(),
             null,
-            this.mapType(node) as JavaType.Primitive
+            this.mapPrimitiveType(node)
         );
     }
 
@@ -398,8 +402,8 @@ export class JavaScriptParserVisitor {
         return this.mapIdentifier(node, node.text);
     }
 
-    private mapIdentifier(node: ts.Node, name: string) {
-        let type = this.mapType(node);
+    private mapIdentifier(node: ts.Node, name: string, withType: boolean = true) {
+        let type = withType ? this.mapType(node) : null;
         return new J.Identifier(
             randomId(),
             this.prefix(node),
@@ -1219,7 +1223,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitImportSpecifier(node: ts.ImportSpecifier) {
-        return this.convert(node.name);
+        return this.mapIdentifier(node, node.name.text, false);
     }
 
     visitExportAssignment(node: ts.ExportAssignment) {
@@ -1584,28 +1588,19 @@ export class JavaScriptParserVisitor {
     }
 
     private mapType(node: ts.Node): JavaType | null {
-        if (ts.isLiteralExpression(node)) {
-            if (ts.isNumericLiteral(node)) {
-                return JavaType.Primitive.of(JavaType.PrimitiveKind.Int);
-            } else if (ts.isStringLiteral(node) || ts.isRegularExpressionLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
-                return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
-            }
-            return JavaType.Primitive.of(JavaType.PrimitiveKind.Void);
-        } else if (node.kind == ts.SyntaxKind.TrueKeyword || node.kind == ts.SyntaxKind.FalseKeyword) {
-            return JavaType.Primitive.of(JavaType.PrimitiveKind.Boolean);
-        } else if (node.kind == ts.SyntaxKind.NullKeyword) {
-            return JavaType.Primitive.of(JavaType.PrimitiveKind.Null);
-        }
-        return JavaType.Unknown.INSTANCE;
+        return this.typeMapping.type(node);
     }
 
-    private mapVariableType(node: ts.Node): JavaType.Variable | null {
-        return null;
+    private mapPrimitiveType(node: ts.Node): JavaType.Primitive {
+        return this.typeMapping.primitiveType(node);
+    }
+
+    private mapVariableType(node: ts.NamedDeclaration): JavaType.Variable | null {
+        return this.typeMapping.variableType(node);
     }
 
     private mapMethodType(node: ts.Node): JavaType.Method | null {
-        // FIXME JavaType.Method
-        return null;
+        return this.typeMapping.methodType(node);
     }
 
     private mapArguments(nodes: readonly ts.Node[]): JContainer<J.Expression> {

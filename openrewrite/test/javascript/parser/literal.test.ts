@@ -11,7 +11,7 @@ describe('identifier mapping', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
           typeScript(' 1', sourceFile => {
-              assertLiteralLst(sourceFile, '1', JavaType.PrimitiveKind.Int);
+              assertLiteralLst(sourceFile, '1', JavaType.PrimitiveKind.Long);
           }));
     });
     test('string', () => {
