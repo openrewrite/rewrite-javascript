@@ -1,5 +1,5 @@
 import * as J from "../../../dist/java/tree";
-import {connect, disconnect, rewriteRun, rewriteRunWithOptions, typeScript} from '../testHarness';
+import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
 describe('variable declaration mapping', () => {
     beforeAll(() => connect());
@@ -28,9 +28,7 @@ describe('variable declaration mapping', () => {
     });
 
     test('const2', () => {
-        rewriteRunWithOptions(
-          // FIXME not quite there yet
-          {validatePrintIdempotence: false, allowUnknowns: true},
+        rewriteRun(
           typeScript(
             //language=javascript
             `
