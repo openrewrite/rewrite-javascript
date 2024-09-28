@@ -1,5 +1,5 @@
-import {J, JavaType} from "../../java/tree";
-import {Alias, ObjectBindingDeclarations, TypeOperator} from "./tree";
+import {J, JavaType} from "../../java";
+import {Alias, ObjectBindingDeclarations, TypeOperator, Void} from "./tree";
 import {ExpressionStatement, StatementExpression} from "./support_types";
 import * as java_extensions from "../../java/tree/extensions";
 
@@ -16,6 +16,8 @@ export function getJavaType<T extends J>(expr: T): JavaType | null {
         return null;
     } else if (expr instanceof TypeOperator) {
         return expr.expression.type;
+    } else if (expr instanceof Void) {
+        return JavaType.Primitive.of(JavaType.PrimitiveKind.Void);
     }
     return java_extensions.getJavaType(expr);
 }
@@ -33,6 +35,8 @@ export function withJavaType<T>(expr: T, type: JavaType): T {
         return expr as T;
     } else if (expr instanceof TypeOperator) {
         return expr.withExpression(expr.expression.withType(type)) as T;
+    } else if (expr instanceof Void) {
+        return expr as T;
     }
     return java_extensions.withJavaType(expr, type);
 }
