@@ -112,7 +112,6 @@ export class ParseExceptionResult implements Marker {
     private readonly _id: UUID;
     private readonly _parserType: string;
     private readonly _exceptionType: string;
-    private readonly _exceptionMessage: string;
     private readonly _message: string | null;
     private readonly _treeType: string | null;
 
@@ -120,14 +119,12 @@ export class ParseExceptionResult implements Marker {
         id: UUID,
         parserType: string,
         exceptionType: string,
-        exceptionMessage: string,
         message: string | null,
         treeType?: string | null
     ) {
         this._id = id;
         this._parserType = parserType;
         this._exceptionType = exceptionType;
-        this._exceptionMessage = exceptionMessage;
         this._message = message;
         this._treeType = treeType ?? null;
     }
@@ -137,8 +134,7 @@ export class ParseExceptionResult implements Marker {
             randomId(),
             parser.constructor.name,
             exception.constructor.name,
-            exception.stack || exception.message || '',
-            null // Assuming message can be null
+            exception.stack || exception.message || ''
         );
     }
 
@@ -151,7 +147,6 @@ export class ParseExceptionResult implements Marker {
             id,
             this._parserType,
             this._exceptionType,
-            this._exceptionMessage,
             this._message,
             this._treeType
         );
@@ -166,7 +161,6 @@ export class ParseExceptionResult implements Marker {
             this._id,
             parserType,
             this._exceptionType,
-            this._exceptionMessage,
             this._message,
             this._treeType
         );
@@ -181,22 +175,6 @@ export class ParseExceptionResult implements Marker {
             this._id,
             this._parserType,
             exceptionType,
-            this._exceptionMessage,
-            this._message,
-            this._treeType
-        );
-    }
-
-    get exceptionMessage(): string {
-        return this._exceptionMessage;
-    }
-
-    withExceptionMessage(exceptionMessage: string): ParseExceptionResult {
-        return exceptionMessage === this._exceptionMessage ? this : new ParseExceptionResult(
-            this._id,
-            this._parserType,
-            this._exceptionType,
-            exceptionMessage,
             this._message,
             this._treeType
         );
@@ -211,7 +189,6 @@ export class ParseExceptionResult implements Marker {
             this._id,
             this._parserType,
             this._exceptionType,
-            this._exceptionMessage,
             message,
             this._treeType
         );
@@ -226,9 +203,8 @@ export class ParseExceptionResult implements Marker {
             this._id,
             this._parserType,
             this._exceptionType,
-            this._exceptionMessage,
             this._message,
-            this._treeType
+            treeType
         );
     }
 }
