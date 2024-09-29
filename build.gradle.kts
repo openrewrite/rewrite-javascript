@@ -23,9 +23,6 @@ dependencies {
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
-
-    implementation("com.caoccao.javet:javet-macos:3.0.0") // Mac OS (x86_64 and arm64)
-    implementation("com.caoccao.javet:javet:3.0.0") // Linux and Windows
 }
 
 // FIXME disable all tests for now until the parser tests have been moved to JavaScript
