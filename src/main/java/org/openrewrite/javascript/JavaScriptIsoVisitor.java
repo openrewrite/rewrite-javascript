@@ -64,6 +64,11 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
+    public J visitExpressionStatement(JS.ExpressionStatement statement, P p) {
+        return super.visitExpressionStatement(statement, p);
+    }
+
+    @Override
     public JS.FunctionType visitFunctionType(JS.FunctionType functionType, P p) {
         return (JS.FunctionType) super.visitFunctionType(functionType, p);
     }
@@ -81,6 +86,16 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     @Override
     public JS.ObjectBindingDeclarations visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, P p) {
         return (JS.ObjectBindingDeclarations) super.visitObjectBindingDeclarations(objectBindingDeclarations, p);
+    }
+
+    @Override
+    public J visitPropertyAssignment(JS.PropertyAssignment propertyAssignment, P p) {
+        return super.visitPropertyAssignment(propertyAssignment, p);
+    }
+
+    @Override
+    public J visitStatementExpression(JS.StatementExpression expression, P p) {
+        return super.visitStatementExpression(expression, p);
     }
 
     @Override

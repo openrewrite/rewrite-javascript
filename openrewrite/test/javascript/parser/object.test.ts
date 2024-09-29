@@ -30,4 +30,10 @@ describe('object literal mapping', () => {
           typeScript('const c = { foo: 1, /*1*/ }')
         );
     });
+    test('string key', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('const c = { "foo": 1 }')
+        );
+    });
 });

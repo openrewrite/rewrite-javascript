@@ -1304,6 +1304,93 @@ export namespace ObjectBindingDeclarations {
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$PropertyAssignment")
+export class PropertyAssignment extends JSMixin(Object) implements Statement, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<Expression>, initializer: Expression) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._name = name;
+        this._initializer = initializer;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): PropertyAssignment {
+            return id === this._id ? this : new PropertyAssignment(id, this._prefix, this._markers, this._name, this._initializer);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): PropertyAssignment {
+            return prefix === this._prefix ? this : new PropertyAssignment(this._id, prefix, this._markers, this._name, this._initializer);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): PropertyAssignment {
+            return markers === this._markers ? this : new PropertyAssignment(this._id, this._prefix, markers, this._name, this._initializer);
+        }
+
+        private readonly _name: JRightPadded<Expression>;
+
+        public get name(): Expression {
+            return this._name.element;
+        }
+
+        public withName(name: Expression): PropertyAssignment {
+            return this.padding.withName(this._name.withElement(name));
+        }
+
+        private readonly _initializer: Expression;
+
+        public get initializer(): Expression {
+            return this._initializer;
+        }
+
+        public withInitializer(initializer: Expression): PropertyAssignment {
+            return initializer === this._initializer ? this : new PropertyAssignment(this._id, this._prefix, this._markers, this._name, initializer);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitPropertyAssignment(this, p);
+    }
+
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): PropertyAssignment {
+        return extensions.withJavaType(this, type);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get name(): JRightPadded<Expression> {
+                return t._name;
+            }
+            public withName(name: JRightPadded<Expression>): PropertyAssignment {
+                return t._name === name ? t : new PropertyAssignment(t._id, t._prefix, t._markers, name, t._initializer);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$TemplateExpression")
 export class TemplateExpression extends JSMixin(Object) implements Statement, Expression {
     public constructor(id: UUID, prefix: Space, markers: Markers, delimiter: string, tag: JRightPadded<Expression> | null, strings: J[], _type: JavaType | null) {

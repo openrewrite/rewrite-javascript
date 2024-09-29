@@ -301,6 +301,21 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return o;
     }
 
+    public J visitPropertyAssignment(JS.PropertyAssignment propertyAssignment, P p) {
+        JS.PropertyAssignment pa = propertyAssignment;
+        pa = pa.withPrefix(visitSpace(pa.getPrefix(), JsSpace.Location.PROPERTY_ASSIGNMENT_PREFIX, p));
+        pa = pa.withMarkers(visitMarkers(pa.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(pa, p);
+        if (!(temp instanceof JS.PropertyAssignment)) {
+            return temp;
+        } else {
+            pa = (JS.PropertyAssignment) temp;
+        }
+        pa = pa.getPadding().withName(visitRightPadded(pa.getPadding().getName(), JsRightPadded.Location.PROPERTY_ASSIGNMENT_NAME, p));
+        pa = pa.withInitializer(visitAndCast(pa.getInitializer(), p));
+        return pa;
+    }
+
     public J visitStatementExpression(JS.StatementExpression expression, P p) {
         JS.StatementExpression se = expression;
         Expression temp = (Expression) visitExpression(se, p);

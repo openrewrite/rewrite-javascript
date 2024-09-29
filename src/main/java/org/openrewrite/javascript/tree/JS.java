@@ -1206,6 +1206,94 @@ public interface JS extends J {
     }
 
     @Getter
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class PropertyAssignment implements JS, Statement, TypedTree {
+        @Nullable
+        @NonFinal
+        transient WeakReference<PropertyAssignment.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        JRightPadded<Expression> name;
+
+        public Expression getName() { return name.getElement(); }
+
+        public PropertyAssignment withName(Expression property) {
+            return getPadding().withName(JRightPadded.withElement(this.name, property));
+        }
+
+        @With
+        Expression initializer;
+
+        @Override
+        public @Nullable JavaType getType() {
+            return initializer.getType();
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public PropertyAssignment withType(@Nullable JavaType type) {
+            return initializer.getType() == type ? this : new PropertyAssignment(id, prefix, markers, name, initializer.withType(type));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitPropertyAssignment(this, p);
+        }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        @Override
+        public String toString() {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaScriptPrinter<>());
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final PropertyAssignment t;
+
+            public JRightPadded<Expression> getName() {
+                return t.name;
+            }
+
+            public PropertyAssignment withName(JRightPadded<Expression> target) {
+                return t.name == target ? t : new PropertyAssignment(t.id, t.prefix, t.markers, target, t.initializer);
+            }
+
+        }
+    }
+
+    @Getter
     @SuppressWarnings("unchecked")
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)

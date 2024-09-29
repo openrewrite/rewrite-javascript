@@ -242,6 +242,18 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitPropertyAssignment(JS.PropertyAssignment propertyAssignment, PrintOutputCapture<P> p) {
+        beforeSyntax(propertyAssignment, JsSpace.Location.PROPERTY_ASSIGNMENT_PREFIX, p);
+
+        visitRightPadded(propertyAssignment.getPadding().getName(), JsRightPadded.Location.PROPERTY_ASSIGNMENT_NAME, p);
+        p.append(':');
+        visit(propertyAssignment.getInitializer(), p);
+
+        afterSyntax(propertyAssignment, p);
+        return propertyAssignment;
+    }
+
+    @Override
     public J visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, PrintOutputCapture<P> p) {
         beforeSyntax(objectBindingDeclarations, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
         visit(objectBindingDeclarations.getLeadingAnnotations(), p);

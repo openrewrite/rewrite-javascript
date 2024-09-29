@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -199,6 +199,20 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         binding = binding.withAfterVararg(this.visitJsSpace(binding.afterVararg, JsSpace.Location.OBJECT_BINDING_DECLARATIONS_BINDING_AFTER_VARARG, p));
         binding = binding.padding.withInitializer(this.visitJsLeftPadded(binding.padding.initializer, JsLeftPadded.Location.OBJECT_BINDING_DECLARATIONS_BINDING_INITIALIZER, p));
         return binding;
+    }
+
+    public visitPropertyAssignment(propertyAssignment: PropertyAssignment, p: P): J | null {
+        propertyAssignment = propertyAssignment.withPrefix(this.visitJsSpace(propertyAssignment.prefix, JsSpace.Location.PROPERTY_ASSIGNMENT_PREFIX, p)!);
+        let tempStatement = this.visitStatement(propertyAssignment, p) as Statement;
+        if (!(tempStatement instanceof PropertyAssignment))
+        {
+            return tempStatement;
+        }
+        propertyAssignment = tempStatement as PropertyAssignment;
+        propertyAssignment = propertyAssignment.withMarkers(this.visitMarkers(propertyAssignment.markers, p));
+        propertyAssignment = propertyAssignment.padding.withName(this.visitJsRightPadded(propertyAssignment.padding.name, JsRightPadded.Location.PROPERTY_ASSIGNMENT_NAME, p)!);
+        propertyAssignment = propertyAssignment.withInitializer(this.visitAndCast(propertyAssignment.initializer, p)!);
+        return propertyAssignment;
     }
 
     public visitStatementExpression(statementExpression: StatementExpression, p: P): J | null {

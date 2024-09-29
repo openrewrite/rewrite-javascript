@@ -706,12 +706,12 @@ export class JavaScriptParserVisitor {
             Space.EMPTY,
             null,
             JContainer.empty(),
-            this.convertObjectAssignments(node.getChildren().slice(-3)),
+            this.convertPropertyAssignments(node.getChildren().slice(-3)),
             this.mapMethodType(node)
         );
     }
 
-    private convertObjectAssignments(nodes: ts.Node[]): J.Block {
+    private convertPropertyAssignments(nodes: ts.Node[]): J.Block {
         const prefix = this.prefix(nodes[0]);
         let statementList = nodes[1] as ts.SyntaxList;
 
@@ -1397,27 +1397,12 @@ export class JavaScriptParserVisitor {
     }
 
     visitPropertyAssignment(node: ts.PropertyAssignment) {
-        return new J.VariableDeclarations(
+        return new JS.PropertyAssignment(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            [],
-            [],
-            null,
-            null,
-            [],
-            [this.rightPadded(
-                new J.VariableDeclarations.NamedVariable(
-                    randomId(),
-                    this.prefix(node),
-                    Markers.EMPTY,
-                    this.visit(node.name),
-                    [],
-                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount() - 2)), this.visit(node.initializer)) : null,
-                    this.mapVariableType(node)
-                ),
-                Space.EMPTY // FIXME check for semicolon
-            )]
+            this.rightPadded(this.visit(node.name), this.suffix(node.name)),
+            this.visit(node.initializer)
         );
     }
 
