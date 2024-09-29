@@ -52,7 +52,7 @@ export class JavaScriptTypeMapping {
     private createType(node: ts.Node, type: ts.Type, signature: string): JavaType {
         if (type.isLiteral()) {
             if (type.isNumberLiteral()) {
-                return JavaType.Primitive.of(JavaType.PrimitiveKind.Long);
+                return JavaType.Primitive.of(JavaType.PrimitiveKind.Double);
             } else if (type.isStringLiteral()) {
                 return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
             }
@@ -60,6 +60,10 @@ export class JavaScriptTypeMapping {
 
         if (type.flags === ts.TypeFlags.Null) {
             return JavaType.Primitive.of(JavaType.PrimitiveKind.Null);
+        } else if (type.flags === ts.TypeFlags.Number) {
+            return JavaType.Primitive.of(JavaType.PrimitiveKind.Double);
+        } else if (type.flags === ts.TypeFlags.String) {
+            return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
         } else if (type.flags === ts.TypeFlags.BooleanLiteral) {
             return JavaType.Primitive.of(JavaType.PrimitiveKind.Boolean);
         } else if (type.flags === ts.TypeFlags.Void) {

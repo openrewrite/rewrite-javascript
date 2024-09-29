@@ -1,3 +1,6 @@
+import * as J from "../../../dist/src/java/tree";
+import {JavaType} from "../../../dist/src/java";
+import * as JS from "../../../dist/src/javascript";
 import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
 describe('arithmetic operator mapping', () => {
@@ -7,7 +10,25 @@ describe('arithmetic operator mapping', () => {
     test('plus', () => {
         rewriteRun(
           //language=typescript
-          typeScript('1 + 2')
+          typeScript(
+            '1 + 2',
+            cu => {
+                const binary = <J.Binary>(<JS.ExpressionStatement>cu.statements[0]).expression;
+                expect((<JavaType.Primitive>binary.type).kind).toBe(JavaType.PrimitiveKind.Double);
+            }
+          )
+        );
+    });
+    test('concat', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(
+            '"1" + 2',
+            cu => {
+                const binary = <J.Binary>(<JS.ExpressionStatement>cu.statements[0]).expression;
+                expect((<JavaType.Primitive>binary.type).kind).toBe(JavaType.PrimitiveKind.String);
+            }
+          )
         );
     });
 
