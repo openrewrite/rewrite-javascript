@@ -451,7 +451,7 @@ export class JContainer<T> {
     private readonly _elements: JRightPadded<T>[];
 
     get elements(): T[] {
-        return [];
+        return JRightPadded.getElements(this._elements);
     }
 
     private readonly _markers: Markers;

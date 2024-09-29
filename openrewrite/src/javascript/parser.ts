@@ -498,7 +498,16 @@ export class JavaScriptParserVisitor {
     }
 
     visitComputedPropertyName(node: ts.ComputedPropertyName) {
-        return this.visitUnknown(node);
+        // using a `J.NewArray` is a bit of a trick; in the TS Compiler AST there is no array for this
+        return new J.NewArray(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            null,
+            [],
+            new JContainer(Space.EMPTY, [this.rightPadded(this.convert(node.expression), this.suffix(node.expression))], Markers.EMPTY),
+            this.mapType(node)
+        );
     }
 
     visitTypeParameter(node: ts.TypeParameterDeclaration) {

@@ -90,7 +90,7 @@ function sourceFile(before: string, defaultPath: string, spec?: (sourceFile: JS.
           null,
           ctx) as Iterable<SourceFile>;
         if (isParseError(sourceFile)) {
-            throw new Error(`Parsing failed for ${sourceFile.sourcePath}: ${sourceFile.markers.findFirst(ParseExceptionResult)!.exceptionMessage}`);
+            throw new Error(`Parsing failed for ${sourceFile.sourcePath}: ${sourceFile.markers.findFirst(ParseExceptionResult)!.message}`);
         }
         if (!(options.allowUnknowns ?? false)) {
             try {
