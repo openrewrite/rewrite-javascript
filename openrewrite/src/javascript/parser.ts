@@ -239,7 +239,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapModifiers(node: ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration) {
+    private mapModifiers(node: ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration) {
         if (ts.isVariableStatement(node)) {
             return [new J.Modifier(
                 randomId(),
@@ -253,6 +253,8 @@ export class JavaScriptParserVisitor {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isPropertyDeclaration(node)) {
             return []; // FIXME
+        } else if (ts.isFunctionDeclaration(node) || ts.isParameter(node)) {
+            return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         }
         throw new Error(`Cannot get modifiers from ${node}`);
     }
@@ -341,6 +343,10 @@ export class JavaScriptParserVisitor {
     }
 
     visitClassDeclaration(node: ts.ClassDeclaration) {
+        if (node.modifiers?.find(ts.isDecorator) || node.typeParameters) {
+            return this.visitUnknown(node);
+        }
+
         return new J.ClassDeclaration(
             randomId(),
             this.prefix(node),
@@ -520,7 +526,28 @@ export class JavaScriptParserVisitor {
     }
 
     visitParameter(node: ts.ParameterDeclaration) {
-        return this.visitUnknown(node);
+        return new J.VariableDeclarations(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            this.mapModifiers(node),
+            node.type ? this.visit(node.type) : null,
+            null,
+            [],
+            [this.rightPadded(
+                new J.VariableDeclarations.NamedVariable(
+                    randomId(),
+                    this.prefix(node.name),
+                    Markers.EMPTY,
+                    this.visit(node.name),
+                    [],
+                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount() - 2)), this.visit(node.initializer)) : null,
+                    this.mapVariableType(node)
+                ),
+                this.suffix(node.name)
+            )]
+        );
     }
 
     visitDecorator(node: ts.Decorator) {
@@ -1124,7 +1151,14 @@ export class JavaScriptParserVisitor {
     }
 
     visitBlock(node: ts.Block) {
-        return this.visitUnknown(node);
+        return new J.Block(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.rightPadded(false, Space.EMPTY),
+            this.semicolonPaddedStatementList(node.statements),
+            this.prefix(node.getLastToken()!)
+        );
     }
 
     visitEmptyStatement(node: ts.EmptyStatement) {
@@ -1235,7 +1269,39 @@ export class JavaScriptParserVisitor {
     }
 
     visitFunctionDeclaration(node: ts.FunctionDeclaration) {
-        return this.visitUnknown(node);
+        if (node.modifiers?.find(ts.isDecorator) || node.typeParameters) {
+            return this.visitUnknown(node);
+        }
+
+        return new J.MethodDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [], // FIXME decorators
+            [new J.Modifier(
+                randomId(),
+                Space.EMPTY,
+                Markers.EMPTY,
+                "function",
+                J.Modifier.Type.LanguageExtension,
+                []
+            ), ...this.mapModifiers(node)],
+            null, // FIXME type parameters
+            node.type ? this.visit(node.type) : null,
+            new J.MethodDeclaration.IdentifierWithAnnotations(
+                node.name ? this.visit(node.name) : this.mapIdentifier(node, ""),
+                []
+            ),
+            new JContainer(
+                this.prefix(node.getChildAt(2)),
+                this.rightPaddedList([...node.parameters], this.suffix),
+                Markers.EMPTY
+            ),
+            null,
+            node.body ? this.convert<J.Block>(node.body) : null,
+            null,
+            this.mapMethodType(node)
+        );
     }
 
     visitInterfaceDeclaration(node: ts.InterfaceDeclaration) {
@@ -1662,7 +1728,7 @@ export class JavaScriptParserVisitor {
         // return Space.format(this.sourceFile.text, node.getFullStart(), node.getFullStart() + node.getLeadingTriviaWidth());
     }
 
-    private suffix(node: ts.Node): Space {
+    private suffix = (node: ts.Node): Space => {
         return this.prefix(getNextSibling(node)!);
     }
 

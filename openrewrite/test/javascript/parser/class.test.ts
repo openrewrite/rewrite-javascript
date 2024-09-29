@@ -1,4 +1,4 @@
-import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
+import {connect, disconnect, rewriteRun, rewriteRunWithOptions, typeScript} from '../testHarness';
 
 describe('class mapping', () => {
     beforeAll(() => connect());
@@ -8,6 +8,20 @@ describe('class mapping', () => {
         rewriteRun(
           //language=typescript
           typeScript('class A {}')
+        );
+    });
+    test('decorator', () => {
+        rewriteRunWithOptions(
+          {expectUnknowns: true},
+          //language=typescript
+          typeScript('@foo class A {}')
+        );
+    });
+    test('type parameter', () => {
+        rewriteRunWithOptions(
+          {expectUnknowns: true},
+          //language=typescript
+          typeScript('class A<T> {}')
         );
     });
     test('body', () => {

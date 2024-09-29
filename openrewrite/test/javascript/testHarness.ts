@@ -23,7 +23,7 @@ import {JavaScriptParser, JavaScriptVisitor} from "../../dist/src/javascript";
 export interface RewriteTestOptions {
     normalizeIndent?: boolean
     validatePrintIdempotence?: boolean
-    allowUnknowns?: boolean
+    expectUnknowns?: boolean
 }
 
 export type SourceSpec = (options: RewriteTestOptions) => void;
@@ -92,21 +92,22 @@ function sourceFile(before: string, defaultPath: string, spec?: (sourceFile: JS.
         if (isParseError(sourceFile)) {
             throw new Error(`Parsing failed for ${sourceFile.sourcePath}: ${sourceFile.markers.findFirst(ParseExceptionResult)!.message}`);
         }
-        if (!(options.allowUnknowns ?? false)) {
-            try {
-                let unknowns: J.Unknown[] = [];
-                new class extends JavaScriptVisitor<number> {
-                    visitUnknown(unknown: J.Unknown, p: number): J.J | null {
-                        unknowns.push(unknown);
-                        return unknown;
-                    }
-                }().visit(sourceFile, 0);
-                if (unknowns.length != 0) {
-                    throw new Error("No J.Unknown instances were expected: " + unknowns.map(u => u.source.text));
+        try {
+            let unknowns: J.Unknown[] = [];
+            new class extends JavaScriptVisitor<number> {
+                visitUnknown(unknown: J.Unknown, p: number): J.J | null {
+                    unknowns.push(unknown);
+                    return unknown;
                 }
-            } catch (e) {
-                throw e instanceof RecipeRunException ? e.cause : e;
+            }().visit(sourceFile, 0);
+            const expectUnknowns = options.expectUnknowns ?? false;
+            if (expectUnknowns && unknowns.length == 0) {
+                throw new Error("No J.Unknown instances were found. Adjust the test expectation.");
+            } else if (!expectUnknowns && unknowns.length != 0) {
+                throw new Error("No J.Unknown instances were expected: " + unknowns.map(u => u.source.text));
             }
+        } catch (e) {
+            throw e instanceof RecipeRunException ? e.cause : e;
         }
         if (options.validatePrintIdempotence ?? true) {
             let printed = print(sourceFile);
