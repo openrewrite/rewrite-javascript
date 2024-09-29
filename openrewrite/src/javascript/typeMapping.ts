@@ -14,6 +14,8 @@ export class JavaScriptTypeMapping {
         let type: ts.Type | undefined;
         if (ts.isExpression(node)) {
             type = this.checker.getTypeAtLocation(node);
+        } else if (ts.isTypeNode(node)) {
+            type = this.checker.getTypeFromTypeNode(node);
         }
 
         if (type) {

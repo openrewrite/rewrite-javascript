@@ -1,12 +1,6 @@
 import * as ts from 'typescript';
 import * as J from '../java';
-import {
-    JavaType,
-    JContainer,
-    JLeftPadded,
-    JRightPadded,
-    Space,
-} from '../java';
+import {JavaType, JContainer, JLeftPadded, JRightPadded, Semicolon, Space, TrailingComma} from '../java';
 import * as JS from '.';
 import {
     ExecutionContext,
@@ -18,7 +12,6 @@ import {
     randomId,
     SourceFile
 } from "../core";
-import {Semicolon, TrailingComma} from "../java";
 import {binarySearch, compareTextSpans, getNextSibling, TextSpan} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
 
@@ -342,6 +335,10 @@ export class JavaScriptParserVisitor {
         return last?.kind == ts.SyntaxKind.SemicolonToken ? this.prefix(last) : Space.EMPTY;
     }
 
+    private keywordPrefix = (token: ts.PunctuationSyntaxKind) => (node: ts.Node): Space => {
+        const last = getNextSibling(node);
+        return last?.kind == token ? this.prefix(last) : Space.EMPTY;
+    }
 
     visitClassDeclaration(node: ts.ClassDeclaration) {
         return new J.ClassDeclaration(
@@ -414,6 +411,10 @@ export class JavaScriptParserVisitor {
 
     visitStringKeyword(node: ts.Node) {
         return this.mapIdentifier(node, 'string');
+    }
+
+    visitUndefinedKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'undefined');
     }
 
     visitFalseKeyword(node: ts.FalseLiteral) {
@@ -631,7 +632,13 @@ export class JavaScriptParserVisitor {
     }
 
     visitUnionType(node: ts.UnionTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.Union(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.rightPaddedList([...node.types], (n) => this.keywordPrefix(ts.SyntaxKind.BarToken)(n)),
+            this.mapType(node),
+        );
     }
 
     visitIntersectionType(node: ts.IntersectionTypeNode) {
@@ -667,7 +674,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitLiteralType(node: ts.LiteralTypeNode) {
-        return this.visitUnknown(node);
+        return this.visit(node.literal);
     }
 
     visitNamedTupleMember(node: ts.NamedTupleMember) {
@@ -1124,14 +1131,18 @@ export class JavaScriptParserVisitor {
         return this.visitUnknown(node);
     }
 
-    visitVariableStatement(node: ts.VariableStatement): J.VariableDeclarations {
+    visitVariableStatement(node: ts.VariableStatement): J.VariableDeclarations | J.Unknown {
+        if (node.declarationList.declarations.length > 1) {
+            // we can't map this to a `J.VariableDeclarations` because the variables can all declare their own type
+            return this.visitUnknown(node);
+        }
         return new J.VariableDeclarations(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
             [],
             this.mapModifiers(node),
-            null,
+            node.declarationList.declarations[0].type ? this.visit(node.declarationList.declarations[0].type) : null,
             null,
             [],
             this.rightPaddedList([...node.declarationList.declarations], n => {
