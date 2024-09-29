@@ -22,7 +22,7 @@ export class JavaScriptTypeMapping {
     }
 
     private getType(type: ts.Type) {
-        const signature = this.checker.typeToString(type);
+        const signature = this.getSignature(type);
         const existing = this.typeCache.get(signature);
         if (existing) {
             return existing;
@@ -30,6 +30,11 @@ export class JavaScriptTypeMapping {
         const result = this.createType(type, signature);
         this.typeCache.set(signature, result);
         return result;
+    }
+
+    private getSignature(type: ts.Type) {
+        // FIXME for classes we need to include the containing module / package in the signature and probably include in the qualified name
+        return this.checker.typeToString(type);
     }
 
     primitiveType(node: ts.Node): JavaType.Primitive {
@@ -82,6 +87,12 @@ export class JavaScriptTypeMapping {
 
             const types = type.types.map(t => this.getType(t));
             result.unsafeSet(types);
+            return result;
+        } else if (type.isClass()) {
+            // FIXME flags
+            let result = new JavaType.Class(0, type.symbol.name, JavaType.Class.Kind.Class);
+            this.typeCache.set(signature, result);
+            // FIXME unsafeSet
             return result;
         }
 
