@@ -86,11 +86,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         if (arrowFunction.getReturnTypeExpression() != null) {
-            TypeReferencePrefix typeReferencePrefix = arrowFunction.getMarkers().findFirst(TypeReferencePrefix.class).orElse(null);
-            if (typeReferencePrefix != null) {
-                visitSpace(typeReferencePrefix.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-                p.append(":");
-            }
             visit(arrowFunction.getReturnTypeExpression(), p);
         }
 
@@ -558,11 +553,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
             visitContainer("(", method.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, ",", ")", p);
             if (method.getReturnTypeExpression() != null) {
-                TypeReferencePrefix typeReferencePrefix = method.getMarkers().findFirst(TypeReferencePrefix.class).orElse(null);
-                if (typeReferencePrefix != null) {
-                    visitSpace(typeReferencePrefix.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-                    p.append(":");
-                }
                 visit(method.getReturnTypeExpression(), p);
             }
 
@@ -724,8 +714,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                     p.append(postFixOperator.getOperator().getValue());
                 }
 
+                visitSpace(variable.getAfter(), Space.Location.NAMED_VARIABLE_SUFFIX, p);
                 if (multiVariable.getTypeExpression() != null) {
-                    multiVariable.getMarkers().findFirst(TypeReferencePrefix.class).ifPresent(typeReferencePrefix -> visitSpace(typeReferencePrefix.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p));
                     p.append(":");
                     visit(multiVariable.getTypeExpression(), p);
                 }
@@ -735,7 +725,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                             variable.getElement().getPadding().getInitializer(), JLeftPadded.Location.VARIABLE_INITIALIZER, p);
                 }
 
-                visitSpace(variable.getAfter(), Space.Location.NAMED_VARIABLE_SUFFIX, p);
                 afterSyntax(variable.getElement(), p);
                 if (i < variables.size() - 1) {
                     p.append(",");

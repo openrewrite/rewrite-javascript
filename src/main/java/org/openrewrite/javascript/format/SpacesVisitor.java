@@ -20,9 +20,7 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptIsoVisitor;
-import org.openrewrite.javascript.markers.TypeReferencePrefix;
 import org.openrewrite.javascript.style.SpacesStyle;
-import org.openrewrite.marker.Markers;
 
 import java.util.List;
 
@@ -147,18 +145,6 @@ public class SpacesVisitor<P> extends JavaScriptIsoVisitor<P> {
         if (m.getReturnTypeExpression() != null) {
             boolean useSpaceAfter = style.getOther().getAfterTypeReferenceColon();
             m = m.withReturnTypeExpression(spaceBefore(m.getReturnTypeExpression(), useSpaceAfter));
-
-            TypeReferencePrefix typeReferencePrefix = m.getMarkers().findFirst(TypeReferencePrefix.class).orElse(null);
-            if (typeReferencePrefix != null) {
-                boolean useSpaceBefore = style.getOther().getBeforeTypeReferenceColon();
-                if (typeReferencePrefix.getPrefix().isEmpty() && useSpaceBefore) {
-                    Markers markers = m.getMarkers().removeByType(TypeReferencePrefix.class);
-                    m = m.withMarkers(markers.addIfAbsent(typeReferencePrefix.withPrefix(Space.format(" "))));
-                } else if (!typeReferencePrefix.getPrefix().isEmpty() && !useSpaceBefore) {
-                    Markers markers = m.getMarkers().removeByType(TypeReferencePrefix.class);
-                    m = m.withMarkers(markers.addIfAbsent(typeReferencePrefix.withPrefix(Space.EMPTY)));
-                }
-            }
         }
         m = m.getPadding().withParameters(
                 spaceBefore(m.getPadding().getParameters(), style.getBeforeParentheses().getFunctionDeclarationParentheses()));
@@ -280,20 +266,9 @@ public class SpacesVisitor<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, P p) {
         J.VariableDeclarations m = super.visitVariableDeclarations(multiVariable, p);
-        TypeReferencePrefix typeReferencePrefix = m.getMarkers().findFirst(TypeReferencePrefix.class).orElse(null);
         if (m.getTypeExpression() != null) {
             boolean useSpaceAfter = style.getOther().getAfterPropertyNameValueSeparator();
             m = m.withTypeExpression(spaceBefore(m.getTypeExpression(), useSpaceAfter));
-            if (typeReferencePrefix != null) {
-                boolean useSpaceBefore = style.getOther().getBeforePropertyNameValueSeparator();
-                if (typeReferencePrefix.getPrefix().isEmpty() && useSpaceBefore) {
-                    Markers markers = m.getMarkers().removeByType(TypeReferencePrefix.class);
-                    m = m.withMarkers(markers.addIfAbsent(typeReferencePrefix.withPrefix(Space.format(" "))));
-                } else if (!typeReferencePrefix.getPrefix().isEmpty() && !useSpaceBefore) {
-                    Markers markers = m.getMarkers().removeByType(TypeReferencePrefix.class);
-                    m = m.withMarkers(markers.addIfAbsent(typeReferencePrefix.withPrefix(Space.EMPTY)));
-                }
-            }
         }
         return m;
     }
