@@ -35,6 +35,13 @@ describe('identifier mapping', () => {
               assertLiteralLst(sourceFile, 'null', JavaType.PrimitiveKind.Null);
           }));
     });
+    test('undefined', () => {
+        rewriteRunWithOptions(
+          {normalizeIndent: false},
+          typeScript('undefined', sourceFile => {
+              assertLiteralLst(sourceFile, 'undefined', JavaType.PrimitiveKind.None);
+          }));
+    });
     test('regex', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},

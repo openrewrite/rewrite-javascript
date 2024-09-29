@@ -60,6 +60,8 @@ export class JavaScriptTypeMapping {
 
         if (type.flags === ts.TypeFlags.Null) {
             return JavaType.Primitive.of(JavaType.PrimitiveKind.Null);
+        } else if (type.flags === ts.TypeFlags.Undefined) {
+            return JavaType.Primitive.of(JavaType.PrimitiveKind.None);
         } else if (type.flags === ts.TypeFlags.Number) {
             return JavaType.Primitive.of(JavaType.PrimitiveKind.Double);
         } else if (type.flags === ts.TypeFlags.String) {

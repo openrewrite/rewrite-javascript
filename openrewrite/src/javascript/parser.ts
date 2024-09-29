@@ -424,7 +424,7 @@ export class JavaScriptParserVisitor {
         return this.mapLiteral(node, null);
     }
 
-    private mapLiteral(node: ts.LiteralExpression | ts.TrueLiteral | ts.FalseLiteral | ts.NullLiteral, value: any): J.Literal {
+    private mapLiteral(node: ts.LiteralExpression | ts.TrueLiteral | ts.FalseLiteral | ts.NullLiteral | ts.Identifier, value: any): J.Literal {
         return new J.Literal(
             randomId(),
             this.prefix(node),
@@ -469,6 +469,10 @@ export class JavaScriptParserVisitor {
     }
 
     visitIdentifier(node: ts.Identifier) {
+        if (node.text === 'undefined') {
+            // unsure why this appears as a ts.Identifier in the AST
+            return this.mapLiteral(node, undefined);
+        }
         return this.mapIdentifier(node, node.text);
     }
 
