@@ -11,6 +11,20 @@ export namespace JavaType {
     export class Class extends FullyQualified {
     }
 
+    @LstType("org.openrewrite.java.tree.JavaType$MultiCatch")
+    export class Union implements JavaType {
+        private _types: JavaType[] | null = null;
+
+        get types(): JavaType[] {
+            return this._types!;
+        }
+
+        unsafeSet(types: JavaType[]): this {
+            this._types = types;
+            return this;
+        }
+    }
+
     @LstType("org.openrewrite.java.tree.JavaType$ShallowClass")
     export class ShallowClass extends FullyQualified {
     }
