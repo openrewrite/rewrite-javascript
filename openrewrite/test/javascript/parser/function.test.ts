@@ -1,13 +1,13 @@
 import {connect, disconnect, rewriteRun, rewriteRunWithOptions, typeScript} from '../testHarness';
 
-describe('class mapping', () => {
+describe('function mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 
     test('simple', () => {
         rewriteRun(
           //language=typescript
-          typeScript('function f () { }')
+          typeScript('function f () { let c = 1; }')
         );
     });
     test('single parameter', () => {
@@ -38,6 +38,12 @@ describe('class mapping', () => {
         rewriteRun(
           //language=typescript
           typeScript('function f(a =  2 , b) {}')
+        );
+    });
+    test('parameter with trailing comma', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('function f(a  , ) {}')
         );
     });
 });

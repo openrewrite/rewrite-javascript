@@ -739,7 +739,7 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             null,
             [],
-            this.mapArguments(node.getChildren()),
+            this.mapCommaSeparatedList(node.getChildren()),
             this.mapType(node)
         );
     }
@@ -811,7 +811,7 @@ export class JavaScriptParserVisitor {
             select,
             null, // FIXME type parameters
             name,
-            this.mapArguments(node.getChildren().slice(-3)),
+            this.mapCommaSeparatedList(node.getChildren().slice(-3)),
             this.mapMethodType(node)
         );
     }
@@ -824,7 +824,7 @@ export class JavaScriptParserVisitor {
             null,
             Space.EMPTY,
             this.visit(node.expression),
-            this.mapArguments(node.arguments ? node.getChildren().slice(2) : []),
+            this.mapCommaSeparatedList(node.arguments ? node.getChildren().slice(2) : []),
             null,
             this.mapMethodType(node)
         );
@@ -1292,16 +1292,22 @@ export class JavaScriptParserVisitor {
                 node.name ? this.visit(node.name) : this.mapIdentifier(node, ""),
                 []
             ),
-            new JContainer(
-                this.prefix(node.getChildAt(2)),
-                this.rightPaddedList([...node.parameters], this.suffix),
-                Markers.EMPTY
-            ),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node)),
             null,
             node.body ? this.convert<J.Block>(node.body) : null,
             null,
             this.mapMethodType(node)
         );
+    }
+
+    private getParameterListNodes(node: ts.FunctionDeclaration) {
+        const children = node.getChildren();
+        for (let i = 0; i < children.length; i++) {
+            if (children[i].kind == ts.SyntaxKind.OpenParenToken) {
+                return children.slice(i, i + 3);
+            }
+        }
+        return [];
     }
 
     visitInterfaceDeclaration(node: ts.InterfaceDeclaration) {
@@ -1371,7 +1377,7 @@ export class JavaScriptParserVisitor {
                 Markers.EMPTY
             );
         }
-        return this.mapArguments(node.namedBindings?.getChildren()!);
+        return this.mapCommaSeparatedList(node.namedBindings?.getChildren()!);
     }
 
     visitNamespaceImport(node: ts.NamespaceImport) {
@@ -1748,19 +1754,28 @@ export class JavaScriptParserVisitor {
         return this.typeMapping.methodType(node);
     }
 
-    private mapArguments(nodes: readonly ts.Node[]): JContainer<J.Expression> {
+    private mapCommaSeparatedList(nodes: readonly ts.Node[]): JContainer<J.Expression> {
+        return this.mapToContainer(nodes, this.trailingComma(nodes));
+    }
+
+    private trailingComma = (nodes: readonly ts.Node[]) => (ns: ts.SyntaxList, i: number) => {
+        const last = i === ns.getChildCount() - 2;
+        return last ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[2]))]) : Markers.EMPTY;
+    }
+
+    private mapToContainer<T>(nodes: readonly ts.Node[], markers?: (ns: ts.SyntaxList, i: number) => Markers): JContainer<T> {
         if (nodes.length === 0) {
             return JContainer.empty();
         }
         const prefix = this.prefix(nodes[0]);
 
-        let argList = nodes[1] as ts.SyntaxList;
-        let childCount = argList.getChildCount();
+        let elementList = nodes[1] as ts.SyntaxList;
+        let childCount = elementList.getChildCount();
 
-        const args: JRightPadded<J.Expression>[] = [];
+        const args: JRightPadded<T>[] = [];
         if (childCount === 0) {
             args.push(this.rightPadded(
-                new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY),
+                new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY) as T,
                 this.prefix(nodes[2]),
                 Markers.EMPTY
             ));
@@ -1769,13 +1784,13 @@ export class JavaScriptParserVisitor {
                 // FIXME right padding and trailing comma
                 const last = i === childCount - 2;
                 args.push(this.rightPadded(
-                    this.convert(argList.getChildAt(i)),
-                    this.prefix(argList.getChildAt(i + 1)),
-                    last ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[2]))]) : Markers.EMPTY
+                    this.visit(elementList.getChildAt(i)),
+                    this.prefix(elementList.getChildAt(i + 1)),
+                    markers ? markers(elementList, i) : Markers.EMPTY
                 ));
             }
             if ((childCount & 1) === 1) {
-                args.push(this.rightPadded(this.convert(argList.getChildAt(childCount - 1)), this.prefix(nodes[2])));
+                args.push(this.rightPadded(this.visit(elementList.getChildAt(childCount - 1)), this.prefix(nodes[2])));
             }
         }
 
