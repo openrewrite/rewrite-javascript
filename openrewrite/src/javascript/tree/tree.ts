@@ -2178,3 +2178,81 @@ export class Void extends JSMixin(Object) implements Expression, Statement {
     }
 
 }
+
+@LstType("org.openrewrite.javascript.tree.JS$Yield")
+export class Yield extends JSMixin(Object) implements Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, delegated: boolean, expression: Expression | null, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._delegated = delegated;
+        this._expression = expression;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): Yield {
+            return id === this._id ? this : new Yield(id, this._prefix, this._markers, this._delegated, this._expression, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): Yield {
+            return prefix === this._prefix ? this : new Yield(this._id, prefix, this._markers, this._delegated, this._expression, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): Yield {
+            return markers === this._markers ? this : new Yield(this._id, this._prefix, markers, this._delegated, this._expression, this._type);
+        }
+
+        private readonly _delegated: boolean;
+
+        public get delegated(): boolean {
+            return this._delegated;
+        }
+
+        public withDelegated(delegated: boolean): Yield {
+            return delegated === this._delegated ? this : new Yield(this._id, this._prefix, this._markers, delegated, this._expression, this._type);
+        }
+
+        private readonly _expression: Expression | null;
+
+        public get expression(): Expression | null {
+            return this._expression;
+        }
+
+        public withExpression(expression: Expression | null): Yield {
+            return expression === this._expression ? this : new Yield(this._id, this._prefix, this._markers, this._delegated, expression, this._type);
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): Yield {
+            return _type === this._type ? this : new Yield(this._id, this._prefix, this._markers, this._delegated, this._expression, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJsYield(this, p);
+    }
+
+}

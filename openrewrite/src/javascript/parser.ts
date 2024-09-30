@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import * as J from '../java';
-import {JavaType, JContainer, JLeftPadded, JRightPadded, Semicolon, Space, TrailingComma} from '../java';
+import {JavaType, JContainer, JLeftPadded, JRightPadded, Semicolon, Space, Statement, TrailingComma} from '../java';
 import * as JS from '.';
 import {
     ExecutionContext,
@@ -1091,7 +1091,14 @@ export class JavaScriptParserVisitor {
     }
 
     visitYieldExpression(node: ts.YieldExpression) {
-        return this.visitUnknown(node);
+        return new JS.Yield(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            false,
+            node.expression ? this.visit(node.expression) : null,
+            this.mapType(node)
+        );
     }
 
     visitSpreadElement(node: ts.SpreadElement) {
@@ -1319,7 +1326,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 Space.EMPTY,
                 Markers.EMPTY,
-                "function",
+                node.getChildAt(1).kind == ts.SyntaxKind.AsteriskToken ? "function*" : "function",
                 J.Modifier.Type.LanguageExtension,
                 []
             ), ...this.mapModifiers(node)],

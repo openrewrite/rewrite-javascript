@@ -386,6 +386,20 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return aVoid;
     }
 
+    @Override
+    public J visitYield(JS.Yield yield, PrintOutputCapture<P> p) {
+        beforeSyntax(yield, JsSpace.Location.YIELD_PREFIX, p);
+
+        p.append("yield");
+        if (yield.isDelegated()) {
+            p.append("*");
+        }
+        visit(yield.getExpression(), p);
+
+        afterSyntax(yield, p);
+        return yield;
+    }
+
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
         @Override

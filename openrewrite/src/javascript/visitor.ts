@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -354,6 +354,19 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         _void = _void.withMarkers(this.visitMarkers(_void.markers, p));
         _void = _void.withExpression(this.visitAndCast(_void.expression, p)!);
         return _void;
+    }
+
+    public visitJsYield(_yield: Yield, p: P): J | null {
+        _yield = _yield.withPrefix(this.visitJsSpace(_yield.prefix, JsSpace.Location.YIELD_PREFIX, p)!);
+        let tempExpression = this.visitExpression(_yield, p) as Expression;
+        if (!(tempExpression instanceof Yield))
+        {
+            return tempExpression;
+        }
+        _yield = tempExpression as Yield;
+        _yield = _yield.withMarkers(this.visitMarkers(_yield.markers, p));
+        _yield = _yield.withExpression(this.visitAndCast(_yield.expression, p));
+        return _yield;
     }
 
     public visitJsLeftPadded<T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P): JLeftPadded<T> {

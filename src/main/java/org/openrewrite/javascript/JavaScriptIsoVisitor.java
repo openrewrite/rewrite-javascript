@@ -138,6 +138,11 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
         return super.visitVoid(aVoid, p);
     }
 
+    @Override
+    public J visitYield(JS.Yield yield, P p) {
+        return super.visitYield(yield, p);
+    }
+
     // J overrides.
     @Override
     public Expression visitExpression(Expression expression, P p) {

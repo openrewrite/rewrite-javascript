@@ -68,5 +68,6 @@ public class JsSpace {
         UNKNOWN_SOURCE_PREFIX,
         VARIABLE_DECLARATION_PREFIX,
         VOID_PREFIX,
+        YIELD_PREFIX,
     }
 }
