@@ -215,7 +215,7 @@ export class JavaScriptParserVisitor {
 
     private semicolonPaddedStatementList(statements: ts.NodeArray<ts.Statement>) {
         return this.rightPaddedList([...statements], this.semicolonPrefix, n => {
-            const last = n.getLastToken();
+            const last = n.getChildAt(n.getChildCount(this.sourceFile) - 1, this.sourceFile);
             return last?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY;
         });
     }
@@ -1193,7 +1193,24 @@ export class JavaScriptParserVisitor {
     }
 
     visitIfStatement(node: ts.IfStatement) {
-        return this.visitUnknown(node);
+        const semicolonAfterThen = node.thenStatement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken;
+        return new J.If(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            new J.ControlParentheses(
+                randomId(),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
+                Markers.EMPTY,
+                this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
+            ),
+            this.rightPadded(
+                this.convert(node.thenStatement),
+                semicolonAfterThen ? this.prefix(node.thenStatement.getLastToken()!) : Space.EMPTY,
+                semicolonAfterThen ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+            ),
+            node.elseStatement ? this.visit(node.elseStatement) : null
+        );
     }
 
     visitDoStatement(node: ts.DoStatement) {
@@ -1827,6 +1844,15 @@ export class JavaScriptParserVisitor {
             statements,
             this.prefix(nodes[nodes.length - 1])
         );
+    }
+
+    private findChildNode(node: ts.Node, kind: ts.SyntaxKind): ts.Node | undefined {
+        for (let i = 0; i < node.getChildCount(); i++) {
+            if (node.getChildAt(i).kind == kind) {
+                return node.getChildAt(i);
+            }
+        }
+        return undefined;
     }
 }
 
