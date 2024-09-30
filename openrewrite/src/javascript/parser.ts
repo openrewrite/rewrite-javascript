@@ -366,7 +366,7 @@ export class JavaScriptParserVisitor {
             this.mapExtends(node),
             this.mapImplements(node),
             null,
-            this.convertBlock(node.getChildren().slice(-3)),
+            this.convertBlock(node.getChildren(this.sourceFile).slice(-3)),
             this.mapType(node)
         );
     }
@@ -542,7 +542,7 @@ export class JavaScriptParserVisitor {
                     Markers.EMPTY,
                     this.visit(node.name),
                     [],
-                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount() - 2)), this.visit(node.initializer)) : null,
+                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
                     this.mapVariableType(node)
                 ),
                 this.suffix(node.name)
@@ -575,7 +575,7 @@ export class JavaScriptParserVisitor {
                     Markers.EMPTY,
                     this.visit(node.name),
                     [],
-                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount() - 2)), this.visit(node.initializer)) : null,
+                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
                     this.mapVariableType(node)
                 ),
                 Space.EMPTY // FIXME check for semicolon
@@ -739,7 +739,7 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             null,
             [],
-            this.mapCommaSeparatedList(node.getChildren()),
+            this.mapCommaSeparatedList(node.getChildren(this.sourceFile)),
             this.mapType(node)
         );
     }
@@ -753,7 +753,7 @@ export class JavaScriptParserVisitor {
             Space.EMPTY,
             null,
             JContainer.empty(),
-            this.convertPropertyAssignments(node.getChildren().slice(-3)),
+            this.convertPropertyAssignments(node.getChildren(this.sourceFile).slice(-3)),
             this.mapMethodType(node)
         );
     }
@@ -763,7 +763,7 @@ export class JavaScriptParserVisitor {
         let statementList = nodes[1] as ts.SyntaxList;
 
         const statements: JRightPadded<J.Statement>[] = this.rightPaddedSeparatedList(
-            [...statementList.getChildren()],
+            [...statementList.getChildren(this.sourceFile)],
             ts.SyntaxKind.CommaToken,
             (nodes, i) => i == nodes.length -2 && nodes[i + 1].kind == ts.SyntaxKind.CommaToken ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[i + 1]))]) : Markers.EMPTY
         );
@@ -784,7 +784,7 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.convert(node.expression),
-            this.leftPadded(this.prefix(node.getChildAt(1)), this.convert(node.name)),
+            this.leftPadded(this.prefix(node.getChildAt(1, this.sourceFile)), this.convert(node.name)),
             this.mapType(node)
         );
     }
@@ -798,7 +798,7 @@ export class JavaScriptParserVisitor {
         let select: JRightPadded<J.Expression> | null;
         let name: J.Identifier;
         if (ts.isPropertyAccessExpression(node.expression)) {
-            select = this.rightPadded(this.convert<J.Expression>(node.expression.expression), this.prefix(node.expression.getChildAt(1)));
+            select = this.rightPadded(this.convert<J.Expression>(node.expression.expression), this.prefix(node.expression.getChildAt(1, this.sourceFile)));
             name = this.convert(node.expression.name);
         } else {
             select = null;
@@ -811,7 +811,7 @@ export class JavaScriptParserVisitor {
             select,
             null, // FIXME type parameters
             name,
-            this.mapCommaSeparatedList(node.getChildren().slice(-3)),
+            this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
             this.mapMethodType(node)
         );
     }
@@ -824,7 +824,7 @@ export class JavaScriptParserVisitor {
             null,
             Space.EMPTY,
             this.visit(node.expression),
-            this.mapCommaSeparatedList(node.arguments ? node.getChildren().slice(2) : []),
+            this.mapCommaSeparatedList(node.arguments ? node.getChildren(this.sourceFile).slice(2) : []),
             null,
             this.mapMethodType(node)
         );
@@ -843,7 +843,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 this.prefix(node.getFirstToken()!),
                 Markers.EMPTY,
-                this.rightPadded(this.convert(node.type), this.prefix(node.getChildAt(2)))
+                this.rightPadded(this.convert(node.type), this.prefix(node.getChildAt(2, this.sourceFile)))
             ),
             this.convert(node.expression)
         );
@@ -1134,7 +1134,7 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.convert(node.expression),
-            this.leftPadded(this.prefix(node.getChildAt(1)), JS.JsBinary.Type.As),
+            this.leftPadded(this.prefix(node.getChildAt(1, this.sourceFile)), JS.JsBinary.Type.As),
             this.convert(node.type),
             this.mapType(node)
         );
@@ -1303,7 +1303,7 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             this.visit(node.name),
             [],
-            node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount() - 2)), this.visit(node.initializer)) : null,
+            node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
             this.mapVariableType(node)
         );
     }
@@ -1326,7 +1326,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 Space.EMPTY,
                 Markers.EMPTY,
-                node.getChildAt(1).kind == ts.SyntaxKind.AsteriskToken ? "function*" : "function",
+                node.getChildAt(1, this.sourceFile).kind == ts.SyntaxKind.AsteriskToken ? "function*" : "function",
                 J.Modifier.Type.LanguageExtension,
                 []
             ), ...this.mapModifiers(node)],
@@ -1345,7 +1345,7 @@ export class JavaScriptParserVisitor {
     }
 
     private getParameterListNodes(node: ts.FunctionDeclaration) {
-        const children = node.getChildren();
+        const children = node.getChildren(this.sourceFile);
         for (let i = 0; i < children.length; i++) {
             if (children[i].kind == ts.SyntaxKind.OpenParenToken) {
                 return children.slice(i, i + 3);
@@ -1392,7 +1392,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitImportDeclaration(node: ts.ImportDeclaration) {
-        const children = node.getChildren();
+        const children = node.getChildren(this.sourceFile);
         const _default = !!node.importClause?.name;
         const onlyDefault = _default && node.importClause.namedBindings == undefined;
         return new JS.JsImport(
@@ -1415,13 +1415,13 @@ export class JavaScriptParserVisitor {
                     randomId(),
                     Space.EMPTY,
                     Markers.EMPTY,
-                    this.rightPadded(this.mapIdentifier(node.namedBindings, "*"), this.prefix(node.namedBindings.getChildAt(1))),
+                    this.rightPadded(this.mapIdentifier(node.namedBindings, "*"), this.prefix(node.namedBindings.getChildAt(1, this.sourceFile))),
                     this.convert(node.namedBindings.name)
                 ), Space.EMPTY)],
                 Markers.EMPTY
             );
         }
-        return this.mapCommaSeparatedList(node.namedBindings?.getChildren()!);
+        return this.mapCommaSeparatedList(node.namedBindings?.getChildren(this.sourceFile)!);
     }
 
     visitNamespaceImport(node: ts.NamespaceImport) {
@@ -1803,7 +1803,7 @@ export class JavaScriptParserVisitor {
     }
 
     private trailingComma = (nodes: readonly ts.Node[]) => (ns: ts.SyntaxList, i: number) => {
-        const last = i === ns.getChildCount() - 2;
+        const last = i === ns.getChildCount(this.sourceFile) - 2;
         return last ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[2]))]) : Markers.EMPTY;
     }
 
@@ -1814,7 +1814,7 @@ export class JavaScriptParserVisitor {
         const prefix = this.prefix(nodes[0]);
 
         let elementList = nodes[1] as ts.SyntaxList;
-        let childCount = elementList.getChildCount();
+        let childCount = elementList.getChildCount(this.sourceFile);
 
         const args: JRightPadded<T>[] = [];
         if (childCount === 0) {
@@ -1828,13 +1828,13 @@ export class JavaScriptParserVisitor {
                 // FIXME right padding and trailing comma
                 const last = i === childCount - 2;
                 args.push(this.rightPadded(
-                    this.visit(elementList.getChildAt(i)),
-                    this.prefix(elementList.getChildAt(i + 1)),
+                    this.visit(elementList.getChildAt(i, this.sourceFile)),
+                    this.prefix(elementList.getChildAt(i + 1, this.sourceFile)),
                     markers ? markers(elementList, i) : Markers.EMPTY
                 ));
             }
             if ((childCount & 1) === 1) {
-                args.push(this.rightPadded(this.visit(elementList.getChildAt(childCount - 1)), this.prefix(nodes[2])));
+                args.push(this.rightPadded(this.visit(elementList.getChildAt(childCount - 1, this.sourceFile)), this.prefix(nodes[2])));
             }
         }
 
@@ -1858,7 +1858,7 @@ export class JavaScriptParserVisitor {
         let statementList = nodes[1] as ts.SyntaxList;
 
         const statements: JRightPadded<J.Statement>[] = this.rightPaddedSeparatedList(
-            [...statementList.getChildren()],
+            [...statementList.getChildren(this.sourceFile)],
             ts.SyntaxKind.SemicolonToken,
             (nodes, i) => nodes[i].getLastToken()?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
         );
@@ -1874,9 +1874,9 @@ export class JavaScriptParserVisitor {
     }
 
     private findChildNode(node: ts.Node, kind: ts.SyntaxKind): ts.Node | undefined {
-        for (let i = 0; i < node.getChildCount(); i++) {
-            if (node.getChildAt(i).kind == kind) {
-                return node.getChildAt(i);
+        for (let i = 0; i < node.getChildCount(this.sourceFile); i++) {
+            if (node.getChildAt(i, this.sourceFile).kind == kind) {
+                return node.getChildAt(i, this.sourceFile);
             }
         }
         return undefined;
