@@ -10,4 +10,16 @@ describe('if mapping', () => {
           typeScript('if (true) console.log("foo");')
         );
     });
+    test('braces', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('if (true) { console.log("foo"); }')
+        );
+    });
+    test('else', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('if (true) console.log("foo"); else console.log("bar");')
+        );
+    });
 });

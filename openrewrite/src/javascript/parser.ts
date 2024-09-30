@@ -1162,7 +1162,11 @@ export class JavaScriptParserVisitor {
     }
 
     visitEmptyStatement(node: ts.EmptyStatement) {
-        return this.visitUnknown(node);
+        return new J.Empty(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY
+        );
     }
 
     visitVariableStatement(node: ts.VariableStatement): J.VariableDeclarations | J.Unknown {
@@ -1209,7 +1213,16 @@ export class JavaScriptParserVisitor {
                 semicolonAfterThen ? this.prefix(node.thenStatement.getLastToken()!) : Space.EMPTY,
                 semicolonAfterThen ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
             ),
-            node.elseStatement ? this.visit(node.elseStatement) : null
+            node.elseStatement ? new J.If.Else(
+                randomId(),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.ElseKeyword)!),
+                Markers.EMPTY,
+                this.rightPadded(
+                    this.convert(node.elseStatement),
+                    semicolonAfterThen ? this.prefix(node.elseStatement.getLastToken()!) : Space.EMPTY,
+                    semicolonAfterThen ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+                )
+            ) : null
         );
     }
 
