@@ -1095,7 +1095,14 @@ export class JavaScriptParserVisitor {
     }
 
     visitSpreadElement(node: ts.SpreadElement) {
-        return this.visitUnknown(node);
+        return new JS.Unary(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.leftPadded(Space.EMPTY, JS.Unary.Type.Spread),
+            this.convert(node.expression),
+            this.mapType(node)
+        );
     }
 
     visitClassExpression(node: ts.ClassExpression) {

@@ -40,6 +40,12 @@ describe('prefix operator mapping', () => {
           typeScript('--a;')
         );
     });
+    test('spread', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('[ ...[] ]')
+        );
+    });
 });
 
 describe('postfix operator mapping', () => {
