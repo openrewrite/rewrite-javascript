@@ -19,14 +19,20 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.SourceFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 class JavaScriptParserTest {
 
     @Test
     @Disabled
-    void simple() {
-        JavaScriptParser parser = JavaScriptParser.builder().build();
+    void simple() throws IOException {
+	    Path path = Paths.get("./build/rewrite-js-server").toAbsolutePath().normalize();
+	    Files.createDirectories(path);
+	    JavaScriptParser parser = JavaScriptParser.usingRemotingInstallation(path).build();
         List<SourceFile> list = parser.parse("""
           const a = 1;""").toList();
         System.out.println(list);

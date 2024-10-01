@@ -1,0 +1,10 @@
+{
+  "name": "@openrewrite/rewrite-bundled-starte",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "@openrewrite/rewrite-remote": "^1.0.0"
+  },
+  "devDependencies": {
+  }
+}
