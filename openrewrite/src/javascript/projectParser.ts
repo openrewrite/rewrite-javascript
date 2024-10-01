@@ -112,6 +112,10 @@ export class TypeScriptParser {
             throw new Error(`Errors parsing ${tsConfigPath}:\n${errors}`);
         }
 
+        // make sure that JS sources also get parsed
+        configParseResult.options.allowJs = true;
+        configParseResult.options.checkJs = true;
+
         return configParseResult;
     }
 

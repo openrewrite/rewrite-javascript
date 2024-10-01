@@ -1,13 +1,19 @@
 import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
-describe('empty mapping', () => {
+describe('return mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 
     test('simple', () => {
         rewriteRun(
           //language=typescript
-          typeScript('if (true) ;')
+          typeScript('return 1;')
+        );
+    });
+    test('empty', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('return')
         );
     });
 });

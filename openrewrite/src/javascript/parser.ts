@@ -239,7 +239,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapModifiers(node: ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration) {
+    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration) {
         if (ts.isVariableStatement(node)) {
             return [new J.Modifier(
                 randomId(),
@@ -255,6 +255,23 @@ export class JavaScriptParserVisitor {
             return []; // FIXME
         } else if (ts.isFunctionDeclaration(node) || ts.isParameter(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
+        } else if (ts.isVariableDeclarationList(node)) {
+            let modifier: string | undefined;
+            if ((node.flags & ts.NodeFlags.Let) !== 0) {
+                modifier = "let";
+            } else if ((node.flags & ts.NodeFlags.Const) !== 0) {
+                modifier = "const";
+            } else {
+                modifier = "var";
+            }
+            return modifier ? [new J.Modifier(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                "let",
+                J.Modifier.Type.LanguageExtension,
+                []
+            )] : [];
         }
         throw new Error(`Cannot get modifiers from ${node}`);
     }
@@ -302,7 +319,7 @@ export class JavaScriptParserVisitor {
         return nodes.map(n => this.rightPadded(this.convert(n), trailing(n), markers?.(n)));
     }
 
-    private rightPaddedSeparatedList<N extends ts.Node, T extends J.J>(nodes: N[], separator: ts.PunctuationSyntaxKind, markers: (nodes: N[], i: number) => Markers): JRightPadded<T>[] {
+    private rightPaddedSeparatedList<N extends ts.Node, T extends J.J>(nodes: N[], separator: ts.PunctuationSyntaxKind, markers?: (nodes: N[], i: number) => Markers): JRightPadded<T>[] {
         if (nodes.length === 0) {
             return [];
         }
@@ -310,15 +327,14 @@ export class JavaScriptParserVisitor {
 
         for (let i = 0; i < nodes.length - 1; i += 2) {
             // FIXME right padding and trailing comma
-            const last = i === nodes.length - 2;
             ts.push(this.rightPadded(
                 this.convert(nodes[i]),
                 this.prefix(nodes[i + 1]),
-                markers(nodes, i)
+                markers ? markers(nodes, i) : Markers.EMPTY
             ));
         }
         if ((nodes.length & 1) === 1) {
-            ts.push(this.rightPadded(this.convert(nodes[nodes.length - 1]), Space.EMPTY, markers(nodes, nodes.length - 1)));
+            ts.push(this.rightPadded(this.convert(nodes[nodes.length - 1]), Space.EMPTY, markers ? markers(nodes, nodes.length - 1) : Markers.EMPTY));
         }
 
         return ts;
@@ -332,8 +348,8 @@ export class JavaScriptParserVisitor {
         return nodes.map(n => this.leftPadded(before(n), this.convert(n), markers?.(n)));
     }
 
-    private semicolonPrefix = (n: ts.Node) => {
-        const last = n.getLastToken();
+    private semicolonPrefix = (node: ts.Node) => {
+        const last = node.getChildren(this.sourceFile).slice(-1)[0];
         return last?.kind == ts.SyntaxKind.SemicolonToken ? this.prefix(last) : Space.EMPTY;
     }
 
@@ -413,6 +429,10 @@ export class JavaScriptParserVisitor {
 
     visitNumberKeyword(node: ts.Node) {
         return this.mapIdentifier(node, 'number');
+    }
+
+    visitBooleanKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'boolean');
     }
 
     visitStringKeyword(node: ts.Node) {
@@ -624,7 +644,10 @@ export class JavaScriptParserVisitor {
     }
 
     visitTypeReference(node: ts.TypeReferenceNode) {
-        return this.visitUnknown(node);
+        if (node.typeArguments) {
+            return this.visitUnknown(node);
+        }
+        return this.visit(node.typeName);
     }
 
     visitFunctionType(node: ts.FunctionTypeNode) {
@@ -967,6 +990,18 @@ export class JavaScriptParserVisitor {
     }
 
     visitBinaryExpression(node: ts.BinaryExpression) {
+        if (node.operatorToken.kind == ts.SyntaxKind.EqualsToken) {
+            // assignment is also represented as `ts.BinaryExpression`
+            return new J.Assignment(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.convert(node.left),
+                this.leftPadded(this.suffix(node.left), this.convert(node.right)),
+                this.mapType(node)
+            );
+        }
+
         let binaryOperator: J.Binary.Type | JS.JsBinary.Type | undefined;
         switch (node.operatorToken.kind) {
             case ts.SyntaxKind.EqualsEqualsEqualsToken:
@@ -1083,7 +1118,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitConditionalExpression(node: ts.ConditionalExpression) {
-        return this.visitUnknown(node);
+        return new J.Ternary(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.condition),
+            this.leftPadded(this.suffix(node.condition), this.convert(node.whenTrue)),
+            this.leftPadded(this.suffix(node.whenTrue), this.convert(node.whenFalse)),
+            this.mapType(node)
+        );
     }
 
     visitTemplateExpression(node: ts.TemplateExpression) {
@@ -1249,7 +1292,29 @@ export class JavaScriptParserVisitor {
     }
 
     visitForStatement(node: ts.ForStatement) {
-        return this.visitUnknown(node);
+        return new J.ForLoop(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            new J.ForLoop.Control(
+                randomId(),
+                this.prefix(node.getChildAt(1)),
+                Markers.EMPTY,
+                [node.initializer ?
+                    (ts.isVariableDeclarationList(node.initializer) ? this.rightPadded(this.visit(node.initializer), Space.EMPTY) :
+                        this.rightPadded(this.convert(node.initializer), this.suffix(node.initializer.getLastToken()!))) :
+                    this.rightPadded(new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY), Space.EMPTY)],
+                node.condition ? this.rightPadded(this.convert(node.condition), this.suffix(node.condition.getLastToken()!)) :
+                    this.rightPadded(new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY), Space.EMPTY),
+                [node.incrementor ? this.rightPadded(this.convert(node.incrementor), this.suffix(node.incrementor.getLastToken()!)) :
+                    this.rightPadded(new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY), Space.EMPTY)],
+            ),
+            this.rightPadded(
+                this.convert(node.statement),
+                this.semicolonPrefix(node.statement),
+                node.statement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+            )
+        );
     }
 
     visitForInStatement(node: ts.ForInStatement) {
@@ -1269,7 +1334,12 @@ export class JavaScriptParserVisitor {
     }
 
     visitReturnStatement(node: ts.ReturnStatement) {
-        return this.visitUnknown(node);
+        return new J.Return(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            node.expression ? this.convert<J.Expression>(node.expression) : null
+        );
     }
 
     visitWithStatement(node: ts.WithStatement) {
@@ -1309,7 +1379,17 @@ export class JavaScriptParserVisitor {
     }
 
     visitVariableDeclarationList(node: ts.VariableDeclarationList) {
-        return this.visitUnknown(node);
+        return new J.VariableDeclarations(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            this.mapModifiers(node),
+            node.declarations[0].type ? this.visit(node.declarations[0].type) : null,
+            null,
+            [],
+            this.rightPaddedList([...node.declarations], this.suffix)
+        );
     }
 
     visitFunctionDeclaration(node: ts.FunctionDeclaration) {
@@ -1760,26 +1840,28 @@ export class JavaScriptParserVisitor {
 
     private _seenTriviaSpans: TextSpan[] = [];
 
-    private prefix(node: ts.Node): Space {
+    private prefix(node: ts.Node, consume: boolean = true): Space {
         if (node.getFullStart() == node.getStart()) {
             return Space.EMPTY;
         }
 
-        const nodeStart = node.getFullStart();
-        const span: TextSpan = [nodeStart, node.getStart()];
-        let idx = binarySearch(this._seenTriviaSpans, span, compareTextSpans);
-        if (idx >= 0)
-            return Space.EMPTY;
-        idx = ~idx;
-        if (idx > 0 && this._seenTriviaSpans[idx - 1][1] > span[0])
-            return Space.EMPTY;
-        this._seenTriviaSpans.splice(idx, 0, span);
+        if (consume) {
+            const nodeStart = node.getFullStart();
+            const span: TextSpan = [nodeStart, node.getStart()];
+            let idx = binarySearch(this._seenTriviaSpans, span, compareTextSpans);
+            if (idx >= 0)
+                return Space.EMPTY;
+            idx = ~idx;
+            if (idx > 0 && this._seenTriviaSpans[idx - 1][1] > span[0])
+                return Space.EMPTY;
+            this._seenTriviaSpans.splice(idx, 0, span);
+        }
         return prefixFromNode(node, this.sourceFile);
         // return Space.format(this.sourceFile.text, node.getFullStart(), node.getFullStart() + node.getLeadingTriviaWidth());
     }
 
-    private suffix = (node: ts.Node): Space => {
-        return this.prefix(getNextSibling(node)!);
+    private suffix = (node: ts.Node, consume: boolean = true): Space => {
+        return this.prefix(getNextSibling(node)!, consume);
     }
 
     private mapType(node: ts.Node): JavaType | null {
@@ -1802,25 +1884,33 @@ export class JavaScriptParserVisitor {
         return this.mapToContainer(nodes, this.trailingComma(nodes));
     }
 
-    private trailingComma = (nodes: readonly ts.Node[]) => (ns: ts.SyntaxList, i: number) => {
-        const last = i === ns.getChildCount(this.sourceFile) - 2;
-        return last ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[2]))]) : Markers.EMPTY;
+    private trailingComma = (nodes: readonly ts.Node[]) => (ns: readonly ts.Node[], i: number) => {
+        const last = i === ns.length - 2;
+        return last ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[2], false))]) : Markers.EMPTY;
     }
 
-    private mapToContainer<T>(nodes: readonly ts.Node[], markers?: (ns: ts.SyntaxList, i: number) => Markers): JContainer<T> {
+    private mapToContainer<T>(nodes: readonly ts.Node[], markers?: (ns: readonly ts.Node[], i: number) => Markers): JContainer<T> {
         if (nodes.length === 0) {
             return JContainer.empty();
         }
         const prefix = this.prefix(nodes[0]);
+        const args: JRightPadded<T>[] = this.mapToRightPaddedList(nodes[1] as ts.SyntaxList, this.prefix(nodes[2]), markers);
+        return new JContainer(
+            prefix,
+            args,
+            Markers.EMPTY
+        );
+    }
 
-        let elementList = nodes[1] as ts.SyntaxList;
-        let childCount = elementList.getChildCount(this.sourceFile);
+    private mapToRightPaddedList<T>(node: ts.SyntaxList, lastAfter: Space, markers?: (ns: readonly ts.Node[], i: number) => Markers): JRightPadded<T>[] {
+        let elementList = node.getChildren(this.sourceFile);
+        let childCount = elementList.length;
 
         const args: JRightPadded<T>[] = [];
         if (childCount === 0) {
             args.push(this.rightPadded(
                 new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY) as T,
-                this.prefix(nodes[2]),
+                lastAfter,
                 Markers.EMPTY
             ));
         } else {
@@ -1828,21 +1918,16 @@ export class JavaScriptParserVisitor {
                 // FIXME right padding and trailing comma
                 const last = i === childCount - 2;
                 args.push(this.rightPadded(
-                    this.visit(elementList.getChildAt(i, this.sourceFile)),
-                    this.prefix(elementList.getChildAt(i + 1, this.sourceFile)),
+                    this.visit(elementList[i]),
+                    this.prefix(elementList[i + 1]),
                     markers ? markers(elementList, i) : Markers.EMPTY
                 ));
             }
             if ((childCount & 1) === 1) {
-                args.push(this.rightPadded(this.visit(elementList.getChildAt(childCount - 1, this.sourceFile)), this.prefix(nodes[2])));
+                args.push(this.rightPadded(this.visit(elementList[childCount - 1]), lastAfter));
             }
         }
-
-        return new JContainer(
-            prefix,
-            args,
-            Markers.EMPTY
-        );
+        return args;
     }
 
     private mapDecorators(node: ts.ClassDeclaration) {

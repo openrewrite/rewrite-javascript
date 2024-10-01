@@ -25,7 +25,7 @@ describe('function mapping', () => {
     test('single typed parameter with initializer', () => {
         rewriteRun(
           //language=typescript
-          typeScript('function f(a : number =  2) {}')
+          typeScript('function f(a /*0*/ : /*1*/ number /*2*/ = /*3*/ 2 /*4*/ ) {}')
         );
     });
     test('single parameter with initializer', () => {
