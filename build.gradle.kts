@@ -1,3 +1,5 @@
+import com.hierynomus.gradle.license.tasks.LicenseCheck
+
 plugins {
     id("org.openrewrite.build.recipe-library") version "latest.release"
 }
@@ -35,6 +37,10 @@ tasks.withType<Javadoc> {
         this as CoreJavadocOptions
         addStringOption("Xdoclint:none", "-quiet")
     }
+}
+
+tasks.withType<LicenseCheck> {
+    include("*.java")
 }
 
 // TODO add index.js artifact from the js subproject

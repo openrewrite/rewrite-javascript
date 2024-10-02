@@ -32,14 +32,12 @@ import org.openrewrite.tree.ParseError;
 import org.openrewrite.tree.ParsingEventListener;
 import org.openrewrite.tree.ParsingExecutionContextView;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -55,6 +53,7 @@ public class JavaScriptParser implements Parser {
     private final boolean logCompilationWarningsAndErrors;
     private final JavaTypeCache typeCache;
     private final List<Path> nodePath;
+    private final Path installationDir;
 
     private @Nullable Process nodeProcess;
     private @Nullable RemotingContext remotingContext;
@@ -171,6 +170,29 @@ public class JavaScriptParser implements Parser {
         return this;
     }
 
+    public static Builder usingRemotingInstallation(Path dir) {
+        try {
+            return verifyRemotingInstallation(dir);
+        } catch (InterruptedException | IOException var2) {
+            return builder();
+        }
+    }
+
+    private static Builder verifyRemotingInstallation(Path dir) throws IOException, InterruptedException {
+        if (!Files.isDirectory(dir, new LinkOption[0])) {
+            Files.createDirectories(dir);
+        }
+
+        exportResource("META-INF/package.json", dir.toFile());
+
+        List<String> command = new ArrayList(Arrays.asList("npm", "install"));
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        Process process = processBuilder.directory(dir.toFile()).start();
+        int exitCode = process.waitFor();
+
+        return new Builder().installationDir(dir);
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -180,6 +202,7 @@ public class JavaScriptParser implements Parser {
         private boolean logCompilationWarningsAndErrors;
         private final Collection<NamedStyles> styles = new ArrayList<>();
         private List<Path> nodePath = new ArrayList<>();
+        private Path installationDir;
 
         public Builder() {
             super(JS.CompilationUnit.class);
@@ -207,14 +230,42 @@ public class JavaScriptParser implements Parser {
             return this;
         }
 
+        public Builder installationDir(Path installationDir) {
+            this.installationDir = installationDir;
+            return this;
+        }
+
         @Override
         public JavaScriptParser build() {
-            return new JavaScriptParser(styles, logCompilationWarningsAndErrors, typeCache, nodePath);
+            return new JavaScriptParser(styles, logCompilationWarningsAndErrors,
+                    typeCache, nodePath, installationDir);
         }
 
         @Override
         public String getDslName() {
             return "javascript";
+        }
+    }
+
+    private static void exportResource(String resourceName, File outputDir) throws IOException {
+        try (InputStream stream = JavaScriptParser.class.getClassLoader().getResourceAsStream(resourceName)) {
+            if(stream == null) {
+                throw new IllegalArgumentException("Cannot get resource \"" + resourceName + "\" from Jar " +
+                        "file.");
+            }
+
+            int readBytes;
+            byte[] buffer = new byte[4096];
+            try (
+                OutputStream resStreamOut =
+                        Files.newOutputStream(Paths.get(outputDir.getPath(),
+                                Paths.get(resourceName).getFileName().toString()))) {
+
+                while ((readBytes = stream.read(buffer)) > 0) {
+                    resStreamOut.write(buffer, 0, readBytes);
+                }
+                resStreamOut.flush();
+            }
         }
     }
 
@@ -254,12 +305,17 @@ public class JavaScriptParser implements Parser {
 
         int port = 54323;
         if (!isServerRunning(port)) {
-            ProcessBuilder processBuilder = new ProcessBuilder("node", "server.ts", Integer.toString(port));
+            ProcessBuilder processBuilder = new ProcessBuilder("node",
+                    "node_modules/@openrewrite/rewrite-remote/dist/server.js",
+                    Integer.toString(port));
             if (!nodePath.isEmpty()) {
                 Map<String, String> environment = processBuilder.environment();
                 environment.compute("NODE_PATH", (k, current) ->
                         (current != null ? current + File.pathSeparator : "") + nodePath.stream().map(Path::toString).collect(Collectors.joining(File.pathSeparator)));
             }
+
+            processBuilder.directory(installationDir.toFile());
+
             if (System.getProperty("os.name").startsWith("Windows")) {
                 processBuilder.redirectOutput(new File("NUL"));
                 processBuilder.redirectError(new File("NUL"));
