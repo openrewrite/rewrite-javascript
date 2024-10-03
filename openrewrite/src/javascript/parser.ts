@@ -1367,6 +1367,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitVariableDeclaration(node: ts.VariableDeclaration) {
+        // FIXME possibly we should include the `J.VariableDeclarations` at this point
         return new J.VariableDeclarations.NamedVariable(
             randomId(),
             this.prefix(node),
@@ -1379,17 +1380,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitVariableDeclarationList(node: ts.VariableDeclarationList) {
-        return new J.VariableDeclarations(
+        const kind = node.getFirstToken(this.sourceFile);
+        return new JS.ScopedVariableDeclarations(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            [],
-            this.mapModifiers(node),
-            node.declarations[0].type ? this.visit(node.declarations[0].type) : null,
-            null,
-            [],
-            this.rightPaddedList([...node.declarations], this.suffix)
-        );
+            kind?.kind === ts.SyntaxKind.LetKeyword ? JS.ScopedVariableDeclarations.Scope.Let :
+                kind?.kind === ts.SyntaxKind.ConstKeyword ? JS.ScopedVariableDeclarations.Scope.Const : JS.ScopedVariableDeclarations.Scope.Var,
+            node.declarations.map(declaration => this.rightPadded(this.visit(declaration), this.suffix(declaration)))
+        )
     }
 
     visitFunctionDeclaration(node: ts.FunctionDeclaration) {

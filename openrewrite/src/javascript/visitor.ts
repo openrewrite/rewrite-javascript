@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -213,6 +213,19 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         propertyAssignment = propertyAssignment.padding.withName(this.visitJsRightPadded(propertyAssignment.padding.name, JsRightPadded.Location.PROPERTY_ASSIGNMENT_NAME, p)!);
         propertyAssignment = propertyAssignment.withInitializer(this.visitAndCast(propertyAssignment.initializer, p)!);
         return propertyAssignment;
+    }
+
+    public visitScopedVariableDeclarations(scopedVariableDeclarations: ScopedVariableDeclarations, p: P): J | null {
+        scopedVariableDeclarations = scopedVariableDeclarations.withPrefix(this.visitJsSpace(scopedVariableDeclarations.prefix, JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_PREFIX, p)!);
+        let tempStatement = this.visitStatement(scopedVariableDeclarations, p) as Statement;
+        if (!(tempStatement instanceof ScopedVariableDeclarations))
+        {
+            return tempStatement;
+        }
+        scopedVariableDeclarations = tempStatement as ScopedVariableDeclarations;
+        scopedVariableDeclarations = scopedVariableDeclarations.withMarkers(this.visitMarkers(scopedVariableDeclarations.markers, p));
+        scopedVariableDeclarations = scopedVariableDeclarations.padding.withVariables(ListUtils.map(scopedVariableDeclarations.padding.variables, el => this.visitJsRightPadded(el, JsRightPadded.Location.SCOPED_VARIABLE_DECLARATIONS_VARIABLES, p)));
+        return scopedVariableDeclarations;
     }
 
     public visitStatementExpression(statementExpression: StatementExpression, p: P): J | null {
