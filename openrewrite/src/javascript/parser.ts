@@ -1367,10 +1367,9 @@ export class JavaScriptParserVisitor {
     }
 
     visitVariableDeclaration(node: ts.VariableDeclaration) {
-        // FIXME possibly we should include the `J.VariableDeclarations` at this point
         return new J.VariableDeclarations.NamedVariable(
             randomId(),
-            this.prefix(node),
+            Space.EMPTY,
             Markers.EMPTY,
             this.visit(node.name),
             [],
@@ -1387,7 +1386,19 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             kind?.kind === ts.SyntaxKind.LetKeyword ? JS.ScopedVariableDeclarations.Scope.Let :
                 kind?.kind === ts.SyntaxKind.ConstKeyword ? JS.ScopedVariableDeclarations.Scope.Const : JS.ScopedVariableDeclarations.Scope.Var,
-            node.declarations.map(declaration => this.rightPadded(this.visit(declaration), this.suffix(declaration)))
+            node.declarations.map(declaration => {
+                return this.rightPadded(new J.VariableDeclarations(
+                    randomId(),
+                    this.prefix(declaration),
+                    Markers.EMPTY,
+                    [], // FIXME decorators?
+                    [], // FIXME modifiers?
+                    declaration.type ? this.visit(declaration.type) : null,
+                    null, // FIXME varargs
+                    [],
+                    [this.rightPadded(this.visit(declaration), Space.EMPTY)]
+                ), this.suffix(declaration));
+            })
         )
     }
 
