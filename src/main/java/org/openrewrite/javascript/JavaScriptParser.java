@@ -100,6 +100,7 @@ public class JavaScriptParser implements Parser {
                             } else {
                                 generator.writeString("parse-javascript-file");
                                 generator.writeString(input.getPath().toString());
+                                generator.writeString(relativeTo.toString());
                             }
                         }, parser -> {
                             Tree tree = new ReceiverContext(remotingContext.newReceiver(parser), remotingContext).receiveTree(null);
