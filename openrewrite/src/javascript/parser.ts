@@ -1256,22 +1256,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitVariableStatement(node: ts.VariableStatement) {
-        if (node.declarationList.declarations.length > 1) {
-            return this.visitVariableDeclarationList(node.declarationList);
-        }
-        return new J.VariableDeclarations(
-            randomId(),
-            this.prefix(node),
-            Markers.EMPTY,
-            [],
-            this.mapModifiers(node),
-            node.declarationList.declarations[0].type ? this.visit(node.declarationList.declarations[0].type) : null,
-            null,
-            [],
-            this.rightPaddedList([...node.declarationList.declarations], n => {
-                return Space.EMPTY;
-            })
-        );
+        return this.visitVariableDeclarationList(node.declarationList);
     }
 
     visitExpressionStatement(node: ts.ExpressionStatement): JS.ExpressionStatement {
@@ -1397,9 +1382,10 @@ export class JavaScriptParserVisitor {
     visitVariableDeclaration(node: ts.VariableDeclaration) {
         return new J.VariableDeclarations.NamedVariable(
             randomId(),
-            Space.EMPTY,
+            this.prefix(node),
             Markers.EMPTY,
-            this.visit(node.name),
+            // NOTE: the name prefix will be used as a suffix by the printer
+            this.visit(node.name).withPrefix(node.type ? this.suffix(node.name) : Space.EMPTY),
             [],
             node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
             this.mapVariableType(node)

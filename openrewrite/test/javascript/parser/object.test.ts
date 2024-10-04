@@ -50,7 +50,7 @@ describe('object literal mapping', () => {
           typeScript(
             'const c = { [ 1 + 1 ] : 1 }',
             cu => {
-                const literal = (<J.NewClass>(<J.VariableDeclarations>cu.statements[0]).variables[0].initializer);
+                const literal = (<J.NewClass>(<J.VariableDeclarations>(<JS.ScopedVariableDeclarations>cu.statements[0]).variables[0]).variables[0].initializer);
                 expect(literal.body).toBeDefined();
                 const computedName = (<J.NewArray>(<JS.PropertyAssignment>literal.body?.statements[0]).name);
                 expect(computedName).toBeDefined();

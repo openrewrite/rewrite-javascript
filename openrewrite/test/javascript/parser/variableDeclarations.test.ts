@@ -1,4 +1,5 @@
 import * as J from "../../../dist/src/java";
+import * as JS from "../../../dist/src/javascript";
 import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
 describe('variable declaration mapping', () => {
@@ -17,7 +18,7 @@ describe('variable declaration mapping', () => {
                 expect(cu).toBeDefined();
                 expect(cu.statements).toHaveLength(2);
                 cu.statements.forEach(statement => {
-                    expect(statement).toBeInstanceOf(J.VariableDeclarations);
+                    expect(statement).toBeInstanceOf(JS.ScopedVariableDeclarations);
                 });
                 cu.padding.statements.forEach(statement => {
                     expect(statement.after.comments).toHaveLength(0);
@@ -38,13 +39,19 @@ describe('variable declaration mapping', () => {
                 expect(cu).toBeDefined();
                 expect(cu.statements).toHaveLength(2);
                 cu.statements.forEach(statement => {
-                    expect(statement).toBeInstanceOf(J.VariableDeclarations);
+                    expect(statement).toBeInstanceOf(JS.ScopedVariableDeclarations);
                 });
                 cu.padding.statements.forEach(statement => {
                     expect(statement.after.comments).toHaveLength(0);
                     expect(statement.after.whitespace).toBe('');
                 });
             })
+        );
+    });
+    test('typed', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('let a : number =2')
         );
     });
     test('multi', () => {

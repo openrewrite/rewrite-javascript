@@ -745,7 +745,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 if (multiVariable.getVarargs() != null) {
                     p.append("...");
                 }
-                visit(variable.getElement().getName(), p);
+                p.append(variable.getElement().getName().getSimpleName());
+                visitSpace(variable.getElement().getName().getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
                 PostFixOperator postFixOperator = multiVariable.getMarkers().findFirst(PostFixOperator.class).orElse(null);
                 if (postFixOperator != null) {
                     visitSpace(postFixOperator.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
