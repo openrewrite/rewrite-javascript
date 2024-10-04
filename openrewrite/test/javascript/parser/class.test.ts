@@ -10,13 +10,6 @@ describe('class mapping', () => {
           typeScript('class A {}')
         );
     });
-    test('decorator', () => {
-        rewriteRunWithOptions(
-          {expectUnknowns: true},
-          //language=typescript
-          typeScript('@foo class A {}')
-        );
-    });
     test('type parameter', () => {
         rewriteRunWithOptions(
           {expectUnknowns: true},

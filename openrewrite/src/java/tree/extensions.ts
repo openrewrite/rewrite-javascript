@@ -8,6 +8,8 @@ export function getJavaType<T extends J>(expr: T): JavaType | null {
         return expr.annotationType.type;
     } else if (expr instanceof MethodDeclaration) {
         return expr.methodType != null ? expr.methodType.returnType : null;
+    } else if (expr instanceof MethodInvocation) {
+        return expr.methodType == null ? null : expr.methodType.returnType;
     }
     throw new Error("Unsupported expression type: " + expr.constructor.name);
 }

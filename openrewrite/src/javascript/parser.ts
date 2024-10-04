@@ -184,7 +184,7 @@ export class JavaScriptParserVisitor {
         this.typeMapping = new JavaScriptTypeMapping(typeChecker);
     }
 
-    visit(node: ts.Node): any {
+    visit = (node: ts.Node): any => {
         const member = this[(visitMethodMap.get(node.kind) as keyof JavaScriptParserVisitor)];
         if (typeof member === 'function') {
             return member.bind(this)(node as any);
@@ -193,7 +193,7 @@ export class JavaScriptParserVisitor {
         }
     }
 
-    convert<T extends J.J>(node: ts.Node): T {
+    convert = <T extends J.J>(node: ts.Node): T => {
         return this.visit(node) as T;
     }
 
@@ -359,7 +359,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitClassDeclaration(node: ts.ClassDeclaration) {
-        if (node.modifiers?.find(ts.isDecorator) || node.typeParameters) {
+        if (node.typeParameters) {
             return this.visitUnknown(node);
         }
 
@@ -571,7 +571,36 @@ export class JavaScriptParserVisitor {
     }
 
     visitDecorator(node: ts.Decorator) {
-        return this.visitUnknown(node);
+        let annotationType: J.NameTree;
+        let _arguments: JContainer<J.Expression> | null = null;
+
+        if (ts.isCallExpression(node.expression)) {
+            let callExpression: J.MethodInvocation = this.convert(node.expression);
+            annotationType = callExpression.select === null ? callExpression.name :
+                new J.FieldAccess(
+                    randomId(),
+                    callExpression.prefix,
+                    Markers.EMPTY,
+                    callExpression.select,
+                    this.leftPadded(callExpression.padding.select!.after, callExpression.name),
+                    callExpression.type
+                );
+            _arguments = callExpression.padding.arguments;
+        } else if (ts.isIdentifier(node.expression)) {
+            annotationType = this.convert(node.expression);
+        } else if (ts.isPropertyAccessExpression(node.expression)) {
+            annotationType = this.convert(node.expression);
+        } else {
+            return this.visitUnknown(node);
+        }
+
+        return new J.Annotation(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            annotationType,
+            _arguments
+        );
     }
 
     visitPropertySignature(node: ts.PropertySignature) {
@@ -1403,7 +1432,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitFunctionDeclaration(node: ts.FunctionDeclaration) {
-        if (node.modifiers?.find(ts.isDecorator) || node.typeParameters) {
+        if (node.typeParameters) {
             return this.visitUnknown(node);
         }
 
@@ -1411,10 +1440,10 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            [], // FIXME decorators
+            this.mapDecorators(node),
             [new J.Modifier(
                 randomId(),
-                Space.EMPTY,
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.FunctionKeyword)!),
                 Markers.EMPTY,
                 node.getChildAt(1, this.sourceFile).kind == ts.SyntaxKind.AsteriskToken ? "function*" : "function",
                 J.Modifier.Type.LanguageExtension,
@@ -1940,8 +1969,8 @@ export class JavaScriptParserVisitor {
         return args;
     }
 
-    private mapDecorators(node: ts.ClassDeclaration) {
-        return []; // FIXME
+    private mapDecorators(node: ts.ClassDeclaration | ts.FunctionDeclaration): J.Annotation[] {
+        return node.modifiers?.filter(ts.isDecorator)?.map(this.convert<J.Annotation>) ?? [];
     }
 
     private mapTypeParameters(node: ts.ClassDeclaration): JContainer<J.TypeParameter> | null {
