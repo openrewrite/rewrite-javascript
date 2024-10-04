@@ -39,8 +39,8 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
-    public J visitAwait(JS.Await await, P p) {
-        return super.visitAwait(await, p);
+    public JS.Await visitAwait(JS.Await await, P p) {
+        return (JS.Await) super.visitAwait(await, p);
     }
 
     @Override
@@ -64,8 +64,8 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
-    public J visitExpressionStatement(JS.ExpressionStatement statement, P p) {
-        return super.visitExpressionStatement(statement, p);
+    public JS.ExpressionStatement visitExpressionStatement(JS.ExpressionStatement statement, P p) {
+        return (JS.ExpressionStatement) super.visitExpressionStatement(statement, p);
     }
 
     @Override
@@ -89,13 +89,18 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
-    public J visitPropertyAssignment(JS.PropertyAssignment propertyAssignment, P p) {
-        return super.visitPropertyAssignment(propertyAssignment, p);
+    public JS.PropertyAssignment visitPropertyAssignment(JS.PropertyAssignment propertyAssignment, P p) {
+        return (JS.PropertyAssignment) super.visitPropertyAssignment(propertyAssignment, p);
     }
 
     @Override
-    public J visitStatementExpression(JS.StatementExpression expression, P p) {
-        return super.visitStatementExpression(expression, p);
+    public JS.ScopedVariableDeclarations visitScopedVariableDeclarations(JS.ScopedVariableDeclarations scopedVariableDeclarations, P p) {
+        return (JS.ScopedVariableDeclarations) super.visitScopedVariableDeclarations(scopedVariableDeclarations, p);
+    }
+
+    @Override
+    public JS.StatementExpression visitStatementExpression(JS.StatementExpression expression, P p) {
+        return (JS.StatementExpression) super.visitStatementExpression(expression, p);
     }
 
     @Override
@@ -119,8 +124,8 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
-    public J visitTypeOf(JS.TypeOf typeOf, P p) {
-        return super.visitTypeOf(typeOf, p);
+    public JS.TypeOf visitTypeOf(JS.TypeOf typeOf, P p) {
+        return (JS.TypeOf) super.visitTypeOf(typeOf, p);
     }
 
     @Override
@@ -134,13 +139,13 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
-    public J visitVoid(JS.Void aVoid, P p) {
-        return super.visitVoid(aVoid, p);
+    public JS.Void visitVoid(JS.Void aVoid, P p) {
+        return (JS.Void) super.visitVoid(aVoid, p);
     }
 
     @Override
-    public J visitYield(JS.Yield yield, P p) {
-        return super.visitYield(yield, p);
+    public JS.Yield visitYield(JS.Yield yield, P p) {
+        return (JS.Yield) super.visitYield(yield, p);
     }
 
     // J overrides.

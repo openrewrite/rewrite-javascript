@@ -249,6 +249,30 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitScopedVariableDeclarations(JS.ScopedVariableDeclarations variableDeclarations, PrintOutputCapture<P> p) {
+        beforeSyntax(variableDeclarations, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
+
+        if (variableDeclarations.getScope() != null) {
+            switch (variableDeclarations.getScope()) {
+                case Let:
+                    p.append("let");
+                    break;
+                case Const:
+                    p.append("const");
+                    break;
+                case Var:
+                    p.append("var");
+                    break;
+            }
+        }
+
+        visitRightPadded(variableDeclarations.getPadding().getVariables(), JsRightPadded.Location.SCOPED_VARIABLE_DECLARATIONS_VARIABLE, ",", p);
+
+        afterSyntax(variableDeclarations, p);
+        return variableDeclarations;
+    }
+
+    @Override
     public J visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, PrintOutputCapture<P> p) {
         beforeSyntax(objectBindingDeclarations, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
         visit(objectBindingDeclarations.getLeadingAnnotations(), p);
@@ -755,6 +779,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         public J visitVariable(J.VariableDeclarations.NamedVariable variable, PrintOutputCapture<P> p) {
             beforeSyntax(variable, Space.Location.VARIABLE_PREFIX, p);
             visit(variable.getName(), p);
+            JLeftPadded<Expression> initializer = variable.getPadding().getInitializer();
+            visitLeftPadded("=", initializer, JLeftPadded.Location.VARIABLE_INITIALIZER, p);
             afterSyntax(variable, p);
             return variable;
         }

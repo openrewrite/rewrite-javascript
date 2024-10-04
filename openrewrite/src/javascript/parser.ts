@@ -1369,7 +1369,7 @@ export class JavaScriptParserVisitor {
     visitVariableDeclaration(node: ts.VariableDeclaration) {
         return new J.VariableDeclarations.NamedVariable(
             randomId(),
-            this.prefix(node),
+            Space.EMPTY,
             Markers.EMPTY,
             this.visit(node.name),
             [],
@@ -1379,17 +1379,27 @@ export class JavaScriptParserVisitor {
     }
 
     visitVariableDeclarationList(node: ts.VariableDeclarationList) {
-        return new J.VariableDeclarations(
+        const kind = node.getFirstToken(this.sourceFile);
+        return new JS.ScopedVariableDeclarations(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            [],
-            this.mapModifiers(node),
-            node.declarations[0].type ? this.visit(node.declarations[0].type) : null,
-            null,
-            [],
-            this.rightPaddedList([...node.declarations], this.suffix)
-        );
+            kind?.kind === ts.SyntaxKind.LetKeyword ? JS.ScopedVariableDeclarations.Scope.Let :
+                kind?.kind === ts.SyntaxKind.ConstKeyword ? JS.ScopedVariableDeclarations.Scope.Const : JS.ScopedVariableDeclarations.Scope.Var,
+            node.declarations.map(declaration => {
+                return this.rightPadded(new J.VariableDeclarations(
+                    randomId(),
+                    this.prefix(declaration),
+                    Markers.EMPTY,
+                    [], // FIXME decorators?
+                    [], // FIXME modifiers?
+                    declaration.type ? this.visit(declaration.type) : null,
+                    null, // FIXME varargs
+                    [],
+                    [this.rightPadded(this.visit(declaration), Space.EMPTY)]
+                ), this.suffix(declaration));
+            })
+        )
     }
 
     visitFunctionDeclaration(node: ts.FunctionDeclaration) {

@@ -1293,6 +1293,89 @@ public interface JS extends J {
         }
     }
 
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    class ScopedVariableDeclarations implements JS, Statement {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<ScopedVariableDeclarations.Padding> padding;
+
+        @Getter
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @Getter
+        @With
+        Space prefix;
+
+        @Getter
+        @With
+        Markers markers;
+
+        @Getter
+        @With
+        @Nullable
+        Scope scope;
+
+        List<JRightPadded<Expression>> variables;
+
+        public List<Expression> getVariables() {
+            return JRightPadded.getElements(variables);
+        }
+
+        public ScopedVariableDeclarations withVariables(List<Expression> variables) {
+            return getPadding().withVariables(JRightPadded.withElements(this.variables, variables));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitScopedVariableDeclarations(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        public enum Scope {
+            Const,
+            Let,
+            Var,
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ScopedVariableDeclarations t;
+
+            public List<JRightPadded<Expression>> getVariables() {
+                return t.variables;
+            }
+
+            public ScopedVariableDeclarations withVariables(List<JRightPadded<Expression>> variables) {
+                return t.variables == variables ? t : new ScopedVariableDeclarations(t.id, t.prefix, t.markers, t.scope, variables);
+            }
+        }
+    }
+
     @Getter
     @SuppressWarnings("unchecked")
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)

@@ -1391,6 +1391,95 @@ export class PropertyAssignment extends JSMixin(Object) implements Statement, Ty
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$ScopedVariableDeclarations")
+export class ScopedVariableDeclarations extends JSMixin(Object) implements Statement {
+    public constructor(id: UUID, prefix: Space, markers: Markers, scope: ScopedVariableDeclarations.Scope | null, variables: JRightPadded<Expression>[]) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._scope = scope;
+        this._variables = variables;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): ScopedVariableDeclarations {
+            return id === this._id ? this : new ScopedVariableDeclarations(id, this._prefix, this._markers, this._scope, this._variables);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): ScopedVariableDeclarations {
+            return prefix === this._prefix ? this : new ScopedVariableDeclarations(this._id, prefix, this._markers, this._scope, this._variables);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): ScopedVariableDeclarations {
+            return markers === this._markers ? this : new ScopedVariableDeclarations(this._id, this._prefix, markers, this._scope, this._variables);
+        }
+
+        private readonly _scope: ScopedVariableDeclarations.Scope | null;
+
+        public get scope(): ScopedVariableDeclarations.Scope | null {
+            return this._scope;
+        }
+
+        public withScope(scope: ScopedVariableDeclarations.Scope | null): ScopedVariableDeclarations {
+            return scope === this._scope ? this : new ScopedVariableDeclarations(this._id, this._prefix, this._markers, scope, this._variables);
+        }
+
+        private readonly _variables: JRightPadded<Expression>[];
+
+        public get variables(): Expression[] {
+            return JRightPadded.getElements(this._variables);
+        }
+
+        public withVariables(variables: Expression[]): ScopedVariableDeclarations {
+            return this.padding.withVariables(JRightPadded.withElements(this._variables, variables));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitScopedVariableDeclarations(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get variables(): JRightPadded<Expression>[] {
+                return t._variables;
+            }
+            public withVariables(variables: JRightPadded<Expression>[]): ScopedVariableDeclarations {
+                return t._variables === variables ? t : new ScopedVariableDeclarations(t._id, t._prefix, t._markers, t._scope, variables);
+            }
+        }
+    }
+
+}
+
+export namespace ScopedVariableDeclarations {
+    export enum Scope {
+            Const = 0,
+            Let = 1,
+            Var = 2,
+
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$TemplateExpression")
 export class TemplateExpression extends JSMixin(Object) implements Statement, Expression {
     public constructor(id: UUID, prefix: Space, markers: Markers, delimiter: string, tag: JRightPadded<Expression> | null, strings: J[], _type: JavaType | null) {
