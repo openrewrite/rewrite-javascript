@@ -12,7 +12,7 @@ dependencies {
 
     implementation(platform("org.openrewrite:rewrite-bom:$latest"))
     implementation("org.openrewrite:rewrite-java")
-    implementation("org.openrewrite:rewrite-remote-java:latest.integration") {
+    implementation("org.openrewrite:rewrite-remote-java:$latest") {
         exclude(group = "org.openrewrite", module = "rewrite-javascript")
     }
 
