@@ -1255,10 +1255,9 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    visitVariableStatement(node: ts.VariableStatement): J.VariableDeclarations | J.Unknown {
+    visitVariableStatement(node: ts.VariableStatement) {
         if (node.declarationList.declarations.length > 1) {
-            // we can't map this to a `J.VariableDeclarations` because the variables can all declare their own type
-            return this.visitUnknown(node);
+            return this.visitVariableDeclarationList(node.declarationList);
         }
         return new J.VariableDeclarations(
             randomId(),

@@ -26,7 +26,6 @@ describe('variable declaration mapping', () => {
             })
         );
     });
-
     test('const2', () => {
         rewriteRun(
           typeScript(
@@ -46,6 +45,18 @@ describe('variable declaration mapping', () => {
                     expect(statement.after.whitespace).toBe('');
                 });
             })
+        );
+    });
+    test('multi', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('let a=2, b=2 ')
+        );
+    });
+    test('multi typed', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('let a: number =2, b: string = "2" ')
         );
     });
 });
