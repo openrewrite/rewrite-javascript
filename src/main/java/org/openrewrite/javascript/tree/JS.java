@@ -21,6 +21,7 @@ import lombok.experimental.NonFinal;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.java.JavaPrinter;
+import org.openrewrite.java.JavaTypeVisitor;
 import org.openrewrite.java.internal.TypesInUse;
 import org.openrewrite.java.service.ImportService;
 import org.openrewrite.java.tree.*;
@@ -38,6 +39,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
@@ -226,6 +229,37 @@ public interface JS extends J {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        @Transient
+        @Override
+        public long getWeight(Predicate<Object> uniqueIdentity) {
+            AtomicInteger n = new AtomicInteger();
+            new JavaScriptVisitor<AtomicInteger>() {
+                final JavaTypeVisitor<AtomicInteger> typeVisitor = new JavaTypeVisitor<AtomicInteger>() {
+                    @Override
+                    public JavaType visit(@Nullable JavaType javaType, AtomicInteger n) {
+                        if (javaType != null && uniqueIdentity.test(javaType)) {
+                            n.incrementAndGet();
+                            return super.visit(javaType, n);
+                        }
+                        //noinspection ConstantConditions
+                        return javaType;
+                    }
+                };
+
+                @Override
+                public J preVisit(J tree, AtomicInteger n) {
+                    n.incrementAndGet();
+                    return tree;
+                }
+
+                @Override
+                public JavaType visitType(@Nullable JavaType javaType, AtomicInteger n) {
+                    return typeVisitor.visit(javaType, n);
+                }
+            }.visit(this, n);
+            return n.get();
         }
 
         @Override
