@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import * as J from '../java';
-import {JavaType, JContainer, JLeftPadded, JRightPadded, Semicolon, Space, Statement, TrailingComma} from '../java';
+import {JavaType, JContainer, JLeftPadded, JRightPadded, Semicolon, Space, TrailingComma} from '../java';
 import * as JS from '.';
 import {
     ExecutionContext,
@@ -214,9 +214,16 @@ export class JavaScriptParserVisitor {
     }
 
     private semicolonPaddedStatementList(statements: ts.NodeArray<ts.Statement>) {
-        return this.rightPaddedList([...statements], this.semicolonPrefix, n => {
-            const last = n.getChildAt(n.getChildCount(this.sourceFile) - 1, this.sourceFile);
-            return last?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY;
+        return [...statements].map(n => {
+            const j: J.Statement = this.convert(n);
+            if (j instanceof J.Unknown) {
+                // in case of `J.Unknown` its source will already contain any `;`
+                return this.rightPadded(j, Space.EMPTY, Markers.EMPTY);
+            }
+            return this.rightPadded(j, this.semicolonPrefix(n), (n => {
+                const last = n.getChildAt(n.getChildCount(this.sourceFile) - 1, this.sourceFile);
+                return last?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY;
+            })?.(n));
         });
     }
 
@@ -1259,10 +1266,17 @@ export class JavaScriptParserVisitor {
         return this.visitVariableDeclarationList(node.declarationList);
     }
 
-    visitExpressionStatement(node: ts.ExpressionStatement): JS.ExpressionStatement {
+    visitExpressionStatement(node: ts.ExpressionStatement): J.Statement {
+        const expression = this.visit(node.expression) as J.Expression;
+        if (expression instanceof J.MethodInvocation || expression instanceof J.NewClass || expression instanceof J.Unknown ||
+            expression instanceof J.AssignmentOperation || expression instanceof J.Ternary || expression instanceof J.Empty ||
+            expression instanceof JS.ExpressionStatement || expression instanceof J.Assignment || expression instanceof J.FieldAccess) {
+            // FIXME this is a hack we currently require because our `Expression` and `Statement` interfaces don't have any type guards
+            return expression as J.Statement;
+        }
         return new JS.ExpressionStatement(
             randomId(),
-            this.visit(node.expression) as J.Expression
+            expression
         )
     }
 
@@ -1413,7 +1427,7 @@ export class JavaScriptParserVisitor {
                     [this.rightPadded(this.visit(declaration), Space.EMPTY)]
                 ), this.suffix(declaration));
             })
-        )
+        );
     }
 
     visitFunctionDeclaration(node: ts.FunctionDeclaration) {
