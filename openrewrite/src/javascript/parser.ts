@@ -246,7 +246,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration) {
+    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration) {
         if (ts.isVariableStatement(node)) {
             return [new J.Modifier(
                 randomId(),
@@ -260,7 +260,7 @@ export class JavaScriptParserVisitor {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isPropertyDeclaration(node)) {
             return []; // FIXME
-        } else if (ts.isFunctionDeclaration(node) || ts.isParameter(node)) {
+        } else if (ts.isFunctionDeclaration(node) || ts.isParameter(node) || ts.isMethodDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isVariableDeclarationList(node)) {
             let modifier: string | undefined;
@@ -570,7 +570,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitTypeParameter(node: ts.TypeParameterDeclaration) {
-        return this.visitUnknown(node);
+        return new J.TypeParameter(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            [],
+            this.visit(node.name),
+            null // fix me. this should support complex generics
+        );
     }
 
     visitParameter(node: ts.ParameterDeclaration) {
@@ -665,7 +673,26 @@ export class JavaScriptParserVisitor {
     }
 
     visitMethodDeclaration(node: ts.MethodDeclaration) {
-        return this.visitUnknown(node);
+        return new J.MethodDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.mapDecorators(node),
+            this.mapModifiers(node),
+            node.typeParameters
+                ? new J.TypeParameters(randomId(), this.suffix(node.name), Markers.EMPTY, [], node.typeParameters.map(tp => new JRightPadded<J.TypeParameter>(this.visit(tp), this.suffix(tp), Markers.EMPTY)))
+                : null,
+            node.type ? this.visit(node.type) : null,
+            new J.MethodDeclaration.IdentifierWithAnnotations(
+                node.name ? this.visit(node.name) : this.mapIdentifier(node, ""),
+                []
+            ),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+            null,
+            node.body ? this.convert<J.Block>(node.body) : null,
+            null,
+            this.mapMethodType(node)
+        );
     }
 
     visitClassStaticBlockDeclaration(node: ts.ClassStaticBlockDeclaration) {
@@ -1487,7 +1514,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private getParameterListNodes(node: ts.FunctionDeclaration) {
+    private getParameterListNodes(node: ts.FunctionDeclaration | ts.MethodDeclaration) {
         const children = node.getChildren(this.sourceFile);
         for (let i = 0; i < children.length; i++) {
             if (children[i].kind == ts.SyntaxKind.OpenParenToken) {
@@ -2011,7 +2038,7 @@ export class JavaScriptParserVisitor {
         return args;
     }
 
-    private mapDecorators(node: ts.ClassDeclaration | ts.FunctionDeclaration): J.Annotation[] {
+    private mapDecorators(node: ts.ClassDeclaration | ts.FunctionDeclaration | ts.MethodDeclaration): J.Annotation[] {
         return node.modifiers?.filter(ts.isDecorator)?.map(this.convert<J.Annotation>) ?? [];
     }
 
