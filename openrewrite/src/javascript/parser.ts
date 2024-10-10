@@ -680,7 +680,7 @@ export class JavaScriptParserVisitor {
             this.mapDecorators(node),
             this.mapModifiers(node),
             node.typeParameters
-                ? new J.TypeParameters(randomId(), this.suffix(node.name), Markers.EMPTY, [], node.typeParameters.map(tp => new JRightPadded<J.TypeParameter>(this.visit(tp), this.suffix(tp), Markers.EMPTY)))
+                ? new J.TypeParameters(randomId(), this.suffix(node.name), Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))))
                 : null,
             node.type ? this.visit(node.type) : null,
             new J.MethodDeclaration.IdentifierWithAnnotations(
