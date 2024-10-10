@@ -40,7 +40,7 @@ export async function connect(): Promise<RemotingContext> {
         client.once('connect', () => {
             remoting = new RemotingContext();
             remoting.connect(client);
-            PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
+            PrinterFactory.current = new RemotePrinterFactory(remoting.client!) as any;
             resolve(remoting);
         });
         client.setTimeout(10000, () => {
