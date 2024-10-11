@@ -1,6 +1,6 @@
 import {connect, disconnect, rewriteRun, rewriteRunWithOptions, typeScript} from '../testHarness';
 
-describe('function mapping', () => {
+describe('method mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 
@@ -109,12 +109,12 @@ describe('function mapping', () => {
         );
     });
 
-    test('multiple type parameters', () => {
+    test('type parameters with bounds', () => {
         rewriteRun(
           //language=typescript
           typeScript(`
               class Handler {
-                  test<T>(input: T    , ) {
+                  test<T extends string>(input: T    , ) {
                       // hello world comment
                   }
               }

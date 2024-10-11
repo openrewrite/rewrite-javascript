@@ -577,7 +577,7 @@ export class JavaScriptParserVisitor {
             [],
             [],
             this.visit(node.name),
-            null // fix me. this should support complex generics
+            null
         );
     }
 
