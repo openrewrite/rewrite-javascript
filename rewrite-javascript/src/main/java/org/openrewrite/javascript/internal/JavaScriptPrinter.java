@@ -612,7 +612,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
-        public void visitModifier(J.Modifier mod, PrintOutputCapture<P> p) {
+        public J visitModifier(J.Modifier mod, PrintOutputCapture<P> p) {
             visit(mod.getAnnotations(), p);
             String keyword;
             switch (mod.getType()) {
@@ -667,6 +667,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             beforeSyntax(mod, Space.Location.MODIFIER_PREFIX, p);
             p.append(keyword);
             afterSyntax(mod, p);
+            return mod;
         }
 
         @Override

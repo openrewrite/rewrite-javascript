@@ -23,7 +23,10 @@
     "test": "jest"
   },
   "dependencies": {
+    "@openrewrite/rewrite-remote": "^0.3.10",
+    "@jsonjoy.com/json-pack": "^1.1.0",
     "@types/node": "^22.5.4",
+    "cbor": "^9.0.2",
     "dedent": "^1.5.3",
     "diff": "^7.0.0",
     "typescript": "^5.6.2",
