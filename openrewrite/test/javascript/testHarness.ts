@@ -19,7 +19,7 @@ import dedent from "dedent";
 import {RemotePrinterFactory, RemotingContext} from "@openrewrite/rewrite-remote";
 import net from "net";
 import {JavaScriptParser, JavaScriptVisitor} from "../../dist/src/javascript";
-import {spawn} from "node:child_process";
+import {ChildProcessWithoutNullStreams, spawn} from "node:child_process";
 import path from "node:path";
 
 export interface RewriteTestOptions {
@@ -32,38 +32,84 @@ export type SourceSpec = (options: RewriteTestOptions) => void;
 
 let client: net.Socket;
 let remoting: RemotingContext;
+let javaTestEngine: ChildProcessWithoutNullStreams
+function getRandomInt(min: number, max:number):number {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+const Socket = net.Socket;
+
+const getNextPort = async (port: number): Promise<number> =>
+{
+    return new Promise((resolve, reject) =>
+    {
+        const socket = new Socket();
+
+        const timeout = () =>
+        {
+            resolve(port);
+            socket.destroy();
+        };
+
+        const next = () =>
+        {
+            socket.destroy();
+            resolve(getNextPort(++port));
+        };
+
+        setTimeout(timeout, 10);
+        socket.on("timeout", timeout);
+
+        socket.on("connect", () => next());
+
+        socket.on("error", (error: any) =>
+        {
+            if (error.code !== "ECONNREFUSED")
+                reject(error);
+            else
+                resolve(port);
+        });
+
+        socket.connect(port, "0.0.0.0");
+    });
+};
+
 
 export async function connect(): Promise<RemotingContext> {
     return new Promise((resolve, reject) => {
-        const pathToJar = path.resolve(__dirname, '../../../rewrite-test-engine-remote/build/libs/rewrite-test-engine-remote-*.jar');
+        const pathToJar = path.resolve(__dirname, '../../../rewrite-test-engine-remote/build/libs/rewrite-test-engine-remote-fat-jar.jar');
         console.log(pathToJar);
-        const javaTestEngine = spawn('java', ['-jar', pathToJar]);
-        const startfn = (data : string) => {
-            console.log(`stdout: ${data}`);
-            client = new net.Socket();
-            client.connect(65432, 'localhost');
+        const randomPort = getRandomInt(50000, 60000);
 
-            client.once('error', (err) => reject(err));
-            client.once('connect', () => {
-                remoting = new RemotingContext();
-                remoting.connect(client);
-                PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
-                resolve(remoting);
-            });
-            client.setTimeout(10000, () => {
-                client.destroy();
-                reject(new Error('Connection timed out'));
-            });
-            javaTestEngine.stdout.off('data', startfn)
-        }
+        getNextPort(randomPort).then(port => {
+                javaTestEngine = spawn('java', ['-jar', pathToJar, port.toString()]);
+                const errorfn = (data: string) => {
+                    console.error(`stderr: ${data}`);
+                    reject(data);
+                };
+                const startfn = (data : string) => {
+                    console.log(`stdout: ${data}`);
+                    javaTestEngine.stderr.off("data", errorfn);
+                    client = new net.Socket();
+                    client.connect(port, 'localhost');
 
-        javaTestEngine.stdout.on('data', startfn);
-        javaTestEngine.stderr.on('data', (data: string) => {
-            console.error(`stderr: ${data}`);
-        });
+                    client.once('error', (err) => reject(err));
+                    client.once('connect', () => {
+                        remoting = new RemotingContext();
+                        remoting.connect(client);
+                        PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
+                        resolve(remoting);
+                    });
+                    client.setTimeout(10000, () => {
+                        client.destroy();
+                        reject(new Error('Connection timed out'));
+                    });
+                }
 
-        javaTestEngine.on('close', (code: string) => {
-            console.log(`child process exited with code ${code}`);
+                javaTestEngine.stdout.once('data', startfn);
+                javaTestEngine.stderr.on('data', errorfn);
         });
     });
 }
@@ -73,11 +119,14 @@ export async function disconnect(): Promise<void> {
         if (client) {
             client.end();
             client.destroy();
-            client.once('close', resolve);
-            client.once('error', reject);
             if (remoting) {
                 remoting.close();
             }
+
+            javaTestEngine.once('close', (code: string) => {
+                resolve()
+            });
+            javaTestEngine.kill("SIGKILL");
         } else {
             resolve();
         }

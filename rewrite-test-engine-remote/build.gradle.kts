@@ -53,6 +53,7 @@ tasks.register<Jar>("fatJar") {
     }
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     dependsOn(configurations.runtimeClasspath)
+    archiveFileName = "${project.name}-fat-jar.jar"
 }
 
 tasks.named("startScripts").configure {
