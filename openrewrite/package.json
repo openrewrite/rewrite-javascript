@@ -22,8 +22,11 @@
     "dev": "tsc --watch -p tsconfig.json",
     "test": "jest"
   },
+  "overrides": {
+    "@openrewrite/rewrite": "../_EXCLUDED_"
+  },
   "dependencies": {
-    "@openrewrite/rewrite-remote": "^0.3.10",
+    "@openrewrite/rewrite-remote": "^0.4.0",
     "@jsonjoy.com/json-pack": "^1.1.0",
     "@types/node": "^22.5.4",
     "cbor": "^9.0.2",

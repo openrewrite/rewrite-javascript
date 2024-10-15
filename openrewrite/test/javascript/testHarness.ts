@@ -1,6 +1,6 @@
 // for side-effects (`java` must come after `javascript`)
-import "@openrewrite/rewrite-remote/javascript";
-import "@openrewrite/rewrite-remote/java";
+import "../../dist/src/javascript/remote";
+import "../../dist/src/java/remote";
 
 import {
     Cursor,
@@ -19,6 +19,8 @@ import dedent from "dedent";
 import {RemotePrinterFactory, RemotingContext} from "@openrewrite/rewrite-remote";
 import net from "net";
 import {JavaScriptParser, JavaScriptVisitor} from "../../dist/src/javascript";
+import {spawn} from "node:child_process";
+import path from "node:path";
 
 export interface RewriteTestOptions {
     normalizeIndent?: boolean
@@ -33,19 +35,35 @@ let remoting: RemotingContext;
 
 export async function connect(): Promise<RemotingContext> {
     return new Promise((resolve, reject) => {
-        client = new net.Socket();
-        client.connect(65432, 'localhost');
+        const pathToJar = path.resolve(__dirname, '../../../rewrite-test-engine-remote/build/libs/rewrite-test-engine-remote-*.jar');
+        console.log(pathToJar);
+        const javaTestEngine = spawn('java', ['-jar', pathToJar]);
+        const startfn = (data : string) => {
+            console.log(`stdout: ${data}`);
+            client = new net.Socket();
+            client.connect(65432, 'localhost');
 
-        client.once('error', (err) => reject(err));
-        client.once('connect', () => {
-            remoting = new RemotingContext();
-            remoting.connect(client);
-            PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
-            resolve(remoting);
+            client.once('error', (err) => reject(err));
+            client.once('connect', () => {
+                remoting = new RemotingContext();
+                remoting.connect(client);
+                PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
+                resolve(remoting);
+            });
+            client.setTimeout(10000, () => {
+                client.destroy();
+                reject(new Error('Connection timed out'));
+            });
+            javaTestEngine.stdout.off('data', startfn)
+        }
+
+        javaTestEngine.stdout.on('data', startfn);
+        javaTestEngine.stderr.on('data', (data: string) => {
+            console.error(`stderr: ${data}`);
         });
-        client.setTimeout(10000, () => {
-            client.destroy();
-            reject(new Error('Connection timed out'));
+
+        javaTestEngine.on('close', (code: string) => {
+            console.log(`child process exited with code ${code}`);
         });
     });
 }

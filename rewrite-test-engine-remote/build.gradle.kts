@@ -45,6 +45,20 @@ tasks.withType<Javadoc>().configureEach {
     enabled = false
 }
 
+tasks.register<Jar>("fatJar") {
+    manifest {
+        attributes(
+            "Main-Class" to "org.openrewrite.remote.java.RemotingServer"
+        )
+    }
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    dependsOn(configurations.runtimeClasspath)
+}
+
+tasks.named("startScripts").configure {
+    dependsOn(":rewrite-test-engine-remote:fatJar")
+}
+
 tasks.named<Jar>("sourcesJar") {
     enabled = false
 }
