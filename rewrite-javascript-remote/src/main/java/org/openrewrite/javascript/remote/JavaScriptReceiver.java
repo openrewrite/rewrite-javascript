@@ -13,6 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/*
+ * -------------------THIS FILE IS AUTO GENERATED--------------------------
+ * Changes to this file may cause incorrect behavior and will be lost if
+ * the code is regenerated.
+*/
+
 package org.openrewrite.javascript.remote;
 
 import lombok.Value;
@@ -21,8 +28,10 @@ import org.openrewrite.Checksum;
 import org.openrewrite.Cursor;
 import org.openrewrite.FileAttributes;
 import org.openrewrite.Tree;
+import org.openrewrite.marker.Markers;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.tree.*;
+import org.openrewrite.java.*;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.remote.Receiver;
 import org.openrewrite.remote.ReceiverContext;
@@ -30,6 +39,7 @@ import org.openrewrite.remote.ReceiverFactory;
 
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
 
 @Value
