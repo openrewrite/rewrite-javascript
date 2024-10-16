@@ -549,6 +549,10 @@ export class JavaScriptParserVisitor {
     }
 
     visitTypeParameter(node: ts.TypeParameterDeclaration) {
+        if (node.constraint || (node.modifiers && node.modifiers.length) || node.default) {
+            return this.visitUnknown(node);
+        }
+
         return new J.TypeParameter(
             randomId(),
             this.prefix(node),
