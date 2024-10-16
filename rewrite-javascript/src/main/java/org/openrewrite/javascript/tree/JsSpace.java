@@ -71,5 +71,6 @@ public class JsSpace {
         VARIABLE_DECLARATION_PREFIX,
         VOID_PREFIX,
         YIELD_PREFIX,
+        TYPE_REFERENCE_PREFIX,
     }
 }
