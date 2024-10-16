@@ -23,7 +23,9 @@
     "test": "jest"
   },
   "overrides": {
-    "@openrewrite/rewrite": "../_EXCLUDED_"
+    "@openrewrite/rewrite-remote": {
+      "@openrewrite/rewrite": "npm:dry-uninstall"
+    }
   },
   "dependencies": {
     "@openrewrite/rewrite-remote": "^0.4.0",
