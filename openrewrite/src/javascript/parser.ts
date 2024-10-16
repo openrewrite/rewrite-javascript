@@ -14,6 +14,7 @@ import {
 } from "../core";
 import {binarySearch, compareTextSpans, getNextSibling, TextSpan} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
+import {TypeReferencePrefix} from ".";
 
 export class JavaScriptParser extends Parser {
 
@@ -677,10 +678,14 @@ export class JavaScriptParserVisitor {
     }
 
     visitMethodDeclaration(node: ts.MethodDeclaration) {
+        const markers: Markers = node.type
+            ? new Markers(randomId(), [new TypeReferencePrefix(randomId(), this.prefix(node.getChildren().find(t=> (t.kind === ts.SyntaxKind.ColonToken)) as ts.Node))])
+            : Markers.EMPTY;
+
         return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
-            Markers.EMPTY,
+            markers,
             this.mapDecorators(node),
             this.mapModifiers(node),
             node.typeParameters
