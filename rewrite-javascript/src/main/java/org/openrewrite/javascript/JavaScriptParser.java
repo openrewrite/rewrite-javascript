@@ -325,12 +325,12 @@ public class JavaScriptParser implements Parser {
                 processBuilder.redirectError(new File("/dev/null"));
             }
             nodeProcess = processBuilder.start();
-            for (int i = 0; i < 5 && nodeProcess.isAlive(); i++) {
+            for (int i = 0; i < 30 && nodeProcess.isAlive(); i++) {
                 if (isServerRunning(port)) {
                     break;
                 }
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(100);
                 } catch (InterruptedException ignore) {
                 }
             }
