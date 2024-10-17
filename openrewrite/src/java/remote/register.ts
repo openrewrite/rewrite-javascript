@@ -7,6 +7,8 @@ import {SenderContext, SerializationContext} from "@openrewrite/rewrite-remote";
 import {JavaSender} from "./sender";
 import {JavaReceiver} from "./receiver";
 
+console.log("registering java codecs");
+
 SenderContext.register(isJava, () => new JavaSender());
 ReceiverContext.register(isJava, () => new JavaReceiver());
 
