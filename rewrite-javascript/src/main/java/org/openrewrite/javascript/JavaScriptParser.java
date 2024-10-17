@@ -186,7 +186,7 @@ public class JavaScriptParser implements Parser {
 
         exportResource("META-INF/package.json", dir.toFile());
 
-        List<String> command = new ArrayList(Arrays.asList("npm", "install"));
+        List<String> command = new ArrayList(Arrays.asList("npm", "install", "--force"));
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         Process process = processBuilder.directory(dir.toFile()).start();
         int exitCode = process.waitFor();
@@ -325,12 +325,12 @@ public class JavaScriptParser implements Parser {
                 processBuilder.redirectError(new File("/dev/null"));
             }
             nodeProcess = processBuilder.start();
-            for (int i = 0; i < 5 && nodeProcess.isAlive(); i++) {
+            for (int i = 0; i < 30 && nodeProcess.isAlive(); i++) {
                 if (isServerRunning(port)) {
                     break;
                 }
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(100);
                 } catch (InterruptedException ignore) {
                 }
             }
