@@ -13,6 +13,8 @@ dependencies {
         exclude(group = "org.openrewrite", module = "rewrite-javascript")
     }
 
+    runtimeOnly(project(":rewrite-javascript-remote"))
+
     compileOnly("org.assertj:assertj-core:latest.release")
     testImplementation("org.assertj:assertj-core:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
