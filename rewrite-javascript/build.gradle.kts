@@ -1,3 +1,5 @@
+import com.hierynomus.gradle.license.tasks.LicenseCheck
+
 plugins {
     id("org.openrewrite.build.language-library")
 }
@@ -22,6 +24,10 @@ dependencies {
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
+}
+
+tasks.withType<LicenseCheck> {
+    include("*.java")
 }
 
 // FIXME disable all tests for now until the parser tests have been moved to JavaScript
