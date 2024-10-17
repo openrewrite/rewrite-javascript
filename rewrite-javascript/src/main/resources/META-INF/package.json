@@ -8,7 +8,7 @@
     }
   },
   "dependencies": {
-    "@openrewrite/rewrite-remote": "~0.3.0",
+    "@openrewrite/rewrite-remote": "~0.4.0",
     "@openrewrite/rewrite": "~0.18.0"
   },
   "devDependencies": {
