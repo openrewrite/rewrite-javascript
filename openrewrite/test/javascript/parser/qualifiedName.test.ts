@@ -11,6 +11,20 @@ describe('empty mapping', () => {
         );
     });
 
+    test('globalThis qualified name with generic', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('const value: globalThis.Promise< string > = null')
+        );
+    });
+
+    test('globalThis qualified name with comments', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('const value /*a123*/ : globalThis. globalThis . /*asda*/ globalThis.Promise<string> = null;')
+        );
+    });
+
     test.skip('nested class qualified name', () => {
         rewriteRun(
           //language=typescript
