@@ -532,7 +532,14 @@ export class JavaScriptParserVisitor {
     }
 
     visitQualifiedName(node: ts.QualifiedName) {
-        return this.visitUnknown(node);
+        return new J.FieldAccess(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.visit(node.left),
+            new JLeftPadded<J.Identifier>(this.suffix(node.left), this.convert<J.Identifier>(node.right), Markers.EMPTY),
+            this.mapType(node)
+        );
     }
 
     visitComputedPropertyName(node: ts.ComputedPropertyName) {
