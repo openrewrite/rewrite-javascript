@@ -42,7 +42,7 @@ export class JavaScriptParser extends Parser {
         const result: SourceFile[] = [];
         for (const filePath of program.getRootFileNames()) {
             const sourceFile = program.getSourceFile(filePath)!;
-            const input = new ParserInput(filePath, null, false, () =>  Buffer.from(ts.sys.readFile(filePath)!));
+            const input = new ParserInput(filePath, null, false, () => Buffer.from(ts.sys.readFile(filePath)!));
             try {
                 const parsed = new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile;
                 result.push(parsed);
@@ -532,7 +532,28 @@ export class JavaScriptParserVisitor {
     }
 
     visitQualifiedName(node: ts.QualifiedName) {
-        return this.visitUnknown(node);
+        const fieldAccess = new J.FieldAccess(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.visit(node.left),
+            new JLeftPadded<J.Identifier>(this.suffix(node.left), this.convert<J.Identifier>(node.right), Markers.EMPTY),
+            this.mapType(node)
+        );
+
+        const parent = node.parent as ts.TypeReferenceNode;
+        if (parent.typeArguments) {
+            return new J.ParameterizedType(
+                randomId(),
+                this.prefix(parent),
+                Markers.EMPTY,
+                fieldAccess,
+                this.mapTypeArguments(parent.typeArguments),
+                this.mapType(parent)
+            )
+        } else {
+            return fieldAccess;
+        }
     }
 
     visitComputedPropertyName(node: ts.ComputedPropertyName) {
@@ -681,6 +702,10 @@ export class JavaScriptParserVisitor {
 
     visitTypeReference(node: ts.TypeReferenceNode) {
         if (node.typeArguments) {
+            // Temporary check for supported constructions with type arguments
+            if (ts.isQualifiedName(node.typeName)) {
+                return this.visit(node.typeName);
+            }
             return this.visitUnknown(node);
         }
         return this.visit(node.typeName);
@@ -824,7 +849,7 @@ export class JavaScriptParserVisitor {
         const statements: JRightPadded<J.Statement>[] = this.rightPaddedSeparatedList(
             [...statementList.getChildren(this.sourceFile)],
             ts.SyntaxKind.CommaToken,
-            (nodes, i) => i == nodes.length -2 && nodes[i + 1].kind == ts.SyntaxKind.CommaToken ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[i + 1]))]) : Markers.EMPTY
+            (nodes, i) => i == nodes.length - 2 && nodes[i + 1].kind == ts.SyntaxKind.CommaToken ? Markers.build([new TrailingComma(randomId(), this.prefix(nodes[i + 1]))]) : Markers.EMPTY
         );
 
         return new J.Block(
@@ -1920,6 +1945,24 @@ export class JavaScriptParserVisitor {
 
     private mapCommaSeparatedList(nodes: readonly ts.Node[]): JContainer<J.Expression> {
         return this.mapToContainer(nodes, this.trailingComma(nodes));
+    }
+
+    private mapTypeArguments(nodes: readonly ts.Node[]): JContainer<J.Expression> {
+        if (nodes.length === 0) {
+            return JContainer.empty();
+        }
+
+        const args = nodes.map(node =>
+            this.rightPadded(
+                this.visit(node),
+                this.suffix(node),
+                Markers.EMPTY
+            ))
+        return new JContainer(
+            this.prefix(nodes[0]),
+            args,
+            Markers.EMPTY
+        );
     }
 
     private trailingComma = (nodes: readonly ts.Node[]) => (ns: readonly ts.Node[], i: number) => {

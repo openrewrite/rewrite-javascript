@@ -81,9 +81,12 @@ export async function connect(): Promise<RemotingContext> {
     return new Promise((resolve, reject) => {
         const pathToJar = path.resolve(__dirname, '../../../rewrite-test-engine-remote/build/libs/rewrite-test-engine-remote-fat-jar.jar');
         console.log(pathToJar);
-        const randomPort = getRandomInt(50000, 60000);
+        client = new net.Socket();
+        client.connect(65432, 'localhost');
 
-        getNextPort(randomPort).then(port => {
+        client.once('error', (err) => {
+            const randomPort = getRandomInt(50000, 60000);
+            getNextPort(randomPort).then(port => {
                 javaTestEngine = spawn('java', ['-jar', pathToJar, port.toString()]);
                 const errorfn = (data: string) => {
                     console.error(`stderr: ${data}`);
@@ -110,7 +113,15 @@ export async function connect(): Promise<RemotingContext> {
 
                 javaTestEngine.stdout.once('data', startfn);
                 javaTestEngine.stderr.on('data', errorfn);
+            });
         });
+        client.once('connect', () => {
+            remoting = new RemotingContext();
+            remoting.connect(client);
+            PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
+            resolve(remoting);
+        });
+
     });
 }
 
@@ -123,10 +134,12 @@ export async function disconnect(): Promise<void> {
                 remoting.close();
             }
 
-            javaTestEngine.once('close', (code: string) => {
-                resolve()
-            });
-            javaTestEngine.kill("SIGKILL");
+            if (javaTestEngine) {
+                javaTestEngine.once('close', (code: string) => {
+                    resolve()
+                });
+                javaTestEngine.kill("SIGKILL");
+            }
         } else {
             resolve();
         }
