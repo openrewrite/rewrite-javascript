@@ -348,6 +348,15 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.TypeInfo visitTypeInfo(JS.TypeInfo typeInfo, SenderContext ctx) {
+            ctx.sendValue(typeInfo, JS.TypeInfo::getId);
+            ctx.sendNode(typeInfo, JS.TypeInfo::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(typeInfo, JS.TypeInfo::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(typeInfo, JS.TypeInfo::getTypeIdentifier, ctx::sendTree);
+            return typeInfo;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, SenderContext ctx) {
             ctx.sendValue(annotatedType, J.AnnotatedType::getId);
             ctx.sendNode(annotatedType, J.AnnotatedType::getPrefix, JavaScriptSender::sendSpace);

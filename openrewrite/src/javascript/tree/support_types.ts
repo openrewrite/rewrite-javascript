@@ -212,6 +212,7 @@ export namespace JsSpace {
         UNION_PREFIX,
         VOID_PREFIX,
         YIELD_PREFIX,
+        TYPE_INFO_PREFIX,
     }
 }
 export namespace JsLeftPadded {

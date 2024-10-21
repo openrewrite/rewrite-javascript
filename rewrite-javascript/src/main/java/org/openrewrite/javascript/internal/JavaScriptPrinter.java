@@ -38,7 +38,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     private static final UnaryOperator<String> JAVA_SCRIPT_MARKER_WRAPPER =
             out -> "/*~~" + out + (out.isEmpty() ? "" : "~~") + ">*/";
 
-    private final JavaScriptJavaPrinter delegate = new JavaScriptJavaPrinter(this);
+    private final JavaScriptJavaPrinter delegate = new JavaScriptJavaPrinter();
 
     @Override
     public J visit(@Nullable Tree tree, PrintOutputCapture<P> p) {
@@ -424,12 +424,20 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return yield;
     }
 
-    private class JavaScriptJavaPrinter extends JavaPrinter<P> {
-        JavaScriptPrinter<P> javaScriptPrinter;
+    @Override
+    public J visitTypeInfo(JS.TypeInfo typeInfo, PrintOutputCapture<P> p) {
+        beforeSyntax(typeInfo, JsSpace.Location.TYPE_INFO_PREFIX, p);
 
-        JavaScriptJavaPrinter(JavaScriptPrinter<P> jsp) {
-            javaScriptPrinter = jsp;
-        }
+        p.append(":");
+
+        visit(typeInfo.getTypeIdentifier(), p);
+
+        afterSyntax(typeInfo, p);
+
+        return typeInfo;
+    }
+
+    private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
         @Override
         public J visit(@Nullable Tree tree, PrintOutputCapture<P> p) {
@@ -596,9 +604,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
             visitContainer("(", method.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, ",", ")", p);
             if (method.getReturnTypeExpression() != null) {
-                method.getMarkers().findFirst(TypeReferencePrefix.class).ifPresent(typeReferencePrefix ->
-                        javaScriptPrinter.visitSpace(typeReferencePrefix.getPrefix(), JsSpace.Location.TYPE_REFERENCE_PREFIX, p));
-                p.append(":");
                 visit(method.getReturnTypeExpression(), p);
             }
 

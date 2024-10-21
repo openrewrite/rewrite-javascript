@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -285,6 +285,14 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(_yield, v => v.expression, ctx.sendTree);
         ctx.sendTypedValue(_yield, v => v.type, ValueType.Object);
         return _yield;
+    }
+
+    public visitTypeInfo(typeInfo: TypeInfo, ctx: SenderContext): J {
+        ctx.sendValue(typeInfo, v => v.id, ValueType.UUID);
+        ctx.sendNode(typeInfo, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(typeInfo, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(typeInfo, v => v.typeIdentifier, ctx.sendTree);
+        return typeInfo;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: SenderContext): J {

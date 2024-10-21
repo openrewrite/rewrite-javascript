@@ -2107,4 +2107,42 @@ public interface JS extends J {
             return new CoordinateBuilder.Expression(this);
         }
     }
+
+    @Getter
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @With
+    final class TypeInfo implements JS, Expression, TypeTree {
+
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        Space prefix;
+
+        Markers markers;
+
+        TypeTree typeIdentifier;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTypeInfo(this, p);
+        }
+
+        @Override
+        public @Nullable JavaType getType() {
+            return typeIdentifier.getType();
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public TypeInfo withType(@Nullable JavaType type) {
+            return typeIdentifier.getType() == type ? this : new TypeInfo(id, prefix, markers, typeIdentifier.withType(type));
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+    }
 }

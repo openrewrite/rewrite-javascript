@@ -109,18 +109,18 @@ describe('method mapping', () => {
         );
     });
 
-    // test('type parameters with bounds', () => {
-    //     rewriteRun(
-    //       //language=typescript
-    //       typeScript(`
-    //           class Handler {
-    //               test<T extends string>(input: T    , ) {
-    //                   // hello world comment
-    //               }
-    //           }
-    //       `)
-    //     );
-    // });
+    test.skip('type parameters with bounds', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              class Handler {
+                  test<T extends string>(input: T    , ) {
+                      // hello world comment
+                  }
+              }
+          `)
+        );
+    });
 
     test('return type', () => {
         rewriteRun(

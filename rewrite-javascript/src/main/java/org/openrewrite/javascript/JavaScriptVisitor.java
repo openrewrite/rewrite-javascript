@@ -579,4 +579,18 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         y = y.withExpression(visitAndCast(y.getExpression(), p));
         return y;
     }
+
+    public J visitTypeInfo(JS.TypeInfo typeInfo, P p) {
+        JS.TypeInfo ti = typeInfo;
+        ti = ti.withPrefix(visitSpace(ti.getPrefix(), JsSpace.Location.YIELD_PREFIX, p));
+        ti = ti.withMarkers(visitMarkers(ti.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(ti, p);
+        if (!(temp instanceof JS.TypeInfo)) {
+            return temp;
+        } else {
+            ti = (JS.TypeInfo) temp;
+        }
+        ti = ti.withTypeIdentifier(visitAndCast(ti.getTypeIdentifier(), p));
+        return ti;
+    }
 }

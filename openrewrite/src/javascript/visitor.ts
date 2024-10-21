@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -380,6 +380,19 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         _yield = _yield.withMarkers(this.visitMarkers(_yield.markers, p));
         _yield = _yield.withExpression(this.visitAndCast(_yield.expression, p));
         return _yield;
+    }
+
+    public visitTypeInfo(typeInfo: TypeInfo, p: P): J | null {
+        typeInfo = typeInfo.withPrefix(this.visitJsSpace(typeInfo.prefix, JsSpace.Location.TYPE_INFO_PREFIX, p)!);
+        let tempExpression = this.visitExpression(typeInfo, p) as Expression;
+        if (!(tempExpression instanceof TypeInfo))
+        {
+            return tempExpression;
+        }
+        typeInfo = tempExpression as TypeInfo;
+        typeInfo = typeInfo.withMarkers(this.visitMarkers(typeInfo.markers, p));
+        typeInfo = typeInfo.withTypeIdentifier(this.visitAndCast(typeInfo.typeIdentifier, p)!);
+        return typeInfo;
     }
 
     public visitJsLeftPadded<T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P): JLeftPadded<T> {

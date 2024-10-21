@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -290,6 +290,14 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         _yield = _yield.withExpression(ctx.receiveNode(_yield.expression, ctx.receiveTree));
         _yield = _yield.withType(ctx.receiveValue(_yield.type, ValueType.Object));
         return _yield;
+    }
+
+    public visitTypeInfo(typeInfo: TypeInfo, ctx: ReceiverContext): J {
+        typeInfo = typeInfo.withId(ctx.receiveValue(typeInfo.id, ValueType.UUID)!);
+        typeInfo = typeInfo.withPrefix(ctx.receiveNode(typeInfo.prefix, receiveSpace)!);
+        typeInfo = typeInfo.withMarkers(ctx.receiveNode(typeInfo.markers, ctx.receiveMarkers)!);
+        typeInfo = typeInfo.withTypeIdentifier(ctx.receiveNode(typeInfo.typeIdentifier, ctx.receiveTree)!);
+        return typeInfo;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: ReceiverContext): J {
@@ -1250,6 +1258,15 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.Primitive)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree),
                 ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$TypeInfo") {
+            return new TypeInfo(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<TypeTree>(null, ctx.receiveTree)!
             );
         }
 
