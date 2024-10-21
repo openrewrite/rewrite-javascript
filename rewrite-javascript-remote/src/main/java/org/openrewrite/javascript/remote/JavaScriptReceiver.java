@@ -365,6 +365,15 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.TypeInfo visitTypeInfo(JS.TypeInfo typeInfo, ReceiverContext ctx) {
+            typeInfo = typeInfo.withId(ctx.receiveNonNullValue(typeInfo.getId(), UUID.class));
+            typeInfo = typeInfo.withPrefix(ctx.receiveNonNullNode(typeInfo.getPrefix(), JavaScriptReceiver::receiveSpace));
+            typeInfo = typeInfo.withMarkers(ctx.receiveNonNullNode(typeInfo.getMarkers(), ctx::receiveMarkers));
+            typeInfo = typeInfo.withTypeIdentifier(ctx.receiveNonNullNode(typeInfo.getTypeIdentifier(), ctx::receiveTree));
+            return typeInfo;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, ReceiverContext ctx) {
             annotatedType = annotatedType.withId(ctx.receiveNonNullValue(annotatedType.getId(), UUID.class));
             annotatedType = annotatedType.withPrefix(ctx.receiveNonNullNode(annotatedType.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1352,6 +1361,15 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullValue(null, boolean.class),
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.TypeInfo.class) {
+                return (T) new JS.TypeInfo(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree)
                 );
             }
 

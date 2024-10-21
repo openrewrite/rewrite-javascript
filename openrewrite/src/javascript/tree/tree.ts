@@ -2345,3 +2345,67 @@ export class Yield extends JSMixin(Object) implements Expression {
     }
 
 }
+
+@LstType("org.openrewrite.javascript.tree.JS$TypeInfo")
+export class TypeInfo extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, typeIdentifier: TypeTree) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._typeIdentifier = typeIdentifier;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): TypeInfo {
+            return id === this._id ? this : new TypeInfo(id, this._prefix, this._markers, this._typeIdentifier);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): TypeInfo {
+            return prefix === this._prefix ? this : new TypeInfo(this._id, prefix, this._markers, this._typeIdentifier);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): TypeInfo {
+            return markers === this._markers ? this : new TypeInfo(this._id, this._prefix, markers, this._typeIdentifier);
+        }
+
+        private readonly _typeIdentifier: TypeTree;
+
+        public get typeIdentifier(): TypeTree {
+            return this._typeIdentifier;
+        }
+
+        public withTypeIdentifier(typeIdentifier: TypeTree): TypeInfo {
+            return typeIdentifier === this._typeIdentifier ? this : new TypeInfo(this._id, this._prefix, this._markers, typeIdentifier);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTypeInfo(this, p);
+    }
+
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): TypeInfo {
+        return extensions.withJavaType(this, type);
+    }
+
+}

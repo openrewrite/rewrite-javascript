@@ -424,6 +424,19 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return yield;
     }
 
+    @Override
+    public J visitTypeInfo(JS.TypeInfo typeInfo, PrintOutputCapture<P> p) {
+        beforeSyntax(typeInfo, JsSpace.Location.TYPE_INFO_PREFIX, p);
+
+        p.append(":");
+
+        visit(typeInfo.getTypeIdentifier(), p);
+
+        afterSyntax(typeInfo, p);
+
+        return typeInfo;
+    }
+
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
         @Override
