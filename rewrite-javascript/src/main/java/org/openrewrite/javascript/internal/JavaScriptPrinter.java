@@ -769,7 +769,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
                 visitSpace(variable.getAfter(), Space.Location.NAMED_VARIABLE_SUFFIX, p);
                 if (multiVariable.getTypeExpression() != null) {
-                    p.append(":");
                     visit(multiVariable.getTypeExpression(), p);
                 }
 

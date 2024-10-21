@@ -63,7 +63,7 @@ describe('variable declaration mapping', () => {
     test('multi typed', () => {
         rewriteRun(
           //language=typescript
-          typeScript('let a: number =2, b: string = "2" ')
+          typeScript('  /*0.1*/  let  /*0.2*/    a   /*1*/ :      /*2*/  number =2    /*3*/ , /*4*/   b   /*5*/:/*6*/    /*7*/string  /*8*/   =/*9*/    "2" /*10*/  ; //11')
         );
     });
 });

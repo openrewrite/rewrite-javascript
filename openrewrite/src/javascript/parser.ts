@@ -259,7 +259,7 @@ export class JavaScriptParserVisitor {
         } else if (ts.isClassDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isPropertyDeclaration(node)) {
-            return []; // FIXME
+            return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isFunctionDeclaration(node) || ts.isParameter(node) || ts.isMethodDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isVariableDeclarationList(node)) {
@@ -389,7 +389,18 @@ export class JavaScriptParserVisitor {
             this.mapExtends(node),
             this.mapImplements(node),
             null,
-            this.convertBlock(node.getChildren(this.sourceFile).slice(-3)),
+            new J.Block(
+                randomId(),
+                this.prefix(node.getChildren().find(v => v.kind === ts.SyntaxKind.OpenBraceToken)!),
+                Markers.EMPTY,
+                new JRightPadded(false, Space.EMPTY, Markers.EMPTY),
+                node.members.map((ce : ts.ClassElement) => new JRightPadded(
+                    this.convert(ce),
+                    ce.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken ? this.prefix(ce.getLastToken()!) : Space.EMPTY,
+                    ce.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+                )),
+                this.prefix(node.getLastToken()!)
+            ),
             this.mapType(node)
         );
     }
@@ -592,7 +603,7 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             [],
             this.mapModifiers(node),
-            node.type ? this.visit(node.type) : null,
+            this.mapTypeInfo(node),
             null,
             [],
             [this.rightPadded(
@@ -654,17 +665,17 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             [],
             this.mapModifiers(node),
-            node.type ? this.visit(node.type!) : null,
+            this.mapTypeInfo(node),
             null,
             [],
             [this.rightPadded(
                 new J.VariableDeclarations.NamedVariable(
                     randomId(),
-                    this.prefix(node),
+                    this.prefix(node.name),
                     Markers.EMPTY,
                     this.visit(node.name),
                     [],
-                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
+                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
                     this.mapVariableType(node)
                 ),
                 Space.EMPTY // FIXME check for semicolon
@@ -686,7 +697,7 @@ export class JavaScriptParserVisitor {
             node.typeParameters
                 ? new J.TypeParameters(randomId(), this.suffix(node.name), Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))))
                 : null,
-            node.type ? new JS.TypeInfo(randomId(), this.prefix(node.getChildAt(node.getChildren().indexOf(node.type) - 1)), Markers.EMPTY, this.visit(node.type)): null,
+            this.mapTypeInfo(node),
             new J.MethodDeclaration.IdentifierWithAnnotations(
                 node.name ? this.visit(node.name) : this.mapIdentifier(node, ""),
                 []
@@ -697,6 +708,10 @@ export class JavaScriptParserVisitor {
             null,
             this.mapMethodType(node)
         );
+    }
+
+    private mapTypeInfo(node: ts.MethodDeclaration | ts.PropertyDeclaration | ts.VariableDeclaration | ts.ParameterDeclaration) {
+        return node.type ? new JS.TypeInfo(randomId(), this.prefix(node.getChildAt(node.getChildren().indexOf(node.type) - 1)), Markers.EMPTY, this.visit(node.type)) : null;
     }
 
     visitClassStaticBlockDeclaration(node: ts.ClassStaticBlockDeclaration) {
@@ -1454,8 +1469,7 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            // NOTE: the name prefix will be used as a suffix by the printer
-            this.visit(node.name).withPrefix(node.type ? this.suffix(node.name) : Space.EMPTY),
+            this.visit(node.name),
             [],
             node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
             this.mapVariableType(node)
@@ -1477,7 +1491,7 @@ export class JavaScriptParserVisitor {
                     Markers.EMPTY,
                     [], // FIXME decorators?
                     [], // FIXME modifiers?
-                    declaration.type ? this.visit(declaration.type) : null,
+                    this.mapTypeInfo(declaration),
                     null, // FIXME varargs
                     [],
                     [this.rightPadded(this.visit(declaration), Space.EMPTY)]
@@ -2048,26 +2062,6 @@ export class JavaScriptParserVisitor {
 
     private mapTypeParameters(node: ts.ClassDeclaration): JContainer<J.TypeParameter> | null {
         return null; // FIXME
-    }
-
-    private convertBlock(nodes: ts.Node[]): J.Block {
-        const prefix = this.prefix(nodes[0]);
-        let statementList = nodes[1] as ts.SyntaxList;
-
-        const statements: JRightPadded<J.Statement>[] = this.rightPaddedSeparatedList(
-            [...statementList.getChildren(this.sourceFile)],
-            ts.SyntaxKind.SemicolonToken,
-            (nodes, i) => nodes[i].getLastToken()?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
-        );
-
-        return new J.Block(
-            randomId(),
-            prefix,
-            Markers.EMPTY,
-            this.rightPadded(false, Space.EMPTY),
-            statements,
-            this.prefix(nodes[nodes.length - 1])
-        );
     }
 
     private findChildNode(node: ts.Node, kind: ts.SyntaxKind): ts.Node | undefined {
