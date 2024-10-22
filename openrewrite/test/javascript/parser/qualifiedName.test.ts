@@ -49,12 +49,12 @@ describe('empty mapping', () => {
         );
     });
 
-    test.skip('enum qualified name', () => {
+    test('enum qualified name', () => {
         rewriteRun(
           //language=typescript
           typeScript(`
               enum Test {
-                  A
+                  A, B
               };
 
               const val: Test.A = Test.A;

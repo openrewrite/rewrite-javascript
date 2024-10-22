@@ -246,7 +246,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration) {
+    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration) {
         if (ts.isVariableStatement(node)) {
             return [new J.Modifier(
                 randomId(),
@@ -257,6 +257,8 @@ export class JavaScriptParserVisitor {
                 []
             )];
         } else if (ts.isClassDeclaration(node)) {
+            return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
+        } else if (ts.isEnumDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isPropertyDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
@@ -1551,7 +1553,63 @@ export class JavaScriptParserVisitor {
     }
 
     visitEnumDeclaration(node: ts.EnumDeclaration) {
-        return this.visitUnknown(node);
+        return new J.ClassDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [], // enum has no decorators
+            this.mapModifiers(node),
+            new J.ClassDeclaration.Kind(
+                randomId(),
+                node.modifiers ? this.suffix(node.modifiers[node.modifiers.length - 1]) : this.prefix(node),
+                Markers.EMPTY,
+                [],
+                J.ClassDeclaration.Kind.Type.Enum
+            ),
+            node.name ? this.convert(node.name) : this.mapIdentifier(node, ""),
+            null, // enum has no type parameters
+            null, // enum has no constructor
+            null, // enum can't extend smth.
+            null, // enum can't implement smth.
+            null,
+            new J.Block(
+                randomId(),
+                this.prefix(node.getChildren().find(v => v.kind === ts.SyntaxKind.OpenBraceToken)!),
+                Markers.EMPTY,
+                new JRightPadded(false, Space.EMPTY, Markers.EMPTY),
+                this.convertEnumBlock(node),
+                this.prefix(node.getLastToken()!)
+            ),
+            this.mapType(node)
+        );
+    }
+
+    // EnumMembers (got from EnumDeclaration#members) have no information about Commas between them,
+    // so we should parse the EnumDeclaration body as a SyntaxList
+    // The enum body has the following structure: [EnumMember, Coma, EnumMember, ...],
+    // and we should manually figure out Commas positions
+    convertEnumBlock(enumDeclaration: ts.EnumDeclaration) {
+        if (enumDeclaration.members.length == 0) {
+            return [];
+        }
+
+        // if the enum is not empty and have the following representation [ ..., '{', EnumBody, '}']
+        // we access the enum body in the following way
+        const node = enumDeclaration.getChildren()[enumDeclaration.getChildCount() - 2];
+        const children = node.getChildren();
+        const childCount = children.length;
+        const enumMembers: JRightPadded<J.EnumValue>[] = [];
+        for (let i = 0; i < childCount; i++) {
+            if (children[i].kind === ts.SyntaxKind.EnumMember) {
+                const rp = new JRightPadded(
+                    this.convert<J.EnumValue>(children[i]),
+                    i + 1 < childCount ? this.prefix(children[i+1]) : Space.EMPTY,
+                    i + 1 < childCount ? Markers.build([new TrailingComma(randomId(), Space.EMPTY)]) : Markers.EMPTY
+                );
+                enumMembers.push(rp);
+            }
+        }
+        return enumMembers;
     }
 
     visitModuleDeclaration(node: ts.ModuleDeclaration) {
@@ -1743,7 +1801,28 @@ export class JavaScriptParserVisitor {
     }
 
     visitEnumMember(node: ts.EnumMember) {
-        return this.visitUnknown(node);
+        return new J.EnumValue(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            node.name ? this.convert(node.name) : this.mapIdentifier(node, ""),
+            node.initializer ? new J.NewClass(
+                    randomId(),
+                    this.suffix(node.name),
+                    Markers.EMPTY,
+                    null,
+                    Space.EMPTY,
+                    null,
+                    new JContainer(
+                        Space.EMPTY,
+                        [this.rightPadded(this.visit(node.initializer), Space.EMPTY)],
+                        Markers.EMPTY
+                    ),
+                    null,
+                    this.mapMethodType(node)
+                ) : null
+        )
     }
 
     visitBundle(node: ts.Bundle) {
