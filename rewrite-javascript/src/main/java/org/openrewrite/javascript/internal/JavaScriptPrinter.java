@@ -457,9 +457,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             J.NewClass initializer = enum_.getInitializer();
             if (initializer != null) {
                 visitSpace(initializer.getPrefix(), Space.Location.NEW_CLASS_PREFIX, p);
+                p.append("=");
                 // there can be only one argument
                 Expression expression = initializer.getArguments().get(0);
-                visitLeftPadded("=", JLeftPadded.build(expression), JLeftPadded.Location.VARIABLE_INITIALIZER, p);
+                visit(expression, p);
                 return enum_;
             }
 
