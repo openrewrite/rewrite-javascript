@@ -450,6 +450,25 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
+        public J visitEnumValue(J.EnumValue enum_, PrintOutputCapture<P> p) {
+            beforeSyntax(enum_, Space.Location.ENUM_VALUE_PREFIX, p);
+            visit(enum_.getName(), p);
+
+            J.NewClass initializer = enum_.getInitializer();
+            if (initializer != null) {
+                visitSpace(initializer.getPrefix(), Space.Location.NEW_CLASS_PREFIX, p);
+                p.append("=");
+                // there can be only one argument
+                Expression expression = initializer.getArguments().get(0);
+                visit(expression, p);
+                return enum_;
+            }
+
+            afterSyntax(enum_, p);
+            return enum_;
+        }
+
+        @Override
         public J visitAnnotation(J.Annotation annotation, PrintOutputCapture<P> p) {
             beforeSyntax(annotation, Space.Location.ANNOTATION_PREFIX, p);
             if (!annotation.getMarkers().findFirst(Keyword.class).isPresent()) {

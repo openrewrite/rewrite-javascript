@@ -1,0 +1,169 @@
+import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
+
+describe('empty mapping', () => {
+    beforeAll(() => connect());
+    afterAll(() => disconnect());
+
+    test('enum declaration', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              enum Test {
+              };
+          `)
+        );
+    });
+
+    test('enum empty declaration with modifiers', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              declare const enum Test {
+              };
+          `)
+        );
+    });
+
+    test('enum member', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              enum Test {
+                A
+              };
+          `)
+        );
+    });
+
+    test('enum member with coma', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              enum Test {
+                  A ,
+              };
+          `)
+        );
+    });
+
+    test('enum members', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              enum Test {
+                  A,
+                  B,
+                  C
+              };
+          `)
+        );
+    });
+
+    test('enum with const modifier', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              const enum Test {
+                  A,
+                  B,
+                  C,
+              };
+          `)
+        );
+    });
+
+    test('enum with declare modifier', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              declare enum Test {
+                  A,
+                  B,
+                  C,
+              };
+          `)
+        );
+    });
+
+    test('enum with declare const modifier', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              declare const enum Test {
+                  A,
+                  B,
+                  C,
+              };
+          `)
+        );
+    });
+
+    test('enum members with comments', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+               enum Test /*xx*/ {
+                  A /*aa*/,
+                  /*bb*/ B /*cc*/, 
+                  C, /*dd*/
+              };
+          `)
+        );
+    });
+
+    test('enum members with initializer', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              enum Test {
+                  A  = "AA",
+                  B = 10
+              }
+          `)
+        );
+    });
+
+    test('enum mixed members with initializer', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              enum Test {
+                  A  = "AA",
+                  B,
+                  C = 10,
+                  D = globalThis.NaN,
+                  E = (2 + 2),
+                  F,
+              }
+          `)
+        );
+    });
+
+    test('enum members with initializer and comments', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              enum Test {
+                  //A /*aaa*/ = /*bbb*/ "A"
+                  A  /*aaa*/  = /*bbb*/ "AA"  ,
+                  B = 10 /*ccc*/ + /*ddd*/ 5
+              }
+          `)
+        );
+    });
+
+    test('enum complex members with initializer', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              const baseValue = 10;
+
+              const enum MathConstants {
+                  Pi = 3.14,
+                  E = Math.E,
+                  GoldenRatio = baseValue + 1.618,
+              }
+          `)
+        );
+    });
+});
