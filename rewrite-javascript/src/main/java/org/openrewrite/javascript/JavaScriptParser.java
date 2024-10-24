@@ -95,10 +95,10 @@ public class JavaScriptParser implements Parser {
             try (EncodingDetectingInputStream is = input.getSource(ctx)) {
                 SourceFile parsed = client.runUsingSocket((socket, messenger) -> requireNonNull(messenger.sendRequest(generator -> {
                             if (input.isSynthetic() || !Files.isRegularFile(input.getPath())) {
-                                generator.writeString("parse-javascript-source");
+                                generator.writeString("parse-source");
                                 generator.writeString(is.readFully());
                             } else {
-                                generator.writeString("parse-javascript-file");
+                                generator.writeString("parse-file");
                                 generator.writeString(input.getPath().toString());
                                 generator.writeString(relativeTo.toString());
                             }

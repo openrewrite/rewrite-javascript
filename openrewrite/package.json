@@ -1,6 +1,6 @@
 {
   "name": "@openrewrite/rewrite",
-  "version": "0.18.9",
+  "version": "0.18.10",
   "license": "Apache-2.0",
   "description": "OpenRewrite implementation for JavaScript.",
   "homepage": "https://github.com/openrewrite/rewrite-javascript",
@@ -27,11 +27,11 @@
   },
   "overrides": {
     "@openrewrite/rewrite-remote": {
-      "@openrewrite/rewrite": "npm:dry-uninstall"
+      "@openrewrite/rewrite": "../../../"
     }
   },
   "dependencies": {
-    "@openrewrite/rewrite-remote": "^0.4.0",
+    "@openrewrite/rewrite-remote": "^0.4.6",
     "@jsonjoy.com/json-pack": "^1.1.0",
     "@types/node": "^22.5.4",
     "cbor": "^9.0.2",
@@ -44,7 +44,6 @@
     "@types/diff": "^5.2.2",
     "@types/jest": "^29.5.13",
     "@types/uuid": "^10.0.0",
-    "@openrewrite/rewrite-remote" : "~0.3.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2"

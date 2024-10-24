@@ -22,6 +22,7 @@ dependencies {
     testImplementation("org.openrewrite:rewrite-test")
     testImplementation("org.openrewrite.recipe:rewrite-static-analysis:${latest}")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
+    testImplementation(project(":rewrite-javascript-remote"))
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
 }
