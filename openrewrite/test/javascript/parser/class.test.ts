@@ -179,4 +179,15 @@ describe('class mapping', () => {
           `)
         );
     });
+
+
+    test('export default', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`class A {
+              constructor() {
+              }
+          }`)
+        );
+    });
 });

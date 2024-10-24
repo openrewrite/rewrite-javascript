@@ -246,7 +246,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration | ts.PropertySignature ) {
+    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration | ts.PropertySignature | ts.ConstructorDeclaration) {
         if (ts.isVariableStatement(node)) {
             return [new J.Modifier(
                 randomId(),
@@ -264,7 +264,7 @@ export class JavaScriptParserVisitor {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isPropertySignature(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
-        } else if (ts.isFunctionDeclaration(node) || ts.isParameter(node) || ts.isMethodDeclaration(node)) {
+        } else if (ts.isFunctionDeclaration(node) || ts.isParameter(node) || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isVariableDeclarationList(node)) {
             let modifier: string | undefined;
@@ -796,7 +796,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitConstructor(node: ts.ConstructorDeclaration) {
-        return this.visitUnknown(node);
+        return J.MethodDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.mapDecorators(node),
+            this.mapModifiers(node),
+            null,
+            node.
+        );
     }
 
     visitGetAccessor(node: ts.GetAccessorDeclaration) {
@@ -2329,7 +2337,7 @@ export class JavaScriptParserVisitor {
         return args;
     }
 
-    private mapDecorators(node: ts.ClassDeclaration | ts.FunctionDeclaration | ts.MethodDeclaration): J.Annotation[] {
+    private mapDecorators(node: ts.ClassDeclaration | ts.FunctionDeclaration | ts.MethodDeclaration | ts.ConstructorDeclaration): J.Annotation[] {
         return node.modifiers?.filter(ts.isDecorator)?.map(this.convert<J.Annotation>) ?? [];
     }
 
