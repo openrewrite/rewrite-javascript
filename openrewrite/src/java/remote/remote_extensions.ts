@@ -78,13 +78,38 @@ export function leftPaddedValueReceiver<T>(type: any): DetailsReceiver<JLeftPadd
 }
 
 export function leftPaddedNodeReceiver<T>(type: any): DetailsReceiver<JLeftPadded<T>> {
-    // FIXME
+    if (type === Space || type.name === 'Space') {
+        return function (leftPadded: JLeftPadded<Space>, t: string | null, ctx: ReceiverContext): JLeftPadded<Space> {
+            if (leftPadded !== null) {
+                leftPadded = leftPadded.withBefore(ctx.receiveNode<Space>(leftPadded.before, receiveSpace)!);
+                leftPadded = leftPadded.withElement(ctx.receiveNode(leftPadded.element, receiveSpace)!);
+                leftPadded = leftPadded.withMarkers(ctx.receiveNode(leftPadded.markers, ctx.receiveMarkers)!);
+            } else {
+                leftPadded = new JLeftPadded<Space>(
+                    ctx.receiveNode(null, receiveSpace)!,
+                    ctx.receiveNode(null, receiveSpace)!,
+                    ctx.receiveNode(null, ctx.receiveMarkers)
+                );
+            }
+            return leftPadded;
+        } as unknown as DetailsReceiver<JLeftPadded<T>>;
+    }
     throw new Error("Not implemented!");
 }
 
 export function receiveLeftPaddedTree<T extends Tree>(leftPadded: JLeftPadded<T> | null, type: string | null, ctx: ReceiverContext): JLeftPadded<T> {
-    // FIXME
-    throw new Error("Not implemented!");
+    if (leftPadded !== null) {
+        leftPadded = leftPadded.withBefore(ctx.receiveNode<Space>(leftPadded.before, receiveSpace)!);
+        leftPadded = leftPadded.withElement(ctx.receiveNode(leftPadded.element, ctx.receiveTree)!);
+        leftPadded = leftPadded.withMarkers(ctx.receiveNode(leftPadded.markers, ctx.receiveMarkers)!);
+    } else {
+        leftPadded = new JLeftPadded<T>(
+            ctx.receiveNode(null, receiveSpace)!,
+            ctx.receiveNode(null, ctx.receiveTree)!,
+            ctx.receiveNode(null, ctx.receiveMarkers)
+        );
+    }
+    return leftPadded;
 }
 
 export function rightPaddedValueReceiver<T>(valueType: any): DetailsReceiver<JRightPadded<T>> {
@@ -110,8 +135,18 @@ export function rightPaddedNodeReceiver<T>(type: any): DetailsReceiver<JRightPad
 }
 
 export function receiveRightPaddedTree<T extends Tree>(rightPadded: JRightPadded<T> | null, type: string | null, ctx: ReceiverContext): JRightPadded<T> {
-    // FIXME
-    throw new Error("Not implemented!");
+    if (rightPadded !== null) {
+        rightPadded = rightPadded.withElement(ctx.receiveNode(rightPadded.element, ctx.receiveTree)!);
+        rightPadded = rightPadded.withAfter(ctx.receiveNode<Space>(rightPadded.after, receiveSpace)!);
+        rightPadded = rightPadded.withMarkers(ctx.receiveNode(rightPadded.markers, ctx.receiveMarkers)!);
+    } else {
+        rightPadded = new JRightPadded<T>(
+            ctx.receiveNode(null, ctx.receiveTree)!,
+            ctx.receiveNode(null, receiveSpace)!,
+            ctx.receiveNode(null, ctx.receiveMarkers)
+        );
+    }
+    return rightPadded;
 }
 
 export function receiveSpace(space: Space | null, type: string | null, ctx: ReceiverContext): Space {
@@ -128,5 +163,18 @@ export function receiveSpace(space: Space | null, type: string | null, ctx: Rece
 }
 
 function receiveComment(comment: Comment | null, type: string | null, ctx: ReceiverContext): Comment {
-    throw new Error("Not implemented!");
+    if (comment instanceof TextComment) {
+        comment = comment.withMultiline(ctx.receiveValue(comment.multiline, ValueType.Primitive)!);
+        comment = (comment as TextComment).withText(ctx.receiveValue((comment as TextComment).text, ValueType.Primitive)!);
+        comment = comment.withSuffix(ctx.receiveValue(comment.suffix, ValueType.Primitive)!);
+        comment = comment.withMarkers(ctx.receiveNode(comment.markers, ctx.receiveMarkers)!);
+    } else {
+        comment = new TextComment(
+            ctx.receiveValue(null, ValueType.Primitive)!,
+            ctx.receiveValue(null, ValueType.Primitive)!,
+            ctx.receiveValue(null, ValueType.Primitive)!,
+            ctx.receiveNode(null, ctx.receiveMarkers)!
+        );
+    }
+    return comment;
 }
