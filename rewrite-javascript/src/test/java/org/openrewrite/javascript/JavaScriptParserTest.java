@@ -72,7 +72,7 @@ class JavaScriptParserTest {
         SourceFile updated = client.withNewSocket((socket, messenger) ->
           requireNonNull(messenger.sendRequest(generator -> {
               generator.writeString("run-recipe-visitor");
-              generator.writeNumber(0);
+              generator.writeNumber(recipeId);
               context.newSenderContext(generator).sendTree(sourceFiles.get(0), (SourceFile) null);
           }, p -> context.newReceiverContext(p).receiveTree(sourceFiles.get(0)), socket))
         );
