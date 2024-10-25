@@ -25,6 +25,7 @@ dependencies {
     testImplementation(project(":rewrite-javascript-remote"))
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
+    testRuntimeOnly(project(":rewrite-javascript-remote"))
 }
 
 tasks.withType<LicenseCheck> {
