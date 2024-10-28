@@ -173,6 +173,19 @@ describe('as mapping', () => {
         );
     });
 
+    test.skip('interface with get/set methods', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              interface Person {
+                  name: string;
+                  get age(): number; // Getter for age
+                  set age(a: number); // Setter for age
+              }
+          `)
+        );
+    });
+
     test('interface with properties and methods with modifiers ', () => {
         rewriteRun(
           //language=typescript
