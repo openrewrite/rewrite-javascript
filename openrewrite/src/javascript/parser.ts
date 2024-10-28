@@ -421,12 +421,32 @@ export class JavaScriptParserVisitor {
         return null;
     }
 
-    private mapImplements(node: ts.ClassDeclaration | ts.InterfaceDeclaration): JContainer<J.TypeTree> | null {
+    private mapInterfaceExtends(node: ts.InterfaceDeclaration): JContainer<J.TypeTree> | null {
         if (node.heritageClauses == undefined || node.heritageClauses.length == 0) {
             return null;
         }
         for (let heritageClause of node.heritageClauses) {
-            if ((heritageClause.token == ts.SyntaxKind.ImplementsKeyword) || (heritageClause.token == ts.SyntaxKind.ExtendsKeyword)) {
+            if ((heritageClause.token == ts.SyntaxKind.ExtendsKeyword)) {
+                const _extends: JRightPadded<J.TypeTree>[] = [];
+                for (let type of heritageClause.types) {
+                    _extends.push(this.rightPadded(this.visit(type), this.suffix(type)));
+                }
+                return _extends.length > 0 ? new JContainer(
+                    this.prefix(heritageClause.getFirstToken()!),
+                    _extends,
+                    Markers.EMPTY
+                ) : null;
+            }
+        }
+        return null;
+    }
+
+    private mapImplements(node: ts.ClassDeclaration): JContainer<J.TypeTree> | null {
+        if (node.heritageClauses == undefined || node.heritageClauses.length == 0) {
+            return null;
+        }
+        for (let heritageClause of node.heritageClauses) {
+            if ((heritageClause.token == ts.SyntaxKind.ImplementsKeyword)) {
                 const _implements: JRightPadded<J.TypeTree>[] = [];
                 for (let type of heritageClause.types) {
                     _implements.push(this.rightPadded(this.visit(type), this.suffix(type)));
@@ -1622,7 +1642,7 @@ export class JavaScriptParserVisitor {
             this.mapTypeParameters(node),
             null, // interface has no constructor
             null, // implements should be used
-            this.mapImplements(node), // interface extends modeled as implements
+            this.mapInterfaceExtends(node), // interface extends modeled as implements
             null,
             new J.Block(
                 randomId(),
