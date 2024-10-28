@@ -57,15 +57,15 @@ public class TSCSyntaxListNode extends TSCNode implements List<TSCNode> {
         return getChildren().iterator();
     }
 
-    @NonNull
+
     @Override
-    public Object[] toArray() {
+    public Object @NonNull[] toArray() {
         return getChildren().toArray();
     }
 
-    @NonNull
+
     @Override
-    public <T> T[] toArray(@NonNull T[] a) {
+    public <T> T @NonNull[] toArray(T @NonNull[] a) {
         return getChildren().toArray(a);
     }
 

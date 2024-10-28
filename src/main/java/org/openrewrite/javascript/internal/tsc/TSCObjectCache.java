@@ -17,6 +17,7 @@ package org.openrewrite.javascript.internal.tsc;
 
 import com.caoccao.javet.exceptions.JavetException;
 import com.caoccao.javet.values.reference.V8ValueObject;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +54,7 @@ public abstract class TSCObjectCache<T extends TSCV8Backed> extends TSCV8ValueHo
         }
 
         @Override
-        public T getOrCreate(TSCProgramContext programContext, V8ValueObject objectV8) {
+        public @Nullable T getOrCreate(TSCProgramContext programContext, V8ValueObject objectV8) {
             try {
                 TKey key = getKey.getKey(programContext, objectV8);
                 return this.cache.computeIfAbsent(key, (_key) -> {
