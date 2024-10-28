@@ -446,7 +446,7 @@ export class JavaScriptParserVisitor {
             return null;
         }
         for (let heritageClause of node.heritageClauses) {
-            if ((heritageClause.token == ts.SyntaxKind.ImplementsKeyword)) {
+            if (heritageClause.token == ts.SyntaxKind.ImplementsKeyword) {
                 const _implements: JRightPadded<J.TypeTree>[] = [];
                 for (let type of heritageClause.types) {
                     _implements.push(this.rightPadded(this.visit(type), this.suffix(type)));
