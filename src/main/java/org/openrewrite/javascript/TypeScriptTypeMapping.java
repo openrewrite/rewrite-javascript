@@ -54,7 +54,7 @@ public class TypeScriptTypeMapping implements JavaTypeMapping<TSCNode> {
 
     @Override
     @SuppressWarnings("DataFlowIssue")
-    public JavaType type(@Nullable TSCNode node) {
+    public @Nullable JavaType type(@Nullable TSCNode node) {
         if (node == null) {
             return null;
         }

@@ -221,7 +221,7 @@ public class TypeScriptSignatureBuilder implements JavaTypeSignatureBuilder {
         return "[]";
     }
 
-    public String variableSignature(TSCNode node) {
+    public @Nullable String variableSignature(TSCNode node) {
         String owner = signature(getOwner(node));
         //noinspection ConstantValue
         if (owner == null) {

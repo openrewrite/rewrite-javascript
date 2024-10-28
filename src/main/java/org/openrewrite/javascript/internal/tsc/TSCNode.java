@@ -145,7 +145,7 @@ public class TSCNode implements TSCV8Backed {
     }
 
     @DebugOnly
-    public TSCNode firstNodeContaining(String text, @Nullable TSCSyntaxKind kind) {
+    public @Nullable TSCNode firstNodeContaining(String text, @Nullable TSCSyntaxKind kind) {
         for (TSCNode child : this.getAllChildNodes()) {
             TSCNode found = child.firstNodeContaining(text, kind);
             if (found != null) {
