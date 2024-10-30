@@ -269,15 +269,28 @@ describe('as mapping', () => {
         );
     });
 
-    test.skip('interface with call signature', () => {
+    test('interface with call signature', () => {
         rewriteRun(
           //language=typescript
           typeScript(`
               interface Add {
                   greet: (name: string) => string;
-                  (x: number, y: number): number;
+                  (x: number, y: number): number,
               }
             `)
+        );
+    });
+
+    test('interface with call signature and comments', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              interface Add {
+                  greet: (name: string) => string;
+                  (x: number /*abc*/): number /*bcd*/,
+                  (/*none*/) /*a*/:/*b*/ number /*c*/
+              }
+          `)
         );
     });
 
