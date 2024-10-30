@@ -246,7 +246,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration) {
+    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration | ts.PropertySignature ) {
         if (ts.isVariableStatement(node)) {
             return [new J.Modifier(
                 randomId(),
@@ -258,9 +258,11 @@ export class JavaScriptParserVisitor {
             )];
         } else if (ts.isClassDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
-        } else if (ts.isEnumDeclaration(node)) {
+        } else if (ts.isEnumDeclaration(node) || ts.isInterfaceDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isPropertyDeclaration(node)) {
+            return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
+        } else if (ts.isPropertySignature(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isFunctionDeclaration(node) || ts.isParameter(node) || ts.isMethodDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
@@ -419,6 +421,26 @@ export class JavaScriptParserVisitor {
         return null;
     }
 
+    private mapInterfaceExtends(node: ts.InterfaceDeclaration): JContainer<J.TypeTree> | null {
+        if (node.heritageClauses == undefined || node.heritageClauses.length == 0) {
+            return null;
+        }
+        for (let heritageClause of node.heritageClauses) {
+            if ((heritageClause.token == ts.SyntaxKind.ExtendsKeyword)) {
+                const _extends: JRightPadded<J.TypeTree>[] = [];
+                for (let type of heritageClause.types) {
+                    _extends.push(this.rightPadded(this.visit(type), this.suffix(type)));
+                }
+                return _extends.length > 0 ? new JContainer(
+                    this.prefix(heritageClause.getFirstToken()!),
+                    _extends,
+                    Markers.EMPTY
+                ) : null;
+            }
+        }
+        return null;
+    }
+
     private mapImplements(node: ts.ClassDeclaration): JContainer<J.TypeTree> | null {
         if (node.heritageClauses == undefined || node.heritageClauses.length == 0) {
             return null;
@@ -461,6 +483,10 @@ export class JavaScriptParserVisitor {
 
     visitUndefinedKeyword(node: ts.Node) {
         return this.mapIdentifier(node, 'undefined');
+    }
+
+    visitVoidKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'void');
     }
 
     visitFalseKeyword(node: ts.FalseLiteral) {
@@ -657,7 +683,28 @@ export class JavaScriptParserVisitor {
     }
 
     visitPropertySignature(node: ts.PropertySignature) {
-        return this.visitUnknown(node);
+        return new J.VariableDeclarations(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [], // no decorators allowed
+            this.mapModifiers(node),
+            this.mapTypeInfo(node),
+            null,
+            [],
+            [this.rightPadded(
+                new J.VariableDeclarations.NamedVariable(
+                    randomId(),
+                    this.prefix(node.name),
+                    Markers.EMPTY,
+                    this.visit(node.name),
+                    [],
+                    null,
+                    this.mapVariableType(node)
+                ),
+                Space.EMPTY
+            )]
+        );
     }
 
     visitPropertyDeclaration(node: ts.PropertyDeclaration) {
@@ -686,7 +733,26 @@ export class JavaScriptParserVisitor {
     }
 
     visitMethodSignature(node: ts.MethodSignature) {
-        return this.visitUnknown(node);
+        return new J.MethodDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [], // no decorators allowed
+            [], // no modifiers allowed
+            node.typeParameters
+                ? new J.TypeParameters(randomId(), this.suffix(node.name), Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))))
+                : null,
+            this.mapTypeInfo(node),
+            new J.MethodDeclaration.IdentifierWithAnnotations(
+                node.name ? this.visit(node.name) : this.mapIdentifier(node, ""),
+                []
+            ),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+            null,
+            null,
+            null,
+            this.mapMethodType(node)
+        );
     }
 
     visitMethodDeclaration(node: ts.MethodDeclaration) {
@@ -712,7 +778,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapTypeInfo(node: ts.MethodDeclaration | ts.PropertyDeclaration | ts.VariableDeclaration | ts.ParameterDeclaration) {
+    private mapTypeInfo(node: ts.MethodDeclaration | ts.PropertyDeclaration | ts.VariableDeclaration | ts.ParameterDeclaration | ts.PropertySignature | ts.MethodSignature) {
         return node.type ? new JS.TypeInfo(randomId(), this.prefix(node.getChildAt(node.getChildren().indexOf(node.type) - 1)), Markers.EMPTY, this.visit(node.type)) : null;
     }
 
@@ -760,7 +826,17 @@ export class JavaScriptParserVisitor {
     }
 
     visitFunctionType(node: ts.FunctionTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.FunctionType(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            new JContainer(
+                this.prefix(node),
+                node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p))),
+                Markers.EMPTY),
+            this.prefix(node.getChildren().find(v => v.kind === ts.SyntaxKind.EqualsGreaterThanToken)!),
+            this.convert(node.type),
+            null);
     }
 
     visitConstructorType(node: ts.ConstructorTypeNode) {
@@ -1534,7 +1610,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private getParameterListNodes(node: ts.FunctionDeclaration | ts.MethodDeclaration) {
+    private getParameterListNodes(node: ts.FunctionDeclaration | ts.MethodDeclaration | ts.MethodSignature) {
         const children = node.getChildren(this.sourceFile);
         for (let i = 0; i < children.length; i++) {
             if (children[i].kind == ts.SyntaxKind.OpenParenToken) {
@@ -1545,7 +1621,43 @@ export class JavaScriptParserVisitor {
     }
 
     visitInterfaceDeclaration(node: ts.InterfaceDeclaration) {
-        return this.visitUnknown(node);
+        if (node.typeParameters) {
+            return this.visitUnknown(node);
+        }
+
+        return new J.ClassDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [], // interface has no decorators
+            this.mapModifiers(node),
+            new J.ClassDeclaration.Kind(
+                randomId(),
+                node.modifiers ? this.suffix(node.modifiers[node.modifiers.length - 1]) : this.prefix(node),
+                Markers.EMPTY,
+                [],
+                J.ClassDeclaration.Kind.Type.Interface
+            ),
+            node.name ? this.convert(node.name) : this.mapIdentifier(node, ""),
+            this.mapTypeParameters(node),
+            null, // interface has no constructor
+            null, // implements should be used
+            this.mapInterfaceExtends(node), // interface extends modeled as implements
+            null,
+            new J.Block(
+                randomId(),
+                this.prefix(node.getChildren().find(v => v.kind === ts.SyntaxKind.OpenBraceToken)!),
+                Markers.EMPTY,
+                new JRightPadded(false, Space.EMPTY, Markers.EMPTY),
+                node.members.map(te  => new JRightPadded(
+                    this.convert(te),
+                    (te.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken) || (te.getLastToken()?.kind === ts.SyntaxKind.CommaToken) ? this.prefix(te.getLastToken()!) : Space.EMPTY,
+                    (te.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken) || (te.getLastToken()?.kind === ts.SyntaxKind.CommaToken) ? Markers.build([this.convertToken(te.getLastToken())!]) : Markers.EMPTY
+                )),
+                this.prefix(node.getLastToken()!)
+            ),
+            this.mapType(node)
+        );
     }
 
     visitTypeAliasDeclaration(node: ts.TypeAliasDeclaration) {
@@ -2139,7 +2251,7 @@ export class JavaScriptParserVisitor {
         return node.modifiers?.filter(ts.isDecorator)?.map(this.convert<J.Annotation>) ?? [];
     }
 
-    private mapTypeParameters(node: ts.ClassDeclaration): JContainer<J.TypeParameter> | null {
+    private mapTypeParameters(node: ts.ClassDeclaration | ts.InterfaceDeclaration): JContainer<J.TypeParameter> | null {
         return null; // FIXME
     }
 
@@ -2150,6 +2262,12 @@ export class JavaScriptParserVisitor {
             }
         }
         return undefined;
+    }
+
+    private convertToken(token?: ts.Node) {
+        if (token?.kind === ts.SyntaxKind.CommaToken) return new TrailingComma(randomId(), Space.EMPTY);
+        if (token?.kind === ts.SyntaxKind.SemicolonToken) return new Semicolon(randomId());
+        return null;
     }
 }
 
