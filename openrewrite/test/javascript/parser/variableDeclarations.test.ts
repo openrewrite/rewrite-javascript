@@ -54,6 +54,18 @@ describe('variable declaration mapping', () => {
           typeScript('let a : number =2')
         );
     });
+    test('typed unknown', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('const a : unknown')
+        );
+    });
+    test('typed any', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('let a : any = 2;')
+        );
+    });
     test('multi', () => {
         rewriteRun(
           //language=typescript
