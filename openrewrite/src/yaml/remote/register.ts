@@ -1,9 +1,14 @@
-import {isYaml} from "../tree";
-import {ReceiverContext} from "@openrewrite/rewrite-remote";
-import {SenderContext} from "@openrewrite/rewrite-remote";
-import {YamlSender} from "./sender";
-import {YamlReceiver} from "./receiver";
+import { isYaml } from '../tree';
+import { YamlSender } from './sender';
+import { YamlReceiver } from './receiver';
 
-console.log("registering yaml codecs");
-SenderContext.register(isYaml, () => new YamlSender());
-ReceiverContext.register(isYaml, () => new YamlReceiver());
+// TODO: address any assertions after types are fixed
+export const registerCodecs = (
+  senderContext: any,
+  receiverContext: any,
+  remotingContext: any
+) => {
+  console.log('registering yaml codecs');
+  senderContext?.register(isYaml, () => new YamlSender());
+  receiverContext?.register(isYaml, () => new YamlReceiver());
+};

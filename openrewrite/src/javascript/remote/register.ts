@@ -1,8 +1,14 @@
-import {isJavaScript} from "../tree";
-import {ReceiverContext} from "@openrewrite/rewrite-remote";
-import {SenderContext} from "@openrewrite/rewrite-remote";
-import {JavaScriptSender} from "./sender";
-import {JavaScriptReceiver} from "./receiver";
-console.log("registering javascript codecs");
-SenderContext.register(isJavaScript, () => new JavaScriptSender());
-ReceiverContext.register(isJavaScript, () => new JavaScriptReceiver());
+import { isJavaScript } from '../tree';
+import { JavaScriptSender } from './sender';
+import { JavaScriptReceiver } from './receiver';
+
+// TODO: address any assertions after types are fixed
+export const registerCodecs = (
+  senderContext: any,
+  receiverContext: any,
+  remotingContext: any
+) => {
+  console.log('registering javascript codecs');
+  senderContext?.register(isJavaScript, () => new JavaScriptSender());
+  receiverContext?.register(isJavaScript, () => new JavaScriptReceiver());
+};
