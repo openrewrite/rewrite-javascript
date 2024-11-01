@@ -22,9 +22,9 @@ import org.openrewrite.*;
 import org.openrewrite.internal.EncodingDetectingInputStream;
 import org.openrewrite.java.internal.JavaTypeCache;
 import org.openrewrite.javascript.tree.JS;
-import org.openrewrite.remote.ReceiverContext;
 import org.openrewrite.remote.RemotingContext;
 import org.openrewrite.remote.RemotingExecutionContextView;
+import org.openrewrite.remote.RemotingMessenger;
 import org.openrewrite.remote.java.RemotingClient;
 import org.openrewrite.style.NamedStyles;
 import org.openrewrite.text.PlainTextParser;
@@ -103,7 +103,7 @@ public class JavaScriptParser implements Parser {
                                 generator.writeString(relativeTo.toString());
                             }
                         }, parser -> {
-                            Tree tree = new ReceiverContext(remotingContext.newReceiver(parser), remotingContext).receiveTree(null);
+                            Tree tree = RemotingMessenger.receiveTree(remotingContext, parser,null);
                             return (SourceFile) tree;
                         }, socket)))
                         .withSourcePath(path)

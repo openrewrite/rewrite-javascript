@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.SourceFile;
 import org.openrewrite.remote.RemotingContext;
+import org.openrewrite.remote.RemotingMessenger;
 import org.openrewrite.remote.java.RemotingClient;
 
 import java.io.IOException;
@@ -73,8 +74,8 @@ class JavaScriptParserTest {
           requireNonNull(messenger.sendRequest(generator -> {
               generator.writeString("run-recipe-visitor");
               generator.writeNumber(recipeId);
-              context.newSenderContext(generator).sendTree(sourceFiles.get(0), (SourceFile) null);
-          }, p -> context.newReceiverContext(p).receiveTree(sourceFiles.get(0)), socket))
+              RemotingMessenger.sendTree(context, generator, sourceFiles.get(0), null);
+          }, p -> RemotingMessenger.receiveTree(context, p, sourceFiles.get(0)), socket))
         );
         System.out.println("BEFORE: " + sourceFiles.get(0).printAll());
         System.out.println("AFTER:  " + updated.printAll());
