@@ -2145,4 +2145,89 @@ public interface JS extends J {
             return new CoordinateBuilder.Expression(this);
         }
     }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class NamespaceDeclaration implements JS, Statement {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<NamespaceDeclaration.Padding> padding;
+
+        @EqualsAndHashCode.Include
+        @With
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        List<J.Modifier> modifiers;
+
+        @With
+        @Getter
+        Space namespace;
+
+        JRightPadded<Expression> name;
+
+        public Expression getName() {
+            return name.getElement();
+        }
+
+        public NamespaceDeclaration withName(Expression expression) {
+            return getPadding().withName(JRightPadded.withElement(this.name, expression));
+        }
+
+        @With
+        @Getter
+        Block body;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+                return v.visitNamespaceDeclaration(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public NamespaceDeclaration.Padding getPadding() {
+            NamespaceDeclaration.Padding p;
+            if (this.padding == null) {
+                p = new NamespaceDeclaration.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new NamespaceDeclaration.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final NamespaceDeclaration t;
+
+            public NamespaceDeclaration withName(JRightPadded<Expression> name) {
+                return t.name == name ? t : new NamespaceDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.namespace, name, t.body);
+            }
+
+            public JRightPadded<Expression> getName() {
+                return t.name;
+            }
+        }
+    }
 }

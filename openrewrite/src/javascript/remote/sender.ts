@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, NamespaceDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -293,6 +293,17 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(typeInfo, v => v.markers, ctx.sendMarkers);
         ctx.sendNode(typeInfo, v => v.typeIdentifier, ctx.sendTree);
         return typeInfo;
+    }
+
+    public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, ctx: SenderContext): J {
+        ctx.sendValue(namespaceDeclaration, v => v.id, ValueType.UUID);
+        ctx.sendNode(namespaceDeclaration, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(namespaceDeclaration, v => v.markers, ctx.sendMarkers);
+        ctx.sendNodes(namespaceDeclaration, v => v.modifiers, ctx.sendTree, t => t.id);
+        ctx.sendNode(namespaceDeclaration, v => v.namespace, Visitor.sendSpace);
+        ctx.sendNode(namespaceDeclaration, v => v.padding.name, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(namespaceDeclaration, v => v.body, ctx.sendTree);
+        return namespaceDeclaration;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: SenderContext): J {

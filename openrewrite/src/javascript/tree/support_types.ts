@@ -213,6 +213,8 @@ export namespace JsSpace {
         VOID_PREFIX,
         YIELD_PREFIX,
         TYPE_INFO_PREFIX,
+        NAMESPACE_DECLARATION_PREFIX,
+        NAMESPACE_KEYWORD_DECLARATION_PREFIX
     }
 }
 export namespace JsLeftPadded {
@@ -239,6 +241,7 @@ export namespace JsRightPadded {
         SCOPED_VARIABLE_DECLARATIONS_VARIABLES,
         TEMPLATE_EXPRESSION_TAG,
         UNION_TYPES,
+        NAMESPACE_DECLARATION_NAME,
     }
 }
 export namespace JsContainer {

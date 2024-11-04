@@ -98,13 +98,26 @@ describe('empty mapping', () => {
         );
     });
 
+    test('enum with declare const modifier and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                /*a*/ declare /*b*/ const /*c*/ enum Test {
+                    A,
+                    B,
+                    C,
+                };
+            `)
+        );
+    });
+
     test('enum members with comments', () => {
         rewriteRun(
           //language=typescript
           typeScript(`
                enum Test /*xx*/ {
                   A /*aa*/,
-                  /*bb*/ B /*cc*/, 
+                  /*bb*/ B /*cc*/,
                   C, /*dd*/
               };
           `)

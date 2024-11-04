@@ -138,7 +138,9 @@ export async function disconnect(): Promise<void> {
                 javaTestEngine.once('close', (code: string) => {
                     resolve()
                 });
-                javaTestEngine.kill("SIGKILL");
+                javaTestEngine.kill("SIGINT");
+            } else {
+                resolve();
             }
         } else {
             resolve();
