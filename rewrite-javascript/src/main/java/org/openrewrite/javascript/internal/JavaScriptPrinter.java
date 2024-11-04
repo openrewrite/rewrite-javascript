@@ -90,8 +90,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         visitSpace(arrowFunction.getArrow(), Space.Location.LAMBDA_ARROW_PREFIX, p);
-        p.append("=>");
-        visit(arrowFunction.getBody(), p);
+        if ((arrowFunction.getBody() != null) && !(arrowFunction.getBody() instanceof J.Empty)) {
+            p.append("=>");
+            visit(arrowFunction.getBody(), p);
+        }
         afterSyntax(arrowFunction, p);
         return arrowFunction;
     }

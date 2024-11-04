@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import * as J from '../java';
-import {JavaType, JContainer, JLeftPadded, JRightPadded, Semicolon, Space, TrailingComma} from '../java';
+import {JavaType, JContainer, JLeftPadded, JRightPadded, Lambda, Semicolon, Space, TrailingComma} from '../java';
 import * as JS from '.';
 import {
     ExecutionContext,
@@ -778,7 +778,8 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapTypeInfo(node: ts.MethodDeclaration | ts.PropertyDeclaration | ts.VariableDeclaration | ts.ParameterDeclaration | ts.PropertySignature | ts.MethodSignature) {
+    private mapTypeInfo(node: ts.MethodDeclaration | ts.PropertyDeclaration | ts.VariableDeclaration | ts.ParameterDeclaration
+        | ts.PropertySignature | ts.MethodSignature | ts.ArrowFunction | ts.CallSignatureDeclaration) {
         return node.type ? new JS.TypeInfo(randomId(), this.prefix(node.getChildAt(node.getChildren().indexOf(node.type) - 1)), Markers.EMPTY, this.visit(node.type)) : null;
     }
 
@@ -799,7 +800,26 @@ export class JavaScriptParserVisitor {
     }
 
     visitCallSignature(node: ts.CallSignatureDeclaration) {
-        return this.visitUnknown(node);
+        return new JS.ArrowFunction(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            [],
+            new Lambda.Parameters(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                true,
+                node.parameters.length > 0 ?
+                    node.parameters.map(p => this.rightPadded(this.convert(p), this.suffix(p))) :
+                    [this.rightPadded(this.newJEmpty(), this.prefix(node.getChildren().find(n => n.kind === ts.SyntaxKind.CloseParenToken)!))] // to handle the case: (/*no*/) => ...
+            ),
+            this.mapTypeInfo(node),
+            Space.EMPTY,
+            this.newJEmpty(),
+            null
+        );
     }
 
     visitConstructSignature(node: ts.ConstructSignatureDeclaration) {
@@ -1071,7 +1091,26 @@ export class JavaScriptParserVisitor {
     }
 
     visitArrowFunction(node: ts.ArrowFunction) {
-        return this.visitUnknown(node);
+        return new JS.ArrowFunction(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            [],
+            new Lambda.Parameters(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                true,
+                node.parameters.length > 0 ?
+                    node.parameters.map(p => this.rightPadded(this.convert(p), this.suffix(p))) :
+                    [this.rightPadded(this.newJEmpty(), this.prefix(node.getChildren().find(n => n.kind === ts.SyntaxKind.CloseParenToken)!))] // to handle the case: (/*no*/) => ...
+            ),
+            this.mapTypeInfo(node),
+            this.prefix(node.equalsGreaterThanToken),
+            node.body ? this.convert<J.Block>(node.body) : this.newJEmpty(),
+            null
+        );
     }
 
     visitDeleteExpression(node: ts.DeleteExpression) {
@@ -1404,11 +1443,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitEmptyStatement(node: ts.EmptyStatement) {
-        return new J.Empty(
-            randomId(),
-            this.prefix(node),
-            Markers.EMPTY
-        );
+        return this.newJEmpty(this.prefix(node));
     }
 
     visitVariableStatement(node: ts.VariableStatement) {
@@ -1479,11 +1514,11 @@ export class JavaScriptParserVisitor {
                 [node.initializer ?
                     (ts.isVariableDeclarationList(node.initializer) ? this.rightPadded(this.visit(node.initializer), Space.EMPTY) :
                         this.rightPadded(this.convert(node.initializer), this.suffix(node.initializer.getLastToken()!))) :
-                    this.rightPadded(new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY), Space.EMPTY)],
+                    this.rightPadded(this.newJEmpty(), Space.EMPTY)],
                 node.condition ? this.rightPadded(this.convert(node.condition), this.suffix(node.condition.getLastToken()!)) :
-                    this.rightPadded(new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY), Space.EMPTY),
+                    this.rightPadded(this.newJEmpty(), Space.EMPTY),
                 [node.incrementor ? this.rightPadded(this.convert(node.incrementor), this.suffix(node.incrementor.getLastToken()!)) :
-                    this.rightPadded(new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY), Space.EMPTY)],
+                    this.rightPadded(this.newJEmpty(), Space.EMPTY)],
             ),
             this.rightPadded(
                 this.convert(node.statement),
@@ -2226,7 +2261,7 @@ export class JavaScriptParserVisitor {
         const args: JRightPadded<T>[] = [];
         if (childCount === 0) {
             args.push(this.rightPadded(
-                new J.Empty(randomId(), Space.EMPTY, Markers.EMPTY) as T,
+                this.newJEmpty() as T,
                 lastAfter,
                 Markers.EMPTY
             ));
@@ -2268,6 +2303,10 @@ export class JavaScriptParserVisitor {
         if (token?.kind === ts.SyntaxKind.CommaToken) return new TrailingComma(randomId(), Space.EMPTY);
         if (token?.kind === ts.SyntaxKind.SemicolonToken) return new Semicolon(randomId());
         return null;
+    }
+
+    private newJEmpty(prefix: Space = Space.EMPTY) {
+        return new J.Empty(randomId(), prefix, Markers.EMPTY);
     }
 }
 
