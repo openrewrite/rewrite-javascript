@@ -23,5 +23,10 @@ We appreciate all types of contributions. See the [contributing guide](https://g
 
 The release process is done by pushing a Git tag in a format `vX.Y.Z` where XYZ stands for version number we release
 and is picked up by Openrewrite Release Plugin.
-It is important to a manual bump version in `openrewrite/package.json` after the release since we don't have any plugins
-for NPM, which takes a version from the Git tag
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+After pushing the tag, the CI/CD pipeline will automatically build and publish the package to the npm registry and bump the version in the package.json and package-lock.
