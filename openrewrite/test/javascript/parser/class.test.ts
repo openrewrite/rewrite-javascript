@@ -125,7 +125,7 @@ describe('class mapping', () => {
                     max(): number {
                         return 2;
                     }
-                } /*asdasdas*/ 
+                } /*asdasdas*/
                 //asdasf
           `)
         );
@@ -136,12 +136,12 @@ describe('class mapping', () => {
           //language=typescript
           typeScript(`
                 class X {
-                   
+
                     b: number = 6
                     c: string = "abc";
                     a /*asdasd*/ =  /*abc*/   5
-                    
-                } /*asdasdas*/ 
+
+                } /*asdasdas*/
                 //asdasf
           `)
         );
@@ -173,7 +173,7 @@ describe('class mapping', () => {
                   b: number /* abc */ = 6;
                   c = 10;
                   a /*asdasd*/ =  /*abc*/   5
-                 
+
               }
               //asdasf
           `)
@@ -181,11 +181,31 @@ describe('class mapping', () => {
     });
 
 
-    test('export default', () => {
+    test('class with simple ctor', () => {
         rewriteRun(
           //language=typescript
           typeScript(`class A {
               constructor() {
+              }
+          }`)
+        );
+    });
+
+    test('class with private ctor', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`class A {
+              /*0*/     private      /*1*/   constructor  /*2*/    (    /*3*/  )  /*4*/     {
+              }
+          }`)
+        );
+    });
+
+    test('class with parametrized ctor', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`class A {
+                    /*1*/   constructor  /*2*/    (  a,  /*3*/   b   :     string, /*4*/    c     /*5*/     ) {
               }
           }`)
         );

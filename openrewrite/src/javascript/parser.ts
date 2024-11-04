@@ -14,6 +14,7 @@ import {
 } from "../core";
 import {binarySearch, compareTextSpans, getNextSibling, TextSpan} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
+import {SignatureDeclarationBase} from "typescript";
 
 export class JavaScriptParser extends Parser {
 
@@ -796,14 +797,22 @@ export class JavaScriptParserVisitor {
     }
 
     visitConstructor(node: ts.ConstructorDeclaration) {
-        return J.MethodDeclaration(
+        return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
             this.mapDecorators(node),
             this.mapModifiers(node),
             null,
-            node.
+            null,
+            new J.MethodDeclaration.IdentifierWithAnnotations(
+                this.mapIdentifier(node.getChildren().find(n => n.kind == ts.SyntaxKind.ConstructorKeyword)!, "constructor"), []
+            ),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+            null,
+            node.body ? this.convert<J.Block>(node.body) : null,
+            null,
+            this.mapMethodType(node)
         );
     }
 
@@ -1700,7 +1709,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private getParameterListNodes(node: ts.FunctionDeclaration | ts.MethodDeclaration | ts.MethodSignature) {
+    private getParameterListNodes(node: ts.SignatureDeclarationBase) {
         const children = node.getChildren(this.sourceFile);
         for (let i = 0; i < children.length; i++) {
             if (children[i].kind == ts.SyntaxKind.OpenParenToken) {
