@@ -43,6 +43,7 @@ jobs:
           npm version $TAG_VERSION --no-git-tag-version
 
       - name: Commit version updates
+        working-directory: openrewrite
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
