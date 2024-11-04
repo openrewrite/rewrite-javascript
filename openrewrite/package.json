@@ -23,7 +23,7 @@
   "scripts": {
     "build": "rm -rf ./dist && tsc --build tsconfig.build.json",
     "dev": "tsc --watch -p tsconfig.json",
-    "test": "jest"
+    "test": "npm run build && jest"
   },
   "overrides": {
     "@openrewrite/rewrite-remote": {
