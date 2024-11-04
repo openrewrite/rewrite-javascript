@@ -23,7 +23,7 @@ jobs:
   release-js:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +49,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add package.json package-lock.json
           git commit -m "bump version ${GITHUB_REF#refs/tags/}"
-          git push origin HEAD:main
+          git push https://${GH_TOKEN}@github.com/openrewrite/rewrite-javascript.git HEAD:main
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
