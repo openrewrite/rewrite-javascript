@@ -31,7 +31,7 @@
     }
   },
   "dependencies": {
-    "@openrewrite/rewrite-remote": "^0.4.6",
+    "@openrewrite/rewrite-remote": "^0.5.0",
     "@jsonjoy.com/json-pack": "^1.1.0",
     "@types/node": "^22.5.4",
     "cbor": "^9.0.2",
