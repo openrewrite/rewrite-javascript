@@ -485,6 +485,14 @@ export class JavaScriptParserVisitor {
         return this.mapIdentifier(node, 'undefined');
     }
 
+    visitAnyKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'any');
+    }
+
+    visitUnknownKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'unknown');
+    }
+
     visitVoidKeyword(node: ts.Node) {
         return this.mapIdentifier(node, 'void');
     }
@@ -1566,11 +1574,50 @@ export class JavaScriptParserVisitor {
     }
 
     visitThrowStatement(node: ts.ThrowStatement) {
-        return this.visitUnknown(node);
+        return new J.Throw(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.visit(node.expression)
+        );
     }
 
     visitTryStatement(node: ts.TryStatement) {
-        return this.visitUnknown(node);
+        return new J.Try(
+          randomId(),
+          this.prefix(node),
+          Markers.EMPTY,
+          null,
+          this.visit(node.tryBlock),
+          node.catchClause ?
+          [new J.Try.Catch(
+              randomId(),
+              this.prefix(node.catchClause.getFirstToken()!),
+              Markers.EMPTY,
+              new J.ControlParentheses(
+                  randomId(),
+                  this.suffix(node.catchClause.getFirstToken()!),
+                  Markers.EMPTY,
+                  this.rightPadded(
+                      new J.VariableDeclarations(
+                          randomId(),
+                          this.prefix(node.catchClause.variableDeclaration!),
+                          Markers.EMPTY,
+                          [],
+                          [],
+                          this.mapTypeInfo(node.catchClause.variableDeclaration!),
+                          null,
+                          [],
+                          [this.rightPadded(this.visit(node.catchClause.variableDeclaration!), Space.EMPTY)]
+                      ),
+                      this.suffix(node.catchClause.variableDeclaration!))
+              ),
+              this.visit(node.catchClause?.block!)
+          )] : [],
+          node.finallyBlock ? this.leftPadded(
+              this.prefix(node.getChildren().find(n => n.kind === ts.SyntaxKind.FinallyKeyword)!), this.visit(node.finallyBlock))
+              : null
+        );
     }
 
     visitDebuggerStatement(node: ts.DebuggerStatement) {
