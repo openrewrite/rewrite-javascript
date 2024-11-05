@@ -14,6 +14,7 @@ import {
 } from "../core";
 import {binarySearch, compareTextSpans, getNextSibling, TextSpan} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
+import {SignatureDeclarationBase} from "typescript";
 
 export class JavaScriptParser extends Parser {
 
@@ -246,7 +247,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration | ts.PropertySignature ) {
+    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration | ts.PropertySignature | ts.ConstructorDeclaration) {
         if (ts.isVariableStatement(node)) {
             return [new J.Modifier(
                 randomId(),
@@ -264,7 +265,7 @@ export class JavaScriptParserVisitor {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isPropertySignature(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
-        } else if (ts.isFunctionDeclaration(node) || ts.isParameter(node) || ts.isMethodDeclaration(node)) {
+        } else if (ts.isFunctionDeclaration(node) || ts.isParameter(node) || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isVariableDeclarationList(node)) {
             let modifier: string | undefined;
@@ -796,7 +797,23 @@ export class JavaScriptParserVisitor {
     }
 
     visitConstructor(node: ts.ConstructorDeclaration) {
-        return this.visitUnknown(node);
+        return new J.MethodDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.mapDecorators(node),
+            this.mapModifiers(node),
+            null,
+            null,
+            new J.MethodDeclaration.IdentifierWithAnnotations(
+                this.mapIdentifier(node.getChildren().find(n => n.kind == ts.SyntaxKind.ConstructorKeyword)!, "constructor"), []
+            ),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+            null,
+            node.body ? this.convert<J.Block>(node.body) : null,
+            null,
+            this.mapMethodType(node)
+        );
     }
 
     visitGetAccessor(node: ts.GetAccessorDeclaration) {
@@ -1692,7 +1709,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private getParameterListNodes(node: ts.FunctionDeclaration | ts.MethodDeclaration | ts.MethodSignature) {
+    private getParameterListNodes(node: ts.SignatureDeclarationBase) {
         const children = node.getChildren(this.sourceFile);
         for (let i = 0; i < children.length; i++) {
             if (children[i].kind == ts.SyntaxKind.OpenParenToken) {
@@ -2329,7 +2346,7 @@ export class JavaScriptParserVisitor {
         return args;
     }
 
-    private mapDecorators(node: ts.ClassDeclaration | ts.FunctionDeclaration | ts.MethodDeclaration): J.Annotation[] {
+    private mapDecorators(node: ts.ClassDeclaration | ts.FunctionDeclaration | ts.MethodDeclaration | ts.ConstructorDeclaration): J.Annotation[] {
         return node.modifiers?.filter(ts.isDecorator)?.map(this.convert<J.Annotation>) ?? [];
     }
 
