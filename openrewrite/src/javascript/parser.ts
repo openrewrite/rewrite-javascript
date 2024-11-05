@@ -247,7 +247,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration | ts.PropertySignature | ts.ConstructorDeclaration) {
+    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration) {
         if (ts.isVariableStatement(node)) {
             return [new J.Modifier(
                 randomId(),
@@ -257,6 +257,8 @@ export class JavaScriptParserVisitor {
                 J.Modifier.Type.LanguageExtension,
                 []
             )];
+        } else if (ts.isModuleDeclaration(node)) {
+            return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isClassDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isEnumDeclaration(node) || ts.isInterfaceDeclaration(node)) {
@@ -1824,11 +1826,55 @@ export class JavaScriptParserVisitor {
     }
 
     visitModuleDeclaration(node: ts.ModuleDeclaration) {
-        return this.visitUnknown(node);
+        const body = this.visit(node.body as ts.Node);
+
+        const namespaceKeyword = this.findChildNode(node, ts.SyntaxKind.NamespaceKeyword);
+        if (body instanceof JS.NamespaceDeclaration) {
+            return new JS.NamespaceDeclaration(
+                randomId(),
+                Space.EMPTY,
+                Markers.EMPTY,
+                this.mapModifiers(node),
+                namespaceKeyword ? this.prefix(namespaceKeyword) : Space.EMPTY,
+                this.rightPadded(
+                        new J.FieldAccess(
+                            randomId(),
+                            this.prefix(node),
+                            Markers.EMPTY,
+                            this.visit(node.name),
+                            new J.JLeftPadded(
+                                this.suffix(node.name),
+                                body.name as J.Identifier,
+                                Markers.EMPTY
+                            ),
+                            null
+                        ),
+                    Space.EMPTY
+                ),
+                body.body
+            );
+        } else {
+            return new JS.NamespaceDeclaration(
+                randomId(),
+                node.parent.kind === ts.SyntaxKind.ModuleBlock ? this.prefix(node) : Space.EMPTY,
+                Markers.EMPTY,
+                this.mapModifiers(node),
+                namespaceKeyword ? this.prefix(namespaceKeyword) : Space.EMPTY,
+                this.rightPadded(this.convert(node.name), this.prefix(node)), // J.FieldAccess
+                body // J.Block
+            );
+        }
     }
 
     visitModuleBlock(node: ts.ModuleBlock) {
-        return this.visitUnknown(node);
+         return new J.Block(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.rightPadded(false, Space.EMPTY),
+            this.semicolonPaddedStatementList(node.statements),
+            this.prefix(node.getLastToken()!)
+        );
     }
 
     visitCaseBlock(node: ts.CaseBlock) {

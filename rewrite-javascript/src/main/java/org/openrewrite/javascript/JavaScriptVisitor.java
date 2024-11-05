@@ -593,4 +593,23 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         ti = ti.withTypeIdentifier(visitAndCast(ti.getTypeIdentifier(), p));
         return ti;
     }
+
+    public J visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, P p) {
+        JS.NamespaceDeclaration ns = namespaceDeclaration;
+        ns = ns.withPrefix(visitSpace(ns.getPrefix(), JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p));
+        ns = ns.withMarkers(visitMarkers(ns.getMarkers(), p));
+        ns = ns.withModifiers(ListUtils.map(ns.getModifiers(),
+                mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
+        ns = ns.withModifiers(ListUtils.map(ns.getModifiers(), m -> visitAndCast(m, p)));
+        Statement temp = (Statement) visitStatement(ns, p);
+        if (!(temp instanceof JS.NamespaceDeclaration)) {
+            return temp;
+        } else {
+            ns = (JS.NamespaceDeclaration) temp;
+        }
+        ns = ns.withNamespace(visitSpace(ns.getNamespace(), JsSpace.Location.NAMESPACE_KEYWORD_DECLARATION_PREFIX, p));
+        ns = ns.getPadding().withName(visitRightPadded(ns.getPadding().getName(), JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p));
+        ns = ns.withBody(visitAndCast(ns.getBody(), p));
+        return ns;
+    }
 }

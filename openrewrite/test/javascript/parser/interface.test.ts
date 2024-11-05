@@ -57,7 +57,7 @@ describe('as mapping', () => {
               interface HasLegs {
                   count: string;
               }
-              
+
               interface Animal {
                   name: string;
               }

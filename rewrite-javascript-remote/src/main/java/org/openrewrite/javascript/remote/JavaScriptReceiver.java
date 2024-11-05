@@ -374,6 +374,18 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, ReceiverContext ctx) {
+            namespaceDeclaration = namespaceDeclaration.withId(ctx.receiveNonNullValue(namespaceDeclaration.getId(), UUID.class));
+            namespaceDeclaration = namespaceDeclaration.withPrefix(ctx.receiveNonNullNode(namespaceDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
+            namespaceDeclaration = namespaceDeclaration.withMarkers(ctx.receiveNonNullNode(namespaceDeclaration.getMarkers(), ctx::receiveMarkers));
+            namespaceDeclaration = namespaceDeclaration.withModifiers(ctx.receiveNonNullNodes(namespaceDeclaration.getModifiers(), ctx::receiveTree));
+            namespaceDeclaration = namespaceDeclaration.withNamespace(ctx.receiveNonNullNode(namespaceDeclaration.getNamespace(), JavaScriptReceiver::receiveSpace));
+            namespaceDeclaration = namespaceDeclaration.getPadding().withName(ctx.receiveNonNullNode(namespaceDeclaration.getPadding().getName(), JavaScriptReceiver::receiveRightPaddedTree));
+            namespaceDeclaration = namespaceDeclaration.withBody(ctx.receiveNonNullNode(namespaceDeclaration.getBody(), ctx::receiveTree));
+            return namespaceDeclaration;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, ReceiverContext ctx) {
             annotatedType = annotatedType.withId(ctx.receiveNonNullValue(annotatedType.getId(), UUID.class));
             annotatedType = annotatedType.withPrefix(ctx.receiveNonNullNode(annotatedType.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1369,6 +1381,18 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree)
+                );
+            }
+
+            if (type == JS.NamespaceDeclaration.class) {
+                return (T) new JS.NamespaceDeclaration(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
                 );
             }

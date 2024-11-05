@@ -357,6 +357,18 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, SenderContext ctx) {
+            ctx.sendValue(namespaceDeclaration, JS.NamespaceDeclaration::getId);
+            ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getMarkers, ctx::sendMarkers);
+            ctx.sendNodes(namespaceDeclaration, JS.NamespaceDeclaration::getModifiers, ctx::sendTree, Tree::getId);
+            ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getNamespace, JavaScriptSender::sendSpace);
+            ctx.sendNode(namespaceDeclaration, e -> e.getPadding().getName(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getBody, ctx::sendTree);
+            return namespaceDeclaration;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, SenderContext ctx) {
             ctx.sendValue(annotatedType, J.AnnotatedType::getId);
             ctx.sendNode(annotatedType, J.AnnotatedType::getPrefix, JavaScriptSender::sendSpace);

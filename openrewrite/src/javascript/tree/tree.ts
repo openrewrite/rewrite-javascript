@@ -2409,3 +2409,104 @@ export class TypeInfo extends JSMixin(Object) implements Expression, TypeTree {
     }
 
 }
+
+@LstType("org.openrewrite.javascript.tree.JS$NamespaceDeclaration")
+export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], namespace: Space, name: JRightPadded<Expression>, body: Java.Block) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._modifiers = modifiers;
+        this._namespace = namespace;
+        this._name = name;
+        this._body = body;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): NamespaceDeclaration {
+            return id === this._id ? this : new NamespaceDeclaration(id, this._prefix, this._markers, this._modifiers, this._namespace, this._name, this._body);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): NamespaceDeclaration {
+            return prefix === this._prefix ? this : new NamespaceDeclaration(this._id, prefix, this._markers, this._modifiers, this._namespace, this._name, this._body);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): NamespaceDeclaration {
+            return markers === this._markers ? this : new NamespaceDeclaration(this._id, this._prefix, markers, this._modifiers, this._namespace, this._name, this._body);
+        }
+
+        private readonly _modifiers: Java.Modifier[];
+
+        public get modifiers(): Java.Modifier[] {
+            return this._modifiers;
+        }
+
+        public withModifiers(modifiers: Java.Modifier[]): NamespaceDeclaration {
+            return modifiers === this._modifiers ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, modifiers, this._namespace, this._name, this._body);
+        }
+
+        private readonly _namespace: Space;
+
+        public get namespace(): Space {
+            return this._namespace;
+        }
+
+        public withNamespace(namespace: Space): NamespaceDeclaration {
+            return namespace === this._namespace ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, this._modifiers, namespace, this._name, this._body);
+        }
+
+        private readonly _name: JRightPadded<Expression>;
+
+        public get name(): Expression {
+            return this._name.element;
+        }
+
+        public withName(name: Expression): NamespaceDeclaration {
+            return this.padding.withName(this._name.withElement(name));
+        }
+
+        private readonly _body: Java.Block;
+
+        public get body(): Java.Block {
+            return this._body;
+        }
+
+        public withBody(body: Java.Block): NamespaceDeclaration {
+            return body === this._body ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._namespace, this._name, body);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitNamespaceDeclaration(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get name(): JRightPadded<Expression> {
+                return t._name;
+            }
+            public withName(name: JRightPadded<Expression>): NamespaceDeclaration {
+                return t._name === name ? t : new NamespaceDeclaration(t._id, t._prefix, t._markers, t._modifiers, t._namespace, name, t._body);
+            }
+        }
+    }
+
+}

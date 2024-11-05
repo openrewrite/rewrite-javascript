@@ -37,12 +37,12 @@ describe('empty mapping', () => {
         );
     });
 
-    test.skip('namespace qualified name', () => {
+    test('namespace qualified name', () => {
         rewriteRun(
           //language=typescript
           typeScript(`
-              namespace TestNamespace { 
-                export class Test {} 
+              namespace TestNamespace {
+                export class Test {}
               };
               const value: TestNamespace.Test = null;
           `)
