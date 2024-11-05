@@ -374,18 +374,6 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
-        public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, ReceiverContext ctx) {
-            namespaceDeclaration = namespaceDeclaration.withId(ctx.receiveNonNullValue(namespaceDeclaration.getId(), UUID.class));
-            namespaceDeclaration = namespaceDeclaration.withPrefix(ctx.receiveNonNullNode(namespaceDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
-            namespaceDeclaration = namespaceDeclaration.withMarkers(ctx.receiveNonNullNode(namespaceDeclaration.getMarkers(), ctx::receiveMarkers));
-            namespaceDeclaration = namespaceDeclaration.withModifiers(ctx.receiveNonNullNodes(namespaceDeclaration.getModifiers(), ctx::receiveTree));
-            namespaceDeclaration = namespaceDeclaration.withNamespace(ctx.receiveNonNullNode(namespaceDeclaration.getNamespace(), JavaScriptReceiver::receiveSpace));
-            namespaceDeclaration = namespaceDeclaration.getPadding().withName(ctx.receiveNonNullNode(namespaceDeclaration.getPadding().getName(), JavaScriptReceiver::receiveRightPaddedTree));
-            namespaceDeclaration = namespaceDeclaration.withBody(ctx.receiveNonNullNode(namespaceDeclaration.getBody(), ctx::receiveTree));
-            return namespaceDeclaration;
-        }
-
-        @Override
         public JS.JSVariableDeclarations visitJSVariableDeclarations(JS.JSVariableDeclarations jSVariableDeclarations, ReceiverContext ctx) {
             jSVariableDeclarations = jSVariableDeclarations.withId(ctx.receiveNonNullValue(jSVariableDeclarations.getId(), UUID.class));
             jSVariableDeclarations = jSVariableDeclarations.withPrefix(ctx.receiveNonNullNode(jSVariableDeclarations.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -408,6 +396,18 @@ public class JavaScriptReceiver implements Receiver<JS> {
             jSNamedVariable = jSNamedVariable.getPadding().withInitializer(ctx.receiveNode(jSNamedVariable.getPadding().getInitializer(), JavaScriptReceiver::receiveLeftPaddedTree));
             jSNamedVariable = jSNamedVariable.withVariableType(ctx.receiveValue(jSNamedVariable.getVariableType(), JavaType.Variable.class));
             return jSNamedVariable;
+        }
+
+        @Override
+        public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, ReceiverContext ctx) {
+            namespaceDeclaration = namespaceDeclaration.withId(ctx.receiveNonNullValue(namespaceDeclaration.getId(), UUID.class));
+            namespaceDeclaration = namespaceDeclaration.withPrefix(ctx.receiveNonNullNode(namespaceDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
+            namespaceDeclaration = namespaceDeclaration.withMarkers(ctx.receiveNonNullNode(namespaceDeclaration.getMarkers(), ctx::receiveMarkers));
+            namespaceDeclaration = namespaceDeclaration.withModifiers(ctx.receiveNonNullNodes(namespaceDeclaration.getModifiers(), ctx::receiveTree));
+            namespaceDeclaration = namespaceDeclaration.withNamespace(ctx.receiveNonNullNode(namespaceDeclaration.getNamespace(), JavaScriptReceiver::receiveSpace));
+            namespaceDeclaration = namespaceDeclaration.getPadding().withName(ctx.receiveNonNullNode(namespaceDeclaration.getPadding().getName(), JavaScriptReceiver::receiveRightPaddedTree));
+            namespaceDeclaration = namespaceDeclaration.withBody(ctx.receiveNonNullNode(namespaceDeclaration.getBody(), ctx::receiveTree));
+            return namespaceDeclaration;
         }
 
         @Override
@@ -1407,6 +1407,31 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
+                );
+            }
+
+            if (type == JS.JSVariableDeclarations.class) {
+                return (T) new JS.JSVariableDeclarations(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
+                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
+                    ctx.receiveNode(null, ctx::receiveTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree)
+                );
+            }
+
+            if (type == JS.JSVariableDeclarations.JSNamedVariable.class) {
+                return (T) new JS.JSVariableDeclarations.JSNamedVariable(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNodes(null, leftPaddedNodeReceiver(org.openrewrite.java.tree.Space.class)),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
+                    ctx.receiveValue(null, JavaType.Variable.class)
                 );
             }
 
