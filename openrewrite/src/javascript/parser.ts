@@ -636,6 +636,37 @@ export class JavaScriptParserVisitor {
     }
 
     visitParameter(node: ts.ParameterDeclaration) {
+        if (node.questionToken) {
+            return new JS.JSVariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [],
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [this.rightPadded(
+                    new JS.JSVariableDeclarations.JSNamedVariable(
+                        randomId(),
+                        this.prefix(node.name),
+                        Markers.EMPTY,
+                        new JS.Unary(
+                            randomId(),
+                            Space.EMPTY,
+                            Markers.EMPTY,
+                            this.leftPadded(this.suffix(node.name), JS.Unary.Type.Optional),
+                            this.visit(node.name),
+                            this.mapType(node)
+                        ),
+                        [],
+                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
+                        this.mapVariableType(node)
+                    ),
+                    this.suffix(node.name)
+                )]
+            );
+        }
+
         return new J.VariableDeclarations(
             randomId(),
             this.prefix(node),

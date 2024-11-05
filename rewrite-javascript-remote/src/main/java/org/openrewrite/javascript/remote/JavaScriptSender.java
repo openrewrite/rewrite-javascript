@@ -357,6 +357,31 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.JSVariableDeclarations visitJSVariableDeclarations(JS.JSVariableDeclarations jSVariableDeclarations, SenderContext ctx) {
+            ctx.sendValue(jSVariableDeclarations, JS.JSVariableDeclarations::getId);
+            ctx.sendNode(jSVariableDeclarations, JS.JSVariableDeclarations::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jSVariableDeclarations, JS.JSVariableDeclarations::getMarkers, ctx::sendMarkers);
+            ctx.sendNodes(jSVariableDeclarations, JS.JSVariableDeclarations::getLeadingAnnotations, ctx::sendTree, Tree::getId);
+            ctx.sendNodes(jSVariableDeclarations, JS.JSVariableDeclarations::getModifiers, ctx::sendTree, Tree::getId);
+            ctx.sendNode(jSVariableDeclarations, JS.JSVariableDeclarations::getTypeExpression, ctx::sendTree);
+            ctx.sendNode(jSVariableDeclarations, JS.JSVariableDeclarations::getVarargs, JavaScriptSender::sendSpace);
+            ctx.sendNodes(jSVariableDeclarations, e -> e.getPadding().getVariables(), JavaScriptSender::sendRightPadded, e -> e.getElement().getId());
+            return jSVariableDeclarations;
+        }
+
+        @Override
+        public JS.JSVariableDeclarations.JSNamedVariable visitJSVariableDeclarationsJSNamedVariable(JS.JSVariableDeclarations.JSNamedVariable jSNamedVariable, SenderContext ctx) {
+            ctx.sendValue(jSNamedVariable, JS.JSVariableDeclarations.JSNamedVariable::getId);
+            ctx.sendNode(jSNamedVariable, JS.JSVariableDeclarations.JSNamedVariable::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jSNamedVariable, JS.JSVariableDeclarations.JSNamedVariable::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(jSNamedVariable, JS.JSVariableDeclarations.JSNamedVariable::getName, ctx::sendTree);
+            ctx.sendNodes(jSNamedVariable, JS.JSVariableDeclarations.JSNamedVariable::getDimensionsAfterName, JavaScriptSender::sendLeftPadded, Function.identity());
+            ctx.sendNode(jSNamedVariable, e -> e.getPadding().getInitializer(), JavaScriptSender::sendLeftPadded);
+            ctx.sendTypedValue(jSNamedVariable, JS.JSVariableDeclarations.JSNamedVariable::getVariableType);
+            return jSNamedVariable;
+        }
+
+        @Override
         public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, SenderContext ctx) {
             ctx.sendValue(namespaceDeclaration, JS.NamespaceDeclaration::getId);
             ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getPrefix, JavaScriptSender::sendSpace);

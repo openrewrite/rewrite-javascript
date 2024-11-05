@@ -33,6 +33,7 @@ public class JsRightPadded {
         TAG(JsSpace.Location.TAG_SUFFIX),
         TUPLE_ELEMENT_SUFFIX(JsSpace.Location.TUPLE_ELEMENT_SUFFIX),
         UNION_TYPE(JsSpace.Location.UNION_TYPE_SUFFIX),
+        JSNAMED_VARIABLE(JsSpace.Location.JSNAMED_VARIABLE_SUFFIX),
         NAMESPACE_DECLARATION_NAME(JsSpace.Location.NAMESPACE_DECLARATION_PREFIX);
 
         private final JsSpace.Location afterLocation;

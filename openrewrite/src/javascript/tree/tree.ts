@@ -2120,6 +2120,7 @@ export class Unary extends JSMixin(Object) implements Statement, Expression, Typ
 export namespace Unary {
     export enum Type {
             Spread = 0,
+            Optional = 1,
 
     }
 
@@ -2406,6 +2407,244 @@ export class TypeInfo extends JSMixin(Object) implements Expression, TypeTree {
 
     public withType(type: JavaType): TypeInfo {
         return extensions.withJavaType(this, type);
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JSVariableDeclarations")
+export class JSVariableDeclarations extends JSMixin(Object) implements Statement, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeExpression: TypeTree | null, varargs: Space | null, variables: JRightPadded<JSVariableDeclarations.JSNamedVariable>[]) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._leadingAnnotations = leadingAnnotations;
+        this._modifiers = modifiers;
+        this._typeExpression = typeExpression;
+        this._varargs = varargs;
+        this._variables = variables;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JSVariableDeclarations {
+            return id === this._id ? this : new JSVariableDeclarations(id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeExpression, this._varargs, this._variables);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JSVariableDeclarations {
+            return prefix === this._prefix ? this : new JSVariableDeclarations(this._id, prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeExpression, this._varargs, this._variables);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JSVariableDeclarations {
+            return markers === this._markers ? this : new JSVariableDeclarations(this._id, this._prefix, markers, this._leadingAnnotations, this._modifiers, this._typeExpression, this._varargs, this._variables);
+        }
+
+        private readonly _leadingAnnotations: Java.Annotation[];
+
+        public get leadingAnnotations(): Java.Annotation[] {
+            return this._leadingAnnotations;
+        }
+
+        public withLeadingAnnotations(leadingAnnotations: Java.Annotation[]): JSVariableDeclarations {
+            return leadingAnnotations === this._leadingAnnotations ? this : new JSVariableDeclarations(this._id, this._prefix, this._markers, leadingAnnotations, this._modifiers, this._typeExpression, this._varargs, this._variables);
+        }
+
+        private readonly _modifiers: Java.Modifier[];
+
+        public get modifiers(): Java.Modifier[] {
+            return this._modifiers;
+        }
+
+        public withModifiers(modifiers: Java.Modifier[]): JSVariableDeclarations {
+            return modifiers === this._modifiers ? this : new JSVariableDeclarations(this._id, this._prefix, this._markers, this._leadingAnnotations, modifiers, this._typeExpression, this._varargs, this._variables);
+        }
+
+        private readonly _typeExpression: TypeTree | null;
+
+        public get typeExpression(): TypeTree | null {
+            return this._typeExpression;
+        }
+
+        public withTypeExpression(typeExpression: TypeTree | null): JSVariableDeclarations {
+            return typeExpression === this._typeExpression ? this : new JSVariableDeclarations(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, typeExpression, this._varargs, this._variables);
+        }
+
+        private readonly _varargs: Space | null;
+
+        public get varargs(): Space | null {
+            return this._varargs;
+        }
+
+        public withVarargs(varargs: Space | null): JSVariableDeclarations {
+            return varargs === this._varargs ? this : new JSVariableDeclarations(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeExpression, varargs, this._variables);
+        }
+
+        private readonly _variables: JRightPadded<JSVariableDeclarations.JSNamedVariable>[];
+
+        public get variables(): JSVariableDeclarations.JSNamedVariable[] {
+            return JRightPadded.getElements(this._variables);
+        }
+
+        public withVariables(variables: JSVariableDeclarations.JSNamedVariable[]): JSVariableDeclarations {
+            return this.padding.withVariables(JRightPadded.withElements(this._variables, variables));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJSVariableDeclarations(this, p);
+    }
+
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): JSVariableDeclarations {
+        return extensions.withJavaType(this, type);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get variables(): JRightPadded<JSVariableDeclarations.JSNamedVariable>[] {
+                return t._variables;
+            }
+            public withVariables(variables: JRightPadded<JSVariableDeclarations.JSNamedVariable>[]): JSVariableDeclarations {
+                return t._variables === variables ? t : new JSVariableDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, t._varargs, variables);
+            }
+        }
+    }
+
+}
+
+export namespace JSVariableDeclarations {
+    @LstType("org.openrewrite.javascript.tree.JS$JSVariableDeclarations$JSNamedVariable")
+    export class JSNamedVariable extends JSMixin(Object) implements NameTree {
+        public constructor(id: UUID, prefix: Space, markers: Markers, name: Expression, dimensionsAfterName: JLeftPadded<Space>[], initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._name = name;
+            this._dimensionsAfterName = dimensionsAfterName;
+            this._initializer = initializer;
+            this._variableType = variableType;
+        }
+
+            private readonly _id: UUID;
+
+            public get id(): UUID {
+                return this._id;
+            }
+
+            public withId(id: UUID): JSVariableDeclarations.JSNamedVariable {
+                return id === this._id ? this : new JSVariableDeclarations.JSNamedVariable(id, this._prefix, this._markers, this._name, this._dimensionsAfterName, this._initializer, this._variableType);
+            }
+
+            private readonly _prefix: Space;
+
+            public get prefix(): Space {
+                return this._prefix;
+            }
+
+            public withPrefix(prefix: Space): JSVariableDeclarations.JSNamedVariable {
+                return prefix === this._prefix ? this : new JSVariableDeclarations.JSNamedVariable(this._id, prefix, this._markers, this._name, this._dimensionsAfterName, this._initializer, this._variableType);
+            }
+
+            private readonly _markers: Markers;
+
+            public get markers(): Markers {
+                return this._markers;
+            }
+
+            public withMarkers(markers: Markers): JSVariableDeclarations.JSNamedVariable {
+                return markers === this._markers ? this : new JSVariableDeclarations.JSNamedVariable(this._id, this._prefix, markers, this._name, this._dimensionsAfterName, this._initializer, this._variableType);
+            }
+
+            private readonly _name: Expression;
+
+            public get name(): Expression {
+                return this._name;
+            }
+
+            public withName(name: Expression): JSVariableDeclarations.JSNamedVariable {
+                return name === this._name ? this : new JSVariableDeclarations.JSNamedVariable(this._id, this._prefix, this._markers, name, this._dimensionsAfterName, this._initializer, this._variableType);
+            }
+
+            private readonly _dimensionsAfterName: JLeftPadded<Space>[];
+
+            public get dimensionsAfterName(): Space[] {
+                return JLeftPadded.getElements(this._dimensionsAfterName);
+            }
+
+            public withDimensionsAfterName(dimensionsAfterName: Space[]): JSVariableDeclarations.JSNamedVariable {
+                return this.padding.withDimensionsAfterName(JLeftPadded.withElements(this._dimensionsAfterName, dimensionsAfterName));
+            }
+
+            private readonly _initializer: JLeftPadded<Expression> | null;
+
+            public get initializer(): Expression | null {
+                return this._initializer === null ? null : this._initializer.element;
+            }
+
+            public withInitializer(initializer: Expression | null): JSVariableDeclarations.JSNamedVariable {
+                return this.padding.withInitializer(JLeftPadded.withElement(this._initializer, initializer));
+            }
+
+            private readonly _variableType: JavaType.Variable | null;
+
+            public get variableType(): JavaType.Variable | null {
+                return this._variableType;
+            }
+
+            public withVariableType(variableType: JavaType.Variable | null): JSVariableDeclarations.JSNamedVariable {
+                return variableType === this._variableType ? this : new JSVariableDeclarations.JSNamedVariable(this._id, this._prefix, this._markers, this._name, this._dimensionsAfterName, this._initializer, variableType);
+            }
+
+        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+            return v.visitJSVariableDeclarationsJSNamedVariable(this, p);
+        }
+
+        public get type(): JavaType | null {
+            return extensions.getJavaType(this);
+        }
+
+        public withType(type: JavaType): JSVariableDeclarations.JSNamedVariable {
+            return extensions.withJavaType(this, type);
+        }
+
+        get padding() {
+            const t = this;
+            return new class {
+                public get dimensionsAfterName(): JLeftPadded<Space>[] {
+                    return t._dimensionsAfterName;
+                }
+                public withDimensionsAfterName(dimensionsAfterName: JLeftPadded<Space>[]): JSVariableDeclarations.JSNamedVariable {
+                    return t._dimensionsAfterName === dimensionsAfterName ? t : new JSVariableDeclarations.JSNamedVariable(t._id, t._prefix, t._markers, t._name, dimensionsAfterName, t._initializer, t._variableType);
+                }
+                public get initializer(): JLeftPadded<Expression> | null {
+                    return t._initializer;
+                }
+                public withInitializer(initializer: JLeftPadded<Expression> | null): JSVariableDeclarations.JSNamedVariable {
+                    return t._initializer === initializer ? t : new JSVariableDeclarations.JSNamedVariable(t._id, t._prefix, t._markers, t._name, t._dimensionsAfterName, initializer, t._variableType);
+                }
+            }
+        }
+
     }
 
 }

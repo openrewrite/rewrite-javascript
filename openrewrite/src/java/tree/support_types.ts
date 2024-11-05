@@ -373,10 +373,64 @@ export class JLeftPadded<T> {
         this._markers = markers;
     }
 
+    static getElements<T>(ls: Array<JLeftPadded<T>>): Array<T> {
+        if (ls == null) {
+            return [];
+        }
+        const list = new Array<T>(ls.length);
+        for (let l of ls) {
+            if (l == null) {
+                continue;
+            }
+            const elem = l.element;
+            list.push(elem);
+        }
+        return list;
+    }
+
     static withElement<T>(before: JLeftPadded<T> | null, element: T | null): JLeftPadded<T> | null {
         if (element == null) return null;
         if (before == null) return new JLeftPadded<T>(Space.EMPTY, element, Markers.EMPTY);
         return before.withElement(element);
+    }
+
+    static withElements<T>(before: JLeftPadded<T>[], elements: T[]): JLeftPadded<T>[] {
+        // a cheaper check for the most common case when there are no changes
+        if (elements.length === before.length) {
+            let hasChanges = false;
+            for (let i = 0; i < before.length; i++) {
+                if (before[i].element !== elements[i]) {
+                    hasChanges = true;
+                    break;
+                }
+            }
+            if (!hasChanges) {
+                return before;
+            }
+        } else if (elements.length === 0) {
+            return [];
+        }
+
+        const after: JLeftPadded<T>[] = new Array<JLeftPadded<T>>();
+        const beforeById: Map<T, JLeftPadded<T>> = new Map();
+
+        for (const j of before) {
+            if (beforeById.has(j.element)) {
+                throw new Error("Duplicate key");
+            }
+            beforeById.set(j.element, j);
+        }
+
+        for (const t of elements) {
+            const found = beforeById.get(t);
+            if (found) {
+                after.push(found.withElement(t));
+            } else {
+                after.push(new JLeftPadded<T>(Space.EMPTY, t, Markers.EMPTY));
+            }
+        }
+
+        return after;
     }
 
     private readonly _before: Space;

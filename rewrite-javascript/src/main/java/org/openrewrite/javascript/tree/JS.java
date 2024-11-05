@@ -1921,7 +1921,9 @@ public interface JS extends J {
 
         @SuppressWarnings("SwitchStatementWithTooFewBranches")
         public enum Type {
-            Spread;
+            Spread,
+            Optional,
+            ;
 
             public boolean isModifying() {
                 switch (this) {
@@ -2143,6 +2145,233 @@ public interface JS extends J {
         @Override
         public CoordinateBuilder.Expression getCoordinates() {
             return new CoordinateBuilder.Expression(this);
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class JSVariableDeclarations implements JS, Statement, TypedTree {
+        @Nullable
+        @NonFinal
+        transient WeakReference<Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        List<Annotation> leadingAnnotations;
+
+        @With
+        @Getter
+        List<Modifier> modifiers;
+
+        @With
+        @Nullable
+        @Getter
+        TypeTree typeExpression;
+
+        @With
+        @Nullable
+        @Getter
+        Space varargs;
+
+        List<JRightPadded<JSNamedVariable>> variables;
+
+        public List<JSNamedVariable> getVariables() {
+            return JRightPadded.getElements(variables);
+        }
+
+        public JSVariableDeclarations withVariables(List<JSNamedVariable> vars) {
+            return getPadding().withVariables(JRightPadded.withElements(this.variables, vars));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJSVariableDeclarations(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public JavaType.@Nullable FullyQualified getTypeAsFullyQualified() {
+            return typeExpression == null ? null : TypeUtils.asFullyQualified(typeExpression.getType());
+        }
+
+        @Override
+        public @Nullable JavaType getType() {
+            return typeExpression == null ? null : typeExpression.getType();
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public JSVariableDeclarations withType(@Nullable JavaType type) {
+            return typeExpression == null ? this :
+                    withTypeExpression(typeExpression.withType(type));
+        }
+
+        @Override
+        public String toString() {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
+        }
+
+        @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+        @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+        @RequiredArgsConstructor
+        @AllArgsConstructor(access = AccessLevel.PRIVATE)
+        public static final class JSNamedVariable implements JS, NameTree {
+            @Nullable
+            @NonFinal
+            transient WeakReference<JSNamedVariable.Padding> padding;
+
+            @With
+            @EqualsAndHashCode.Include
+            @Getter
+            UUID id;
+
+            @With
+            @Getter
+            Space prefix;
+
+            @With
+            @Getter
+            Markers markers;
+
+            @With
+            @Getter
+            Expression name;
+
+            @With
+            @Getter
+            List<JLeftPadded<Space>> dimensionsAfterName;
+
+            @Nullable
+            JLeftPadded<Expression> initializer;
+
+            public @Nullable Expression getInitializer() {
+                return initializer == null ? null : initializer.getElement();
+            }
+
+            public JSNamedVariable withInitializer(@Nullable Expression initializer) {
+                if (initializer == null) {
+                    return this.initializer == null ? this : new JSNamedVariable(id, prefix, markers, name, dimensionsAfterName, null, variableType);
+                }
+                return getPadding().withInitializer(JLeftPadded.withElement(this.initializer, initializer));
+            }
+
+            @With
+            @Getter
+            JavaType.@Nullable Variable variableType;
+
+            @Override
+            public JavaType getType() {
+                return variableType != null ? variableType.getType() : null;
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public JSNamedVariable withType(@Nullable JavaType type) {
+                return variableType != null ? withVariableType(variableType.withType(type)) : this;
+            }
+
+            @Override
+            public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+                return v.visitJSVariableDeclarationsJSNamedVariable(this, p);
+            }
+
+            public Cursor getDeclaringScope(Cursor cursor) {
+                return cursor.dropParentUntil(it ->
+                        it instanceof J.Block ||
+                                it instanceof J.Lambda ||
+                                it instanceof J.MethodDeclaration ||
+                                it == Cursor.ROOT_VALUE);
+            }
+
+            public boolean isField(Cursor cursor) {
+                Cursor declaringScope = getDeclaringScope(cursor);
+                return declaringScope.getValue() instanceof J.Block &&
+                        declaringScope.getParentTreeCursor().getValue() instanceof J.ClassDeclaration;
+            }
+
+            public JSNamedVariable.Padding getPadding() {
+                JSNamedVariable.Padding p;
+                if (this.padding == null) {
+                    p = new JSNamedVariable.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                } else {
+                    p = this.padding.get();
+                    if (p == null || p.t != this) {
+                        p = new JSNamedVariable.Padding(this);
+                        this.padding = new WeakReference<>(p);
+                    }
+                }
+                return p;
+            }
+
+            @Override
+            public String toString() {
+                return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
+            }
+
+            @RequiredArgsConstructor
+            public static class Padding {
+                private final JSNamedVariable t;
+
+                public @Nullable JLeftPadded<Expression> getInitializer() {
+                    return t.initializer;
+                }
+
+                public JSNamedVariable withInitializer(@Nullable JLeftPadded<Expression> initializer) {
+                    return t.initializer == initializer ? t : new JSNamedVariable(t.id, t.prefix, t.markers, t.name, t.dimensionsAfterName, initializer, t.variableType);
+                }
+            }
+        }
+
+        public boolean hasModifier(Modifier.Type modifier) {
+            return Modifier.hasModifier(getModifiers(), modifier);
+        }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JSVariableDeclarations t;
+
+            public List<JRightPadded<JSNamedVariable>> getVariables() {
+                return t.variables;
+            }
+
+            public JSVariableDeclarations withVariables(List<JRightPadded<JSNamedVariable>> variables) {
+                return t.variables == variables ? t : new JSVariableDeclarations(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.typeExpression, t.varargs, variables);
+            }
         }
     }
 
