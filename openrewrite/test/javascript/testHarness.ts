@@ -1,6 +1,6 @@
 // for side-effects (`java` must come after `javascript`)
-import "../../dist/src/javascript/remote";
-import "../../dist/src/java/remote";
+import {registerCodecs as registerJsCodecs} from "../../dist/src/javascript/remote";
+import {registerCodecs as registerJavaCodecs} from "../../dist/src/java/remote";
 
 import {
     Cursor,
@@ -16,7 +16,7 @@ import {
 import * as J from "../../dist/src/java/tree";
 import * as JS from "../../dist/src/javascript/tree";
 import dedent from "dedent";
-import {RemotePrinterFactory, RemotingContext} from "@openrewrite/rewrite-remote";
+import {ReceiverContext, RemotePrinterFactory, RemotingContext, SenderContext} from "@openrewrite/rewrite-remote";
 import net from "net";
 import {JavaScriptParser, JavaScriptVisitor} from "../../dist/src/javascript";
 import {ChildProcessWithoutNullStreams, spawn} from "node:child_process";
@@ -29,6 +29,9 @@ export interface RewriteTestOptions {
 }
 
 export type SourceSpec = (options: RewriteTestOptions) => void;
+
+registerJsCodecs(SenderContext, ReceiverContext, RemotingContext)
+registerJavaCodecs(SenderContext, ReceiverContext, RemotingContext)
 
 let client: net.Socket;
 let remoting: RemotingContext;

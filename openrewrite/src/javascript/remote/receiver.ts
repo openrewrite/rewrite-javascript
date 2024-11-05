@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, NamespaceDeclaration} from '../tree';
+import {JS, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, NamespaceDeclaration, JSVariableDeclarations} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -298,6 +298,29 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         typeInfo = typeInfo.withMarkers(ctx.receiveNode(typeInfo.markers, ctx.receiveMarkers)!);
         typeInfo = typeInfo.withTypeIdentifier(ctx.receiveNode(typeInfo.typeIdentifier, ctx.receiveTree)!);
         return typeInfo;
+    }
+
+    public visitJSVariableDeclarations(jSVariableDeclarations: JSVariableDeclarations, ctx: ReceiverContext): J {
+        jSVariableDeclarations = jSVariableDeclarations.withId(ctx.receiveValue(jSVariableDeclarations.id, ValueType.UUID)!);
+        jSVariableDeclarations = jSVariableDeclarations.withPrefix(ctx.receiveNode(jSVariableDeclarations.prefix, receiveSpace)!);
+        jSVariableDeclarations = jSVariableDeclarations.withMarkers(ctx.receiveNode(jSVariableDeclarations.markers, ctx.receiveMarkers)!);
+        jSVariableDeclarations = jSVariableDeclarations.withLeadingAnnotations(ctx.receiveNodes(jSVariableDeclarations.leadingAnnotations, ctx.receiveTree)!);
+        jSVariableDeclarations = jSVariableDeclarations.withModifiers(ctx.receiveNodes(jSVariableDeclarations.modifiers, ctx.receiveTree)!);
+        jSVariableDeclarations = jSVariableDeclarations.withTypeExpression(ctx.receiveNode(jSVariableDeclarations.typeExpression, ctx.receiveTree));
+        jSVariableDeclarations = jSVariableDeclarations.withVarargs(ctx.receiveNode(jSVariableDeclarations.varargs, receiveSpace));
+        jSVariableDeclarations = jSVariableDeclarations.padding.withVariables(ctx.receiveNodes(jSVariableDeclarations.padding.variables, receiveRightPaddedTree)!);
+        return jSVariableDeclarations;
+    }
+
+    public visitJSVariableDeclarationsJSNamedVariable(jSNamedVariable: JSVariableDeclarations.JSNamedVariable, ctx: ReceiverContext): J {
+        jSNamedVariable = jSNamedVariable.withId(ctx.receiveValue(jSNamedVariable.id, ValueType.UUID)!);
+        jSNamedVariable = jSNamedVariable.withPrefix(ctx.receiveNode(jSNamedVariable.prefix, receiveSpace)!);
+        jSNamedVariable = jSNamedVariable.withMarkers(ctx.receiveNode(jSNamedVariable.markers, ctx.receiveMarkers)!);
+        jSNamedVariable = jSNamedVariable.withName(ctx.receiveNode(jSNamedVariable.name, ctx.receiveTree)!);
+        jSNamedVariable = jSNamedVariable.padding.withDimensionsAfterName(ctx.receiveNodes(jSNamedVariable.padding.dimensionsAfterName, leftPaddedNodeReceiver(Space))!);
+        jSNamedVariable = jSNamedVariable.padding.withInitializer(ctx.receiveNode(jSNamedVariable.padding.initializer, receiveLeftPaddedTree));
+        jSNamedVariable = jSNamedVariable.withVariableType(ctx.receiveValue(jSNamedVariable.variableType, ValueType.Object));
+        return jSNamedVariable;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, ctx: ReceiverContext): J {
@@ -1278,6 +1301,31 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<TypeTree>(null, ctx.receiveTree)!
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$JSVariableDeclarations") {
+            return new JSVariableDeclarations(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNodes<Java.Annotation>(null, ctx.receiveTree)!,
+                ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
+                ctx.receiveNode<TypeTree>(null, ctx.receiveTree),
+                ctx.receiveNode(null, receiveSpace),
+                ctx.receiveNodes(null, receiveRightPaddedTree)!
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$JSVariableDeclarations$JSNamedVariable") {
+            return new JSVariableDeclarations.JSNamedVariable(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveNodes(null, leftPaddedNodeReceiver(Space))!,
+                ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree),
+                ctx.receiveValue(null, ValueType.Object)
             );
         }
 

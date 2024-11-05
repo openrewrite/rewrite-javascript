@@ -594,6 +594,37 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return ti;
     }
 
+    public J visitJSVariableDeclarations(JS.JSVariableDeclarations multiVariable, P p) {
+        JS.JSVariableDeclarations m = multiVariable.withPrefix(this.visitSpace(multiVariable.getPrefix(), JsSpace.Location.JSVARIABLE_DECLARATIONS_PREFIX, p));
+        m = m.withMarkers(this.visitMarkers(m.getMarkers(), p));
+        Statement temp = (Statement)this.visitStatement(m, p);
+        if (!(temp instanceof J.VariableDeclarations)) {
+            return temp;
+        } else {
+            m = (JS.JSVariableDeclarations)temp;
+            m = m.withLeadingAnnotations(ListUtils.map(m.getLeadingAnnotations(), (a) -> this.visitAndCast(a, p)));
+            m = m.withModifiers(Objects.requireNonNull(ListUtils.map(m.getModifiers(), (e) -> (J.Modifier)this.visitAndCast(e, p))));
+            m = m.withTypeExpression(this.visitAndCast(m.getTypeExpression(), p));
+            m = m.withTypeExpression(m.getTypeExpression() == null ? null : this.visitTypeName(m.getTypeExpression(), p));
+            m = m.withVarargs(m.getVarargs() == null ? null : this.visitSpace(m.getVarargs(), Space.Location.VARARGS, p));
+            m = m.getPadding().withVariables(ListUtils.map(m.getPadding().getVariables(), (t) -> this.visitRightPadded(t, JsRightPadded.Location.JSNAMED_VARIABLE, p)));
+            return m;
+        }
+    }
+
+    public J visitJSVariableDeclarationsJSNamedVariable(JS.JSVariableDeclarations.JSNamedVariable variable, P p) {
+        JS.JSVariableDeclarations.JSNamedVariable v = variable.withPrefix(this.visitSpace(variable.getPrefix(), JsSpace.Location.JSVARIABLE_PREFIX, p));
+        v = v.withMarkers(this.visitMarkers(v.getMarkers(), p));
+        v = v.withName(this.visitAndCast(v.getName(), p));
+        v = v.withDimensionsAfterName(ListUtils.map(v.getDimensionsAfterName(), (dim) -> dim.withBefore(this.visitSpace(dim.getBefore(), Space.Location.DIMENSION_PREFIX, p)).withElement(this.visitSpace((Space)dim.getElement(), Space.Location.DIMENSION, p))));
+        if (v.getPadding().getInitializer() != null) {
+            v = v.getPadding().withInitializer(this.visitLeftPadded(v.getPadding().getInitializer(), JsLeftPadded.Location.JSVARIABLE_INITIALIZER, p));
+        }
+
+        v = v.withVariableType((JavaType.Variable)this.visitType(v.getVariableType(), p));
+        return v;
+    }
+
     public J visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, P p) {
         JS.NamespaceDeclaration ns = namespaceDeclaration;
         ns = ns.withPrefix(visitSpace(ns.getPrefix(), JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p));

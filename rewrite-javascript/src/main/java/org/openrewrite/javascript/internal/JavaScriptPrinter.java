@@ -398,6 +398,11 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 p.append("...");
                 visit(unary.getExpression(), p);
                 break;
+            case Optional:
+                visit(unary.getExpression(), p);
+                visitSpace(unary.getPadding().getOperator().getBefore(), Space.Location.UNARY_OPERATOR, p);
+                p.append("?");
+                break;
             default:
                 break;
         }
@@ -449,6 +454,52 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         afterSyntax(typeInfo, p);
 
         return typeInfo;
+    }
+
+    @Override
+    public J visitJSVariableDeclarations(JS.JSVariableDeclarations multiVariable, PrintOutputCapture<P> p) {
+        beforeSyntax(multiVariable, JsSpace.Location.JSVARIABLE_DECLARATIONS_PREFIX, p);
+        visit(multiVariable.getLeadingAnnotations(), p);
+        multiVariable.getModifiers().forEach(it -> visitModifier(it, p));
+
+        List<JRightPadded<JS.JSVariableDeclarations.JSNamedVariable>> variables = multiVariable.getPadding().getVariables();
+        for (int i = 0; i < variables.size(); i++) {
+            JRightPadded<JS.JSVariableDeclarations.JSNamedVariable> variable = variables.get(i);
+            beforeSyntax(variable.getElement(), JsSpace.Location.JSVARIABLE_PREFIX, p);
+            if (multiVariable.getVarargs() != null) {
+                p.append("...");
+            }
+            visit(variable.getElement().getName(), p);
+            visitSpace(variable.getAfter(), JsSpace.Location.JSNAMED_VARIABLE_SUFFIX, p);
+            if (multiVariable.getTypeExpression() != null) {
+                visit(multiVariable.getTypeExpression(), p);
+            }
+
+            if (variable.getElement().getInitializer() != null) {
+                JavaScriptPrinter.this.visitLeftPadded("=",
+                        variable.getElement().getPadding().getInitializer(), JsLeftPadded.Location.JSVARIABLE_INITIALIZER, p);
+            }
+
+            afterSyntax(variable.getElement(), p);
+            if (i < variables.size() - 1) {
+                p.append(",");
+            } else if (variable.getMarkers().findFirst(Semicolon.class).isPresent()) {
+                p.append(";");
+            }
+        }
+
+        afterSyntax(multiVariable, p);
+        return multiVariable;
+    }
+
+    @Override
+    public J visitJSVariableDeclarationsJSNamedVariable(JS.JSVariableDeclarations.JSNamedVariable variable, PrintOutputCapture<P> p) {
+        beforeSyntax(variable, JsSpace.Location.JSVARIABLE_PREFIX, p);
+        visit(variable.getName(), p);
+        JLeftPadded<Expression> initializer = variable.getPadding().getInitializer();
+        visitLeftPadded("=", initializer, JsLeftPadded.Location.JSVARIABLE_INITIALIZER, p);
+        afterSyntax(variable, p);
+        return variable;
     }
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {

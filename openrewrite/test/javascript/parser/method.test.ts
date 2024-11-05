@@ -96,6 +96,19 @@ describe('method mapping', () => {
         );
     });
 
+    test('optional parameter with trailing comma', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class Handler {
+                    test(      input   ?    :  string    , ) {
+                        // hello world comment
+                    }
+                }
+            `)
+        );
+    });
+
     test('type parameters', () => {
         rewriteRun(
           //language=typescript

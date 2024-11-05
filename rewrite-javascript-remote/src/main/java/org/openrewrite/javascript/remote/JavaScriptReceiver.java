@@ -386,6 +386,31 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.JSVariableDeclarations visitJSVariableDeclarations(JS.JSVariableDeclarations jSVariableDeclarations, ReceiverContext ctx) {
+            jSVariableDeclarations = jSVariableDeclarations.withId(ctx.receiveNonNullValue(jSVariableDeclarations.getId(), UUID.class));
+            jSVariableDeclarations = jSVariableDeclarations.withPrefix(ctx.receiveNonNullNode(jSVariableDeclarations.getPrefix(), JavaScriptReceiver::receiveSpace));
+            jSVariableDeclarations = jSVariableDeclarations.withMarkers(ctx.receiveNonNullNode(jSVariableDeclarations.getMarkers(), ctx::receiveMarkers));
+            jSVariableDeclarations = jSVariableDeclarations.withLeadingAnnotations(ctx.receiveNonNullNodes(jSVariableDeclarations.getLeadingAnnotations(), ctx::receiveTree));
+            jSVariableDeclarations = jSVariableDeclarations.withModifiers(ctx.receiveNonNullNodes(jSVariableDeclarations.getModifiers(), ctx::receiveTree));
+            jSVariableDeclarations = jSVariableDeclarations.withTypeExpression(ctx.receiveNode(jSVariableDeclarations.getTypeExpression(), ctx::receiveTree));
+            jSVariableDeclarations = jSVariableDeclarations.withVarargs(ctx.receiveNode(jSVariableDeclarations.getVarargs(), JavaScriptReceiver::receiveSpace));
+            jSVariableDeclarations = jSVariableDeclarations.getPadding().withVariables(ctx.receiveNonNullNodes(jSVariableDeclarations.getPadding().getVariables(), JavaScriptReceiver::receiveRightPaddedTree));
+            return jSVariableDeclarations;
+        }
+
+        @Override
+        public JS.JSVariableDeclarations.JSNamedVariable visitJSVariableDeclarationsJSNamedVariable(JS.JSVariableDeclarations.JSNamedVariable jSNamedVariable, ReceiverContext ctx) {
+            jSNamedVariable = jSNamedVariable.withId(ctx.receiveNonNullValue(jSNamedVariable.getId(), UUID.class));
+            jSNamedVariable = jSNamedVariable.withPrefix(ctx.receiveNonNullNode(jSNamedVariable.getPrefix(), JavaScriptReceiver::receiveSpace));
+            jSNamedVariable = jSNamedVariable.withMarkers(ctx.receiveNonNullNode(jSNamedVariable.getMarkers(), ctx::receiveMarkers));
+            jSNamedVariable = jSNamedVariable.withName(ctx.receiveNonNullNode(jSNamedVariable.getName(), ctx::receiveTree));
+            jSNamedVariable = jSNamedVariable.withDimensionsAfterName(ctx.receiveNonNullNodes(jSNamedVariable.getDimensionsAfterName(), leftPaddedNodeReceiver(org.openrewrite.java.tree.Space.class)));
+            jSNamedVariable = jSNamedVariable.getPadding().withInitializer(ctx.receiveNode(jSNamedVariable.getPadding().getInitializer(), JavaScriptReceiver::receiveLeftPaddedTree));
+            jSNamedVariable = jSNamedVariable.withVariableType(ctx.receiveValue(jSNamedVariable.getVariableType(), JavaType.Variable.class));
+            return jSNamedVariable;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, ReceiverContext ctx) {
             annotatedType = annotatedType.withId(ctx.receiveNonNullValue(annotatedType.getId(), UUID.class));
             annotatedType = annotatedType.withPrefix(ctx.receiveNonNullNode(annotatedType.getPrefix(), JavaScriptReceiver::receiveSpace));

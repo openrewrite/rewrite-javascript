@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, NamespaceDeclaration} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, NamespaceDeclaration, JSVariableDeclarations} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -393,6 +393,32 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         typeInfo = typeInfo.withMarkers(this.visitMarkers(typeInfo.markers, p));
         typeInfo = typeInfo.withTypeIdentifier(this.visitAndCast(typeInfo.typeIdentifier, p)!);
         return typeInfo;
+    }
+
+    public visitJSVariableDeclarations(jSVariableDeclarations: JSVariableDeclarations, p: P): J | null {
+        jSVariableDeclarations = jSVariableDeclarations.withPrefix(this.visitJsSpace(jSVariableDeclarations.prefix, JsSpace.Location.JSVARIABLE_DECLARATIONS_PREFIX, p)!);
+        let tempStatement = this.visitStatement(jSVariableDeclarations, p) as Statement;
+        if (!(tempStatement instanceof JSVariableDeclarations))
+        {
+            return tempStatement;
+        }
+        jSVariableDeclarations = tempStatement as JSVariableDeclarations;
+        jSVariableDeclarations = jSVariableDeclarations.withMarkers(this.visitMarkers(jSVariableDeclarations.markers, p));
+        jSVariableDeclarations = jSVariableDeclarations.withLeadingAnnotations(ListUtils.map(jSVariableDeclarations.leadingAnnotations, el => this.visitAndCast(el, p)));
+        jSVariableDeclarations = jSVariableDeclarations.withModifiers(ListUtils.map(jSVariableDeclarations.modifiers, el => this.visitAndCast(el, p)));
+        jSVariableDeclarations = jSVariableDeclarations.withTypeExpression(this.visitAndCast(jSVariableDeclarations.typeExpression, p));
+        jSVariableDeclarations = jSVariableDeclarations.withVarargs(this.visitJsSpace(jSVariableDeclarations.varargs, JsSpace.Location.JSVARIABLE_DECLARATIONS_VARARGS, p));
+        jSVariableDeclarations = jSVariableDeclarations.padding.withVariables(ListUtils.map(jSVariableDeclarations.padding.variables, el => this.visitJsRightPadded(el, JsRightPadded.Location.JSVARIABLE_DECLARATIONS_VARIABLES, p)));
+        return jSVariableDeclarations;
+    }
+
+    public visitJSVariableDeclarationsJSNamedVariable(jSNamedVariable: JSVariableDeclarations.JSNamedVariable, p: P): J | null {
+        jSNamedVariable = jSNamedVariable.withPrefix(this.visitJsSpace(jSNamedVariable.prefix, JsSpace.Location.JSVARIABLE_DECLARATIONS_JSNAMED_VARIABLE_PREFIX, p)!);
+        jSNamedVariable = jSNamedVariable.withMarkers(this.visitMarkers(jSNamedVariable.markers, p));
+        jSNamedVariable = jSNamedVariable.withName(this.visitAndCast(jSNamedVariable.name, p)!);
+        jSNamedVariable = jSNamedVariable.padding.withDimensionsAfterName(ListUtils.map(jSNamedVariable.padding.dimensionsAfterName, el => this.visitJsLeftPadded(el, JsLeftPadded.Location.JSVARIABLE_DECLARATIONS_JSNAMED_VARIABLE_DIMENSIONS_AFTER_NAME, p)));
+        jSNamedVariable = jSNamedVariable.padding.withInitializer(this.visitJsLeftPadded(jSNamedVariable.padding.initializer, JsLeftPadded.Location.JSVARIABLE_DECLARATIONS_JSNAMED_VARIABLE_INITIALIZER, p));
+        return jSNamedVariable;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, p: P): J | null {
