@@ -25,7 +25,9 @@ public class JsContainer {
         EXPORT_ELEMENT(JsSpace.Location.EXPORT_ELEMENTS, JsRightPadded.Location.EXPORT_ELEMENT_SUFFIX),
         FUNCTION_TYPE_PARAMETER(JsSpace.Location.FUNCTION_TYPE_PARAMETERS, JsRightPadded.Location.FUNCTION_TYPE_PARAMETER_SUFFIX),
         IMPORT_ELEMENT(JsSpace.Location.IMPORT_ELEMENTS, JsRightPadded.Location.IMPORT_ELEMENT_SUFFIX),
-        TUPLE_ELEMENT(JsSpace.Location.TUPLE_ELEMENT, JsRightPadded.Location.TUPLE_ELEMENT_SUFFIX);
+        TUPLE_ELEMENT(JsSpace.Location.TUPLE_ELEMENT, JsRightPadded.Location.TUPLE_ELEMENT_SUFFIX),
+        JSMETHOD_DECLARATION_PARAMETERS(JsSpace.Location.JSMETHOD_DECLARATION_PARAMETERS, JsRightPadded.Location.JSMETHOD_DECLARATION_PARAMETER),
+        ;
 
         private final JsSpace.Location beforeLocation;
         private final JsRightPadded.Location elementLocation;

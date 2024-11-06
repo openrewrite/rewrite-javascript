@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, NamespaceDeclaration} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -419,6 +419,27 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         jSNamedVariable = jSNamedVariable.padding.withDimensionsAfterName(ListUtils.map(jSNamedVariable.padding.dimensionsAfterName, el => this.visitJsLeftPadded(el, JsLeftPadded.Location.JSVARIABLE_DECLARATIONS_JSNAMED_VARIABLE_DIMENSIONS_AFTER_NAME, p)));
         jSNamedVariable = jSNamedVariable.padding.withInitializer(this.visitJsLeftPadded(jSNamedVariable.padding.initializer, JsLeftPadded.Location.JSVARIABLE_DECLARATIONS_JSNAMED_VARIABLE_INITIALIZER, p));
         return jSNamedVariable;
+    }
+
+    public visitJSMethodDeclaration(jSMethodDeclaration: JSMethodDeclaration, p: P): J | null {
+        jSMethodDeclaration = jSMethodDeclaration.withPrefix(this.visitJsSpace(jSMethodDeclaration.prefix, JsSpace.Location.JSMETHOD_DECLARATION_PREFIX, p)!);
+        let tempStatement = this.visitStatement(jSMethodDeclaration, p) as Statement;
+        if (!(tempStatement instanceof JSMethodDeclaration))
+        {
+            return tempStatement;
+        }
+        jSMethodDeclaration = tempStatement as JSMethodDeclaration;
+        jSMethodDeclaration = jSMethodDeclaration.withMarkers(this.visitMarkers(jSMethodDeclaration.markers, p));
+        jSMethodDeclaration = jSMethodDeclaration.withLeadingAnnotations(ListUtils.map(jSMethodDeclaration.leadingAnnotations, el => this.visitAndCast(el, p)));
+        jSMethodDeclaration = jSMethodDeclaration.withModifiers(ListUtils.map(jSMethodDeclaration.modifiers, el => this.visitAndCast(el, p)));
+        jSMethodDeclaration = jSMethodDeclaration.withTypeParameters(this.visitAndCast(jSMethodDeclaration.typeParameters, p));
+        jSMethodDeclaration = jSMethodDeclaration.withReturnTypeExpression(this.visitAndCast(jSMethodDeclaration.returnTypeExpression, p));
+        jSMethodDeclaration = jSMethodDeclaration.withName(this.visitAndCast(jSMethodDeclaration.name, p)!);
+        jSMethodDeclaration = jSMethodDeclaration.padding.withParameters(this.visitJsContainer(jSMethodDeclaration.padding.parameters, JsContainer.Location.JSMETHOD_DECLARATION_PARAMETERS, p)!);
+        jSMethodDeclaration = jSMethodDeclaration.padding.withThrowz(this.visitJsContainer(jSMethodDeclaration.padding.throwz, JsContainer.Location.JSMETHOD_DECLARATION_THROWZ, p));
+        jSMethodDeclaration = jSMethodDeclaration.withBody(this.visitAndCast(jSMethodDeclaration.body, p));
+        jSMethodDeclaration = jSMethodDeclaration.padding.withDefaultValue(this.visitJsLeftPadded(jSMethodDeclaration.padding.defaultValue, JsLeftPadded.Location.JSMETHOD_DECLARATION_DEFAULT_VALUE, p));
+        return jSMethodDeclaration;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, p: P): J | null {

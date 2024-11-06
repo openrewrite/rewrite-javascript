@@ -382,6 +382,24 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.JSMethodDeclaration visitJSMethodDeclaration(JS.JSMethodDeclaration jSMethodDeclaration, SenderContext ctx) {
+            ctx.sendValue(jSMethodDeclaration, JS.JSMethodDeclaration::getId);
+            ctx.sendNode(jSMethodDeclaration, JS.JSMethodDeclaration::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jSMethodDeclaration, JS.JSMethodDeclaration::getMarkers, ctx::sendMarkers);
+            ctx.sendNodes(jSMethodDeclaration, JS.JSMethodDeclaration::getLeadingAnnotations, ctx::sendTree, Tree::getId);
+            ctx.sendNodes(jSMethodDeclaration, JS.JSMethodDeclaration::getModifiers, ctx::sendTree, Tree::getId);
+            ctx.sendNode(jSMethodDeclaration, JS.JSMethodDeclaration::getTypeParameters, ctx::sendTree);
+            ctx.sendNode(jSMethodDeclaration, JS.JSMethodDeclaration::getReturnTypeExpression, ctx::sendTree);
+            ctx.sendNode(jSMethodDeclaration, JS.JSMethodDeclaration::getName, ctx::sendTree);
+            ctx.sendNode(jSMethodDeclaration, e -> e.getPadding().getParameters(), JavaScriptSender::sendContainer);
+            ctx.sendNode(jSMethodDeclaration, e -> e.getPadding().getThrowz(), JavaScriptSender::sendContainer);
+            ctx.sendNode(jSMethodDeclaration, JS.JSMethodDeclaration::getBody, ctx::sendTree);
+            ctx.sendNode(jSMethodDeclaration, e -> e.getPadding().getDefaultValue(), JavaScriptSender::sendLeftPadded);
+            ctx.sendTypedValue(jSMethodDeclaration, JS.JSMethodDeclaration::getMethodType);
+            return jSMethodDeclaration;
+        }
+
+        @Override
         public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, SenderContext ctx) {
             ctx.sendValue(namespaceDeclaration, JS.NamespaceDeclaration::getId);
             ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getPrefix, JavaScriptSender::sendSpace);

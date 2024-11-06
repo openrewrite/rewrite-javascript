@@ -198,12 +198,25 @@ describe('as mapping', () => {
         );
     });
 
-    test.skip('interface with properties and methods with optional ', () => {
+    test('interface with optional property signature', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                interface Person {
+                    surname?: string;
+                    readonly name ?: string
+                }
+            `)
+        );
+    });
+
+    test('interface with optional properties and methods ', () => {
         rewriteRun(
           //language=typescript
           typeScript(`
               interface Person {
-                  greet?(name: string): void
+                  greet ?(name: string): void
+                  add ?(): (x: number, y?: number) => number;
                   readonly name?: string
               }
           `)

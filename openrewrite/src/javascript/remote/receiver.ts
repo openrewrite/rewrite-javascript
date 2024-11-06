@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, NamespaceDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -321,6 +321,23 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         jSNamedVariable = jSNamedVariable.padding.withInitializer(ctx.receiveNode(jSNamedVariable.padding.initializer, receiveLeftPaddedTree));
         jSNamedVariable = jSNamedVariable.withVariableType(ctx.receiveValue(jSNamedVariable.variableType, ValueType.Object));
         return jSNamedVariable;
+    }
+
+    public visitJSMethodDeclaration(jSMethodDeclaration: JSMethodDeclaration, ctx: ReceiverContext): J {
+        jSMethodDeclaration = jSMethodDeclaration.withId(ctx.receiveValue(jSMethodDeclaration.id, ValueType.UUID)!);
+        jSMethodDeclaration = jSMethodDeclaration.withPrefix(ctx.receiveNode(jSMethodDeclaration.prefix, receiveSpace)!);
+        jSMethodDeclaration = jSMethodDeclaration.withMarkers(ctx.receiveNode(jSMethodDeclaration.markers, ctx.receiveMarkers)!);
+        jSMethodDeclaration = jSMethodDeclaration.withLeadingAnnotations(ctx.receiveNodes(jSMethodDeclaration.leadingAnnotations, ctx.receiveTree)!);
+        jSMethodDeclaration = jSMethodDeclaration.withModifiers(ctx.receiveNodes(jSMethodDeclaration.modifiers, ctx.receiveTree)!);
+        jSMethodDeclaration = jSMethodDeclaration.withTypeParameters(ctx.receiveNode(jSMethodDeclaration.typeParameters, ctx.receiveTree));
+        jSMethodDeclaration = jSMethodDeclaration.withReturnTypeExpression(ctx.receiveNode(jSMethodDeclaration.returnTypeExpression, ctx.receiveTree));
+        jSMethodDeclaration = jSMethodDeclaration.withName(ctx.receiveNode(jSMethodDeclaration.name, ctx.receiveTree)!);
+        jSMethodDeclaration = jSMethodDeclaration.padding.withParameters(ctx.receiveNode(jSMethodDeclaration.padding.parameters, receiveContainer)!);
+        jSMethodDeclaration = jSMethodDeclaration.padding.withThrowz(ctx.receiveNode(jSMethodDeclaration.padding.throwz, receiveContainer));
+        jSMethodDeclaration = jSMethodDeclaration.withBody(ctx.receiveNode(jSMethodDeclaration.body, ctx.receiveTree));
+        jSMethodDeclaration = jSMethodDeclaration.padding.withDefaultValue(ctx.receiveNode(jSMethodDeclaration.padding.defaultValue, receiveLeftPaddedTree));
+        jSMethodDeclaration = jSMethodDeclaration.withMethodType(ctx.receiveValue(jSMethodDeclaration.methodType, ValueType.Object));
+        return jSMethodDeclaration;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, ctx: ReceiverContext): J {
@@ -1324,6 +1341,24 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
                 ctx.receiveNodes(null, leftPaddedNodeReceiver(Space))!,
+                ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree),
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$JSMethodDeclaration") {
+            return new JSMethodDeclaration(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNodes<Java.Annotation>(null, ctx.receiveTree)!,
+                ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
+                ctx.receiveNode<Java.TypeParameters>(null, ctx.receiveTree),
+                ctx.receiveNode<TypeTree>(null, ctx.receiveTree),
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JContainer<Statement>>(null, receiveContainer)!,
+                ctx.receiveNode<JContainer<NameTree>>(null, receiveContainer),
+                ctx.receiveNode<Java.Block>(null, ctx.receiveTree),
                 ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree),
                 ctx.receiveValue(null, ValueType.Object)
             );

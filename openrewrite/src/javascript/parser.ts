@@ -650,14 +650,7 @@ export class JavaScriptParserVisitor {
                         randomId(),
                         this.prefix(node.name),
                         Markers.EMPTY,
-                        new JS.Unary(
-                            randomId(),
-                            Space.EMPTY,
-                            Markers.EMPTY,
-                            this.leftPadded(this.suffix(node.name), JS.Unary.Type.Optional),
-                            this.visit(node.name),
-                            this.mapType(node)
-                        ),
+                        this.getOptionalUnary(node),
                         [],
                         node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
                         this.mapVariableType(node)
@@ -725,6 +718,30 @@ export class JavaScriptParserVisitor {
     }
 
     visitPropertySignature(node: ts.PropertySignature) {
+        if (node.questionToken) {
+            return new JS.JSVariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [], // no decorators allowed
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [this.rightPadded(
+                    new JS.JSVariableDeclarations.JSNamedVariable(
+                        randomId(),
+                        this.prefix(node.name),
+                        Markers.EMPTY,
+                        this.getOptionalUnary(node),
+                        [],
+                        null,
+                        this.mapVariableType(node)
+                    ),
+                    Space.EMPTY
+                )]
+            );
+        }
+
         return new J.VariableDeclarations(
             randomId(),
             this.prefix(node),
@@ -750,6 +767,30 @@ export class JavaScriptParserVisitor {
     }
 
     visitPropertyDeclaration(node: ts.PropertyDeclaration) {
+        if (node.questionToken) {
+            return new JS.JSVariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [],
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [this.rightPadded(
+                    new JS.JSVariableDeclarations.JSNamedVariable(
+                        randomId(),
+                        this.prefix(node.name),
+                        Markers.EMPTY,
+                        this.getOptionalUnary(node),
+                        [],
+                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
+                        this.mapVariableType(node)
+                    ),
+                    Space.EMPTY
+                )]
+            );
+        }
+
         return new J.VariableDeclarations(
             randomId(),
             this.prefix(node),
@@ -769,12 +810,32 @@ export class JavaScriptParserVisitor {
                     node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
                     this.mapVariableType(node)
                 ),
-                Space.EMPTY // FIXME check for semicolon
+                Space.EMPTY
             )]
         );
     }
 
     visitMethodSignature(node: ts.MethodSignature) {
+        if (node.questionToken) {
+            return new JS.JSMethodDeclaration(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [], // no decorators allowed
+                [], // no modifiers allowed
+                node.typeParameters
+                    ? new J.TypeParameters(randomId(), this.suffix(node.name), Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))))
+                    : null,
+                this.mapTypeInfo(node),
+                this.getOptionalUnary(node),
+                this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+                null,
+                null,
+                null,
+                this.mapMethodType(node)
+            );
+        }
+
         return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
@@ -798,6 +859,26 @@ export class JavaScriptParserVisitor {
     }
 
     visitMethodDeclaration(node: ts.MethodDeclaration) {
+        if (node.questionToken) {
+            return new JS.JSMethodDeclaration(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.mapDecorators(node),
+                this.mapModifiers(node),
+                node.typeParameters
+                    ? new J.TypeParameters(randomId(), this.suffix(node.name), Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))))
+                    : null,
+                this.mapTypeInfo(node),
+                this.getOptionalUnary(node),
+                this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+                null,
+                node.body ? this.convert<J.Block>(node.body) : null,
+                null,
+                this.mapMethodType(node)
+            );
+        }
+
         return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
@@ -2448,6 +2529,17 @@ export class JavaScriptParserVisitor {
 
     private newJEmpty(prefix: Space = Space.EMPTY) {
         return new J.Empty(randomId(), prefix, Markers.EMPTY);
+    }
+
+    private getOptionalUnary(node: ts.MethodSignature | ts.MethodDeclaration | ts.ParameterDeclaration | ts.PropertySignature | ts.PropertyDeclaration) {
+        return new JS.Unary(
+            randomId(),
+            Space.EMPTY,
+            Markers.EMPTY,
+            this.leftPadded(this.suffix(node.name), JS.Unary.Type.Optional),
+            this.visit(node.name),
+            this.mapType(node)
+        );
     }
 }
 

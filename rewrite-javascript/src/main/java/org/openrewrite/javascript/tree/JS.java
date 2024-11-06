@@ -2379,6 +2379,191 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Data
+    final class JSMethodDeclaration implements JS, Statement, TypedTree {
+        @Nullable
+        @NonFinal
+        transient WeakReference<JSMethodDeclaration.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        List<Annotation> leadingAnnotations;
+
+        @With
+        @Getter
+        List<Modifier> modifiers;
+
+        @With
+        J.@Nullable TypeParameters typeParameters;
+
+        /**
+         * Null for constructor declarations.
+         */
+        @With
+        @Getter
+        @Nullable
+        TypeTree returnTypeExpression;
+
+        @With
+        @Getter
+        Expression name; // simplified model by excluding IdentifierWithAnnotations
+
+        JContainer<Statement> parameters;
+
+        public List<Statement> getParameters() {
+            return parameters.getElements();
+        }
+
+        public JSMethodDeclaration withParameters(List<Statement> parameters) {
+            return getPadding().withParameters(JContainer.withElements(this.parameters, parameters));
+        }
+
+        @Nullable
+        JContainer<NameTree> throwz;
+
+        public @Nullable List<NameTree> getThrowz() {
+            return throwz == null ? null : throwz.getElements();
+        }
+
+        public JSMethodDeclaration withThrowz(@Nullable List<NameTree> throwz) {
+            return getPadding().withThrowz(JContainer.withElementsNullable(this.throwz, throwz));
+        }
+
+        /**
+         * Null for abstract method declarations and interface method declarations.
+         */
+        @With
+        @Getter
+        @Nullable
+        Block body;
+
+        /**
+         * For default values on definitions of annotation parameters.
+         */
+        @Nullable
+        JLeftPadded<Expression> defaultValue;
+
+        public @Nullable Expression getDefaultValue() {
+            return defaultValue == null ? null : defaultValue.getElement();
+        }
+
+        public JSMethodDeclaration withDefaultValue(@Nullable Expression defaultValue) {
+            return getPadding().withDefaultValue(JLeftPadded.withElement(this.defaultValue, defaultValue));
+        }
+
+        @Getter
+        JavaType.@Nullable Method methodType;
+
+        public JSMethodDeclaration withMethodType(JavaType.@Nullable Method type) {
+            if (type == this.methodType) {
+                return this;
+            }
+            return new JSMethodDeclaration(id, prefix, markers, leadingAnnotations, modifiers, typeParameters, returnTypeExpression, name, parameters, throwz, body, defaultValue, type);
+        }
+
+        @Override
+        public JavaType getType() {
+            return methodType == null ? null : methodType.getReturnType();
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public JSMethodDeclaration withType(@Nullable JavaType type) {
+            throw new UnsupportedOperationException("To change the return type of this method declaration, use withMethodType(..)");
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJSMethodDeclaration(this, p);
+        }
+
+        public boolean isAbstract() {
+            return body == null;
+        }
+
+        public boolean isConstructor() {
+            return getReturnTypeExpression() == null;
+        }
+
+        public boolean hasModifier(Modifier.Type modifier) {
+            return Modifier.hasModifier(getModifiers(), modifier);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        @Override
+        public String toString() {
+            return "MethodDeclaration{" +
+                    (getMethodType() == null ? "unknown" : getMethodType()) +
+                    "}";
+        }
+
+        public JSMethodDeclaration.Padding getPadding() {
+            JSMethodDeclaration.Padding p;
+            if (this.padding == null) {
+                p = new JSMethodDeclaration.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JSMethodDeclaration.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JSMethodDeclaration t;
+
+            public JContainer<Statement> getParameters() {
+                return t.parameters;
+            }
+
+            public JSMethodDeclaration withParameters(JContainer<Statement> parameters) {
+                return t.parameters == parameters ? t : new JSMethodDeclaration(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.typeParameters, t.returnTypeExpression, t.name, parameters, t.throwz, t.body, t.defaultValue, t.methodType);
+            }
+
+            public @Nullable JContainer<NameTree> getThrowz() {
+                return t.throwz;
+            }
+
+            public JSMethodDeclaration withThrowz(@Nullable JContainer<NameTree> throwz) {
+                return t.throwz == throwz ? t : new JSMethodDeclaration(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.typeParameters, t.returnTypeExpression, t.name, t.parameters, throwz, t.body, t.defaultValue, t.methodType);
+            }
+
+            public @Nullable JLeftPadded<Expression> getDefaultValue() {
+                return t.defaultValue;
+            }
+
+            public JSMethodDeclaration withDefaultValue(@Nullable JLeftPadded<Expression> defaultValue) {
+                return t.defaultValue == defaultValue ? t : new JSMethodDeclaration(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.typeParameters, t.returnTypeExpression, t.name, t.parameters, t.throwz, t.body, defaultValue, t.methodType);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class NamespaceDeclaration implements JS, Statement {
 
         @Nullable

@@ -210,4 +210,38 @@ describe('class mapping', () => {
           }`)
         );
     });
+
+    test('class with optional properties, ctor and modifiers', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class Employee {
+                    public id: number;
+                    protected name: string;
+                    private department?: string; // Optional property
+
+                    constructor(id: number, name: string, department?: string) {
+                        this.id = id;
+                        this.name = name;
+                        this.department = department;
+                    }
+                }
+          `)
+        );
+    });
+
+    test('class with optional properties and methods', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class Person {
+                    name: string;
+                    age?: number;              // Optional property
+                    greetFirst ?: () => void;   // Optional method
+                    greetSecond ?(): string;    // Optional method
+                }
+            `)
+        );
+    });
+
 });

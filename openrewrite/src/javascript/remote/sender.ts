@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, NamespaceDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -316,6 +316,23 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(jSNamedVariable, v => v.padding.initializer, Visitor.sendLeftPadded(ValueType.Tree));
         ctx.sendTypedValue(jSNamedVariable, v => v.variableType, ValueType.Object);
         return jSNamedVariable;
+    }
+
+    public visitJSMethodDeclaration(jSMethodDeclaration: JSMethodDeclaration, ctx: SenderContext): J {
+        ctx.sendValue(jSMethodDeclaration, v => v.id, ValueType.UUID);
+        ctx.sendNode(jSMethodDeclaration, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(jSMethodDeclaration, v => v.markers, ctx.sendMarkers);
+        ctx.sendNodes(jSMethodDeclaration, v => v.leadingAnnotations, ctx.sendTree, t => t.id);
+        ctx.sendNodes(jSMethodDeclaration, v => v.modifiers, ctx.sendTree, t => t.id);
+        ctx.sendNode(jSMethodDeclaration, v => v.typeParameters, ctx.sendTree);
+        ctx.sendNode(jSMethodDeclaration, v => v.returnTypeExpression, ctx.sendTree);
+        ctx.sendNode(jSMethodDeclaration, v => v.name, ctx.sendTree);
+        ctx.sendNode(jSMethodDeclaration, v => v.padding.parameters, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendNode(jSMethodDeclaration, v => v.padding.throwz, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendNode(jSMethodDeclaration, v => v.body, ctx.sendTree);
+        ctx.sendNode(jSMethodDeclaration, v => v.padding.defaultValue, Visitor.sendLeftPadded(ValueType.Tree));
+        ctx.sendTypedValue(jSMethodDeclaration, v => v.methodType, ValueType.Object);
+        return jSMethodDeclaration;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, ctx: SenderContext): J {
