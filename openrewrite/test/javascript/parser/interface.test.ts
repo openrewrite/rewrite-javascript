@@ -173,16 +173,38 @@ describe('as mapping', () => {
         );
     });
 
-    test.skip('interface with get/set methods', () => {
+    test('interface with get/set methods', () => {
         rewriteRun(
           //language=typescript
           typeScript(`
               interface Person {
                   name: string;
-                  get age(): number; // Getter for age
-                  set age(a: number); // Setter for age
+                  get age() : number ; // Getter for age
+                  set age(a: number) ;  // Setter for age
               }
           `)
+        );
+    });
+
+    test.skip('interface with constructor signature', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                interface Constructible {
+                    new (name: string, age: number): Person; // Interface that defines a constructor signature
+                }
+            `)
+        );
+    });
+
+    test.skip('interface with optional constructor signature', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                interface Constructible {
+                    new? (name: string, age: number): Person; // Interface that defines a constructor signature
+                }
+            `)
         );
     });
 

@@ -247,7 +247,9 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration) {
+    private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration
+        | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration
+        | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration) {
         if (ts.isVariableStatement(node)) {
             return [new J.Modifier(
                 randomId(),
@@ -286,6 +288,24 @@ export class JavaScriptParserVisitor {
                 J.Modifier.Type.LanguageExtension,
                 []
             )] : [];
+        } else if (ts.isGetAccessorDeclaration(node)) {
+            return (node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : []).concat(new J.Modifier(
+                randomId(),
+                this.prefix(node.getChildren().find(c => c.getText() === 'get')!),
+                Markers.EMPTY,
+                'get',
+                J.Modifier.Type.LanguageExtension,
+                []
+            ));
+        } else if (ts.isSetAccessorDeclaration(node)) {
+            return (node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : []).concat(new J.Modifier(
+                randomId(),
+                this.prefix(node.getChildren().find(c => c.getText() === 'set')!),
+                Markers.EMPTY,
+                'set',
+                J.Modifier.Type.LanguageExtension,
+                []
+            ));
         }
         throw new Error(`Cannot get modifiers from ${node}`);
     }
@@ -902,7 +922,7 @@ export class JavaScriptParserVisitor {
     }
 
     private mapTypeInfo(node: ts.MethodDeclaration | ts.PropertyDeclaration | ts.VariableDeclaration | ts.ParameterDeclaration
-        | ts.PropertySignature | ts.MethodSignature | ts.ArrowFunction | ts.CallSignatureDeclaration) {
+        | ts.PropertySignature | ts.MethodSignature | ts.ArrowFunction | ts.CallSignatureDeclaration | ts.GetAccessorDeclaration) {
         return node.type ? new JS.TypeInfo(randomId(), this.prefix(node.getChildAt(node.getChildren().indexOf(node.type) - 1)), Markers.EMPTY, this.visit(node.type)) : null;
     }
 
@@ -931,11 +951,45 @@ export class JavaScriptParserVisitor {
     }
 
     visitGetAccessor(node: ts.GetAccessorDeclaration) {
-        return this.visitUnknown(node);
+        return new J.MethodDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            this.mapModifiers(node),
+            null,
+            this.mapTypeInfo(node),
+            new J.MethodDeclaration.IdentifierWithAnnotations(
+                this.visit(node.name),
+                []
+            ),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+            null,
+            node.body ? this.convert<J.Block>(node.body) : null,
+            null,
+            this.mapMethodType(node)
+        );
     }
 
     visitSetAccessor(node: ts.SetAccessorDeclaration) {
-        return this.visitUnknown(node);
+        return new J.MethodDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            this.mapModifiers(node),
+            null,
+            null,
+            new J.MethodDeclaration.IdentifierWithAnnotations(
+                this.visit(node.name),
+                []
+            ),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+            null,
+            node.body ? this.convert<J.Block>(node.body) : null,
+            null,
+            this.mapMethodType(node)
+        );
     }
 
     visitCallSignature(node: ts.CallSignatureDeclaration) {

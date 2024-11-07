@@ -244,4 +244,68 @@ describe('class mapping', () => {
         );
     });
 
+    test('class with get/set accessors', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class Person {
+                    private _name = '';
+
+                    // Getter
+                    public get name(): string {
+                        return this._name;
+                    }
+
+                    Setter
+                    set name(value: string) {
+                        this._name = value;
+                    }
+                }
+            `)
+        );
+    });
+
+    test('class with get/set accessors with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class Person {
+                    private _name = '';
+
+                    // Getter
+                    public /*a*/ get /*b*/ name/*c*/(/*d*/): string {
+                        return this._name;
+                    }
+
+                    // Setter
+                    public /*a*/ set /*b*/ name/*c*/(/*d*/value/*e*/: /*f*/ string /*g*/) {
+                        this._name = value;
+                    }
+                }
+            `)
+        );
+    });
+
+    test.skip('class with static blocks', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class Example {
+                    static valueA: number;
+                    static valueB: number;
+
+                    static {
+                        this.valueA = 10;
+                        console.log("Static block 1 executed. valueA:", this.valueA);
+                    }
+
+                    static {
+                        this.valueB = this.valueA * 2;
+                        console.log("Static block 2 executed. valueB:", this.valueB);
+                    }
+                }
+          `)
+        );
+    });
+
 });
