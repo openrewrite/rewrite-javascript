@@ -399,6 +399,24 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.JSMethodDeclaration visitJSMethodDeclaration(JS.JSMethodDeclaration jSMethodDeclaration, ReceiverContext ctx) {
+            jSMethodDeclaration = jSMethodDeclaration.withId(ctx.receiveNonNullValue(jSMethodDeclaration.getId(), UUID.class));
+            jSMethodDeclaration = jSMethodDeclaration.withPrefix(ctx.receiveNonNullNode(jSMethodDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
+            jSMethodDeclaration = jSMethodDeclaration.withMarkers(ctx.receiveNonNullNode(jSMethodDeclaration.getMarkers(), ctx::receiveMarkers));
+            jSMethodDeclaration = jSMethodDeclaration.withLeadingAnnotations(ctx.receiveNonNullNodes(jSMethodDeclaration.getLeadingAnnotations(), ctx::receiveTree));
+            jSMethodDeclaration = jSMethodDeclaration.withModifiers(ctx.receiveNonNullNodes(jSMethodDeclaration.getModifiers(), ctx::receiveTree));
+            jSMethodDeclaration = jSMethodDeclaration.withTypeParameters(ctx.receiveNode(jSMethodDeclaration.getTypeParameters(), ctx::receiveTree));
+            jSMethodDeclaration = jSMethodDeclaration.withReturnTypeExpression(ctx.receiveNode(jSMethodDeclaration.getReturnTypeExpression(), ctx::receiveTree));
+            jSMethodDeclaration = jSMethodDeclaration.withName(ctx.receiveNonNullNode(jSMethodDeclaration.getName(), ctx::receiveTree));
+            jSMethodDeclaration = jSMethodDeclaration.getPadding().withParameters(ctx.receiveNonNullNode(jSMethodDeclaration.getPadding().getParameters(), JavaScriptReceiver::receiveContainer));
+            jSMethodDeclaration = jSMethodDeclaration.getPadding().withThrowz(ctx.receiveNode(jSMethodDeclaration.getPadding().getThrowz(), JavaScriptReceiver::receiveContainer));
+            jSMethodDeclaration = jSMethodDeclaration.withBody(ctx.receiveNode(jSMethodDeclaration.getBody(), ctx::receiveTree));
+            jSMethodDeclaration = jSMethodDeclaration.getPadding().withDefaultValue(ctx.receiveNode(jSMethodDeclaration.getPadding().getDefaultValue(), JavaScriptReceiver::receiveLeftPaddedTree));
+            jSMethodDeclaration = jSMethodDeclaration.withMethodType(ctx.receiveValue(jSMethodDeclaration.getMethodType(), JavaType.Method.class));
+            return jSMethodDeclaration;
+        }
+
+        @Override
         public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, ReceiverContext ctx) {
             namespaceDeclaration = namespaceDeclaration.withId(ctx.receiveNonNullValue(namespaceDeclaration.getId(), UUID.class));
             namespaceDeclaration = namespaceDeclaration.withPrefix(ctx.receiveNonNullNode(namespaceDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1432,6 +1450,24 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNodes(null, leftPaddedNodeReceiver(org.openrewrite.java.tree.Space.class)),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.Variable.class)
+                );
+            }
+
+            if (type == JS.JSMethodDeclaration.class) {
+                return (T) new JS.JSMethodDeclaration(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
+                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
+                    ctx.receiveNode(null, ctx::receiveTree),
+                    ctx.receiveNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
+                    ctx.receiveNode(null, ctx::receiveTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
+                    ctx.receiveValue(null, JavaType.Method.class)
                 );
             }
 

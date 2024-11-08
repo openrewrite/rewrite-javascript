@@ -173,16 +173,38 @@ describe('as mapping', () => {
         );
     });
 
-    test.skip('interface with get/set methods', () => {
+    test('interface with get/set methods', () => {
         rewriteRun(
           //language=typescript
           typeScript(`
               interface Person {
                   name: string;
-                  get age(): number; // Getter for age
-                  set age(a: number); // Setter for age
+                  get age() : number ; // Getter for age
+                  set age(a: number) ;  // Setter for age
               }
           `)
+        );
+    });
+
+    test.skip('interface with constructor signature', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                interface Constructible {
+                    new (name: string, age: number): Person; // Interface that defines a constructor signature
+                }
+            `)
+        );
+    });
+
+    test.skip('interface with optional constructor signature', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                interface Constructible {
+                    new? (name: string, age: number): Person; // Interface that defines a constructor signature
+                }
+            `)
         );
     });
 
@@ -198,12 +220,25 @@ describe('as mapping', () => {
         );
     });
 
-    test.skip('interface with properties and methods with optional ', () => {
+    test('interface with optional property signature', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                interface Person {
+                    surname?: string;
+                    readonly name ?: string
+                }
+            `)
+        );
+    });
+
+    test('interface with optional properties and methods ', () => {
         rewriteRun(
           //language=typescript
           typeScript(`
               interface Person {
-                  greet?(name: string): void
+                  greet ?(name: string): void
+                  add ?(): (x: number, y?: number) => number;
                   readonly name?: string
               }
           `)

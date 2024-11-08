@@ -252,9 +252,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
     @Override
     public J visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, PrintOutputCapture<P> p) {
-        beforeSyntax(namespaceDeclaration, JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p);
+        beforeSyntax(namespaceDeclaration, JsSpace.Location.JSNAMESPACE_DECLARATION_PREFIX, p);
         namespaceDeclaration.getModifiers().forEach(it -> delegate.visitModifier(it, p));
-        visitSpace(namespaceDeclaration.getNamespace(), JsSpace.Location.NAMESPACE_KEYWORD_DECLARATION_PREFIX, p);
+        visitSpace(namespaceDeclaration.getNamespace(), JsSpace.Location.JSNAMESPACE_KEYWORD_DECLARATION_PREFIX, p);
         p.append("namespace");
         visit(namespaceDeclaration.getName(), p);
         visit(namespaceDeclaration.getBody(), p);
@@ -460,7 +460,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     public J visitJSVariableDeclarations(JS.JSVariableDeclarations multiVariable, PrintOutputCapture<P> p) {
         beforeSyntax(multiVariable, JsSpace.Location.JSVARIABLE_DECLARATIONS_PREFIX, p);
         visit(multiVariable.getLeadingAnnotations(), p);
-        multiVariable.getModifiers().forEach(it -> visitModifier(it, p));
+        multiVariable.getModifiers().forEach(it -> delegate.visitModifier(it, p));
 
         List<JRightPadded<JS.JSVariableDeclarations.JSNamedVariable>> variables = multiVariable.getPadding().getVariables();
         for (int i = 0; i < variables.size(); i++) {
@@ -500,6 +500,46 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visitLeftPadded("=", initializer, JsLeftPadded.Location.JSVARIABLE_INITIALIZER, p);
         afterSyntax(variable, p);
         return variable;
+    }
+
+    @Override
+    public J visitJSMethodDeclaration(JS.JSMethodDeclaration method, PrintOutputCapture<P> p) {
+        beforeSyntax(method, JsSpace.Location.JSMETHOD_DECLARATION_PREFIX, p);
+        visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
+        visit(method.getLeadingAnnotations(), p);
+        method.getModifiers().forEach(it -> visitModifier(it, p));
+
+        FunctionKeyword functionKeyword = method.getMarkers().findFirst(FunctionKeyword.class).orElse(null);
+        if (functionKeyword != null) {
+            visitSpace(functionKeyword.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+            p.append("function");
+        }
+
+        Asterisk asterisk = method.getMarkers().findFirst(Asterisk.class).orElse(null);
+        if (asterisk != null) {
+            visitSpace(asterisk.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
+            p.append("*");
+        }
+        visit(method.getName(), p);
+
+        J.TypeParameters typeParameters = method.getTypeParameters();
+        if (typeParameters != null) {
+            visit(typeParameters.getAnnotations(), p);
+            visitSpace(typeParameters.getPrefix(), Space.Location.TYPE_PARAMETERS, p);
+            visitMarkers(typeParameters.getMarkers(), p);
+            p.append("<");
+            visitRightPadded(typeParameters.getPadding().getTypeParameters(), JRightPadded.Location.TYPE_PARAMETER, ",", p);
+            p.append(">");
+        }
+
+        visitContainer("(", method.getPadding().getParameters(), JsContainer.Location.JSMETHOD_DECLARATION_PARAMETERS, ",", ")", p);
+        if (method.getReturnTypeExpression() != null) {
+            visit(method.getReturnTypeExpression(), p);
+        }
+
+        visit(method.getBody(), p);
+        afterSyntax(method, p);
+        return method;
     }
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {

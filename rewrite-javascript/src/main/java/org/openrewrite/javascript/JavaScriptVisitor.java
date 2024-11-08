@@ -625,9 +625,41 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return v;
     }
 
+    public J visitJSMethodDeclaration(JS.JSMethodDeclaration method, P p) {
+        JS.JSMethodDeclaration m = method;
+        m = m.withPrefix(visitSpace(m.getPrefix(), Space.Location.METHOD_DECLARATION_PREFIX, p));
+        m = m.withMarkers(visitMarkers(m.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(m, p);
+        if (!(temp instanceof JS.JSMethodDeclaration)) {
+            return temp;
+        } else {
+            m = (JS.JSMethodDeclaration) temp;
+        }
+        m = m.withLeadingAnnotations(ListUtils.map(m.getLeadingAnnotations(), a -> visitAndCast(a, p)));
+        m = m.withModifiers(ListUtils.map(m.getModifiers(), e -> visitAndCast(e, p)));
+        m = m.withTypeParameters(visitAndCast(m.getTypeParameters(), p));
+        m = m.withReturnTypeExpression(visitAndCast(m.getReturnTypeExpression(), p));
+        m = m.withReturnTypeExpression(
+                m.getReturnTypeExpression() == null ?
+                        null :
+                        visitTypeName(m.getReturnTypeExpression(), p));
+        m = m.withName(this.visitAndCast(m.getName(), p));
+        m = m.getPadding().withParameters(visitContainer(m.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, p));
+        if (m.getPadding().getThrowz() != null) {
+            m = m.getPadding().withThrowz(visitContainer(m.getPadding().getThrowz(), JContainer.Location.THROWS, p));
+        }
+        m = m.getPadding().withThrowz(visitTypeNames(m.getPadding().getThrowz(), p));
+        m = m.withBody(visitAndCast(m.getBody(), p));
+        if (m.getPadding().getDefaultValue() != null) {
+            m = m.getPadding().withDefaultValue(visitLeftPadded(m.getPadding().getDefaultValue(), JLeftPadded.Location.METHOD_DECLARATION_DEFAULT_VALUE, p));
+        }
+        m = m.withMethodType((JavaType.Method) visitType(m.getMethodType(), p));
+        return m;
+    }
+
     public J visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, P p) {
         JS.NamespaceDeclaration ns = namespaceDeclaration;
-        ns = ns.withPrefix(visitSpace(ns.getPrefix(), JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p));
+        ns = ns.withPrefix(visitSpace(ns.getPrefix(), JsSpace.Location.JSNAMESPACE_DECLARATION_PREFIX, p));
         ns = ns.withMarkers(visitMarkers(ns.getMarkers(), p));
         ns = ns.withModifiers(ListUtils.map(ns.getModifiers(),
                 mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
@@ -638,7 +670,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             ns = (JS.NamespaceDeclaration) temp;
         }
-        ns = ns.withNamespace(visitSpace(ns.getNamespace(), JsSpace.Location.NAMESPACE_KEYWORD_DECLARATION_PREFIX, p));
+        ns = ns.withNamespace(visitSpace(ns.getNamespace(), JsSpace.Location.JSNAMESPACE_KEYWORD_DECLARATION_PREFIX, p));
         ns = ns.getPadding().withName(visitRightPadded(ns.getPadding().getName(), JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p));
         ns = ns.withBody(visitAndCast(ns.getBody(), p));
         return ns;

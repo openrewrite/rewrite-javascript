@@ -2649,6 +2649,193 @@ export namespace JSVariableDeclarations {
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$JSMethodDeclaration")
+export class JSMethodDeclaration extends JSMixin(Object) implements Statement, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeParameters: Java.TypeParameters | null, returnTypeExpression: TypeTree | null, name: Expression, parameters: JContainer<Statement>, throwz: JContainer<NameTree> | null, body: Java.Block | null, defaultValue: JLeftPadded<Expression> | null, methodType: JavaType.Method | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._leadingAnnotations = leadingAnnotations;
+        this._modifiers = modifiers;
+        this._typeParameters = typeParameters;
+        this._returnTypeExpression = returnTypeExpression;
+        this._name = name;
+        this._parameters = parameters;
+        this._throwz = throwz;
+        this._body = body;
+        this._defaultValue = defaultValue;
+        this._methodType = methodType;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JSMethodDeclaration {
+            return id === this._id ? this : new JSMethodDeclaration(id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._returnTypeExpression, this._name, this._parameters, this._throwz, this._body, this._defaultValue, this._methodType);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JSMethodDeclaration {
+            return prefix === this._prefix ? this : new JSMethodDeclaration(this._id, prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._returnTypeExpression, this._name, this._parameters, this._throwz, this._body, this._defaultValue, this._methodType);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JSMethodDeclaration {
+            return markers === this._markers ? this : new JSMethodDeclaration(this._id, this._prefix, markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._returnTypeExpression, this._name, this._parameters, this._throwz, this._body, this._defaultValue, this._methodType);
+        }
+
+        private readonly _leadingAnnotations: Java.Annotation[];
+
+        public get leadingAnnotations(): Java.Annotation[] {
+            return this._leadingAnnotations;
+        }
+
+        public withLeadingAnnotations(leadingAnnotations: Java.Annotation[]): JSMethodDeclaration {
+            return leadingAnnotations === this._leadingAnnotations ? this : new JSMethodDeclaration(this._id, this._prefix, this._markers, leadingAnnotations, this._modifiers, this._typeParameters, this._returnTypeExpression, this._name, this._parameters, this._throwz, this._body, this._defaultValue, this._methodType);
+        }
+
+        private readonly _modifiers: Java.Modifier[];
+
+        public get modifiers(): Java.Modifier[] {
+            return this._modifiers;
+        }
+
+        public withModifiers(modifiers: Java.Modifier[]): JSMethodDeclaration {
+            return modifiers === this._modifiers ? this : new JSMethodDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, modifiers, this._typeParameters, this._returnTypeExpression, this._name, this._parameters, this._throwz, this._body, this._defaultValue, this._methodType);
+        }
+
+        private readonly _typeParameters: Java.TypeParameters | null;
+
+        public get typeParameters(): Java.TypeParameters | null {
+            return this._typeParameters;
+        }
+
+        public withTypeParameters(typeParameters: Java.TypeParameters | null): JSMethodDeclaration {
+            return typeParameters === this._typeParameters ? this : new JSMethodDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, typeParameters, this._returnTypeExpression, this._name, this._parameters, this._throwz, this._body, this._defaultValue, this._methodType);
+        }
+
+        private readonly _returnTypeExpression: TypeTree | null;
+
+        public get returnTypeExpression(): TypeTree | null {
+            return this._returnTypeExpression;
+        }
+
+        public withReturnTypeExpression(returnTypeExpression: TypeTree | null): JSMethodDeclaration {
+            return returnTypeExpression === this._returnTypeExpression ? this : new JSMethodDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, returnTypeExpression, this._name, this._parameters, this._throwz, this._body, this._defaultValue, this._methodType);
+        }
+
+        private readonly _name: Expression;
+
+        public get name(): Expression {
+            return this._name;
+        }
+
+        public withName(name: Expression): JSMethodDeclaration {
+            return name === this._name ? this : new JSMethodDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._returnTypeExpression, name, this._parameters, this._throwz, this._body, this._defaultValue, this._methodType);
+        }
+
+        private readonly _parameters: JContainer<Statement>;
+
+        public get parameters(): Statement[] {
+            return this._parameters.elements;
+        }
+
+        public withParameters(parameters: Statement[]): JSMethodDeclaration {
+            return this.padding.withParameters(JContainer.withElements(this._parameters, parameters));
+        }
+
+        private readonly _throwz: JContainer<NameTree> | null;
+
+        public get throwz(): NameTree[] | null {
+            return this._throwz === null ? null : this._throwz.elements;
+        }
+
+        public withThrowz(throwz: NameTree[] | null): JSMethodDeclaration {
+            return this.padding.withThrowz(JContainer.withElementsNullable(this._throwz, throwz));
+        }
+
+        private readonly _body: Java.Block | null;
+
+        public get body(): Java.Block | null {
+            return this._body;
+        }
+
+        public withBody(body: Java.Block | null): JSMethodDeclaration {
+            return body === this._body ? this : new JSMethodDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._returnTypeExpression, this._name, this._parameters, this._throwz, body, this._defaultValue, this._methodType);
+        }
+
+        private readonly _defaultValue: JLeftPadded<Expression> | null;
+
+        public get defaultValue(): Expression | null {
+            return this._defaultValue === null ? null : this._defaultValue.element;
+        }
+
+        public withDefaultValue(defaultValue: Expression | null): JSMethodDeclaration {
+            return this.padding.withDefaultValue(JLeftPadded.withElement(this._defaultValue, defaultValue));
+        }
+
+        private readonly _methodType: JavaType.Method | null;
+
+        public get methodType(): JavaType.Method | null {
+            return this._methodType;
+        }
+
+        public withMethodType(methodType: JavaType.Method | null): JSMethodDeclaration {
+            return methodType === this._methodType ? this : new JSMethodDeclaration(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._returnTypeExpression, this._name, this._parameters, this._throwz, this._body, this._defaultValue, methodType);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJSMethodDeclaration(this, p);
+    }
+
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): JSMethodDeclaration {
+        return extensions.withJavaType(this, type);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get parameters(): JContainer<Statement> {
+                return t._parameters;
+            }
+            public withParameters(parameters: JContainer<Statement>): JSMethodDeclaration {
+                return t._parameters === parameters ? t : new JSMethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, parameters, t._throwz, t._body, t._defaultValue, t._methodType);
+            }
+            public get throwz(): JContainer<NameTree> | null {
+                return t._throwz;
+            }
+            public withThrowz(throwz: JContainer<NameTree> | null): JSMethodDeclaration {
+                return t._throwz === throwz ? t : new JSMethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, t._parameters, throwz, t._body, t._defaultValue, t._methodType);
+            }
+            public get defaultValue(): JLeftPadded<Expression> | null {
+                return t._defaultValue;
+            }
+            public withDefaultValue(defaultValue: JLeftPadded<Expression> | null): JSMethodDeclaration {
+                return t._defaultValue === defaultValue ? t : new JSMethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, t._parameters, t._throwz, t._body, defaultValue, t._methodType);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$NamespaceDeclaration")
 export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
     public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], namespace: Space, name: JRightPadded<Expression>, body: Java.Block) {
