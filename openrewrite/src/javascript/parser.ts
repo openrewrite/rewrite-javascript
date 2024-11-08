@@ -927,7 +927,18 @@ export class JavaScriptParserVisitor {
     }
 
     visitClassStaticBlockDeclaration(node: ts.ClassStaticBlockDeclaration) {
-        return this.visitUnknown(node);
+        return new J.Block(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            new JRightPadded(true,this.prefix(node.body.getChildren().find(v => v.kind === ts.SyntaxKind.OpenBraceToken)!), Markers.EMPTY),
+            node.body.statements.map(ce => new JRightPadded(
+                this.convert(ce),
+                ce.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken ? this.prefix(ce.getLastToken()!) : Space.EMPTY,
+                ce.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+            )),
+            this.prefix(node.getLastToken()!)
+        );
     }
 
     visitConstructor(node: ts.ConstructorDeclaration) {

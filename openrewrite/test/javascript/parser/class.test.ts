@@ -286,7 +286,7 @@ describe('class mapping', () => {
         );
     });
 
-    test.skip('class with static blocks', () => {
+    test('class with static blocks', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
@@ -295,12 +295,34 @@ describe('class mapping', () => {
                     static valueB: number;
 
                     static {
-                        this.valueA = 10;
+                        this.valueA = 10
                         console.log("Static block 1 executed. valueA:", this.valueA);
                     }
 
                     static {
-                        this.valueB = this.valueA * 2;
+                        this.valueB = this.valueA * 2
+                        console.log("Static block 2 executed. valueB:", this.valueB);
+                    }
+                }
+          `)
+        );
+    });
+
+    test('class with static blocks and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class Example {
+                    static /*1*/ valueA /*2*/: /*3*/ number;
+                    static valueB: number;
+
+                    /*a*/ static /*b*/{ /*c*/
+                        this.valueA = 10  /*d*/; /*e*/
+                        console.log("Static block 1 executed. valueA:", this.valueA)  /*f*/
+                       }
+
+                    /*g*/static{
+                        this.valueB = this.valueA * 2  /*h*/
                         console.log("Static block 2 executed. valueB:", this.valueB);
                     }
                 }
