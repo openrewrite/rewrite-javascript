@@ -227,6 +227,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             case In:
                 keyword = "in";
                 break;
+            case QuestionQuestion:
+                keyword = "??";
+                break;
         }
 
         visitSpace(binary.getPadding().getOperator().getBefore(), JsSpace.Location.BINARY_PREFIX, p);
@@ -399,6 +402,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 visit(unary.getExpression(), p);
                 break;
             case Optional:
+                visit(unary.getExpression(), p);
+                visitSpace(unary.getPadding().getOperator().getBefore(), Space.Location.UNARY_OPERATOR, p);
+                p.append("?");
+                break;
+            case Exclamation:
+                visit(unary.getExpression(), p);
+                visitSpace(unary.getPadding().getOperator().getBefore(), Space.Location.UNARY_OPERATOR, p);
+                p.append("!");
+                break;
+            case QuestionDot:
                 visit(unary.getExpression(), p);
                 visitSpace(unary.getPadding().getOperator().getBefore(), Space.Location.UNARY_OPERATOR, p);
                 p.append("?");

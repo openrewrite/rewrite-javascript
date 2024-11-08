@@ -950,7 +950,9 @@ public interface JS extends J {
             As,
             IdentityEquals,
             IdentityNotEquals,
-            In
+            In,
+            QuestionQuestion
+
         }
 
         public JS.JsBinary.Padding getPadding() {
@@ -1923,7 +1925,8 @@ public interface JS extends J {
         public enum Type {
             Spread,
             Optional,
-            ;
+            Exclamation,
+            QuestionDot;
 
             public boolean isModifying() {
                 switch (this) {
