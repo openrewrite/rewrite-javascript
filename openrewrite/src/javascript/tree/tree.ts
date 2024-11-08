@@ -1033,6 +1033,7 @@ export namespace JsBinary {
             IdentityEquals = 1,
             IdentityNotEquals = 2,
             In = 3,
+            QuestionQuestion = 4
 
     }
 
@@ -2143,7 +2144,8 @@ export namespace Unary {
     export enum Type {
             Spread = 0,
             Optional = 1,
-
+            Exclamation = 2,
+            QuestionDot = 3,
     }
 
 }

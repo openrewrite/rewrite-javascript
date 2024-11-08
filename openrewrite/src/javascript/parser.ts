@@ -893,7 +893,7 @@ export class JavaScriptParserVisitor {
 
     private mapTypeInfo(node: ts.MethodDeclaration | ts.PropertyDeclaration | ts.VariableDeclaration | ts.ParameterDeclaration
         | ts.PropertySignature | ts.MethodSignature | ts.ArrowFunction | ts.CallSignatureDeclaration | ts.GetAccessorDeclaration
-        | ts.FunctionDeclaration | ts.ConstructSignatureDeclaration) {
+        | ts.FunctionDeclaration | ts.ConstructSignatureDeclaration | ts.FunctionExpression) {
         return node.type ? new JS.TypeInfo(randomId(), this.prefix(node.getChildAt(node.getChildren().indexOf(node.type) - 1)), Markers.EMPTY, this.visit(node.type)) : null;
     }
 
@@ -1217,7 +1217,15 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.convert(node.expression),
+            node.questionDotToken ?
+                new JS.Unary(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    this.leftPadded(this.suffix(node.expression), JS.Unary.Type.QuestionDot),
+                    this.visit(node.expression),
+                    this.mapType(node)
+                ) : this.convert(node.expression),
             this.leftPadded(this.prefix(node.getChildAt(1, this.sourceFile)), this.convert(node.name)),
             this.mapType(node)
         );
@@ -1440,6 +1448,9 @@ export class JavaScriptParserVisitor {
             case ts.SyntaxKind.ExclamationEqualsEqualsToken:
                 binaryOperator = JS.JsBinary.Type.IdentityNotEquals;
                 break;
+            case ts.SyntaxKind.QuestionQuestionToken:
+                binaryOperator = JS.JsBinary.Type.QuestionQuestion;
+                break;
         }
 
         if (binaryOperator !== undefined) {
@@ -1614,7 +1625,14 @@ export class JavaScriptParserVisitor {
     }
 
     visitNonNullExpression(node: ts.NonNullExpression) {
-        return this.visitUnknown(node);
+        return new JS.Unary(
+            randomId(),
+            Space.EMPTY,
+            Markers.EMPTY,
+            this.leftPadded(this.suffix(node.expression), JS.Unary.Type.Exclamation),
+            this.visit(node.expression),
+            this.mapType(node)
+        )
     }
 
     visitMetaProperty(node: ts.MetaProperty) {
