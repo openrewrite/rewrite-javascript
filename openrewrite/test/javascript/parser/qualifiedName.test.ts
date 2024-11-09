@@ -14,7 +14,7 @@ describe('empty mapping', () => {
     test('globalThis qualified name with generic', () => {
         rewriteRun(
           //language=typescript
-          typeScript('const value: globalThis.Promise< string > = null')
+          typeScript('const value: globalThis.Promise  <    string  > = null')
         );
     });
 
@@ -34,6 +34,17 @@ describe('empty mapping', () => {
               }
               const a: typeof OuterClass.InnerClass.prototype = 1;
           `)
+        );
+    });
+
+    test.skip('nested class qualified name', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class OuterClass extends (class extends Number { }) {
+                }
+                const a: typeof OuterClass.InnerClass.prototype = 1;
+            `)
         );
     });
 

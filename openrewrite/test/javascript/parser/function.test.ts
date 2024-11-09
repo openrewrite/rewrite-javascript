@@ -40,10 +40,33 @@ describe('function mapping', () => {
           typeScript('function f(a =  2 , b) {}')
         );
     });
+
     test('parameter with trailing comma', () => {
         rewriteRun(
           //language=typescript
           typeScript('function f(a  , ) {}')
         );
+    });
+
+    test('parameter with trailing comma', () => {
+      rewriteRun(
+        //language=typescript
+        typeScript(`
+           function  /*1*/   identity  /*2*/    <  Type  , G    ,   C   >       (arg: Type)  /*3*/ :     G  {
+            return arg;
+          }
+        `)
+      );
+    });
+
+    test.skip('parameter with anonymous type', () => {
+      rewriteRun(
+        //language=typescript
+        typeScript(`
+           function create<Type>(c: { new (): Type }): Type {
+              return new c();
+           }
+        `)
+      );
     });
 });
