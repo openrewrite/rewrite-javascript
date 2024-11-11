@@ -1,6 +1,6 @@
 {
   "name": "@openrewrite/rewrite",
-  "version": "0.20.5",
+  "version": "0.20.6",
   "license": "Apache-2.0",
   "description": "OpenRewrite implementation for JavaScript.",
   "homepage": "https://github.com/openrewrite/rewrite-javascript",
