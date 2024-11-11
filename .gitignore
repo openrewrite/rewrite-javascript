@@ -7,3 +7,4 @@ bin/
 /js/.parcel-cache/
 /js/dist
 /js/node_modules/
+.vscode/*
