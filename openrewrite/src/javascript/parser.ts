@@ -393,10 +393,6 @@ export class JavaScriptParserVisitor {
     }
 
     visitClassDeclaration(node: ts.ClassDeclaration) {
-        if (node.typeParameters) {
-            return this.visitUnknown(node);
-        }
-
         return new J.ClassDeclaration(
             randomId(),
             this.prefix(node),
@@ -411,7 +407,7 @@ export class JavaScriptParserVisitor {
                 J.ClassDeclaration.Kind.Type.Class
             ),
             node.name ? this.convert(node.name) : this.mapIdentifier(node, ""),
-            this.mapTypeParameters(node),
+            this.mapTypeParametersAsJContainer(node),
             null, // FIXME primary constructor
             this.mapExtends(node),
             this.mapImplements(node),
@@ -618,7 +614,7 @@ export class JavaScriptParserVisitor {
                 this.prefix(parent),
                 Markers.EMPTY,
                 fieldAccess,
-                this.mapTypeArguments(parent.typeArguments),
+                this.mapTypeArguments(this.suffix(parent.typeName), parent.typeArguments),
                 this.mapType(parent)
             )
         } else {
@@ -843,9 +839,8 @@ export class JavaScriptParserVisitor {
                 Markers.EMPTY,
                 [], // no decorators allowed
                 [], // no modifiers allowed
-                node.typeParameters
-                    ? new J.TypeParameters(randomId(), this.suffix(node.name), Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))))
-                    : null,
+                
+                this.mapTypeParametersAsObject(node),
                 this.mapTypeInfo(node),
                 this.getOptionalUnary(node),
                 this.mapCommaSeparatedList(this.getParameterListNodes(node)),
@@ -862,9 +857,7 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             [], // no decorators allowed
             [], // no modifiers allowed
-            node.typeParameters
-                ? new J.TypeParameters(randomId(), this.suffix(node.name), Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))))
-                : null,
+            this.mapTypeParametersAsObject(node),
             this.mapTypeInfo(node),
             new J.MethodDeclaration.IdentifierWithAnnotations(
                 node.name ? this.visit(node.name) : this.mapIdentifier(node, ""),
@@ -905,9 +898,7 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             this.mapDecorators(node),
             this.mapModifiers(node),
-            node.typeParameters
-                ? new J.TypeParameters(randomId(), this.suffix(node.name), Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))))
-                : null,
+            this.mapTypeParametersAsObject(node),
             this.mapTypeInfo(node),
             new J.MethodDeclaration.IdentifierWithAnnotations(
                 node.name ? this.visit(node.name) : this.mapIdentifier(node, ""),
@@ -922,7 +913,7 @@ export class JavaScriptParserVisitor {
     }
 
     private mapTypeInfo(node: ts.MethodDeclaration | ts.PropertyDeclaration | ts.VariableDeclaration | ts.ParameterDeclaration
-        | ts.PropertySignature | ts.MethodSignature | ts.ArrowFunction | ts.CallSignatureDeclaration | ts.GetAccessorDeclaration) {
+        | ts.PropertySignature | ts.MethodSignature | ts.ArrowFunction | ts.CallSignatureDeclaration | ts.GetAccessorDeclaration | ts.FunctionDeclaration) {
         return node.type ? new JS.TypeInfo(randomId(), this.prefix(node.getChildAt(node.getChildren().indexOf(node.type) - 1)), Markers.EMPTY, this.visit(node.type)) : null;
     }
 
@@ -1004,25 +995,30 @@ export class JavaScriptParserVisitor {
     }
 
     visitCallSignature(node: ts.CallSignatureDeclaration) {
-        return new JS.ArrowFunction(
+        return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
             [],
             [],
-            new Lambda.Parameters(
-                randomId(),
-                this.prefix(node),
-                Markers.EMPTY,
-                true,
-                node.parameters.length > 0 ?
-                    node.parameters.map(p => this.rightPadded(this.convert(p), this.suffix(p))) :
-                    [this.rightPadded(this.newJEmpty(), this.prefix(node.getChildren().find(n => n.kind === ts.SyntaxKind.CloseParenToken)!))] // to handle the case: (/*no*/) => ...
-            ),
+            this.mapTypeParametersAsObject(node),
             this.mapTypeInfo(node),
-            Space.EMPTY,
-            this.newJEmpty(),
-            null
+            new J.MethodDeclaration.IdentifierWithAnnotations(
+                new J.Identifier(
+                    randomId(),
+                    Space.EMPTY/* this.prefix(node.getChildren().find(n => n.kind == ts.SyntaxKind.OpenBraceToken)!) */,
+                    Markers.EMPTY,
+                    [], // FIXME decorators
+                    "",
+                    null,
+                    null
+                ), []
+            ),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+            null,
+            null,
+            null,
+            this.mapMethodType(node)
         );
     }
 
@@ -1064,6 +1060,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitConstructorType(node: ts.ConstructorTypeNode) {
+        return this.visitUnknown(node);
     }
 
     visitTypeQuery(node: ts.TypeQueryNode) {
@@ -1857,10 +1854,6 @@ export class JavaScriptParserVisitor {
     }
 
     visitFunctionDeclaration(node: ts.FunctionDeclaration) {
-        if (node.typeParameters) {
-            return this.visitUnknown(node);
-        }
-
         return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
@@ -1874,8 +1867,8 @@ export class JavaScriptParserVisitor {
                 J.Modifier.Type.LanguageExtension,
                 []
             ), ...this.mapModifiers(node)],
-            null, // FIXME type parameters
-            node.type ? this.visit(node.type) : null,
+            this.mapTypeParametersAsObject(node), // FIXME type parameters
+            this.mapTypeInfo(node),
             new J.MethodDeclaration.IdentifierWithAnnotations(
                 node.name ? this.visit(node.name) : this.mapIdentifier(node, ""),
                 []
@@ -1899,10 +1892,6 @@ export class JavaScriptParserVisitor {
     }
 
     visitInterfaceDeclaration(node: ts.InterfaceDeclaration) {
-        if (node.typeParameters) {
-            return this.visitUnknown(node);
-        }
-
         return new J.ClassDeclaration(
             randomId(),
             this.prefix(node),
@@ -1917,7 +1906,7 @@ export class JavaScriptParserVisitor {
                 J.ClassDeclaration.Kind.Type.Interface
             ),
             node.name ? this.convert(node.name) : this.mapIdentifier(node, ""),
-            this.mapTypeParameters(node),
+            this.mapTypeParametersAsJContainer(node),
             null, // interface has no constructor
             null, // implements should be used
             this.mapInterfaceExtends(node), // interface extends modeled as implements
@@ -2505,7 +2494,7 @@ export class JavaScriptParserVisitor {
         return this.mapToContainer(nodes, this.trailingComma(nodes));
     }
 
-    private mapTypeArguments(nodes: readonly ts.Node[]): JContainer<J.Expression> {
+    private mapTypeArguments(prefix: Space, nodes: readonly ts.Node[]): JContainer<J.Expression> {
         if (nodes.length === 0) {
             return JContainer.empty();
         }
@@ -2517,7 +2506,7 @@ export class JavaScriptParserVisitor {
                 Markers.EMPTY
             ))
         return new JContainer(
-            this.prefix(nodes[0]),
+            prefix,
             args,
             Markers.EMPTY
         );
@@ -2573,8 +2562,24 @@ export class JavaScriptParserVisitor {
         return node.modifiers?.filter(ts.isDecorator)?.map(this.convert<J.Annotation>) ?? [];
     }
 
-    private mapTypeParameters(node: ts.ClassDeclaration | ts.InterfaceDeclaration): JContainer<J.TypeParameter> | null {
-        return null; // FIXME
+    private mapTypeParametersAsJContainer(node: ts.ClassDeclaration | ts.InterfaceDeclaration): JContainer<J.TypeParameter> | null {
+        return node.typeParameters
+            ? JContainer.build(
+                this.suffix(this.findChildNode(node, ts.SyntaxKind.Identifier)!),
+                this.mapTypeParametersList(node.typeParameters),
+                Markers.EMPTY
+            )
+            : null;
+    }
+
+    private mapTypeParametersAsObject(node: ts.MethodDeclaration | ts.MethodSignature | ts.FunctionDeclaration | ts.CallSignatureDeclaration) : J.TypeParameters | null {
+        return node.typeParameters
+            ? new J.TypeParameters(randomId(), node.questionToken ? this.suffix(node.questionToken) : node.name ? this.suffix(node.name) : Space.EMPTY, Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))))
+            : null;
+    }
+
+    private mapTypeParametersList(typeParamsNodeArray: ts.NodeArray<ts.TypeParameterDeclaration>) : JRightPadded<J.TypeParameter>[] {
+        return typeParamsNodeArray.map(tp => this.rightPadded<J.TypeParameter>(this.visit(tp), this.suffix(tp)));
     }
 
     private findChildNode(node: ts.Node, kind: ts.SyntaxKind): ts.Node | undefined {

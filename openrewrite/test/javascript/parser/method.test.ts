@@ -148,4 +148,18 @@ describe('method mapping', () => {
           `)
         );
     });
+
+    test('method with generics', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              class Handler< T1  , T2> {
+                  test   <  T3 >    ( input: string    , t3: T3 ) /*1*/ : /*asda*/ string {
+                      // hello world comment
+                      return input;
+                  }
+              }
+          `)
+        );
+    });
 });

@@ -11,10 +11,9 @@ describe('class mapping', () => {
         );
     });
     test('type parameter', () => {
-        rewriteRunWithOptions(
-          {expectUnknowns: true},
+        rewriteRun(
           //language=typescript
-          typeScript('class A<T> {}')
+          typeScript('class A   <   T   ,   G> {}')
         );
     });
     test('body', () => {
@@ -210,6 +209,39 @@ describe('class mapping', () => {
           }`)
         );
     });
+
+    test('class with type parameters', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class A<T> {
+                }
+            `)
+        );
+    });
+
+    test.skip('anonymous class declaration', () => {
+      rewriteRun(
+        //language=typescript
+        typeScript(`
+            class OuterClass {
+              public static InnerClass = class extends Number { };
+            }
+            const a: typeof OuterClass.InnerClass.prototype = 1;
+        `)
+      );
+  });
+
+  test.skip('nested class qualified name', () => {
+      rewriteRun(
+          //language=typescript
+          typeScript(`
+              class OuterClass extends (class extends Number { }) {
+              }
+              const a: typeof OuterClass.InnerClass.prototype = 1;
+          `)
+      );
+  });
 
     test('class with optional properties, ctor and modifiers', () => {
         rewriteRun(

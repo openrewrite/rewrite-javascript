@@ -355,4 +355,27 @@ describe('as mapping', () => {
         );
     });
 
+    test('interface with generics', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              interface GenericIdentityFn<   T >   {
+                    /*1231*/   < Type    /*1*/ >      (   arg   :    Type    )  :    T ;
+                    /*1231*/ /*1231*/ add   < Type    /*1*/ , R >   (arg: Type): (x: T, y: Type) => R; //Function signature
+              }
+          `)
+        );
+    });
+
+    test('interface with generics', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              interface X {
+                    find ? <R, T> (v1: R, v2: T): string; 
+                }
+          `)
+        );
+    });
+
 });
