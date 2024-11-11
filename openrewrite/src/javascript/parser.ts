@@ -839,7 +839,6 @@ export class JavaScriptParserVisitor {
                 Markers.EMPTY,
                 [], // no decorators allowed
                 [], // no modifiers allowed
-                
                 this.mapTypeParametersAsObject(node),
                 this.mapTypeInfo(node),
                 this.getOptionalUnary(node),
@@ -913,7 +912,8 @@ export class JavaScriptParserVisitor {
     }
 
     private mapTypeInfo(node: ts.MethodDeclaration | ts.PropertyDeclaration | ts.VariableDeclaration | ts.ParameterDeclaration
-        | ts.PropertySignature | ts.MethodSignature | ts.ArrowFunction | ts.CallSignatureDeclaration | ts.GetAccessorDeclaration | ts.FunctionDeclaration) {
+        | ts.PropertySignature | ts.MethodSignature | ts.ArrowFunction | ts.CallSignatureDeclaration | ts.GetAccessorDeclaration
+        | ts.FunctionDeclaration | ts.ConstructSignatureDeclaration) {
         return node.type ? new JS.TypeInfo(randomId(), this.prefix(node.getChildAt(node.getChildren().indexOf(node.type) - 1)), Markers.EMPTY, this.visit(node.type)) : null;
     }
 
@@ -922,7 +922,7 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            new JRightPadded(true,this.prefix(node.body.getChildren().find(v => v.kind === ts.SyntaxKind.OpenBraceToken)!), Markers.EMPTY),
+            new JRightPadded(true, this.prefix(this.findChildNode(node.body, ts.SyntaxKind.OpenBraceToken)!), Markers.EMPTY),
             node.body.statements.map(ce => new JRightPadded(
                 this.convert(ce),
                 ce.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken ? this.prefix(ce.getLastToken()!) : Space.EMPTY,
@@ -1023,7 +1023,40 @@ export class JavaScriptParserVisitor {
     }
 
     visitConstructSignature(node: ts.ConstructSignatureDeclaration) {
-        return this.visitUnknown(node);
+        return new J.MethodDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [], // no decorators allowed
+            [], // no modifiers allowed
+            node.typeParameters
+                ? new J.TypeParameters(
+                    randomId(),
+                    this.suffix(this.findChildNode(node, ts.SyntaxKind.NewKeyword)!),
+                    Markers.EMPTY,
+                    [],
+                    node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp)))
+                )
+                : null,
+            this.mapTypeInfo(node),
+            new J.MethodDeclaration.IdentifierWithAnnotations(
+                new J.Identifier(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    [],
+                    'new',
+                    null,
+                    null
+                ),
+                []
+            ),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+            null,
+            null,
+            null,
+            this.mapMethodType(node)
+        );
     }
 
     visitIndexSignature(node: ts.IndexSignatureDeclaration) {

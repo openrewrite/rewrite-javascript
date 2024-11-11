@@ -1,6 +1,6 @@
 import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
-describe('as mapping', () => {
+describe('interface mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 
@@ -186,7 +186,7 @@ describe('as mapping', () => {
         );
     });
 
-    test.skip('interface with constructor signature', () => {
+    test('interface with constructor signature', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
@@ -197,12 +197,23 @@ describe('as mapping', () => {
         );
     });
 
-    test.skip('interface with optional constructor signature', () => {
+    test('interface with constructor signature with type parameters', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
-                interface Constructible {
-                    new? (name: string, age: number): Person; // Interface that defines a constructor signature
+                interface GenericConstructor {
+                    new<R, T> (value: R, value: T): GenericClass;
+                }
+            `)
+        );
+    });
+
+    test('interface with constructor signature with type parameters and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                interface GenericConstructor {
+                    /*a*/new /*b*/</*c*/R/*d*/,/*e*/ T/*f*/>/*g*/ (value1: R, value2: T)/*e*/: GenericClass/*j*/;
                 }
             `)
         );
@@ -372,7 +383,7 @@ describe('as mapping', () => {
           //language=typescript
           typeScript(`
               interface X {
-                    find ? <R, T> (v1: R, v2: T): string; 
+                    find ? <R, T> (v1: R, v2: T): string;
                 }
           `)
         );
