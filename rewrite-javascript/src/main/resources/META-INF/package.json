@@ -8,8 +8,8 @@
     }
   },
   "dependencies": {
-    "@openrewrite/rewrite-remote": "~0.4.0",
-    "@openrewrite/rewrite": "~0.18.0"
+    "@openrewrite/rewrite-remote": "~0.5.0",
+    "@openrewrite/rewrite": "~0.20.0"
   },
   "devDependencies": {
   }
