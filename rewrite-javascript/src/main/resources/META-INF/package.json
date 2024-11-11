@@ -2,11 +2,6 @@
   "name": "@openrewrite/rewrite-bundled-starter",
   "version": "1.0.0",
   "description": "",
-  "overrides": {
-    "@openrewrite/rewrite-remote": {
-      "@openrewrite/rewrite": "~0.18.0"
-    }
-  },
   "dependencies": {
     "@openrewrite/rewrite-remote": "~0.5.0",
     "@openrewrite/rewrite": "~0.20.0"
