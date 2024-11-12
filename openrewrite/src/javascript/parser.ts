@@ -250,26 +250,7 @@ export class JavaScriptParserVisitor {
     private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration
         | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration
         | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration) {
-        if (ts.isVariableStatement(node)) {
-            return [new J.Modifier(
-                randomId(),
-                Space.EMPTY,
-                Markers.EMPTY,
-                node.declarationList.getFirstToken()?.getText()!,
-                J.Modifier.Type.LanguageExtension,
-                []
-            )];
-        } else if (ts.isModuleDeclaration(node)) {
-            return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
-        } else if (ts.isClassDeclaration(node)) {
-            return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
-        } else if (ts.isEnumDeclaration(node) || ts.isInterfaceDeclaration(node)) {
-            return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
-        } else if (ts.isPropertyDeclaration(node)) {
-            return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
-        } else if (ts.isPropertySignature(node)) {
-            return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
-        } else if (ts.isFunctionDeclaration(node) || ts.isParameter(node) || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node)) {
+        if (ts.isVariableStatement(node) || ts.isModuleDeclaration(node)  || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node) || ts.isInterfaceDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node) || ts.isFunctionDeclaration(node) || ts.isParameter(node) || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         } else if (ts.isVariableDeclarationList(node)) {
             let modifier: string | undefined;
@@ -310,7 +291,7 @@ export class JavaScriptParserVisitor {
         throw new Error(`Cannot get modifiers from ${node}`);
     }
 
-    private mapModifier = (node: ts.Modifier) => {
+    private mapModifier = (node: ts.Modifier | ts.ModifierLike) => {
         let kind: J.Modifier.Type;
         switch (node.kind) {
             case ts.SyntaxKind.PublicKeyword:
@@ -1648,7 +1629,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitVariableStatement(node: ts.VariableStatement) {
-        return this.visitVariableDeclarationList(node.declarationList);
+        return this.visitVariableDeclarationList(node.declarationList).withModifiers(this.mapModifiers(node)).withPrefix(this.prefix(node));
     }
 
     visitExpressionStatement(node: ts.ExpressionStatement): J.Statement {
@@ -1833,8 +1814,10 @@ export class JavaScriptParserVisitor {
         const kind = node.getFirstToken(this.sourceFile);
         return new JS.ScopedVariableDeclarations(
             randomId(),
-            this.prefix(node),
+            Space.EMPTY,
             Markers.EMPTY,
+            [],
+            this.prefix(node),
             kind?.kind === ts.SyntaxKind.LetKeyword ? JS.ScopedVariableDeclarations.Scope.Let :
                 kind?.kind === ts.SyntaxKind.ConstKeyword ? JS.ScopedVariableDeclarations.Scope.Const : JS.ScopedVariableDeclarations.Scope.Var,
             node.declarations.map(declaration => {
@@ -1995,16 +1978,16 @@ export class JavaScriptParserVisitor {
         const body = this.visit(node.body as ts.Node);
 
         let namespaceKeyword = this.findChildNode(node, ts.SyntaxKind.NamespaceKeyword);
-        const kindType = namespaceKeyword ? JS.NamespaceDeclaration.Kind.Type.Namespace : JS.NamespaceDeclaration.Kind.Type.Module
+        const keywordType = namespaceKeyword ? JS.NamespaceDeclaration.KeywordType.Namespace : JS.NamespaceDeclaration.KeywordType.Module
         namespaceKeyword ??= this.findChildNode(node, ts.SyntaxKind.ModuleKeyword);
-        const kind = new JS.NamespaceDeclaration.Kind(randomId(), this.prefix(namespaceKeyword!), Markers.EMPTY, kindType)
         if (body instanceof JS.NamespaceDeclaration) {
             return new JS.NamespaceDeclaration(
                 randomId(),
                 Space.EMPTY,
                 Markers.EMPTY,
                 this.mapModifiers(node),
-                kind,
+                namespaceKeyword ? this.prefix(namespaceKeyword) : Space.EMPTY,
+                keywordType,
                 this.rightPadded(
                         new J.FieldAccess(
                             randomId(),
@@ -2028,7 +2011,8 @@ export class JavaScriptParserVisitor {
                 node.parent.kind === ts.SyntaxKind.ModuleBlock ? this.prefix(node) : Space.EMPTY,
                 Markers.EMPTY,
                 this.mapModifiers(node),
-                kind,
+                namespaceKeyword ? this.prefix(namespaceKeyword) : Space.EMPTY,
+                keywordType,
                 this.rightPadded(this.convert(node.name), this.prefix(node)), // J.FieldAccess
                 body // J.Block
             );

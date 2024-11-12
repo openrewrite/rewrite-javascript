@@ -22,7 +22,6 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.tree.*;
 import org.openrewrite.marker.Markers;
-import org.openrewrite.remote.SenderContext;
 
 import java.util.List;
 import java.util.Objects;
@@ -321,6 +320,9 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         JS.ScopedVariableDeclarations vd = scopedVariableDeclarations;
         vd = vd.withPrefix(visitSpace(vd.getPrefix(), JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_PREFIX, p));
         vd = vd.withMarkers(visitMarkers(vd.getMarkers(), p));
+        vd = vd.withModifiers(ListUtils.map(vd.getModifiers(),
+                mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
+        vd = vd.withScopePrefix(visitSpace(vd.getScopePrefix(), JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_SCOPE_PREFIX, p));
         Statement temp = (Statement) visitStatement(vd, p);
         if (!(temp instanceof JS.ScopedVariableDeclarations)) {
             return temp;
@@ -660,7 +662,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
     public J visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, P p) {
         JS.NamespaceDeclaration ns = namespaceDeclaration;
-        ns = ns.withPrefix(visitSpace(ns.getPrefix(), JsSpace.Location.JSNAMESPACE_DECLARATION_PREFIX, p));
+        ns = ns.withPrefix(visitSpace(ns.getPrefix(), JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p));
         ns = ns.withMarkers(visitMarkers(ns.getMarkers(), p));
         ns = ns.withModifiers(ListUtils.map(ns.getModifiers(),
                 mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
@@ -671,22 +673,9 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             ns = (JS.NamespaceDeclaration) temp;
         }
-        ns =
+        ns = ns.withKeywordPrefix(visitSpace(ns.getKeywordPrefix(), JsSpace.Location.NAMESPACE_DECLARATION_KEYWORD_PREFIX, p));
         ns = ns.getPadding().withName(visitRightPadded(ns.getPadding().getName(), JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p));
         ns = ns.withBody(visitAndCast(ns.getBody(), p));
         return ns;
-    }
-
-    public JS.NamespaceDeclaration.Kind visitNamespaceDeclarationKind(JS.NamespaceDeclaration.Kind kind, SenderContext ctx) {
-        kind.getPadding().withKind(
-                namespaceDeclaration.getPadding().getKind().withMarkers(
-                        visitMarkers(namespaceDeclaration.getPadding().getKind().getMarkers(), p)
-                )
-        );
-        ns = ns.getPadding().withKind(
-                ns.getPadding().getKind().withPrefix(
-                        visitSpace(ns.getPadding().getKind().getPrefix(), JsSpace.Location.JSNAMESPACE_KEYWORD_DECLARATION_PREFIX, p)
-                )
-        );
     }
 }

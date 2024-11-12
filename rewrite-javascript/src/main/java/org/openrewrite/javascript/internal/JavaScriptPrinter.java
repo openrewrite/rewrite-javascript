@@ -252,10 +252,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
     @Override
     public J visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, PrintOutputCapture<P> p) {
-        beforeSyntax(namespaceDeclaration, JsSpace.Location.JSNAMESPACE_DECLARATION_PREFIX, p);
+        beforeSyntax(namespaceDeclaration, JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p);
         namespaceDeclaration.getModifiers().forEach(it -> delegate.visitModifier(it, p));
-        visitSpace(namespaceDeclaration.getPadding().getKind().getPrefix(), JsSpace.Location.JSNAMESPACE_KEYWORD_DECLARATION_PREFIX, p);
-        switch (namespaceDeclaration.getKind()) {
+        visitSpace(namespaceDeclaration.getKeywordPrefix(), JsSpace.Location.NAMESPACE_DECLARATION_KEYWORD_PREFIX, p);
+        switch (namespaceDeclaration.getKeywordType()) {
             case Namespace:
                 p.append("namespace");
                 break;
@@ -272,7 +272,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     @Override
     public J visitScopedVariableDeclarations(JS.ScopedVariableDeclarations variableDeclarations, PrintOutputCapture<P> p) {
         beforeSyntax(variableDeclarations, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
+        variableDeclarations.getModifiers().forEach(m -> delegate.visitModifier(m, p));
 
+        visitSpace(variableDeclarations.getScopePrefix(), JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_SCOPE_PREFIX, p);
         if (variableDeclarations.getScope() != null) {
             switch (variableDeclarations.getScope()) {
                 case Let:

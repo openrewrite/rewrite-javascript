@@ -227,6 +227,8 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendValue(scopedVariableDeclarations, JS.ScopedVariableDeclarations::getId);
             ctx.sendNode(scopedVariableDeclarations, JS.ScopedVariableDeclarations::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(scopedVariableDeclarations, JS.ScopedVariableDeclarations::getMarkers, ctx::sendMarkers);
+            ctx.sendNodes(scopedVariableDeclarations, JS.ScopedVariableDeclarations::getModifiers, ctx::sendTree, Tree::getId);
+            ctx.sendNode(scopedVariableDeclarations, JS.ScopedVariableDeclarations::getScopePrefix, JavaScriptSender::sendSpace);
             ctx.sendValue(scopedVariableDeclarations, JS.ScopedVariableDeclarations::getScope);
             ctx.sendNodes(scopedVariableDeclarations, e -> e.getPadding().getVariables(), JavaScriptSender::sendRightPadded, e -> e.getElement().getId());
             return scopedVariableDeclarations;
@@ -405,19 +407,11 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getMarkers, ctx::sendMarkers);
             ctx.sendNodes(namespaceDeclaration, JS.NamespaceDeclaration::getModifiers, ctx::sendTree, Tree::getId);
-            ctx.sendNode(namespaceDeclaration, e -> e.getPadding().getKind(), ctx::sendTree);
+            ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getKeywordPrefix, JavaScriptSender::sendSpace);
+            ctx.sendValue(namespaceDeclaration, JS.NamespaceDeclaration::getKeywordType);
             ctx.sendNode(namespaceDeclaration, e -> e.getPadding().getName(), JavaScriptSender::sendRightPadded);
             ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getBody, ctx::sendTree);
             return namespaceDeclaration;
-        }
-
-        @Override
-        public JS.NamespaceDeclaration.Kind visitNamespaceDeclarationKind(JS.NamespaceDeclaration.Kind kind, SenderContext ctx) {
-            ctx.sendValue(kind, JS.NamespaceDeclaration.Kind::getId);
-            ctx.sendNode(kind, JS.NamespaceDeclaration.Kind::getPrefix, JavaScriptSender::sendSpace);
-            ctx.sendNode(kind, JS.NamespaceDeclaration.Kind::getMarkers, ctx::sendMarkers);
-            ctx.sendValue(kind, JS.NamespaceDeclaration.Kind::getType);
-            return kind;
         }
 
         @Override
