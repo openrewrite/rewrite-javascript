@@ -14,7 +14,6 @@ import {
 } from "../core";
 import {binarySearch, compareTextSpans, getNextSibling, TextSpan} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
-import {SignatureDeclarationBase} from "typescript";
 
 export class JavaScriptParser extends Parser {
 
@@ -1029,15 +1028,7 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             [], // no decorators allowed
             [], // no modifiers allowed
-            node.typeParameters
-                ? new J.TypeParameters(
-                    randomId(),
-                    this.suffix(this.findChildNode(node, ts.SyntaxKind.NewKeyword)!),
-                    Markers.EMPTY,
-                    [],
-                    node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp)))
-                )
-                : null,
+            this.mapTypeParametersAsObject(node),
             this.mapTypeInfo(node),
             new J.MethodDeclaration.IdentifierWithAnnotations(
                 new J.Identifier(
@@ -2605,10 +2596,16 @@ export class JavaScriptParserVisitor {
             : null;
     }
 
-    private mapTypeParametersAsObject(node: ts.MethodDeclaration | ts.MethodSignature | ts.FunctionDeclaration | ts.CallSignatureDeclaration) : J.TypeParameters | null {
-        return node.typeParameters
-            ? new J.TypeParameters(randomId(), node.questionToken ? this.suffix(node.questionToken) : node.name ? this.suffix(node.name) : Space.EMPTY, Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))))
-            : null;
+    private mapTypeParametersAsObject(node: ts.MethodDeclaration | ts.MethodSignature | ts.FunctionDeclaration | ts.CallSignatureDeclaration | ts.ConstructSignatureDeclaration) : J.TypeParameters | null {
+        if (!node.typeParameters) return null;
+
+        let ts_prefix;
+        if (ts.isConstructSignatureDeclaration(node)) {
+            ts_prefix = this.suffix(this.findChildNode(node, ts.SyntaxKind.NewKeyword)!);
+        } else {
+            ts_prefix = node.questionToken ? this.suffix(node.questionToken) : node.name ? this.suffix(node.name) : Space.EMPTY;
+        }
+        return new J.TypeParameters(randomId(), ts_prefix, Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))));
     }
 
     private mapTypeParametersList(typeParamsNodeArray: ts.NodeArray<ts.TypeParameterDeclaration>) : JRightPadded<J.TypeParameter>[] {
