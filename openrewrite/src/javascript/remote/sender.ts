@@ -340,10 +340,18 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(namespaceDeclaration, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(namespaceDeclaration, v => v.markers, ctx.sendMarkers);
         ctx.sendNodes(namespaceDeclaration, v => v.modifiers, ctx.sendTree, t => t.id);
-        ctx.sendNode(namespaceDeclaration, v => v.namespace, Visitor.sendSpace);
+        ctx.sendNode(namespaceDeclaration, v => v.kind, ctx.sendTree);
         ctx.sendNode(namespaceDeclaration, v => v.padding.name, Visitor.sendRightPadded(ValueType.Tree));
         ctx.sendNode(namespaceDeclaration, v => v.body, ctx.sendTree);
         return namespaceDeclaration;
+    }
+
+    public visitNamespaceDeclarationKind(kind: NamespaceDeclaration.Kind, ctx: SenderContext): J {
+        ctx.sendValue(kind, v => v.id, ValueType.UUID);
+        ctx.sendNode(kind, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(kind, v => v.markers, ctx.sendMarkers);
+        ctx.sendValue(kind, v => v.type, ValueType.Enum);
+        return kind;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: SenderContext): J {

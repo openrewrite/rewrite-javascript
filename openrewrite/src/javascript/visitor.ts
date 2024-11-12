@@ -452,10 +452,16 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         namespaceDeclaration = tempStatement as NamespaceDeclaration;
         namespaceDeclaration = namespaceDeclaration.withMarkers(this.visitMarkers(namespaceDeclaration.markers, p));
         namespaceDeclaration = namespaceDeclaration.withModifiers(ListUtils.map(namespaceDeclaration.modifiers, el => this.visitAndCast(el, p)));
-        namespaceDeclaration = namespaceDeclaration.withNamespace(this.visitJsSpace(namespaceDeclaration.namespace, JsSpace.Location.NAMESPACE_DECLARATION_NAMESPACE, p)!);
+        namespaceDeclaration = namespaceDeclaration.withKind(this.visitAndCast(namespaceDeclaration.kind, p)!);
         namespaceDeclaration = namespaceDeclaration.padding.withName(this.visitJsRightPadded(namespaceDeclaration.padding.name, JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p)!);
         namespaceDeclaration = namespaceDeclaration.withBody(this.visitAndCast(namespaceDeclaration.body, p)!);
         return namespaceDeclaration;
+    }
+
+    public visitNamespaceDeclarationKind(kind: NamespaceDeclaration.Kind, p: P): J | null {
+        kind = kind.withPrefix(this.visitJsSpace(kind.prefix, JsSpace.Location.NAMESPACE_DECLARATION_KIND_PREFIX, p)!);
+        kind = kind.withMarkers(this.visitMarkers(kind.markers, p));
+        return kind;
     }
 
     public visitJsLeftPadded<T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P): JLeftPadded<T> {

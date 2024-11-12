@@ -22,6 +22,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.tree.*;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.remote.SenderContext;
 
 import java.util.List;
 import java.util.Objects;
@@ -670,9 +671,22 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             ns = (JS.NamespaceDeclaration) temp;
         }
-        ns = ns.withNamespace(visitSpace(ns.getNamespace(), JsSpace.Location.JSNAMESPACE_KEYWORD_DECLARATION_PREFIX, p));
+        ns =
         ns = ns.getPadding().withName(visitRightPadded(ns.getPadding().getName(), JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p));
         ns = ns.withBody(visitAndCast(ns.getBody(), p));
         return ns;
+    }
+
+    public JS.NamespaceDeclaration.Kind visitNamespaceDeclarationKind(JS.NamespaceDeclaration.Kind kind, SenderContext ctx) {
+        kind.getPadding().withKind(
+                namespaceDeclaration.getPadding().getKind().withMarkers(
+                        visitMarkers(namespaceDeclaration.getPadding().getKind().getMarkers(), p)
+                )
+        );
+        ns = ns.getPadding().withKind(
+                ns.getPadding().getKind().withPrefix(
+                        visitSpace(ns.getPadding().getKind().getPrefix(), JsSpace.Location.JSNAMESPACE_KEYWORD_DECLARATION_PREFIX, p)
+                )
+        );
     }
 }

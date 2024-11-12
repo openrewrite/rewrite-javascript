@@ -405,10 +405,19 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getMarkers, ctx::sendMarkers);
             ctx.sendNodes(namespaceDeclaration, JS.NamespaceDeclaration::getModifiers, ctx::sendTree, Tree::getId);
-            ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getNamespace, JavaScriptSender::sendSpace);
+            ctx.sendNode(namespaceDeclaration, e -> e.getPadding().getKind(), ctx::sendTree);
             ctx.sendNode(namespaceDeclaration, e -> e.getPadding().getName(), JavaScriptSender::sendRightPadded);
             ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getBody, ctx::sendTree);
             return namespaceDeclaration;
+        }
+
+        @Override
+        public JS.NamespaceDeclaration.Kind visitNamespaceDeclarationKind(JS.NamespaceDeclaration.Kind kind, SenderContext ctx) {
+            ctx.sendValue(kind, JS.NamespaceDeclaration.Kind::getId);
+            ctx.sendNode(kind, JS.NamespaceDeclaration.Kind::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(kind, JS.NamespaceDeclaration.Kind::getMarkers, ctx::sendMarkers);
+            ctx.sendValue(kind, JS.NamespaceDeclaration.Kind::getType);
+            return kind;
         }
 
         @Override

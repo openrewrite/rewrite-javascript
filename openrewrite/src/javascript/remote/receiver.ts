@@ -345,10 +345,18 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         namespaceDeclaration = namespaceDeclaration.withPrefix(ctx.receiveNode(namespaceDeclaration.prefix, receiveSpace)!);
         namespaceDeclaration = namespaceDeclaration.withMarkers(ctx.receiveNode(namespaceDeclaration.markers, ctx.receiveMarkers)!);
         namespaceDeclaration = namespaceDeclaration.withModifiers(ctx.receiveNodes(namespaceDeclaration.modifiers, ctx.receiveTree)!);
-        namespaceDeclaration = namespaceDeclaration.withNamespace(ctx.receiveNode(namespaceDeclaration.namespace, receiveSpace)!);
+        namespaceDeclaration = namespaceDeclaration.withKind(ctx.receiveNode(namespaceDeclaration.kind, ctx.receiveTree)!);
         namespaceDeclaration = namespaceDeclaration.padding.withName(ctx.receiveNode(namespaceDeclaration.padding.name, receiveRightPaddedTree)!);
         namespaceDeclaration = namespaceDeclaration.withBody(ctx.receiveNode(namespaceDeclaration.body, ctx.receiveTree)!);
         return namespaceDeclaration;
+    }
+
+    public visitNamespaceDeclarationKind(kind: NamespaceDeclaration.Kind, ctx: ReceiverContext): J {
+        kind = kind.withId(ctx.receiveValue(kind.id, ValueType.UUID)!);
+        kind = kind.withPrefix(ctx.receiveNode(kind.prefix, receiveSpace)!);
+        kind = kind.withMarkers(ctx.receiveNode(kind.markers, ctx.receiveMarkers)!);
+        kind = kind.withType(ctx.receiveValue(kind.type, ValueType.Enum)!);
+        return kind;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: ReceiverContext): J {
@@ -1370,9 +1378,18 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
-                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode<NamespaceDeclaration.Kind>(null, ctx.receiveTree)!,
                 ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
                 ctx.receiveNode<Java.Block>(null, ctx.receiveTree)!
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$NamespaceDeclaration$Kind") {
+            return new NamespaceDeclaration.Kind(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveValue(null, ValueType.Enum)!
             );
         }
 

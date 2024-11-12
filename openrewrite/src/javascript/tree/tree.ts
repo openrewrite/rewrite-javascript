@@ -2838,13 +2838,13 @@ export class JSMethodDeclaration extends JSMixin(Object) implements Statement, T
 
 @LstType("org.openrewrite.javascript.tree.JS$NamespaceDeclaration")
 export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], namespace: Space, name: JRightPadded<Expression>, body: Java.Block) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], kind: NamespaceDeclaration.Kind, name: JRightPadded<Expression>, body: Java.Block) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
         this._modifiers = modifiers;
-        this._namespace = namespace;
+        this._kind = kind;
         this._name = name;
         this._body = body;
     }
@@ -2856,7 +2856,7 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withId(id: UUID): NamespaceDeclaration {
-            return id === this._id ? this : new NamespaceDeclaration(id, this._prefix, this._markers, this._modifiers, this._namespace, this._name, this._body);
+            return id === this._id ? this : new NamespaceDeclaration(id, this._prefix, this._markers, this._modifiers, this._kind, this._name, this._body);
         }
 
         private readonly _prefix: Space;
@@ -2866,7 +2866,7 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withPrefix(prefix: Space): NamespaceDeclaration {
-            return prefix === this._prefix ? this : new NamespaceDeclaration(this._id, prefix, this._markers, this._modifiers, this._namespace, this._name, this._body);
+            return prefix === this._prefix ? this : new NamespaceDeclaration(this._id, prefix, this._markers, this._modifiers, this._kind, this._name, this._body);
         }
 
         private readonly _markers: Markers;
@@ -2876,7 +2876,7 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withMarkers(markers: Markers): NamespaceDeclaration {
-            return markers === this._markers ? this : new NamespaceDeclaration(this._id, this._prefix, markers, this._modifiers, this._namespace, this._name, this._body);
+            return markers === this._markers ? this : new NamespaceDeclaration(this._id, this._prefix, markers, this._modifiers, this._kind, this._name, this._body);
         }
 
         private readonly _modifiers: Java.Modifier[];
@@ -2886,17 +2886,13 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withModifiers(modifiers: Java.Modifier[]): NamespaceDeclaration {
-            return modifiers === this._modifiers ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, modifiers, this._namespace, this._name, this._body);
+            return modifiers === this._modifiers ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, modifiers, this._kind, this._name, this._body);
         }
 
-        private readonly _namespace: Space;
+        private readonly _kind: NamespaceDeclaration.Kind;
 
-        public get namespace(): Space {
-            return this._namespace;
-        }
-
-        public withNamespace(namespace: Space): NamespaceDeclaration {
-            return namespace === this._namespace ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, this._modifiers, namespace, this._name, this._body);
+        public withKind(kind: NamespaceDeclaration.Kind): NamespaceDeclaration {
+            return kind === this._kind ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, this._modifiers, kind, this._name, this._body);
         }
 
         private readonly _name: JRightPadded<Expression>;
@@ -2916,7 +2912,7 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withBody(body: Java.Block): NamespaceDeclaration {
-            return body === this._body ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._namespace, this._name, body);
+            return body === this._body ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._kind, this._name, body);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
@@ -2930,9 +2926,77 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
                 return t._name;
             }
             public withName(name: JRightPadded<Expression>): NamespaceDeclaration {
-                return t._name === name ? t : new NamespaceDeclaration(t._id, t._prefix, t._markers, t._modifiers, t._namespace, name, t._body);
+                return t._name === name ? t : new NamespaceDeclaration(t._id, t._prefix, t._markers, t._modifiers, t._kind, name, t._body);
             }
         }
+    }
+
+}
+
+export namespace NamespaceDeclaration {
+    @LstType("org.openrewrite.javascript.tree.JS$NamespaceDeclaration$Kind")
+    export class Kind extends JSMixin(Object) {
+        public constructor(id: UUID, prefix: Space, markers: Markers, _type: NamespaceDeclaration.Kind.Type) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._type = _type;
+        }
+
+            private readonly _id: UUID;
+
+            public get id(): UUID {
+                return this._id;
+            }
+
+            public withId(id: UUID): NamespaceDeclaration.Kind {
+                return id === this._id ? this : new NamespaceDeclaration.Kind(id, this._prefix, this._markers, this._type);
+            }
+
+            private readonly _prefix: Space;
+
+            public get prefix(): Space {
+                return this._prefix;
+            }
+
+            public withPrefix(prefix: Space): NamespaceDeclaration.Kind {
+                return prefix === this._prefix ? this : new NamespaceDeclaration.Kind(this._id, prefix, this._markers, this._type);
+            }
+
+            private readonly _markers: Markers;
+
+            public get markers(): Markers {
+                return this._markers;
+            }
+
+            public withMarkers(markers: Markers): NamespaceDeclaration.Kind {
+                return markers === this._markers ? this : new NamespaceDeclaration.Kind(this._id, this._prefix, markers, this._type);
+            }
+
+            private readonly _type: NamespaceDeclaration.Kind.Type;
+
+            public get type(): NamespaceDeclaration.Kind.Type {
+                return this._type;
+            }
+
+            public withType(_type: NamespaceDeclaration.Kind.Type): NamespaceDeclaration.Kind {
+                return _type === this._type ? this : new NamespaceDeclaration.Kind(this._id, this._prefix, this._markers, _type);
+            }
+
+        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+            return v.visitNamespaceDeclarationKind(this, p);
+        }
+
+    }
+
+    export namespace Kind {
+        export enum Type {
+                Namespace = 0,
+                Module = 1,
+
+        }
+
     }
 
 }

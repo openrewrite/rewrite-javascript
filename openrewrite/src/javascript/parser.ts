@@ -1994,14 +1994,17 @@ export class JavaScriptParserVisitor {
     visitModuleDeclaration(node: ts.ModuleDeclaration) {
         const body = this.visit(node.body as ts.Node);
 
-        const namespaceKeyword = this.findChildNode(node, ts.SyntaxKind.NamespaceKeyword);
+        let namespaceKeyword = this.findChildNode(node, ts.SyntaxKind.NamespaceKeyword);
+        const kindType = namespaceKeyword ? JS.NamespaceDeclaration.Kind.Type.Namespace : JS.NamespaceDeclaration.Kind.Type.Module
+        namespaceKeyword ??= this.findChildNode(node, ts.SyntaxKind.ModuleKeyword);
+        const kind = new JS.NamespaceDeclaration.Kind(randomId(), this.prefix(namespaceKeyword!), Markers.EMPTY, kindType)
         if (body instanceof JS.NamespaceDeclaration) {
             return new JS.NamespaceDeclaration(
                 randomId(),
                 Space.EMPTY,
                 Markers.EMPTY,
                 this.mapModifiers(node),
-                namespaceKeyword ? this.prefix(namespaceKeyword) : Space.EMPTY,
+                kind,
                 this.rightPadded(
                         new J.FieldAccess(
                             randomId(),
@@ -2025,7 +2028,7 @@ export class JavaScriptParserVisitor {
                 node.parent.kind === ts.SyntaxKind.ModuleBlock ? this.prefix(node) : Space.EMPTY,
                 Markers.EMPTY,
                 this.mapModifiers(node),
-                namespaceKeyword ? this.prefix(namespaceKeyword) : Space.EMPTY,
+                kind,
                 this.rightPadded(this.convert(node.name), this.prefix(node)), // J.FieldAccess
                 body // J.Block
             );

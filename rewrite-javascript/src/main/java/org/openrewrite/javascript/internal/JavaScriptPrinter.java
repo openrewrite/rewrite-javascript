@@ -254,8 +254,15 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     public J visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, PrintOutputCapture<P> p) {
         beforeSyntax(namespaceDeclaration, JsSpace.Location.JSNAMESPACE_DECLARATION_PREFIX, p);
         namespaceDeclaration.getModifiers().forEach(it -> delegate.visitModifier(it, p));
-        visitSpace(namespaceDeclaration.getNamespace(), JsSpace.Location.JSNAMESPACE_KEYWORD_DECLARATION_PREFIX, p);
-        p.append("namespace");
+        visitSpace(namespaceDeclaration.getPadding().getKind().getPrefix(), JsSpace.Location.JSNAMESPACE_KEYWORD_DECLARATION_PREFIX, p);
+        switch (namespaceDeclaration.getKind()) {
+            case Namespace:
+                p.append("namespace");
+                break;
+            case Module:
+                p.append("module");
+                break;
+        }
         visit(namespaceDeclaration.getName(), p);
         visit(namespaceDeclaration.getBody(), p);
         afterSyntax(namespaceDeclaration, p);

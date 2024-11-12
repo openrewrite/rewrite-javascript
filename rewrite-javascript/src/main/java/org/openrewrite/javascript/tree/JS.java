@@ -2587,9 +2587,20 @@ public interface JS extends J {
         @Getter
         List<J.Modifier> modifiers;
 
-        @With
-        @Getter
-        Space namespace;
+        Kind kind;
+
+        public Kind.Type getKind() {
+            return kind.getType();
+        }
+
+        public NamespaceDeclaration withKind(Kind.Type type) {
+            Kind k = getPadding().getKind();
+            if (k.type == type) {
+                return this;
+            } else {
+                return getPadding().withKind(k.withType(type));
+            }
+        }
 
         JRightPadded<Expression> name;
 
@@ -2616,6 +2627,30 @@ public interface JS extends J {
             return new CoordinateBuilder.Statement(this);
         }
 
+        @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+        @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+        @Data
+        public static final class Kind implements JS {
+
+            @With
+            @EqualsAndHashCode.Include
+            UUID id;
+
+            @With
+            Space prefix;
+
+            @With
+            Markers markers;
+
+            @With
+            Type type;
+
+            public enum Type {
+                Namespace,
+                Module,
+            }
+        }
+
         public NamespaceDeclaration.Padding getPadding() {
             NamespaceDeclaration.Padding p;
             if (this.padding == null) {
@@ -2636,11 +2671,19 @@ public interface JS extends J {
             private final NamespaceDeclaration t;
 
             public NamespaceDeclaration withName(JRightPadded<Expression> name) {
-                return t.name == name ? t : new NamespaceDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.namespace, name, t.body);
+                return t.name == name ? t : new NamespaceDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.kind, name, t.body);
             }
 
             public JRightPadded<Expression> getName() {
                 return t.name;
+            }
+
+            public Kind getKind() {
+                return t.kind;
+            }
+
+            public NamespaceDeclaration withKind(Kind kind) {
+                return t.kind == kind ? t : new NamespaceDeclaration(t.id, t.prefix, t.markers, t.modifiers, kind, t.name, t.body);
             }
         }
     }
