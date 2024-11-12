@@ -1,6 +1,6 @@
 import {Comment, JContainer, JLeftPadded, JRightPadded, Space, TextComment} from "../tree";
 import {DetailsReceiver, ReceiverContext, SenderContext, ValueType} from "@openrewrite/rewrite-remote";
-import {Tree} from "../../core";
+import {Markers, Tree} from "../../core";
 
 export function sendSpace(space: Space, ctx: SenderContext) {
     ctx.sendNodes(space, v => v.comments, sendComment, x => x);
@@ -68,13 +68,37 @@ export function sendRightPadded<T>(type: ValueType): (rightPadded: JRightPadded<
 }
 
 export function receiveContainer<T>(container: JContainer<T> | null, type: string | null, ctx: ReceiverContext): JContainer<T> {
-    // FIXME
-    throw new Error("Not implemented!");
+    if (container != null) {
+        container = container.withBefore(ctx.receiveNode(container.before, receiveSpace)!);
+        container = container.padding.withElements(
+            ctx.receiveNodes(container.padding.elements, receiveRightPaddedTree)!
+        );
+        container = container!.withMarkers(ctx.receiveNode(container.markers, ctx.receiveMarkers)!);
+    } else {
+        container = JContainer.build(
+            ctx.receiveNode<Space>(null, receiveSpace)!,
+            ctx.receiveNodes<JRightPadded<T>>(null, receiveRightPaddedTree)!,
+            ctx.receiveNode<Markers>(null, ctx.receiveMarkers)!
+        );
+    }
+    return container;
 }
 
-export function leftPaddedValueReceiver<T>(type: any): DetailsReceiver<JLeftPadded<T>> {
-    // FIXME
-    throw new Error("Not implemented!");
+export function leftPaddedValueReceiver<T>(valueType: any): DetailsReceiver<JLeftPadded<T>> {
+    return (leftPadded, type, ctx): JLeftPadded<T> => {
+        if (leftPadded != null) {
+            leftPadded = leftPadded.withBefore(ctx.receiveNode(leftPadded.before, receiveSpace)!);
+            leftPadded = leftPadded.withElement(ctx.receiveValue(leftPadded.element, valueType)!);
+            leftPadded = leftPadded.withMarkers(ctx.receiveNode(leftPadded.markers, ctx.receiveMarkers)!);
+        } else {
+            leftPadded = new JLeftPadded<T>(
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveValue(null, valueType)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!
+            );
+        }
+        return leftPadded;
+    };
 }
 
 export function leftPaddedNodeReceiver<T>(type: any): DetailsReceiver<JLeftPadded<T>> {
@@ -130,7 +154,22 @@ export function rightPaddedValueReceiver<T>(valueType: any): DetailsReceiver<JRi
 }
 
 export function rightPaddedNodeReceiver<T>(type: any): DetailsReceiver<JRightPadded<T>> {
-    // FIXME
+    if (type === Space || type.name === 'Space') {
+        return function (rightPadded: JRightPadded<Space>, t: string | null, ctx: ReceiverContext): JRightPadded<Space> {
+            if (rightPadded !== null) {
+                rightPadded = rightPadded.withElement(ctx.receiveNode(rightPadded.element, receiveSpace)!);
+                rightPadded = rightPadded.withAfter(ctx.receiveNode<Space>(rightPadded.after, receiveSpace)!);
+                rightPadded = rightPadded.withMarkers(ctx.receiveNode(rightPadded.markers, ctx.receiveMarkers)!);
+            } else {
+                rightPadded = new JRightPadded<Space>(
+                    ctx.receiveNode(null, receiveSpace)!,
+                    ctx.receiveNode(null, receiveSpace)!,
+                    ctx.receiveNode(null, ctx.receiveMarkers)
+                );
+            }
+            return rightPadded;
+        } as unknown as DetailsReceiver<JRightPadded<T>>;
+    }
     throw new Error("Not implemented!");
 }
 

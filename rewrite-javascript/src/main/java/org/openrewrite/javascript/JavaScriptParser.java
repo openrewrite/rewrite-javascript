@@ -92,6 +92,8 @@ public class JavaScriptParser implements Parser {
             Path path = input.getRelativePath(relativeTo);
             parsingListener.startedParsing(input);
 
+            assert client != null;
+            assert remotingContext != null;
             try (EncodingDetectingInputStream is = input.getSource(ctx)) {
                 SourceFile parsed = client.runUsingSocket((socket, messenger) -> requireNonNull(messenger.sendRequest(generator -> {
                             if (input.isSynthetic() || !Files.isRegularFile(input.getPath())) {
@@ -121,6 +123,9 @@ public class JavaScriptParser implements Parser {
             } catch (Throwable t) {
                 ctx.getOnError().accept(t);
                 return ParseError.build(this, input, relativeTo, ctx, t);
+            } finally {
+                // NOTE: this is because we parse one source at the time
+                client.getContext().reset();
             }
         });
     }
