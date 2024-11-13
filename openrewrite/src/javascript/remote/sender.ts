@@ -178,6 +178,8 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendValue(scopedVariableDeclarations, v => v.id, ValueType.UUID);
         ctx.sendNode(scopedVariableDeclarations, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(scopedVariableDeclarations, v => v.markers, ctx.sendMarkers);
+        ctx.sendNodes(scopedVariableDeclarations, v => v.modifiers, ctx.sendTree, t => t.id);
+        ctx.sendNode(scopedVariableDeclarations, v => v.scopePrefix, Visitor.sendSpace);
         ctx.sendValue(scopedVariableDeclarations, v => v.scope, ValueType.Enum);
         ctx.sendNodes(scopedVariableDeclarations, v => v.padding.variables, Visitor.sendRightPadded(ValueType.Tree), t => t.element.id);
         return scopedVariableDeclarations;
@@ -340,7 +342,8 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(namespaceDeclaration, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(namespaceDeclaration, v => v.markers, ctx.sendMarkers);
         ctx.sendNodes(namespaceDeclaration, v => v.modifiers, ctx.sendTree, t => t.id);
-        ctx.sendNode(namespaceDeclaration, v => v.namespace, Visitor.sendSpace);
+        ctx.sendNode(namespaceDeclaration, v => v.keywordPrefix, Visitor.sendSpace);
+        ctx.sendValue(namespaceDeclaration, v => v.keywordType, ValueType.Enum);
         ctx.sendNode(namespaceDeclaration, v => v.padding.name, Visitor.sendRightPadded(ValueType.Tree));
         ctx.sendNode(namespaceDeclaration, v => v.body, ctx.sendTree);
         return namespaceDeclaration;

@@ -183,6 +183,8 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         scopedVariableDeclarations = scopedVariableDeclarations.withId(ctx.receiveValue(scopedVariableDeclarations.id, ValueType.UUID)!);
         scopedVariableDeclarations = scopedVariableDeclarations.withPrefix(ctx.receiveNode(scopedVariableDeclarations.prefix, receiveSpace)!);
         scopedVariableDeclarations = scopedVariableDeclarations.withMarkers(ctx.receiveNode(scopedVariableDeclarations.markers, ctx.receiveMarkers)!);
+        scopedVariableDeclarations = scopedVariableDeclarations.withModifiers(ctx.receiveNodes(scopedVariableDeclarations.modifiers, ctx.receiveTree)!);
+        scopedVariableDeclarations = scopedVariableDeclarations.withScopePrefix(ctx.receiveNode(scopedVariableDeclarations.scopePrefix, receiveSpace)!);
         scopedVariableDeclarations = scopedVariableDeclarations.withScope(ctx.receiveValue(scopedVariableDeclarations.scope, ValueType.Enum));
         scopedVariableDeclarations = scopedVariableDeclarations.padding.withVariables(ctx.receiveNodes(scopedVariableDeclarations.padding.variables, receiveRightPaddedTree)!);
         return scopedVariableDeclarations;
@@ -345,7 +347,8 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         namespaceDeclaration = namespaceDeclaration.withPrefix(ctx.receiveNode(namespaceDeclaration.prefix, receiveSpace)!);
         namespaceDeclaration = namespaceDeclaration.withMarkers(ctx.receiveNode(namespaceDeclaration.markers, ctx.receiveMarkers)!);
         namespaceDeclaration = namespaceDeclaration.withModifiers(ctx.receiveNodes(namespaceDeclaration.modifiers, ctx.receiveTree)!);
-        namespaceDeclaration = namespaceDeclaration.withNamespace(ctx.receiveNode(namespaceDeclaration.namespace, receiveSpace)!);
+        namespaceDeclaration = namespaceDeclaration.withKeywordPrefix(ctx.receiveNode(namespaceDeclaration.keywordPrefix, receiveSpace)!);
+        namespaceDeclaration = namespaceDeclaration.withKeywordType(ctx.receiveValue(namespaceDeclaration.keywordType, ValueType.Enum)!);
         namespaceDeclaration = namespaceDeclaration.padding.withName(ctx.receiveNode(namespaceDeclaration.padding.name, receiveRightPaddedTree)!);
         namespaceDeclaration = namespaceDeclaration.withBody(ctx.receiveNode(namespaceDeclaration.body, ctx.receiveTree)!);
         return namespaceDeclaration;
@@ -1192,6 +1195,8 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
+                ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveValue(null, ValueType.Enum),
                 ctx.receiveNodes(null, receiveRightPaddedTree)!
             );
@@ -1371,6 +1376,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
                 ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveValue(null, ValueType.Enum)!,
                 ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
                 ctx.receiveNode<Java.Block>(null, ctx.receiveTree)!
             );

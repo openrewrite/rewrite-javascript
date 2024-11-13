@@ -224,6 +224,8 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         }
         scopedVariableDeclarations = tempStatement as ScopedVariableDeclarations;
         scopedVariableDeclarations = scopedVariableDeclarations.withMarkers(this.visitMarkers(scopedVariableDeclarations.markers, p));
+        scopedVariableDeclarations = scopedVariableDeclarations.withModifiers(ListUtils.map(scopedVariableDeclarations.modifiers, el => this.visitAndCast(el, p)));
+        scopedVariableDeclarations = scopedVariableDeclarations.withScopePrefix(this.visitJsSpace(scopedVariableDeclarations.scopePrefix, JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_SCOPE_PREFIX, p)!);
         scopedVariableDeclarations = scopedVariableDeclarations.padding.withVariables(ListUtils.map(scopedVariableDeclarations.padding.variables, el => this.visitJsRightPadded(el, JsRightPadded.Location.SCOPED_VARIABLE_DECLARATIONS_VARIABLES, p)));
         return scopedVariableDeclarations;
     }
@@ -452,7 +454,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         namespaceDeclaration = tempStatement as NamespaceDeclaration;
         namespaceDeclaration = namespaceDeclaration.withMarkers(this.visitMarkers(namespaceDeclaration.markers, p));
         namespaceDeclaration = namespaceDeclaration.withModifiers(ListUtils.map(namespaceDeclaration.modifiers, el => this.visitAndCast(el, p)));
-        namespaceDeclaration = namespaceDeclaration.withNamespace(this.visitJsSpace(namespaceDeclaration.namespace, JsSpace.Location.NAMESPACE_DECLARATION_NAMESPACE, p)!);
+        namespaceDeclaration = namespaceDeclaration.withKeywordPrefix(this.visitJsSpace(namespaceDeclaration.keywordPrefix, JsSpace.Location.NAMESPACE_DECLARATION_KEYWORD_PREFIX, p)!);
         namespaceDeclaration = namespaceDeclaration.padding.withName(this.visitJsRightPadded(namespaceDeclaration.padding.name, JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p)!);
         namespaceDeclaration = namespaceDeclaration.withBody(this.visitAndCast(namespaceDeclaration.body, p)!);
         return namespaceDeclaration;

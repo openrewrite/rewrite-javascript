@@ -244,6 +244,8 @@ public class JavaScriptReceiver implements Receiver<JS> {
             scopedVariableDeclarations = scopedVariableDeclarations.withId(ctx.receiveNonNullValue(scopedVariableDeclarations.getId(), UUID.class));
             scopedVariableDeclarations = scopedVariableDeclarations.withPrefix(ctx.receiveNonNullNode(scopedVariableDeclarations.getPrefix(), JavaScriptReceiver::receiveSpace));
             scopedVariableDeclarations = scopedVariableDeclarations.withMarkers(ctx.receiveNonNullNode(scopedVariableDeclarations.getMarkers(), ctx::receiveMarkers));
+            scopedVariableDeclarations = scopedVariableDeclarations.withModifiers(ctx.receiveNonNullNodes(scopedVariableDeclarations.getModifiers(), ctx::receiveTree));
+            scopedVariableDeclarations = scopedVariableDeclarations.withScopePrefix(ctx.receiveNonNullNode(scopedVariableDeclarations.getScopePrefix(), JavaScriptReceiver::receiveSpace));
             scopedVariableDeclarations = scopedVariableDeclarations.withScope(ctx.receiveValue(scopedVariableDeclarations.getScope(), JS.ScopedVariableDeclarations.Scope.class));
             scopedVariableDeclarations = scopedVariableDeclarations.getPadding().withVariables(ctx.receiveNonNullNodes(scopedVariableDeclarations.getPadding().getVariables(), JavaScriptReceiver::receiveRightPaddedTree));
             return scopedVariableDeclarations;
@@ -422,7 +424,8 @@ public class JavaScriptReceiver implements Receiver<JS> {
             namespaceDeclaration = namespaceDeclaration.withPrefix(ctx.receiveNonNullNode(namespaceDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
             namespaceDeclaration = namespaceDeclaration.withMarkers(ctx.receiveNonNullNode(namespaceDeclaration.getMarkers(), ctx::receiveMarkers));
             namespaceDeclaration = namespaceDeclaration.withModifiers(ctx.receiveNonNullNodes(namespaceDeclaration.getModifiers(), ctx::receiveTree));
-            namespaceDeclaration = namespaceDeclaration.withNamespace(ctx.receiveNonNullNode(namespaceDeclaration.getNamespace(), JavaScriptReceiver::receiveSpace));
+            namespaceDeclaration = namespaceDeclaration.withKeywordPrefix(ctx.receiveNonNullNode(namespaceDeclaration.getKeywordPrefix(), JavaScriptReceiver::receiveSpace));
+            namespaceDeclaration = namespaceDeclaration.withKeywordType(ctx.receiveNonNullValue(namespaceDeclaration.getKeywordType(), JS.NamespaceDeclaration.KeywordType.class));
             namespaceDeclaration = namespaceDeclaration.getPadding().withName(ctx.receiveNonNullNode(namespaceDeclaration.getPadding().getName(), JavaScriptReceiver::receiveRightPaddedTree));
             namespaceDeclaration = namespaceDeclaration.withBody(ctx.receiveNonNullNode(namespaceDeclaration.getBody(), ctx::receiveTree));
             return namespaceDeclaration;
@@ -1299,6 +1302,8 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveValue(null, JS.ScopedVariableDeclarations.Scope.class),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree)
                 );
@@ -1478,6 +1483,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullValue(null, JS.NamespaceDeclaration.KeywordType.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
                 );

@@ -1350,6 +1350,14 @@ public interface JS extends J {
         @With
         Markers markers;
 
+        @With
+        @Getter
+        List<J.Modifier> modifiers;
+
+        @Getter
+        @With
+        Space scopePrefix;
+
         @Getter
         @With
         @Nullable
@@ -1405,7 +1413,7 @@ public interface JS extends J {
             }
 
             public ScopedVariableDeclarations withVariables(List<JRightPadded<Expression>> variables) {
-                return t.variables == variables ? t : new ScopedVariableDeclarations(t.id, t.prefix, t.markers, t.scope, variables);
+                return t.variables == variables ? t : new ScopedVariableDeclarations(t.id, t.prefix, t.markers, t.modifiers, t.scopePrefix, t.scope, variables);
             }
         }
     }
@@ -2589,7 +2597,11 @@ public interface JS extends J {
 
         @With
         @Getter
-        Space namespace;
+        Space keywordPrefix;
+
+        @With
+        @Getter
+        KeywordType keywordType;
 
         JRightPadded<Expression> name;
 
@@ -2631,12 +2643,17 @@ public interface JS extends J {
             return p;
         }
 
+        public enum KeywordType {
+            Namespace,
+            Module,
+        }
+
         @RequiredArgsConstructor
         public static class Padding {
             private final NamespaceDeclaration t;
 
             public NamespaceDeclaration withName(JRightPadded<Expression> name) {
-                return t.name == name ? t : new NamespaceDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.namespace, name, t.body);
+                return t.name == name ? t : new NamespaceDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.keywordPrefix, t.keywordType, name, t.body);
             }
 
             public JRightPadded<Expression> getName() {

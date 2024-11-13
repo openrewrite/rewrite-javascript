@@ -320,6 +320,9 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         JS.ScopedVariableDeclarations vd = scopedVariableDeclarations;
         vd = vd.withPrefix(visitSpace(vd.getPrefix(), JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_PREFIX, p));
         vd = vd.withMarkers(visitMarkers(vd.getMarkers(), p));
+        vd = vd.withModifiers(ListUtils.map(vd.getModifiers(),
+                mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
+        vd = vd.withScopePrefix(visitSpace(vd.getScopePrefix(), JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_SCOPE_PREFIX, p));
         Statement temp = (Statement) visitStatement(vd, p);
         if (!(temp instanceof JS.ScopedVariableDeclarations)) {
             return temp;
@@ -659,7 +662,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
     public J visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, P p) {
         JS.NamespaceDeclaration ns = namespaceDeclaration;
-        ns = ns.withPrefix(visitSpace(ns.getPrefix(), JsSpace.Location.JSNAMESPACE_DECLARATION_PREFIX, p));
+        ns = ns.withPrefix(visitSpace(ns.getPrefix(), JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p));
         ns = ns.withMarkers(visitMarkers(ns.getMarkers(), p));
         ns = ns.withModifiers(ListUtils.map(ns.getModifiers(),
                 mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
@@ -670,7 +673,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             ns = (JS.NamespaceDeclaration) temp;
         }
-        ns = ns.withNamespace(visitSpace(ns.getNamespace(), JsSpace.Location.JSNAMESPACE_KEYWORD_DECLARATION_PREFIX, p));
+        ns = ns.withKeywordPrefix(visitSpace(ns.getKeywordPrefix(), JsSpace.Location.NAMESPACE_DECLARATION_KEYWORD_PREFIX, p));
         ns = ns.getPadding().withName(visitRightPadded(ns.getPadding().getName(), JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p));
         ns = ns.withBody(visitAndCast(ns.getBody(), p));
         return ns;
