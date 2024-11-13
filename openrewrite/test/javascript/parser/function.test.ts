@@ -59,18 +59,42 @@ describe('function mapping', () => {
       );
     });
 
-    test.skip('parameter with anonymous type', () => {
-      rewriteRun(
-        //language=typescript
-        typeScript(`
-           function create<Type>(c: { new (): Type }): Type {
-              return new c();
-           }
-        `)
-      );
+    test('function with modifiers', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('export async function f (a =  2 , b) {}')
+        );
     });
 
-    test('function with return type', () => {
+    test('function with modifiers and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('/*a*/ export /*b*/ async /*c*/ function /*d*/f /*e*/ (a =  2 , b) {}')
+        );
+    });
+
+    test('function expression', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('const greet = function  (name: string) : string { return name; }')
+        );
+    });
+
+    test('function expression with type parameter', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('const greet = function<T> (name: T): number { return 1; }')
+        );
+    });
+
+    test('function expression with type parameter and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('const greet = /*a*/ function/*b*/ </*c*/T/*d*/>/*e*/(/*g*/name/*h*/:/*j*/T)/*k*/:/*l*/ number /*m*/{ return 1; }')
+        );
+    });
+
+    test('function with void return type', () => {
         rewriteRun(
             //language=typescript
             typeScript('function f ( a : string ) : void {}')
@@ -84,17 +108,21 @@ describe('function mapping', () => {
         );
     });
 
-    test.skip('function expression', () => {
+    test.skip('function type with parameter', () => {
         rewriteRun(
             //language=typescript
-            typeScript('const greet = function(name: string): string { return name; }')
+            typeScript('type Transformer<T> = (input: T) => T;')
         );
     });
 
-    test.skip('function expression with type parameter', () => {
+    test.skip('parameter with anonymous type', () => {
         rewriteRun(
             //language=typescript
-            typeScript('const greet = function<T>(name: T): number { return 1; }')
+            typeScript(`
+           function create<Type>(c: { new (): Type }): Type {
+              return new c();
+           }
+        `)
         );
     });
 });

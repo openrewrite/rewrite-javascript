@@ -1033,7 +1033,7 @@ export namespace JsBinary {
             IdentityEquals = 1,
             IdentityNotEquals = 2,
             In = 3,
-            QuestionQuestion = 4
+            QuestionQuestion = 4,
 
     }
 
@@ -2141,6 +2141,7 @@ export namespace Unary {
             Optional = 1,
             Exclamation = 2,
             QuestionDot = 3,
+
     }
 
 }
@@ -2967,6 +2968,140 @@ export namespace NamespaceDeclaration {
             Namespace = 0,
             Module = 1,
 
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$FunctionDeclaration")
+export class FunctionDeclaration extends JSMixin(Object) implements Statement, Expression, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], name: Java.Identifier | null, typeParameters: Java.TypeParameters | null, parameters: JContainer<Statement>, returnTypeExpression: TypeTree | null, body: J, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._modifiers = modifiers;
+        this._name = name;
+        this._typeParameters = typeParameters;
+        this._parameters = parameters;
+        this._returnTypeExpression = returnTypeExpression;
+        this._body = body;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): FunctionDeclaration {
+            return id === this._id ? this : new FunctionDeclaration(id, this._prefix, this._markers, this._modifiers, this._name, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): FunctionDeclaration {
+            return prefix === this._prefix ? this : new FunctionDeclaration(this._id, prefix, this._markers, this._modifiers, this._name, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): FunctionDeclaration {
+            return markers === this._markers ? this : new FunctionDeclaration(this._id, this._prefix, markers, this._modifiers, this._name, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
+        }
+
+        private readonly _modifiers: Java.Modifier[];
+
+        public get modifiers(): Java.Modifier[] {
+            return this._modifiers;
+        }
+
+        public withModifiers(modifiers: Java.Modifier[]): FunctionDeclaration {
+            return modifiers === this._modifiers ? this : new FunctionDeclaration(this._id, this._prefix, this._markers, modifiers, this._name, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
+        }
+
+        private readonly _name: Java.Identifier | null;
+
+        public get name(): Java.Identifier | null {
+            return this._name;
+        }
+
+        public withName(name: Java.Identifier | null): FunctionDeclaration {
+            return name === this._name ? this : new FunctionDeclaration(this._id, this._prefix, this._markers, this._modifiers, name, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
+        }
+
+        private readonly _typeParameters: Java.TypeParameters | null;
+
+        public get typeParameters(): Java.TypeParameters | null {
+            return this._typeParameters;
+        }
+
+        public withTypeParameters(typeParameters: Java.TypeParameters | null): FunctionDeclaration {
+            return typeParameters === this._typeParameters ? this : new FunctionDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._name, typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
+        }
+
+        private readonly _parameters: JContainer<Statement>;
+
+        public get parameters(): Statement[] {
+            return this._parameters.elements;
+        }
+
+        public withParameters(parameters: Statement[]): FunctionDeclaration {
+            return this.padding.withParameters(JContainer.withElements(this._parameters, parameters));
+        }
+
+        private readonly _returnTypeExpression: TypeTree | null;
+
+        public get returnTypeExpression(): TypeTree | null {
+            return this._returnTypeExpression;
+        }
+
+        public withReturnTypeExpression(returnTypeExpression: TypeTree | null): FunctionDeclaration {
+            return returnTypeExpression === this._returnTypeExpression ? this : new FunctionDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._name, this._typeParameters, this._parameters, returnTypeExpression, this._body, this._type);
+        }
+
+        private readonly _body: J;
+
+        public get body(): J {
+            return this._body;
+        }
+
+        public withBody(body: J): FunctionDeclaration {
+            return body === this._body ? this : new FunctionDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._name, this._typeParameters, this._parameters, this._returnTypeExpression, body, this._type);
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): FunctionDeclaration {
+            return _type === this._type ? this : new FunctionDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._name, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitFunctionDeclaration(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get parameters(): JContainer<Statement> {
+                return t._parameters;
+            }
+            public withParameters(parameters: JContainer<Statement>): FunctionDeclaration {
+                return t._parameters === parameters ? t : new FunctionDeclaration(t._id, t._prefix, t._markers, t._modifiers, t._name, t._typeParameters, parameters, t._returnTypeExpression, t._body, t._type);
+            }
+        }
     }
 
 }

@@ -2686,4 +2686,103 @@ public interface JS extends J {
             }
         }
     }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class FunctionDeclaration implements JS, Statement, Expression, TypedTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<FunctionDeclaration.Padding> padding;
+
+        @Getter
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @Getter
+        @With
+        Space prefix;
+
+        @Getter
+        @With
+        Markers markers;
+
+        @Getter
+        @With
+        List<J.Modifier> modifiers;
+
+        @Getter
+        @With
+        J.@Nullable Identifier name;
+
+        @Getter
+        @With
+        J.@Nullable TypeParameters typeParameters;
+
+        JContainer<Statement> parameters;
+
+        public List<Statement> getParameters() {
+            return parameters.getElements();
+        }
+
+        public FunctionDeclaration withParameters(List<Statement> parameters) {
+            return getPadding().withParameters(JContainer.withElements(this.parameters, parameters));
+        }
+
+        @With
+        @Getter
+        @Nullable
+        TypeTree returnTypeExpression;
+
+        @Getter
+        @With
+        J body;
+
+        @Getter
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitFunctionDeclaration(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public FunctionDeclaration.Padding getPadding() {
+            FunctionDeclaration.Padding p;
+            if (this.padding == null) {
+                p = new FunctionDeclaration.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new FunctionDeclaration.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final FunctionDeclaration t;
+
+            public JContainer<Statement> getParameters() {
+                return t.parameters;
+            }
+
+            public FunctionDeclaration withParameters(JContainer<Statement> parameters) {
+                return t.parameters == parameters ? t : new FunctionDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.name, t.typeParameters, parameters, t.returnTypeExpression, t.body, t.type);
+            }
+        }
+    }
 }

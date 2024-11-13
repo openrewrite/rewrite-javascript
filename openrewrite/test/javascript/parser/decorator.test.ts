@@ -30,7 +30,9 @@ describe('class decorator mapping', () => {
     });
 });
 
-describe('function decorator mapping', () => {
+// according to TypeScript documentation decorators are not allowed with
+// standalone functions https://www.typescriptlang.org/docs/handbook/decorators.html
+describe.skip('function decorator mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 

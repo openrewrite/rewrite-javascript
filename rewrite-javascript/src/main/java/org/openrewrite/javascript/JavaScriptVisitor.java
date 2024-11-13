@@ -678,4 +678,25 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         ns = ns.withBody(visitAndCast(ns.getBody(), p));
         return ns;
     }
+
+    public J visitFunctionDeclaration(JS.FunctionDeclaration functionDeclaration, P p) {
+        JS.FunctionDeclaration f = functionDeclaration;
+        f = f.withPrefix(visitSpace(f.getPrefix(), JsSpace.Location.FUNCTION_DECLARATION_PREFIX, p));
+        f = f.withMarkers(visitMarkers(f.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(f, p);
+        if (!(temp instanceof JS.FunctionDeclaration)) {
+            return temp;
+        } else {
+            f = (JS.FunctionDeclaration) temp;
+        }
+
+        f = f.withModifiers(ListUtils.map(f.getModifiers(), e -> visitAndCast(e, p)));
+        f = f.withName(this.visitAndCast(f.getName(), p));
+        f = f.withTypeParameters(visitAndCast(f.getTypeParameters(), p));
+        f = f.getPadding().withParameters(visitContainer(f.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, p));
+        f = f.withReturnTypeExpression(visitAndCast(f.getReturnTypeExpression(), p));
+        f = f.withBody(visitAndCast(f.getBody(), p));
+        f = f.withType(visitType(f.getType(), p));
+        return f;
+    }
 }

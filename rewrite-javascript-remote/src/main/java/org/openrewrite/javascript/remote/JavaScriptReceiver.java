@@ -430,6 +430,21 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.FunctionDeclaration visitFunctionDeclaration(JS.FunctionDeclaration functionDeclaration, ReceiverContext ctx) {
+            functionDeclaration = functionDeclaration.withId(ctx.receiveNonNullValue(functionDeclaration.getId(), UUID.class));
+            functionDeclaration = functionDeclaration.withPrefix(ctx.receiveNonNullNode(functionDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
+            functionDeclaration = functionDeclaration.withMarkers(ctx.receiveNonNullNode(functionDeclaration.getMarkers(), ctx::receiveMarkers));
+            functionDeclaration = functionDeclaration.withModifiers(ctx.receiveNonNullNodes(functionDeclaration.getModifiers(), ctx::receiveTree));
+            functionDeclaration = functionDeclaration.withName(ctx.receiveNode(functionDeclaration.getName(), ctx::receiveTree));
+            functionDeclaration = functionDeclaration.withTypeParameters(ctx.receiveNode(functionDeclaration.getTypeParameters(), ctx::receiveTree));
+            functionDeclaration = functionDeclaration.getPadding().withParameters(ctx.receiveNonNullNode(functionDeclaration.getPadding().getParameters(), JavaScriptReceiver::receiveContainer));
+            functionDeclaration = functionDeclaration.withReturnTypeExpression(ctx.receiveNode(functionDeclaration.getReturnTypeExpression(), ctx::receiveTree));
+            functionDeclaration = functionDeclaration.withBody(ctx.receiveNonNullNode(functionDeclaration.getBody(), ctx::receiveTree));
+            functionDeclaration = functionDeclaration.withType(ctx.receiveValue(functionDeclaration.getType(), JavaType.class));
+            return functionDeclaration;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, ReceiverContext ctx) {
             annotatedType = annotatedType.withId(ctx.receiveNonNullValue(annotatedType.getId(), UUID.class));
             annotatedType = annotatedType.withPrefix(ctx.receiveNonNullNode(annotatedType.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1482,6 +1497,21 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(org.openrewrite.javascript.tree.JS.NamespaceDeclaration.KeywordType.class)),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
+                );
+            }
+
+            if (type == JS.FunctionDeclaration.class) {
+                return (T) new JS.FunctionDeclaration(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
+                    ctx.receiveNode(null, ctx::receiveTree),
+                    ctx.receiveNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
+                    ctx.receiveNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveValue(null, JavaType.class)
                 );
             }
 

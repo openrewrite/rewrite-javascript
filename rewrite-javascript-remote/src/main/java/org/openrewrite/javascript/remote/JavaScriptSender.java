@@ -413,6 +413,21 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.FunctionDeclaration visitFunctionDeclaration(JS.FunctionDeclaration functionDeclaration, SenderContext ctx) {
+            ctx.sendValue(functionDeclaration, JS.FunctionDeclaration::getId);
+            ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getMarkers, ctx::sendMarkers);
+            ctx.sendNodes(functionDeclaration, JS.FunctionDeclaration::getModifiers, ctx::sendTree, Tree::getId);
+            ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getName, ctx::sendTree);
+            ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getTypeParameters, ctx::sendTree);
+            ctx.sendNode(functionDeclaration, e -> e.getPadding().getParameters(), JavaScriptSender::sendContainer);
+            ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getReturnTypeExpression, ctx::sendTree);
+            ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getBody, ctx::sendTree);
+            ctx.sendTypedValue(functionDeclaration, JS.FunctionDeclaration::getType);
+            return functionDeclaration;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, SenderContext ctx) {
             ctx.sendValue(annotatedType, J.AnnotatedType::getId);
             ctx.sendNode(annotatedType, J.AnnotatedType::getPrefix, JavaScriptSender::sendSpace);
