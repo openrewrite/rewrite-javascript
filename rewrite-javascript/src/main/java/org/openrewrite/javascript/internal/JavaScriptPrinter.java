@@ -254,7 +254,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     public J visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, PrintOutputCapture<P> p) {
         beforeSyntax(namespaceDeclaration, JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p);
         namespaceDeclaration.getModifiers().forEach(it -> delegate.visitModifier(it, p));
-        visitSpace(namespaceDeclaration.getKeywordPrefix(), JsSpace.Location.NAMESPACE_DECLARATION_KEYWORD_PREFIX, p);
+        visitSpace(namespaceDeclaration.getPadding().getKeywordType().getBefore(), JsSpace.Location.NAMESPACE_DECLARATION_KEYWORD_PREFIX, p);
         switch (namespaceDeclaration.getKeywordType()) {
             case Namespace:
                 p.append("namespace");
@@ -274,9 +274,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         beforeSyntax(variableDeclarations, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
         variableDeclarations.getModifiers().forEach(m -> delegate.visitModifier(m, p));
 
-        visitSpace(variableDeclarations.getScopePrefix(), JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_SCOPE_PREFIX, p);
-        if (variableDeclarations.getScope() != null) {
-            switch (variableDeclarations.getScope()) {
+        JLeftPadded<JS.ScopedVariableDeclarations.Scope> scope = variableDeclarations.getPadding().getScope();
+        if (scope != null) {
+            visitSpace(scope.getBefore(), JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_SCOPE_PREFIX, p);
+            switch (scope.getElement()) {
                 case Let:
                     p.append("let");
                     break;

@@ -322,7 +322,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         vd = vd.withMarkers(visitMarkers(vd.getMarkers(), p));
         vd = vd.withModifiers(ListUtils.map(vd.getModifiers(),
                 mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
-        vd = vd.withScopePrefix(visitSpace(vd.getScopePrefix(), JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_SCOPE_PREFIX, p));
+        vd = vd.getPadding().withScope(visitLeftPadded(vd.getPadding().getScope(), JsLeftPadded.Location.SCOPED_VARIABLE_DECLARATIONS_SCOPE, p));
         Statement temp = (Statement) visitStatement(vd, p);
         if (!(temp instanceof JS.ScopedVariableDeclarations)) {
             return temp;
@@ -664,16 +664,16 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         JS.NamespaceDeclaration ns = namespaceDeclaration;
         ns = ns.withPrefix(visitSpace(ns.getPrefix(), JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p));
         ns = ns.withMarkers(visitMarkers(ns.getMarkers(), p));
-        ns = ns.withModifiers(ListUtils.map(ns.getModifiers(),
-                mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
-        ns = ns.withModifiers(ListUtils.map(ns.getModifiers(), m -> visitAndCast(m, p)));
         Statement temp = (Statement) visitStatement(ns, p);
         if (!(temp instanceof JS.NamespaceDeclaration)) {
             return temp;
         } else {
             ns = (JS.NamespaceDeclaration) temp;
         }
-        ns = ns.withKeywordPrefix(visitSpace(ns.getKeywordPrefix(), JsSpace.Location.NAMESPACE_DECLARATION_KEYWORD_PREFIX, p));
+        ns = ns.withModifiers(ListUtils.map(ns.getModifiers(),
+                mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
+        ns = ns.withModifiers(ListUtils.map(ns.getModifiers(), m -> visitAndCast(m, p)));
+        ns = ns.getPadding().withKeywordType(visitLeftPadded(ns.getPadding().getKeywordType(), JsLeftPadded.Location.NAMESPACE_DECLARATION_KEYWORD_TYPE, p));
         ns = ns.getPadding().withName(visitRightPadded(ns.getPadding().getName(), JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p));
         ns = ns.withBody(visitAndCast(ns.getBody(), p));
         return ns;

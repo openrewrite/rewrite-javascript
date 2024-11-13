@@ -1393,13 +1393,12 @@ export class PropertyAssignment extends JSMixin(Object) implements Statement, Ty
 
 @LstType("org.openrewrite.javascript.tree.JS$ScopedVariableDeclarations")
 export class ScopedVariableDeclarations extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], scopePrefix: Space, scope: ScopedVariableDeclarations.Scope | null, variables: JRightPadded<Expression>[]) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], scope: JLeftPadded<ScopedVariableDeclarations.Scope> | null, variables: JRightPadded<Expression>[]) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
         this._modifiers = modifiers;
-        this._scopePrefix = scopePrefix;
         this._scope = scope;
         this._variables = variables;
     }
@@ -1411,7 +1410,7 @@ export class ScopedVariableDeclarations extends JSMixin(Object) implements State
         }
 
         public withId(id: UUID): ScopedVariableDeclarations {
-            return id === this._id ? this : new ScopedVariableDeclarations(id, this._prefix, this._markers, this._modifiers, this._scopePrefix, this._scope, this._variables);
+            return id === this._id ? this : new ScopedVariableDeclarations(id, this._prefix, this._markers, this._modifiers, this._scope, this._variables);
         }
 
         private readonly _prefix: Space;
@@ -1421,7 +1420,7 @@ export class ScopedVariableDeclarations extends JSMixin(Object) implements State
         }
 
         public withPrefix(prefix: Space): ScopedVariableDeclarations {
-            return prefix === this._prefix ? this : new ScopedVariableDeclarations(this._id, prefix, this._markers, this._modifiers, this._scopePrefix, this._scope, this._variables);
+            return prefix === this._prefix ? this : new ScopedVariableDeclarations(this._id, prefix, this._markers, this._modifiers, this._scope, this._variables);
         }
 
         private readonly _markers: Markers;
@@ -1431,7 +1430,7 @@ export class ScopedVariableDeclarations extends JSMixin(Object) implements State
         }
 
         public withMarkers(markers: Markers): ScopedVariableDeclarations {
-            return markers === this._markers ? this : new ScopedVariableDeclarations(this._id, this._prefix, markers, this._modifiers, this._scopePrefix, this._scope, this._variables);
+            return markers === this._markers ? this : new ScopedVariableDeclarations(this._id, this._prefix, markers, this._modifiers, this._scope, this._variables);
         }
 
         private readonly _modifiers: Java.Modifier[];
@@ -1441,27 +1440,17 @@ export class ScopedVariableDeclarations extends JSMixin(Object) implements State
         }
 
         public withModifiers(modifiers: Java.Modifier[]): ScopedVariableDeclarations {
-            return modifiers === this._modifiers ? this : new ScopedVariableDeclarations(this._id, this._prefix, this._markers, modifiers, this._scopePrefix, this._scope, this._variables);
+            return modifiers === this._modifiers ? this : new ScopedVariableDeclarations(this._id, this._prefix, this._markers, modifiers, this._scope, this._variables);
         }
 
-        private readonly _scopePrefix: Space;
-
-        public get scopePrefix(): Space {
-            return this._scopePrefix;
-        }
-
-        public withScopePrefix(scopePrefix: Space): ScopedVariableDeclarations {
-            return scopePrefix === this._scopePrefix ? this : new ScopedVariableDeclarations(this._id, this._prefix, this._markers, this._modifiers, scopePrefix, this._scope, this._variables);
-        }
-
-        private readonly _scope: ScopedVariableDeclarations.Scope | null;
+        private readonly _scope: JLeftPadded<ScopedVariableDeclarations.Scope> | null;
 
         public get scope(): ScopedVariableDeclarations.Scope | null {
-            return this._scope;
+            return this._scope === null ? null : this._scope.element;
         }
 
         public withScope(scope: ScopedVariableDeclarations.Scope | null): ScopedVariableDeclarations {
-            return scope === this._scope ? this : new ScopedVariableDeclarations(this._id, this._prefix, this._markers, this._modifiers, this._scopePrefix, scope, this._variables);
+            return this.padding.withScope(JLeftPadded.withElement(this._scope, scope));
         }
 
         private readonly _variables: JRightPadded<Expression>[];
@@ -1481,11 +1470,17 @@ export class ScopedVariableDeclarations extends JSMixin(Object) implements State
     get padding() {
         const t = this;
         return new class {
+            public get scope(): JLeftPadded<ScopedVariableDeclarations.Scope> | null {
+                return t._scope;
+            }
+            public withScope(scope: JLeftPadded<ScopedVariableDeclarations.Scope> | null): ScopedVariableDeclarations {
+                return t._scope === scope ? t : new ScopedVariableDeclarations(t._id, t._prefix, t._markers, t._modifiers, scope, t._variables);
+            }
             public get variables(): JRightPadded<Expression>[] {
                 return t._variables;
             }
             public withVariables(variables: JRightPadded<Expression>[]): ScopedVariableDeclarations {
-                return t._variables === variables ? t : new ScopedVariableDeclarations(t._id, t._prefix, t._markers, t._modifiers, t._scopePrefix, t._scope, variables);
+                return t._variables === variables ? t : new ScopedVariableDeclarations(t._id, t._prefix, t._markers, t._modifiers, t._scope, variables);
             }
         }
     }
@@ -2860,13 +2855,12 @@ export class JSMethodDeclaration extends JSMixin(Object) implements Statement, T
 
 @LstType("org.openrewrite.javascript.tree.JS$NamespaceDeclaration")
 export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], keywordPrefix: Space, keywordType: NamespaceDeclaration.KeywordType, name: JRightPadded<Expression>, body: Java.Block) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], keywordType: JLeftPadded<NamespaceDeclaration.KeywordType>, name: JRightPadded<Expression>, body: Java.Block) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
         this._modifiers = modifiers;
-        this._keywordPrefix = keywordPrefix;
         this._keywordType = keywordType;
         this._name = name;
         this._body = body;
@@ -2879,7 +2873,7 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withId(id: UUID): NamespaceDeclaration {
-            return id === this._id ? this : new NamespaceDeclaration(id, this._prefix, this._markers, this._modifiers, this._keywordPrefix, this._keywordType, this._name, this._body);
+            return id === this._id ? this : new NamespaceDeclaration(id, this._prefix, this._markers, this._modifiers, this._keywordType, this._name, this._body);
         }
 
         private readonly _prefix: Space;
@@ -2889,7 +2883,7 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withPrefix(prefix: Space): NamespaceDeclaration {
-            return prefix === this._prefix ? this : new NamespaceDeclaration(this._id, prefix, this._markers, this._modifiers, this._keywordPrefix, this._keywordType, this._name, this._body);
+            return prefix === this._prefix ? this : new NamespaceDeclaration(this._id, prefix, this._markers, this._modifiers, this._keywordType, this._name, this._body);
         }
 
         private readonly _markers: Markers;
@@ -2899,7 +2893,7 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withMarkers(markers: Markers): NamespaceDeclaration {
-            return markers === this._markers ? this : new NamespaceDeclaration(this._id, this._prefix, markers, this._modifiers, this._keywordPrefix, this._keywordType, this._name, this._body);
+            return markers === this._markers ? this : new NamespaceDeclaration(this._id, this._prefix, markers, this._modifiers, this._keywordType, this._name, this._body);
         }
 
         private readonly _modifiers: Java.Modifier[];
@@ -2909,27 +2903,17 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withModifiers(modifiers: Java.Modifier[]): NamespaceDeclaration {
-            return modifiers === this._modifiers ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, modifiers, this._keywordPrefix, this._keywordType, this._name, this._body);
+            return modifiers === this._modifiers ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, modifiers, this._keywordType, this._name, this._body);
         }
 
-        private readonly _keywordPrefix: Space;
-
-        public get keywordPrefix(): Space {
-            return this._keywordPrefix;
-        }
-
-        public withKeywordPrefix(keywordPrefix: Space): NamespaceDeclaration {
-            return keywordPrefix === this._keywordPrefix ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, this._modifiers, keywordPrefix, this._keywordType, this._name, this._body);
-        }
-
-        private readonly _keywordType: NamespaceDeclaration.KeywordType;
+        private readonly _keywordType: JLeftPadded<NamespaceDeclaration.KeywordType>;
 
         public get keywordType(): NamespaceDeclaration.KeywordType {
-            return this._keywordType;
+            return this._keywordType.element;
         }
 
         public withKeywordType(keywordType: NamespaceDeclaration.KeywordType): NamespaceDeclaration {
-            return keywordType === this._keywordType ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._keywordPrefix, keywordType, this._name, this._body);
+            return this.padding.withKeywordType(this._keywordType.withElement(keywordType));
         }
 
         private readonly _name: JRightPadded<Expression>;
@@ -2949,7 +2933,7 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withBody(body: Java.Block): NamespaceDeclaration {
-            return body === this._body ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._keywordPrefix, this._keywordType, this._name, body);
+            return body === this._body ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._keywordType, this._name, body);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
@@ -2959,11 +2943,17 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
     get padding() {
         const t = this;
         return new class {
+            public get keywordType(): JLeftPadded<NamespaceDeclaration.KeywordType> {
+                return t._keywordType;
+            }
+            public withKeywordType(keywordType: JLeftPadded<NamespaceDeclaration.KeywordType>): NamespaceDeclaration {
+                return t._keywordType === keywordType ? t : new NamespaceDeclaration(t._id, t._prefix, t._markers, t._modifiers, keywordType, t._name, t._body);
+            }
             public get name(): JRightPadded<Expression> {
                 return t._name;
             }
             public withName(name: JRightPadded<Expression>): NamespaceDeclaration {
-                return t._name === name ? t : new NamespaceDeclaration(t._id, t._prefix, t._markers, t._modifiers, t._keywordPrefix, t._keywordType, name, t._body);
+                return t._name === name ? t : new NamespaceDeclaration(t._id, t._prefix, t._markers, t._modifiers, t._keywordType, name, t._body);
             }
         }
     }

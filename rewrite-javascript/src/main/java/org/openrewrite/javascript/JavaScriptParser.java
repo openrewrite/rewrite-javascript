@@ -191,7 +191,7 @@ public class JavaScriptParser implements Parser {
 
         exportResource("META-INF/package.json", dir.toFile());
 
-        List<String> command = new ArrayList(Arrays.asList("npm", "install", "--force"));
+        List<String> command = new ArrayList(Arrays.asList("npm", "update", "--force"));
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         Process process = processBuilder.directory(dir.toFile()).start();
         int exitCode = process.waitFor();

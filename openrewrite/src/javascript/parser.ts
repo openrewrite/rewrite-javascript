@@ -1841,21 +1841,29 @@ export class JavaScriptParserVisitor {
             Space.EMPTY,
             Markers.EMPTY,
             [],
-            this.prefix(node),
-            kind?.kind === ts.SyntaxKind.LetKeyword ? JS.ScopedVariableDeclarations.Scope.Let :
-                kind?.kind === ts.SyntaxKind.ConstKeyword ? JS.ScopedVariableDeclarations.Scope.Const : JS.ScopedVariableDeclarations.Scope.Var,
-            node.declarations.map(declaration => {
-                return this.rightPadded(new J.VariableDeclarations(
-                    randomId(),
-                    this.prefix(declaration),
-                    Markers.EMPTY,
-                    [], // FIXME decorators?
-                    [], // FIXME modifiers?
-                    this.mapTypeInfo(declaration),
-                    null, // FIXME varargs
-                    [],
-                    [this.rightPadded(this.visit(declaration), Space.EMPTY)]
-                ), this.suffix(declaration));
+            this.leftPadded(
+                this.prefix(node),
+                kind?.kind === ts.SyntaxKind.LetKeyword
+                    ? JS.ScopedVariableDeclarations.Scope.Let
+                    : kind?.kind === ts.SyntaxKind.ConstKeyword
+                    ? JS.ScopedVariableDeclarations.Scope.Const
+                    : JS.ScopedVariableDeclarations.Scope.Var
+            ),
+            node.declarations.map((declaration) => {
+                return this.rightPadded(
+                    new J.VariableDeclarations(
+                        randomId(),
+                        this.prefix(declaration),
+                        Markers.EMPTY,
+                        [], // FIXME decorators?
+                        [], // FIXME modifiers?
+                        this.mapTypeInfo(declaration),
+                        null, // FIXME varargs
+                        [],
+                        [this.rightPadded(this.visit(declaration), Space.EMPTY)]
+                    ),
+                    this.suffix(declaration)
+                );
             })
         );
     }
@@ -2010,8 +2018,10 @@ export class JavaScriptParserVisitor {
                 Space.EMPTY,
                 Markers.EMPTY,
                 this.mapModifiers(node),
-                namespaceKeyword ? this.prefix(namespaceKeyword) : Space.EMPTY,
-                keywordType,
+                this.leftPadded(
+                    namespaceKeyword ? this.prefix(namespaceKeyword) : Space.EMPTY,
+                    keywordType
+                ),
                 this.rightPadded(
                         new J.FieldAccess(
                             randomId(),
@@ -2035,8 +2045,10 @@ export class JavaScriptParserVisitor {
                 node.parent.kind === ts.SyntaxKind.ModuleBlock ? this.prefix(node) : Space.EMPTY,
                 Markers.EMPTY,
                 this.mapModifiers(node),
-                namespaceKeyword ? this.prefix(namespaceKeyword) : Space.EMPTY,
-                keywordType,
+                this.leftPadded(
+                    namespaceKeyword ? this.prefix(namespaceKeyword) : Space.EMPTY,
+                    keywordType
+                ),
                 this.rightPadded(this.convert(node.name), this.prefix(node)), // J.FieldAccess
                 body // J.Block
             );

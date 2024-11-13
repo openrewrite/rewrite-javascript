@@ -1354,14 +1354,17 @@ public interface JS extends J {
         @Getter
         List<J.Modifier> modifiers;
 
-        @Getter
-        @With
-        Space scopePrefix;
-
-        @Getter
-        @With
         @Nullable
-        Scope scope;
+        JLeftPadded<Scope> scope;
+
+        @Nullable
+        public Scope getScope() {
+            return scope != null ? scope.getElement() : null;
+        }
+
+        public ScopedVariableDeclarations withScope(@Nullable Scope scope) {
+            return getPadding().withScope(JLeftPadded.withElement(this.scope, scope));
+        }
 
         List<JRightPadded<Expression>> variables;
 
@@ -1413,7 +1416,16 @@ public interface JS extends J {
             }
 
             public ScopedVariableDeclarations withVariables(List<JRightPadded<Expression>> variables) {
-                return t.variables == variables ? t : new ScopedVariableDeclarations(t.id, t.prefix, t.markers, t.modifiers, t.scopePrefix, t.scope, variables);
+                return t.variables == variables ? t : new ScopedVariableDeclarations(t.id, t.prefix, t.markers, t.modifiers, t.scope, variables);
+            }
+
+            @Nullable
+            public JLeftPadded<Scope> getScope() {
+                return t.scope;
+            }
+
+            public ScopedVariableDeclarations withScope(@Nullable JLeftPadded<Scope> scope) {
+                return t.scope == scope ? t : new ScopedVariableDeclarations(t.id, t.prefix, t.markers, t.modifiers, scope, t.variables);
             }
         }
     }
@@ -2595,13 +2607,15 @@ public interface JS extends J {
         @Getter
         List<J.Modifier> modifiers;
 
-        @With
-        @Getter
-        Space keywordPrefix;
+        JLeftPadded<KeywordType> keywordType;
 
-        @With
-        @Getter
-        KeywordType keywordType;
+        public KeywordType getKeywordType() {
+            return keywordType.getElement();
+        }
+
+        public NamespaceDeclaration withKeywordType(KeywordType kt) {
+            return getPadding().withKeywordType(JLeftPadded.withElement(this.keywordType, kt));
+        }
 
         JRightPadded<Expression> name;
 
@@ -2653,11 +2667,19 @@ public interface JS extends J {
             private final NamespaceDeclaration t;
 
             public NamespaceDeclaration withName(JRightPadded<Expression> name) {
-                return t.name == name ? t : new NamespaceDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.keywordPrefix, t.keywordType, name, t.body);
+                return t.name == name ? t : new NamespaceDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.keywordType, name, t.body);
             }
 
             public JRightPadded<Expression> getName() {
                 return t.name;
+            }
+
+            public JLeftPadded<KeywordType> getKeywordType() {
+                return t.keywordType;
+            }
+
+            public NamespaceDeclaration withKeywordType(JLeftPadded<KeywordType> keywordType) {
+                return t.keywordType == keywordType ? t : new NamespaceDeclaration(t.id, t.prefix, t.markers, t.modifiers, keywordType, t.name, t.body);
             }
         }
     }
