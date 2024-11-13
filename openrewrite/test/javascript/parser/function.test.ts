@@ -69,4 +69,32 @@ describe('function mapping', () => {
         `)
       );
     });
+
+    test('function with return type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('function f ( a : string ) : void {}')
+        );
+    });
+
+    test('function type expressions', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('function greeter(fn: (a: string) => void) { fn("Hello, World"); }')
+        );
+    });
+
+    test.skip('function expression', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('const greet = function(name: string): string { return name; }')
+        );
+    });
+
+    test.skip('function expression with type parameter', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('const greet = function<T>(name: T): number { return 1; }')
+        );
+    });
 });
