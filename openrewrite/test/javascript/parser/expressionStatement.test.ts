@@ -33,6 +33,15 @@ describe('expression statement mapping', () => {
         );
     });
 
+    test('simple non-null expression with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const length = /*0*/user/*a*/!/*b*/./*c*/ profile /*d*/!/*e*/ ./*f*/ username /*g*/!/*h*/ ./*j*/ length/*l*/ ;
+            `)
+        );
+    });
+
     test('simple question-dot expression', () => {
         rewriteRun(
             //language=typescript
@@ -42,11 +51,29 @@ describe('expression statement mapping', () => {
         );
     });
 
+    test('simple question-dot expression with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const length = /*0*/user/*a*/ ?./*b*/ profile/*c*/ ?./*d*/ username /*e*/?./*f*/ length /*g*/;
+            `)
+        );
+    });
+
     test('simple default expression', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
                 const length = user ?? 'default' ;
+            `)
+        );
+    });
+
+    test('simple default expression with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const length = user /*a*/??/*b*/ 'default' /*c*/;
             `)
         );
     });
@@ -71,8 +98,8 @@ describe('expression statement mapping', () => {
                 }
 
                 const user = getUser(1);
-                const length = user  ! . profile ?.  username  !. length /*test*/ ;
-                const username2 = getUser(1) ! . profile ?. username ; // test;
+                const length = user  ! .   profile ?.  username  !. length /*test*/ ;
+                const username2 = getUser(1) ! .  profile  ?. username ; // test;
                 const username = user!.profile?.username ?? 'Guest' ;
             `)
         );
