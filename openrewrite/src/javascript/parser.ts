@@ -2064,9 +2064,9 @@ export class JavaScriptParserVisitor {
             null,
             new J.Block(
                 randomId(),
-                this.prefix(node.getChildren().find(v => v.kind === ts.SyntaxKind.OpenBraceToken)!),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBraceToken)!),
                 Markers.EMPTY,
-                new JRightPadded(false, Space.EMPTY, Markers.EMPTY),
+                this.rightPadded(false, Space.EMPTY),
                 [this.rightPadded(
                     new J.EnumValueSet(
                         randomId(),

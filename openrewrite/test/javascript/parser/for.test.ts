@@ -96,6 +96,13 @@ describe('for mapping', () => {
         );
     });
 
+    test('for-of empty with array', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('for (let i of [0, 1, 2, [3, 4, 5]]) ;')
+        );
+    });
+
     test('for-of with comments', () => {
         rewriteRun(
             //language=typescript
