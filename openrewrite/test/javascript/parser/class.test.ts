@@ -375,4 +375,18 @@ describe('class mapping', () => {
         );
     });
 
+    test('class with SemicolonClassElement', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class MyClass {
+                    /*a*/; // This is a SemicolonClassElement
+                    myMethod() {
+                        console.log('Hello');
+                    }
+                }
+            `)
+        );
+    });
+
 });

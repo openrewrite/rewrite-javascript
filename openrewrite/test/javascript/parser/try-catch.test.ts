@@ -50,6 +50,19 @@ describe('try-catch mapping', () => {
         );
     });
 
+    test('try-catch without error', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                try {
+                    // Code that may throw an error
+                } /*a*/ catch /*b*/ {
+                    // handel error
+                }
+            `)
+        );
+    });
+
     test('try-catch with typed unknown error', () => {
         rewriteRun(
           //language=typescript

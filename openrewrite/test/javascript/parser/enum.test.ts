@@ -40,7 +40,7 @@ describe('empty mapping', () => {
           //language=typescript
           typeScript(`
               enum Test {
-                  A ,
+                  A/*a*/,
               };
           `)
         );
@@ -116,9 +116,9 @@ describe('empty mapping', () => {
           //language=typescript
           typeScript(`
                enum Test /*xx*/ {
-                  A /*aa*/,
+                  A /*aa*/, /*ab*/
                   /*bb*/ B /*cc*/,
-                  C, /*dd*/
+                  C/*de*/, /*dd*/
               };
           `)
         );
