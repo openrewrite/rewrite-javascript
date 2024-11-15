@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration, FunctionDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -345,6 +345,20 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(namespaceDeclaration, v => v.padding.name, Visitor.sendRightPadded(ValueType.Tree));
         ctx.sendNode(namespaceDeclaration, v => v.body, ctx.sendTree);
         return namespaceDeclaration;
+    }
+
+    public visitFunctionDeclaration(functionDeclaration: FunctionDeclaration, ctx: SenderContext): J {
+        ctx.sendValue(functionDeclaration, v => v.id, ValueType.UUID);
+        ctx.sendNode(functionDeclaration, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(functionDeclaration, v => v.markers, ctx.sendMarkers);
+        ctx.sendNodes(functionDeclaration, v => v.modifiers, ctx.sendTree, t => t.id);
+        ctx.sendNode(functionDeclaration, v => v.name, ctx.sendTree);
+        ctx.sendNode(functionDeclaration, v => v.typeParameters, ctx.sendTree);
+        ctx.sendNode(functionDeclaration, v => v.padding.parameters, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendNode(functionDeclaration, v => v.returnTypeExpression, ctx.sendTree);
+        ctx.sendNode(functionDeclaration, v => v.body, ctx.sendTree);
+        ctx.sendTypedValue(functionDeclaration, v => v.type, ValueType.Object);
+        return functionDeclaration;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: SenderContext): J {

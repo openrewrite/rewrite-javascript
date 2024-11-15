@@ -532,12 +532,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(method.getLeadingAnnotations(), p);
         method.getModifiers().forEach(it -> visitModifier(it, p));
 
-        FunctionKeyword functionKeyword = method.getMarkers().findFirst(FunctionKeyword.class).orElse(null);
-        if (functionKeyword != null) {
-            visitSpace(functionKeyword.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-            p.append("function");
-        }
-
         Asterisk asterisk = method.getMarkers().findFirst(Asterisk.class).orElse(null);
         if (asterisk != null) {
             visitSpace(asterisk.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
@@ -563,6 +557,34 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(method.getBody(), p);
         afterSyntax(method, p);
         return method;
+    }
+
+    @Override
+    public J visitFunctionDeclaration(JS.FunctionDeclaration functionDeclaration, PrintOutputCapture<P> p) {
+        beforeSyntax(functionDeclaration, JsSpace.Location.FUNCTION_DECLARATION_PREFIX, p);
+        functionDeclaration.getModifiers().forEach(m -> delegate.visitModifier(m, p));
+        p.append("function");
+
+        visit(functionDeclaration.getName(), p);
+
+        J.TypeParameters typeParameters = functionDeclaration.getTypeParameters();
+        if (typeParameters != null) {
+            visit(typeParameters.getAnnotations(), p);
+            visitSpace(typeParameters.getPrefix(), Space.Location.TYPE_PARAMETERS, p);
+            visitMarkers(typeParameters.getMarkers(), p);
+            p.append("<");
+            visitRightPadded(typeParameters.getPadding().getTypeParameters(), JRightPadded.Location.TYPE_PARAMETER, ",", p);
+            p.append(">");
+        }
+
+        visitContainer("(", functionDeclaration.getPadding().getParameters(), JsContainer.Location.JSMETHOD_DECLARATION_PARAMETERS, ",", ")", p);
+        if (functionDeclaration.getReturnTypeExpression() != null) {
+            visit(functionDeclaration.getReturnTypeExpression(), p);
+        }
+
+        visit(functionDeclaration.getBody(), p);
+        afterSyntax(functionDeclaration, p);
+        return functionDeclaration;
     }
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
@@ -725,12 +747,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
             visit(method.getLeadingAnnotations(), p);
             method.getModifiers().forEach(it -> visitModifier(it, p));
-
-            FunctionKeyword functionKeyword = method.getMarkers().findFirst(FunctionKeyword.class).orElse(null);
-            if (functionKeyword != null) {
-                visitSpace(functionKeyword.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-                p.append("function");
-            }
 
             Asterisk asterisk = method.getMarkers().findFirst(Asterisk.class).orElse(null);
             if (asterisk != null) {

@@ -276,6 +276,19 @@ describe('class mapping', () => {
         );
     });
 
+    test('class with optional methods with generics', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class Person {
+                      // Optional methods
+                    transform?<T>(input: T): T { return input; }   // Optional method
+                    echo ? < R > (input: R): R { return input; }   // Optional method
+                }
+            `)
+        );
+    });
+
     test('class with get/set accessors', () => {
         rewriteRun(
             //language=typescript

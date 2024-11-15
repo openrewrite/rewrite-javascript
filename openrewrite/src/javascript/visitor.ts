@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration, FunctionDeclaration} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -458,6 +458,30 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         namespaceDeclaration = namespaceDeclaration.padding.withName(this.visitJsRightPadded(namespaceDeclaration.padding.name, JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p)!);
         namespaceDeclaration = namespaceDeclaration.withBody(this.visitAndCast(namespaceDeclaration.body, p)!);
         return namespaceDeclaration;
+    }
+
+    public visitFunctionDeclaration(functionDeclaration: FunctionDeclaration, p: P): J | null {
+        functionDeclaration = functionDeclaration.withPrefix(this.visitJsSpace(functionDeclaration.prefix, JsSpace.Location.FUNCTION_DECLARATION_PREFIX, p)!);
+        let tempStatement = this.visitStatement(functionDeclaration, p) as Statement;
+        if (!(tempStatement instanceof FunctionDeclaration))
+        {
+            return tempStatement;
+        }
+        functionDeclaration = tempStatement as FunctionDeclaration;
+        let tempExpression = this.visitExpression(functionDeclaration, p) as Expression;
+        if (!(tempExpression instanceof FunctionDeclaration))
+        {
+            return tempExpression;
+        }
+        functionDeclaration = tempExpression as FunctionDeclaration;
+        functionDeclaration = functionDeclaration.withMarkers(this.visitMarkers(functionDeclaration.markers, p));
+        functionDeclaration = functionDeclaration.withModifiers(ListUtils.map(functionDeclaration.modifiers, el => this.visitAndCast(el, p)));
+        functionDeclaration = functionDeclaration.withName(this.visitAndCast(functionDeclaration.name, p));
+        functionDeclaration = functionDeclaration.withTypeParameters(this.visitAndCast(functionDeclaration.typeParameters, p));
+        functionDeclaration = functionDeclaration.padding.withParameters(this.visitJsContainer(functionDeclaration.padding.parameters, JsContainer.Location.FUNCTION_DECLARATION_PARAMETERS, p)!);
+        functionDeclaration = functionDeclaration.withReturnTypeExpression(this.visitAndCast(functionDeclaration.returnTypeExpression, p));
+        functionDeclaration = functionDeclaration.withBody(this.visitAndCast(functionDeclaration.body, p)!);
+        return functionDeclaration;
     }
 
     public visitJsLeftPadded<T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P): JLeftPadded<T> {

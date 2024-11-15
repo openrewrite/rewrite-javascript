@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration, FunctionDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -350,6 +350,20 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         namespaceDeclaration = namespaceDeclaration.padding.withName(ctx.receiveNode(namespaceDeclaration.padding.name, receiveRightPaddedTree)!);
         namespaceDeclaration = namespaceDeclaration.withBody(ctx.receiveNode(namespaceDeclaration.body, ctx.receiveTree)!);
         return namespaceDeclaration;
+    }
+
+    public visitFunctionDeclaration(functionDeclaration: FunctionDeclaration, ctx: ReceiverContext): J {
+        functionDeclaration = functionDeclaration.withId(ctx.receiveValue(functionDeclaration.id, ValueType.UUID)!);
+        functionDeclaration = functionDeclaration.withPrefix(ctx.receiveNode(functionDeclaration.prefix, receiveSpace)!);
+        functionDeclaration = functionDeclaration.withMarkers(ctx.receiveNode(functionDeclaration.markers, ctx.receiveMarkers)!);
+        functionDeclaration = functionDeclaration.withModifiers(ctx.receiveNodes(functionDeclaration.modifiers, ctx.receiveTree)!);
+        functionDeclaration = functionDeclaration.withName(ctx.receiveNode(functionDeclaration.name, ctx.receiveTree));
+        functionDeclaration = functionDeclaration.withTypeParameters(ctx.receiveNode(functionDeclaration.typeParameters, ctx.receiveTree));
+        functionDeclaration = functionDeclaration.padding.withParameters(ctx.receiveNode(functionDeclaration.padding.parameters, receiveContainer)!);
+        functionDeclaration = functionDeclaration.withReturnTypeExpression(ctx.receiveNode(functionDeclaration.returnTypeExpression, ctx.receiveTree));
+        functionDeclaration = functionDeclaration.withBody(ctx.receiveNode(functionDeclaration.body, ctx.receiveTree)!);
+        functionDeclaration = functionDeclaration.withType(ctx.receiveValue(functionDeclaration.type, ValueType.Object));
+        return functionDeclaration;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: ReceiverContext): J {
@@ -1375,6 +1389,21 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<JLeftPadded<NamespaceDeclaration.KeywordType>>(null, leftPaddedValueReceiver(ValueType.Enum))!,
                 ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
                 ctx.receiveNode<Java.Block>(null, ctx.receiveTree)!
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$FunctionDeclaration") {
+            return new FunctionDeclaration(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
+                ctx.receiveNode<Java.Identifier>(null, ctx.receiveTree),
+                ctx.receiveNode<Java.TypeParameters>(null, ctx.receiveTree),
+                ctx.receiveNode<JContainer<Statement>>(null, receiveContainer)!,
+                ctx.receiveNode<TypeTree>(null, ctx.receiveTree),
+                ctx.receiveNode<J>(null, ctx.receiveTree)!,
+                ctx.receiveValue(null, ValueType.Object)
             );
         }
 
