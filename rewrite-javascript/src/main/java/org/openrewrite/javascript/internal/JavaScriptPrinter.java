@@ -619,6 +619,17 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
+        public J visitEnumValueSet(J.EnumValueSet enums, PrintOutputCapture<P> p) {
+            beforeSyntax(enums, Space.Location.ENUM_VALUE_SET_PREFIX, p);
+            visitRightPadded(enums.getPadding().getEnums(), JRightPadded.Location.ENUM_VALUE, ",", p);
+            if (enums.isTerminatedWithSemicolon()) {
+                p.append(',');
+            }
+            afterSyntax(enums, p);
+            return enums;
+        }
+
+        @Override
         public J visitAnnotation(J.Annotation annotation, PrintOutputCapture<P> p) {
             beforeSyntax(annotation, Space.Location.ANNOTATION_PREFIX, p);
             if (!annotation.getMarkers().findFirst(Keyword.class).isPresent()) {
@@ -719,14 +730,24 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             J.ForEachLoop.Control ctrl = forEachLoop.getControl();
             visitSpace(ctrl.getPrefix(), Space.Location.FOR_EACH_CONTROL_PREFIX, p);
             p.append('(');
-            ForLoopType forLoopType = forEachLoop.getMarkers().findFirst(ForLoopType.class).orElse(null);
-            String suffix = forLoopType == null ? ":" : forLoopType.getKeyword().getWord();
-            visitRightPadded(ctrl.getPadding().getVariable(), JRightPadded.Location.FOREACH_VARIABLE, suffix, p);
+            visitRightPadded(ctrl.getPadding().getVariable(), JRightPadded.Location.FOREACH_VARIABLE, "of", p);
             visitRightPadded(ctrl.getPadding().getIterable(), JRightPadded.Location.FOREACH_ITERABLE, "", p);
             p.append(')');
             visitStatement(forEachLoop.getPadding().getBody(), JRightPadded.Location.FOR_BODY, p);
             afterSyntax(forEachLoop, p);
             return forEachLoop;
+        }
+
+        @Override
+        public J visitCatch(J.Try.Catch catch_, PrintOutputCapture<P> p) {
+            beforeSyntax(catch_, Space.Location.CATCH_PREFIX, p);
+            p.append("catch");
+            if (!catch_.getParameter().getTree().getVariables().isEmpty()) {
+                visit(catch_.getParameter(), p);
+            }
+            visit(catch_.getBody(), p);
+            afterSyntax(catch_, p);
+            return catch_;
         }
 
         @Override

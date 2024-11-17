@@ -104,4 +104,29 @@ describe('expression statement mapping', () => {
             `)
         );
     });
+
+    test('mixed expression with methods with special tokens', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                interface Profile {
+                    username?(): string; // Optional property
+
+                }
+
+                interface User {
+                    profile?(): Profile; // Optional property
+                }
+
+                function getUser(id: number) : User | null {
+                    return null;
+                }
+
+                const user = getUser(1);
+                const username1 = user  ! .   profile() ?.  username()  !. toLowerCase() /*test*/ ;
+                const username2 = getUser(1) ! .  profile()  ?. username() ; // test;
+                const username3 = getUser(1) ?. profile()?.username() ?? 'Guest' ;
+            `)
+        );
+    });
 });
