@@ -807,6 +807,16 @@ public interface JS extends J {
             return getPadding().withName(JRightPadded.withElement(this.name, name));
         }
 
+        JLeftPadded<Boolean> importType;
+
+        public boolean getImportType() {
+            return importType.getElement();
+        }
+
+        public JsImport withImportType(boolean importType) {
+            return getPadding().withImportType(JLeftPadded.withElement(this.importType, importType));
+        }
+
         @Nullable
         JContainer<Expression> imports;
 
@@ -822,7 +832,6 @@ public interface JS extends J {
         @Getter
         @With
         Space from;
-
 
         @Getter
         @With
@@ -873,7 +882,15 @@ public interface JS extends J {
             }
 
             public JsImport withName(@Nullable JRightPadded<J.Identifier> name) {
-                return t.name == name ? t : new JsImport(t.id, t.prefix, t.markers, name, t.imports, t.from, t.target, t.initializer);
+                return t.name == name ? t : new JsImport(t.id, t.prefix, t.markers, name, t.importType, t.imports, t.from, t.target, t.initializer);
+            }
+
+            public JLeftPadded<Boolean> getImportType() {
+                return t.importType;
+            }
+
+            public JsImport withImportType(JLeftPadded<Boolean> importType) {
+                return t.importType == importType ? t : new JsImport(t.id, t.prefix, t.markers, t.name, importType, t.imports, t.from, t.target, t.initializer);
             }
 
             public @Nullable JContainer<Expression> getImports() {
@@ -881,7 +898,7 @@ public interface JS extends J {
             }
 
             public JsImport withImports(@Nullable JContainer<Expression> imports) {
-                return t.imports == imports ? t : new JsImport(t.id, t.prefix, t.markers, t.name, imports, t.from, t.target, t.initializer);
+                return t.imports == imports ? t : new JsImport(t.id, t.prefix, t.markers, t.name, t.importType, imports, t.from, t.target, t.initializer);
             }
 
             public @Nullable JLeftPadded<Expression> getInitializer() {
@@ -889,9 +906,85 @@ public interface JS extends J {
             }
 
             public JsImport withInitializer(@Nullable JLeftPadded<Expression> initializer) {
-                return t.initializer == initializer ? t : new JsImport(t.id, t.prefix, t.markers, t.name, t.imports, t.from, t.target, initializer);
+                return t.initializer == initializer ? t : new JsImport(t.id, t.prefix, t.markers, t.name, t.importType, t.imports, t.from, t.target, initializer);
             }
         }
+    }
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Data
+    final class JsImportSpecifier implements JS, Expression, TypedTree {
+        @Nullable
+        @NonFinal
+        transient WeakReference<JS.JsImportSpecifier.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        JLeftPadded<Boolean> importType;
+
+        public boolean getImportType() {
+            return importType.getElement();
+        }
+
+        public JsImportSpecifier withImportType(boolean importType) {
+            return getPadding().withImportType(JLeftPadded.withElement(this.importType, importType));
+        }
+
+        @With
+        Expression specifier;
+
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJsImportSpecifier(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public JsImportSpecifier.Padding getPadding() {
+            JsImportSpecifier.Padding p;
+            if (this.padding == null) {
+                p = new JsImportSpecifier.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JsImportSpecifier.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JS.JsImportSpecifier t;
+
+            public JLeftPadded<Boolean> getImportType() {
+                return t.importType;
+            }
+
+            public JsImportSpecifier withImportType(JLeftPadded<Boolean> importType) {
+                return t.importType == importType ? t : new JsImportSpecifier(t.id, t.prefix, t.markers, t.importType, t.specifier, t.type);
+            }
+        }
+
     }
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)

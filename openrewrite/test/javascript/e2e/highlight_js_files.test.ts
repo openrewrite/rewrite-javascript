@@ -5,8 +5,7 @@ describe('highlight.js files tests', () => {
     afterAll(() => disconnect());
 
     test('multi_class.js', () => {
-      rewriteRunWithOptions(
-        {expectUnknowns: true},
+      rewriteRun(
           //language=typescript
           typeScript(`
             /* eslint-disable no-throw-literal */

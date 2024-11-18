@@ -804,12 +804,13 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
 
 @LstType("org.openrewrite.javascript.tree.JS$JsImport")
 export class JsImport extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<Java.Identifier> | null, imports: JContainer<Expression> | null, _from: Space | null, target: Java.Literal | null, initializer: JLeftPadded<Expression> | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<Java.Identifier> | null, importType: JLeftPadded<boolean>, imports: JContainer<Expression> | null, _from: Space | null, target: Java.Literal | null, initializer: JLeftPadded<Expression> | null) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
         this._name = name;
+        this._importType = importType;
         this._imports = imports;
         this._from = _from;
         this._target = target;
@@ -823,7 +824,7 @@ export class JsImport extends JSMixin(Object) implements Statement {
         }
 
         public withId(id: UUID): JsImport {
-            return id === this._id ? this : new JsImport(id, this._prefix, this._markers, this._name, this._imports, this._from, this._target, this._initializer);
+            return id === this._id ? this : new JsImport(id, this._prefix, this._markers, this._name, this._importType, this._imports, this._from, this._target, this._initializer);
         }
 
         private readonly _prefix: Space;
@@ -833,7 +834,7 @@ export class JsImport extends JSMixin(Object) implements Statement {
         }
 
         public withPrefix(prefix: Space): JsImport {
-            return prefix === this._prefix ? this : new JsImport(this._id, prefix, this._markers, this._name, this._imports, this._from, this._target, this._initializer);
+            return prefix === this._prefix ? this : new JsImport(this._id, prefix, this._markers, this._name, this._importType, this._imports, this._from, this._target, this._initializer);
         }
 
         private readonly _markers: Markers;
@@ -843,7 +844,7 @@ export class JsImport extends JSMixin(Object) implements Statement {
         }
 
         public withMarkers(markers: Markers): JsImport {
-            return markers === this._markers ? this : new JsImport(this._id, this._prefix, markers, this._name, this._imports, this._from, this._target, this._initializer);
+            return markers === this._markers ? this : new JsImport(this._id, this._prefix, markers, this._name, this._importType, this._imports, this._from, this._target, this._initializer);
         }
 
         private readonly _name: JRightPadded<Java.Identifier> | null;
@@ -854,6 +855,16 @@ export class JsImport extends JSMixin(Object) implements Statement {
 
         public withName(name: Java.Identifier | null): JsImport {
             return this.padding.withName(JRightPadded.withElement(this._name, name));
+        }
+
+        private readonly _importType: JLeftPadded<boolean>;
+
+        public get importType(): boolean {
+            return this._importType.element;
+        }
+
+        public withImportType(importType: boolean): JsImport {
+            return this.padding.withImportType(this._importType.withElement(importType));
         }
 
         private readonly _imports: JContainer<Expression> | null;
@@ -873,7 +884,7 @@ export class JsImport extends JSMixin(Object) implements Statement {
         }
 
         public withFrom(_from: Space | null): JsImport {
-            return _from === this._from ? this : new JsImport(this._id, this._prefix, this._markers, this._name, this._imports, _from, this._target, this._initializer);
+            return _from === this._from ? this : new JsImport(this._id, this._prefix, this._markers, this._name, this._importType, this._imports, _from, this._target, this._initializer);
         }
 
         private readonly _target: Java.Literal | null;
@@ -883,7 +894,7 @@ export class JsImport extends JSMixin(Object) implements Statement {
         }
 
         public withTarget(target: Java.Literal | null): JsImport {
-            return target === this._target ? this : new JsImport(this._id, this._prefix, this._markers, this._name, this._imports, this._from, target, this._initializer);
+            return target === this._target ? this : new JsImport(this._id, this._prefix, this._markers, this._name, this._importType, this._imports, this._from, target, this._initializer);
         }
 
         private readonly _initializer: JLeftPadded<Expression> | null;
@@ -907,19 +918,115 @@ export class JsImport extends JSMixin(Object) implements Statement {
                 return t._name;
             }
             public withName(name: JRightPadded<Java.Identifier> | null): JsImport {
-                return t._name === name ? t : new JsImport(t._id, t._prefix, t._markers, name, t._imports, t._from, t._target, t._initializer);
+                return t._name === name ? t : new JsImport(t._id, t._prefix, t._markers, name, t._importType, t._imports, t._from, t._target, t._initializer);
+            }
+            public get importType(): JLeftPadded<boolean> {
+                return t._importType;
+            }
+            public withImportType(importType: JLeftPadded<boolean>): JsImport {
+                return t._importType === importType ? t : new JsImport(t._id, t._prefix, t._markers, t._name, importType, t._imports, t._from, t._target, t._initializer);
             }
             public get imports(): JContainer<Expression> | null {
                 return t._imports;
             }
             public withImports(imports: JContainer<Expression> | null): JsImport {
-                return t._imports === imports ? t : new JsImport(t._id, t._prefix, t._markers, t._name, imports, t._from, t._target, t._initializer);
+                return t._imports === imports ? t : new JsImport(t._id, t._prefix, t._markers, t._name, t._importType, imports, t._from, t._target, t._initializer);
             }
             public get initializer(): JLeftPadded<Expression> | null {
                 return t._initializer;
             }
             public withInitializer(initializer: JLeftPadded<Expression> | null): JsImport {
-                return t._initializer === initializer ? t : new JsImport(t._id, t._prefix, t._markers, t._name, t._imports, t._from, t._target, initializer);
+                return t._initializer === initializer ? t : new JsImport(t._id, t._prefix, t._markers, t._name, t._importType, t._imports, t._from, t._target, initializer);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JsImportSpecifier")
+export class JsImportSpecifier extends JSMixin(Object) implements Expression, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, importType: JLeftPadded<boolean>, specifier: Expression, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._importType = importType;
+        this._specifier = specifier;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JsImportSpecifier {
+            return id === this._id ? this : new JsImportSpecifier(id, this._prefix, this._markers, this._importType, this._specifier, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JsImportSpecifier {
+            return prefix === this._prefix ? this : new JsImportSpecifier(this._id, prefix, this._markers, this._importType, this._specifier, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JsImportSpecifier {
+            return markers === this._markers ? this : new JsImportSpecifier(this._id, this._prefix, markers, this._importType, this._specifier, this._type);
+        }
+
+        private readonly _importType: JLeftPadded<boolean>;
+
+        public get importType(): boolean {
+            return this._importType.element;
+        }
+
+        public withImportType(importType: boolean): JsImportSpecifier {
+            return this.padding.withImportType(this._importType.withElement(importType));
+        }
+
+        private readonly _specifier: Expression;
+
+        public get specifier(): Expression {
+            return this._specifier;
+        }
+
+        public withSpecifier(specifier: Expression): JsImportSpecifier {
+            return specifier === this._specifier ? this : new JsImportSpecifier(this._id, this._prefix, this._markers, this._importType, specifier, this._type);
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): JsImportSpecifier {
+            return _type === this._type ? this : new JsImportSpecifier(this._id, this._prefix, this._markers, this._importType, this._specifier, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJsImportSpecifier(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get importType(): JLeftPadded<boolean> {
+                return t._importType;
+            }
+            public withImportType(importType: JLeftPadded<boolean>): JsImportSpecifier {
+                return t._importType === importType ? t : new JsImportSpecifier(t._id, t._prefix, t._markers, importType, t._specifier, t._type);
             }
         }
     }

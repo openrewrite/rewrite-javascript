@@ -260,7 +260,8 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             i = (JS.JsImport) temp;
         }
-        visit(i.getName(), p);
+        i = i.getPadding().withImportType(visitLeftPadded(i.getPadding().getImportType(), JsLeftPadded.Location.JS_IMPORT_IMPORT_TYPE, p));
+        i = i.withName(visitAndCast(i.getName(), p));
         if (i.getPadding().getImports() != null) {
             i = i.getPadding().withImports(visitContainer(i.getPadding().getImports(), JsContainer.Location.IMPORT_ELEMENT, p));
         }
@@ -272,6 +273,22 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
             i = i.getPadding().withInitializer(visitLeftPadded(i.getPadding().getInitializer(),
                     JsLeftPadded.Location.IMPORT_INITIALIZER, p));
         }
+        return i;
+    }
+
+    public J visitJsImportSpecifier(JS.JsImportSpecifier jis, P p) {
+        JS.JsImportSpecifier i = jis;
+        i = i.withPrefix(visitSpace(i.getPrefix(), JsSpace.Location.JS_IMPORT_SPECIFIER_PREFIX, p));
+        i = i.withMarkers(visitMarkers(i.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(i, p);
+        if (!(temp instanceof JS.JsImportSpecifier)) {
+            return temp;
+        } else {
+            i = (JS.JsImportSpecifier) temp;
+        }
+        i = i.getPadding().withImportType(visitLeftPadded(i.getPadding().getImportType(), JsLeftPadded.Location.JS_IMPORT_SPECIFIER_IMPORT_TYPE, p));
+        i = i.withSpecifier(Objects.requireNonNull(visitAndCast(i.getSpecifier(), p)));
+        i = i.withType(visitType(i.getType(), p));
         return i;
     }
 

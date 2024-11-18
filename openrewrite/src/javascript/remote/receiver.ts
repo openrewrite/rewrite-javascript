@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration, FunctionDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration, FunctionDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -127,11 +127,22 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         jsImport = jsImport.withPrefix(ctx.receiveNode(jsImport.prefix, receiveSpace)!);
         jsImport = jsImport.withMarkers(ctx.receiveNode(jsImport.markers, ctx.receiveMarkers)!);
         jsImport = jsImport.padding.withName(ctx.receiveNode(jsImport.padding.name, receiveRightPaddedTree));
+        jsImport = jsImport.padding.withImportType(ctx.receiveNode(jsImport.padding.importType, leftPaddedValueReceiver(ValueType.Primitive))!);
         jsImport = jsImport.padding.withImports(ctx.receiveNode(jsImport.padding.imports, receiveContainer));
         jsImport = jsImport.withFrom(ctx.receiveNode(jsImport.from, receiveSpace));
         jsImport = jsImport.withTarget(ctx.receiveNode(jsImport.target, ctx.receiveTree));
         jsImport = jsImport.padding.withInitializer(ctx.receiveNode(jsImport.padding.initializer, receiveLeftPaddedTree));
         return jsImport;
+    }
+
+    public visitJsImportSpecifier(jsImportSpecifier: JsImportSpecifier, ctx: ReceiverContext): J {
+        jsImportSpecifier = jsImportSpecifier.withId(ctx.receiveValue(jsImportSpecifier.id, ValueType.UUID)!);
+        jsImportSpecifier = jsImportSpecifier.withPrefix(ctx.receiveNode(jsImportSpecifier.prefix, receiveSpace)!);
+        jsImportSpecifier = jsImportSpecifier.withMarkers(ctx.receiveNode(jsImportSpecifier.markers, ctx.receiveMarkers)!);
+        jsImportSpecifier = jsImportSpecifier.padding.withImportType(ctx.receiveNode(jsImportSpecifier.padding.importType, leftPaddedValueReceiver(ValueType.Primitive))!);
+        jsImportSpecifier = jsImportSpecifier.withSpecifier(ctx.receiveNode(jsImportSpecifier.specifier, ctx.receiveTree)!);
+        jsImportSpecifier = jsImportSpecifier.withType(ctx.receiveValue(jsImportSpecifier.type, ValueType.Object));
+        return jsImportSpecifier;
     }
 
     public visitJsBinary(jsBinary: JsBinary, ctx: ReceiverContext): J {
@@ -1146,10 +1157,22 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<JRightPadded<Java.Identifier>>(null, receiveRightPaddedTree),
+                ctx.receiveNode<JLeftPadded<boolean>>(null, leftPaddedValueReceiver(ValueType.Primitive))!,
                 ctx.receiveNode<JContainer<Expression>>(null, receiveContainer),
                 ctx.receiveNode(null, receiveSpace),
                 ctx.receiveNode<Java.Literal>(null, ctx.receiveTree),
                 ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$JsImportSpecifier") {
+            return new JsImportSpecifier(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JLeftPadded<boolean>>(null, leftPaddedValueReceiver(ValueType.Primitive))!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveValue(null, ValueType.Object)
             );
         }
 

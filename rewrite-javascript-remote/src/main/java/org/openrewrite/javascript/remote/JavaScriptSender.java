@@ -166,11 +166,23 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(jsImport, JS.JsImport::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(jsImport, JS.JsImport::getMarkers, ctx::sendMarkers);
             ctx.sendNode(jsImport, e -> e.getPadding().getName(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(jsImport, e -> e.getPadding().getImportType(), JavaScriptSender::sendLeftPadded);
             ctx.sendNode(jsImport, e -> e.getPadding().getImports(), JavaScriptSender::sendContainer);
             ctx.sendNode(jsImport, JS.JsImport::getFrom, JavaScriptSender::sendSpace);
             ctx.sendNode(jsImport, JS.JsImport::getTarget, ctx::sendTree);
             ctx.sendNode(jsImport, e -> e.getPadding().getInitializer(), JavaScriptSender::sendLeftPadded);
             return jsImport;
+        }
+
+        @Override
+        public JS.JsImportSpecifier visitJsImportSpecifier(JS.JsImportSpecifier jsImportSpecifier, SenderContext ctx) {
+            ctx.sendValue(jsImportSpecifier, JS.JsImportSpecifier::getId);
+            ctx.sendNode(jsImportSpecifier, JS.JsImportSpecifier::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jsImportSpecifier, JS.JsImportSpecifier::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(jsImportSpecifier, e -> e.getPadding().getImportType(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(jsImportSpecifier, JS.JsImportSpecifier::getSpecifier, ctx::sendTree);
+            ctx.sendTypedValue(jsImportSpecifier, JS.JsImportSpecifier::getType);
+            return jsImportSpecifier;
         }
 
         @Override

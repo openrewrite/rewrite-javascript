@@ -659,7 +659,7 @@ export class JavaScriptParserVisitor {
                         Markers.EMPTY,
                         this.getOptionalUnary(node),
                         [],
-                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
+                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
                         this.mapVariableType(node)
                     ),
                     this.suffix(node.name)
@@ -686,7 +686,7 @@ export class JavaScriptParserVisitor {
                         Markers.EMPTY,
                         nameExpression,
                         [],
-                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
+                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
                         this.mapVariableType(node)
                     ),
                     this.suffix(node.name)
@@ -709,7 +709,7 @@ export class JavaScriptParserVisitor {
                     Markers.EMPTY,
                     nameExpression,
                     [],
-                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
+                    node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
                     this.mapVariableType(node)
                 ),
                 this.suffix(node.name)
@@ -843,7 +843,7 @@ export class JavaScriptParserVisitor {
                         Markers.EMPTY,
                         nameExpression,
                         [],
-                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
+                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
                         this.mapVariableType(node)
                     ),
                     this.suffix(node.name)
@@ -1604,7 +1604,19 @@ export class JavaScriptParserVisitor {
 
         binaryOperator = this.mapBinaryOperator(node);
         if (binaryOperator === undefined) {
-            return this.visitUnknown(node);
+            const assignmentOperation = this.mapAssignmentOperation(node);
+            if (assignmentOperation === undefined) {
+                return this.visitUnknown(node);
+            }
+            return new J.AssignmentOperation(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.convert(node.left),
+                this.leftPadded(this.prefix(node.operatorToken), assignmentOperation),
+                this.convert(node.right),
+                this.mapType(node)
+            )
         }
 
         return new J.Binary(
@@ -1675,6 +1687,43 @@ export class JavaScriptParserVisitor {
                 return J.Binary.Type.And;
             case ts.SyntaxKind.BarBarToken:
                 return J.Binary.Type.Or;
+            // case ts.SyntaxKind.BarBarEqualsToken:
+            //     return J.Binary.Type.OrEquals;
+            // case ts.SyntaxKind.AmpersandEqualsToken:
+            //     return J.Binary.Type.AndEquals;
+        }
+        return undefined;
+    }
+
+    private mapAssignmentOperation(node: ts.BinaryExpression): J.AssignmentOperation.Type | undefined {
+        switch (node.operatorToken.kind) {
+            case ts.SyntaxKind.PlusEqualsToken:
+                return J.AssignmentOperation.Type.Addition;
+            case ts.SyntaxKind.MinusEqualsToken:
+                return J.AssignmentOperation.Type.Subtraction;
+            case ts.SyntaxKind.AsteriskEqualsToken:
+                return J.AssignmentOperation.Type.Multiplication;
+            case ts.SyntaxKind.SlashEqualsToken:
+                return J.AssignmentOperation.Type.Division;
+            case ts.SyntaxKind.PercentEqualsToken:
+                return J.AssignmentOperation.Type.Modulo;
+            case ts.SyntaxKind.LessThanLessThanEqualsToken:
+                return J.AssignmentOperation.Type.LeftShift;
+            case ts.SyntaxKind.GreaterThanGreaterThanEqualsToken:
+                return J.AssignmentOperation.Type.RightShift;
+            case ts.SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken:
+                return J.AssignmentOperation.Type.UnsignedRightShift;
+            case ts.SyntaxKind.AmpersandEqualsToken:
+                return J.AssignmentOperation.Type.BitAnd;
+            case ts.SyntaxKind.BarEqualsToken:
+                return J.AssignmentOperation.Type.BitOr;
+            case ts.SyntaxKind.CaretEqualsToken:
+                return J.AssignmentOperation.Type.BitXor;
+
+            // case ts.SyntaxKind.AmpersandAmpersandEqualsToken:
+            //     return J.AssignmentOperation.Type.And;
+            // case ts.SyntaxKind.BarBarEqualsToken:
+            //     return J.AssignmentOperation.Type.Or;
             // case ts.SyntaxKind.BarBarEqualsToken:
             //     return J.Binary.Type.OrEquals;
             // case ts.SyntaxKind.AmpersandEqualsToken:
@@ -1766,8 +1815,16 @@ export class JavaScriptParserVisitor {
 
     visitExpressionWithTypeArguments(node: ts.ExpressionWithTypeArguments) {
         if (node.typeArguments) {
-            // FIXME
-            return this.visitUnknown(node);
+            if (node.typeArguments) {
+                return new J.ParameterizedType(
+                    randomId(),
+                    this.prefix(node),
+                    Markers.EMPTY,
+                    this.visit(node.expression),
+                    this.mapTypeArguments(this.suffix(node.expression), node.typeArguments),
+                    this.mapType(node)
+                )
+            }
         }
         return this.visit(node.expression);
     }
@@ -2320,6 +2377,7 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             _default ? this.rightPadded(this.visit(node.importClause?.name), this.suffix(node.importClause?.name)) : null,
+            node.importClause?.isTypeOnly ? this.leftPadded(this.prefix(this.findChildNode(node.importClause, ts.SyntaxKind.TypeKeyword)!), node.importClause.isTypeOnly) : this.leftPadded(Space.EMPTY, false),
             node.importClause && !onlyDefault ? this.visit(node.importClause) : null,
             children[children.indexOf(node.moduleSpecifier) - 1].kind == ts.SyntaxKind.FromKeyword ? this.prefix(children[children.indexOf(node.moduleSpecifier) - 1]) : null,
             this.convert<J.Literal>(node.moduleSpecifier),
@@ -2335,6 +2393,7 @@ export class JavaScriptParserVisitor {
                     randomId(),
                     Space.EMPTY,
                     Markers.EMPTY,
+                    // this.rightPadded(node.isTypeOnly, node.isTypeOnly ? this.suffix(this.findChildNode(node, ts.SyntaxKind.TypeKeyword)!) : Space.EMPTY),
                     this.rightPadded(this.mapIdentifier(node.namedBindings, "*"), this.prefix(node.namedBindings.getChildAt(1, this.sourceFile))),
                     this.convert(node.namedBindings.name)
                 ), Space.EMPTY)],
@@ -2353,7 +2412,25 @@ export class JavaScriptParserVisitor {
     }
 
     visitImportSpecifier(node: ts.ImportSpecifier) {
-        return this.mapIdentifier(node, node.name.text, false);
+        return new JS.JsImportSpecifier(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.leftPadded(
+                node.isTypeOnly ? this.prefix(this.findChildNode(node, ts.SyntaxKind.TypeKeyword)!) : Space.EMPTY,
+                node.isTypeOnly
+            ),
+            node.propertyName
+                ? new JS.Alias(
+                    randomId(),
+                    this.prefix(node.propertyName),
+                    Markers.EMPTY,
+                    this.rightPadded(this.convert(node.propertyName), this.suffix(node.propertyName)),
+                    this.convert(node.name)
+                )
+                : this.convert(node.name),
+            this.mapType(node)
+        );
     }
 
     visitExportAssignment(node: ts.ExportAssignment) {

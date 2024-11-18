@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration, FunctionDeclaration} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration, FunctionDeclaration} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -151,11 +151,26 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         jsImport = tempStatement as JsImport;
         jsImport = jsImport.withMarkers(this.visitMarkers(jsImport.markers, p));
         jsImport = jsImport.padding.withName(this.visitJsRightPadded(jsImport.padding.name, JsRightPadded.Location.JS_IMPORT_NAME, p));
+        jsImport = jsImport.padding.withImportType(this.visitJsLeftPadded(jsImport.padding.importType, JsLeftPadded.Location.JS_IMPORT_IMPORT_TYPE, p)!);
         jsImport = jsImport.padding.withImports(this.visitJsContainer(jsImport.padding.imports, JsContainer.Location.JS_IMPORT_IMPORTS, p));
         jsImport = jsImport.withFrom(this.visitJsSpace(jsImport.from, JsSpace.Location.JS_IMPORT_FROM, p));
         jsImport = jsImport.withTarget(this.visitAndCast(jsImport.target, p));
         jsImport = jsImport.padding.withInitializer(this.visitJsLeftPadded(jsImport.padding.initializer, JsLeftPadded.Location.JS_IMPORT_INITIALIZER, p));
         return jsImport;
+    }
+
+    public visitJsImportSpecifier(jsImportSpecifier: JsImportSpecifier, p: P): J | null {
+        jsImportSpecifier = jsImportSpecifier.withPrefix(this.visitJsSpace(jsImportSpecifier.prefix, JsSpace.Location.JS_IMPORT_SPECIFIER_PREFIX, p)!);
+        let tempExpression = this.visitExpression(jsImportSpecifier, p) as Expression;
+        if (!(tempExpression instanceof JsImportSpecifier))
+        {
+            return tempExpression;
+        }
+        jsImportSpecifier = tempExpression as JsImportSpecifier;
+        jsImportSpecifier = jsImportSpecifier.withMarkers(this.visitMarkers(jsImportSpecifier.markers, p));
+        jsImportSpecifier = jsImportSpecifier.padding.withImportType(this.visitJsLeftPadded(jsImportSpecifier.padding.importType, JsLeftPadded.Location.JS_IMPORT_SPECIFIER_IMPORT_TYPE, p)!);
+        jsImportSpecifier = jsImportSpecifier.withSpecifier(this.visitAndCast(jsImportSpecifier.specifier, p)!);
+        return jsImportSpecifier;
     }
 
     public visitJsBinary(jsBinary: JsBinary, p: P): J | null {

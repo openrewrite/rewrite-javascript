@@ -185,6 +185,14 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         beforeSyntax(jsImport, JsSpace.Location.EXPORT_PREFIX, p);
         p.append("import");
 
+        if (jsImport.getImportType()) {
+            JLeftPadded<Boolean> importType = jsImport.getPadding().getImportType();
+            JsLeftPadded.Location location = JsLeftPadded.Location.JS_IMPORT_IMPORT_TYPE;
+            beforeSyntax(importType.getBefore(), importType.getMarkers(), location.getBeforeLocation(), p);
+            p.append("type");
+            afterSyntax(importType.getMarkers(), p);
+        }
+
         // for default export or `* as <alias>`
         JS.JsImport.Padding padding = jsImport.getPadding();
         visitRightPadded(padding.getName(), JsRightPadded.Location.IMPORT_NAME_SUFFIX, p);
@@ -206,6 +214,23 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visitLeftPadded("=", padding.getInitializer(), JsLeftPadded.Location.IMPORT_INITIALIZER, p);
         afterSyntax(jsImport, p);
         return jsImport;
+    }
+
+    @Override
+    public J visitJsImportSpecifier(JS.JsImportSpecifier jis, PrintOutputCapture<P> p) {
+        beforeSyntax(jis, JsSpace.Location.JS_IMPORT_SPECIFIER_PREFIX, p);
+        if (jis.getImportType()) {
+            JLeftPadded<Boolean> importType = jis.getPadding().getImportType();
+            JsLeftPadded.Location location = JsLeftPadded.Location.JS_IMPORT_SPECIFIER_IMPORT_TYPE;
+            beforeSyntax(importType.getBefore(), importType.getMarkers(), location.getBeforeLocation(), p);
+            p.append("type");
+            afterSyntax(importType.getMarkers(), p);
+        }
+
+        visit(jis.getSpecifier(), p);
+
+        afterSyntax(jis, p);
+        return jis;
     }
 
     @Override
