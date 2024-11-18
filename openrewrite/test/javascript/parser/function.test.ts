@@ -162,4 +162,15 @@ describe('function mapping', () => {
         `)
         );
     });
+
+    test('immediately invoked anonymous function', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                (function() {
+                    console.log('IIFE');
+                })();
+        `)
+        );
+    });
 });
