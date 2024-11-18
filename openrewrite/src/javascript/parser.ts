@@ -1347,8 +1347,43 @@ export class JavaScriptParserVisitor {
 
     visitCallExpression(node: ts.CallExpression) {
         const prefix = this.prefix(node);
+        const typeArguments = node.typeArguments ? this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments) : null;
+
+        if (ts.isParenthesizedExpression(node.expression)) {
+            return new JS.JSMethodInvocation(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                null,
+                typeArguments,
+                this.convert(node.expression),
+                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
+                this.mapMethodType(node)
+            );
+        }
+
+        if (node.questionDotToken) {
+            return new JS.JSMethodInvocation(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                null,
+                typeArguments,
+                new JS.Unary(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    this.leftPadded(this.suffix(node.expression), JS.Unary.Type.QuestionDotWithDot),
+                    this.visit(node.expression),
+                    this.mapType(node)
+                ),
+                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
+                this.mapMethodType(node)
+            );
+        }
+
         let select: JRightPadded<J.Expression> | null;
-        let name: ts.Expression;
+        let name: J.Identifier;
         if (ts.isPropertyAccessExpression(node.expression)) {
             select = this.rightPadded(
                 node.expression.questionDotToken ?
@@ -1363,44 +1398,22 @@ export class JavaScriptParserVisitor {
                     this.convert<J.Expression>(node.expression.expression),
                 this.prefix(node.expression.getChildAt(1, this.sourceFile))
             );
-            name = node.expression.name;
+            name = this.convert(node.expression.name);
         } else {
             select = null;
-            name = node.expression;
+            name = this.convert(node.expression);
         }
 
-        if (node.questionDotToken) {
-            const unary = new JS.Unary(
-                randomId(),
-                Space.EMPTY,
-                Markers.EMPTY,
-                this.leftPadded(this.suffix(name), JS.Unary.Type.QuestionDotWithDot),
-                this.visit(name),
-                this.mapType(node)
-            );
-
-            return new JS.JSMethodInvocation(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                select,
-                node.typeArguments ? this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments) : null,
-                unary,
-                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
-                this.mapMethodType(node)
-            );
-        } else {
-            return new J.MethodInvocation(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                select,
-                node.typeArguments ? this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments) : null,
-                this.convert(name),
-                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
-                this.mapMethodType(node)
-            );
-        }
+        return new J.MethodInvocation(
+            randomId(),
+            prefix,
+            Markers.EMPTY,
+            select,
+            typeArguments,
+            name,
+            this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
+            this.mapMethodType(node)
+        )
     }
 
     visitNewExpression(node: ts.NewExpression) {
