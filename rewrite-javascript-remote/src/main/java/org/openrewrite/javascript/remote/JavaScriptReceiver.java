@@ -235,7 +235,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
             propertyAssignment = propertyAssignment.withPrefix(ctx.receiveNonNullNode(propertyAssignment.getPrefix(), JavaScriptReceiver::receiveSpace));
             propertyAssignment = propertyAssignment.withMarkers(ctx.receiveNonNullNode(propertyAssignment.getMarkers(), ctx::receiveMarkers));
             propertyAssignment = propertyAssignment.getPadding().withName(ctx.receiveNonNullNode(propertyAssignment.getPadding().getName(), JavaScriptReceiver::receiveRightPaddedTree));
-            propertyAssignment = propertyAssignment.withInitializer(ctx.receiveNonNullNode(propertyAssignment.getInitializer(), ctx::receiveTree));
+            propertyAssignment = propertyAssignment.withInitializer(ctx.receiveNode(propertyAssignment.getInitializer(), ctx::receiveTree));
             return propertyAssignment;
         }
 
@@ -1306,7 +1306,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
-                    ctx.receiveNonNullNode(null, ctx::receiveTree)
+                    ctx.receiveNode(null, ctx::receiveTree)
                 );
             }
 

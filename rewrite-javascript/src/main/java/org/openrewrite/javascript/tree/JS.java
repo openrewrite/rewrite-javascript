@@ -988,7 +988,7 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    final class ObjectBindingDeclarations implements JS, Statement, TypedTree {
+    final class ObjectBindingDeclarations implements JS, Expression, TypedTree {
 
         @Nullable
         @NonFinal
@@ -1048,8 +1048,8 @@ public interface JS extends J {
 
         @Transient
         @Override
-        public CoordinateBuilder.Statement getCoordinates() {
-            return new CoordinateBuilder.Statement(this);
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
         }
 
         // gather annotations from everywhere they may occur
@@ -1117,7 +1117,7 @@ public interface JS extends J {
 
             @With
             @Getter
-            Identifier name;
+            TypedTree name;
 
             @With
             @Getter
@@ -1152,10 +1152,6 @@ public interface JS extends J {
             @Override
             public ObjectBindingDeclarations.Binding withType(@Nullable JavaType type) {
                 return variableType != null ? withVariableType(variableType.withType(type)) : this;
-            }
-
-            public String getSimpleName() {
-                return name.getSimpleName();
             }
 
             @Override
@@ -1270,6 +1266,7 @@ public interface JS extends J {
         }
 
         @With
+        @Nullable
         Expression initializer;
 
         @Override

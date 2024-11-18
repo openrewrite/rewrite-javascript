@@ -84,4 +84,28 @@ describe('variable declaration mapping', () => {
           typeScript(' export /*0.1*/  let  /*0.2*/    a   /*1*/ :      /*2*/  number =2    /*3*/ , /*4*/   b   /*5*/:/*6*/    /*7*/string  /*8*/   =/*9*/    "2" /*10*/  ; //11')
         );
     });
+
+    test('declaration with destruction', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                /*0*/
+                const /*1*/  {   Client   ,  Status }  /*2*/ =/*3*/  require("../src");
+            `),
+            //language=typescript
+            typeScript(`
+                const obj =  {  a   :   1, b       : { c: 2 } };
+                const { a } = obj; // a is constant
+                let {
+                  /*1*/ b /*2*/:/*3*/ { /*4*/c  /*5*/: /*6*/ d /*7*/} /***/,
+                } = obj; // d is re-assignable
+            `),
+            //language=typescript
+            typeScript(`
+                const numbers = [];
+                const obj = { a: 1, b: 2 };
+                ({ a: numbers[0], b: numbers[1] } = obj);
+            `)
+        );
+    });
 });

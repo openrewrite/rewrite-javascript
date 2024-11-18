@@ -175,7 +175,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         propertyAssignment = propertyAssignment.withPrefix(ctx.receiveNode(propertyAssignment.prefix, receiveSpace)!);
         propertyAssignment = propertyAssignment.withMarkers(ctx.receiveNode(propertyAssignment.markers, ctx.receiveMarkers)!);
         propertyAssignment = propertyAssignment.padding.withName(ctx.receiveNode(propertyAssignment.padding.name, receiveRightPaddedTree)!);
-        propertyAssignment = propertyAssignment.withInitializer(ctx.receiveNode(propertyAssignment.initializer, ctx.receiveTree)!);
+        propertyAssignment = propertyAssignment.withInitializer(ctx.receiveNode(propertyAssignment.initializer, ctx.receiveTree));
         return propertyAssignment;
     }
 
@@ -1184,7 +1184,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<JRightPadded<Java.Identifier>>(null, receiveRightPaddedTree),
-                ctx.receiveNode<Java.Identifier>(null, ctx.receiveTree)!,
+                ctx.receiveNode<TypedTree>(null, ctx.receiveTree)!,
                 ctx.receiveNodes(null, leftPaddedNodeReceiver(Space))!,
                 ctx.receiveNode(null, receiveSpace),
                 ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree),
@@ -1198,7 +1198,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
-                ctx.receiveNode<Expression>(null, ctx.receiveTree)!
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)
             );
         }
 

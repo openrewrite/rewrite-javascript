@@ -279,7 +279,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         JS.ObjectBindingDeclarations o = objectBindingDeclarations;
         o = o.withPrefix(visitSpace(o.getPrefix(), JsSpace.Location.OBJECT_BINDING_DECLARATIONS_PREFIX, p));
         o = o.withMarkers(visitMarkers(o.getMarkers(), p));
-        Statement temp = (Statement) visitStatement(o, p);
+        Expression temp = (Expression) visitExpression(o, p);
         if (!(temp instanceof JS.ObjectBindingDeclarations)) {
             return temp;
         } else {

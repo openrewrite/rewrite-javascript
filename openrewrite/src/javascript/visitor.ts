@@ -175,12 +175,12 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
     public visitObjectBindingDeclarations(objectBindingDeclarations: ObjectBindingDeclarations, p: P): J | null {
         objectBindingDeclarations = objectBindingDeclarations.withPrefix(this.visitJsSpace(objectBindingDeclarations.prefix, JsSpace.Location.OBJECT_BINDING_DECLARATIONS_PREFIX, p)!);
-        let tempStatement = this.visitStatement(objectBindingDeclarations, p) as Statement;
-        if (!(tempStatement instanceof ObjectBindingDeclarations))
+        let tempExpression = this.visitExpression(objectBindingDeclarations, p) as Expression;
+        if (!(tempExpression instanceof ObjectBindingDeclarations))
         {
-            return tempStatement;
+            return tempExpression;
         }
-        objectBindingDeclarations = tempStatement as ObjectBindingDeclarations;
+        objectBindingDeclarations = tempExpression as ObjectBindingDeclarations;
         objectBindingDeclarations = objectBindingDeclarations.withMarkers(this.visitMarkers(objectBindingDeclarations.markers, p));
         objectBindingDeclarations = objectBindingDeclarations.withLeadingAnnotations(ListUtils.map(objectBindingDeclarations.leadingAnnotations, el => this.visitAndCast(el, p)));
         objectBindingDeclarations = objectBindingDeclarations.withModifiers(ListUtils.map(objectBindingDeclarations.modifiers, el => this.visitAndCast(el, p)));
@@ -211,7 +211,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         propertyAssignment = tempStatement as PropertyAssignment;
         propertyAssignment = propertyAssignment.withMarkers(this.visitMarkers(propertyAssignment.markers, p));
         propertyAssignment = propertyAssignment.padding.withName(this.visitJsRightPadded(propertyAssignment.padding.name, JsRightPadded.Location.PROPERTY_ASSIGNMENT_NAME, p)!);
-        propertyAssignment = propertyAssignment.withInitializer(this.visitAndCast(propertyAssignment.initializer, p)!);
+        propertyAssignment = propertyAssignment.withInitializer(this.visitAndCast(propertyAssignment.initializer, p));
         return propertyAssignment;
     }
 

@@ -119,6 +119,32 @@ describe('function mapping', () => {
         );
     });
 
+    test('function declaration with obj binding params', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export function reverseGeocode(
+                    {
+                        params,
+                        method = "get",
+                        url = defaultUrl,
+                        paramsSerializer = defaultParamsSerializer,
+                        ...config
+                    }: ReverseGeocodeRequest,
+                    axiosInstance: AxiosInstance = defaultAxiosInstance
+                ): Promise<ReverseGeocodeResponse> {
+                    return axiosInstance({
+                        params,
+                        method,
+                        url,
+                        paramsSerializer,
+                        ...config,
+                    }) as Promise<ReverseGeocodeResponse>;
+                }
+            `)
+        );
+    });
+
     test.skip('function type with parameter', () => {
         rewriteRun(
             //language=typescript

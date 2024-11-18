@@ -246,8 +246,12 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         beforeSyntax(propertyAssignment, JsSpace.Location.PROPERTY_ASSIGNMENT_PREFIX, p);
 
         visitRightPadded(propertyAssignment.getPadding().getName(), JsRightPadded.Location.PROPERTY_ASSIGNMENT_NAME, p);
-        p.append(':');
-        visit(propertyAssignment.getInitializer(), p);
+        if (propertyAssignment.getInitializer() != null) {
+            // if property is not null, we should print it like `{ a: b }`
+            // otherwise it is a shorthanded assignment where we have stuff like `{ a }` only
+            p.append(':');
+            visit(propertyAssignment.getInitializer(), p);
+        }
 
         afterSyntax(propertyAssignment, p);
         return propertyAssignment;
@@ -492,7 +496,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             if (multiVariable.getVarargs() != null) {
                 p.append("...");
             }
+
             visit(variable.getElement().getName(), p);
+
             visitSpace(variable.getAfter(), JsSpace.Location.JSNAMED_VARIABLE_SUFFIX, p);
             if (multiVariable.getTypeExpression() != null) {
                 visit(multiVariable.getTypeExpression(), p);
@@ -943,13 +949,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 if (multiVariable.getVarargs() != null) {
                     p.append("...");
                 }
-                p.append(variable.getElement().getName().getSimpleName());
-                visitSpace(variable.getElement().getName().getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-                PostFixOperator postFixOperator = multiVariable.getMarkers().findFirst(PostFixOperator.class).orElse(null);
-                if (postFixOperator != null) {
-                    visitSpace(postFixOperator.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-                    p.append(postFixOperator.getOperator().getValue());
-                }
+
+                visit(variable.getElement().getName(), p);
 
                 visitSpace(variable.getAfter(), Space.Location.NAMED_VARIABLE_SUFFIX, p);
                 if (multiVariable.getTypeExpression() != null) {

@@ -1040,7 +1040,7 @@ export namespace JsBinary {
 }
 
 @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations")
-export class ObjectBindingDeclarations extends JSMixin(Object) implements Statement, TypedTree {
+export class ObjectBindingDeclarations extends JSMixin(Object) implements Expression, TypedTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<ObjectBindingDeclarations.Binding>, initializer: JLeftPadded<Expression> | null) {
         super();
         this._id = id;
@@ -1168,7 +1168,7 @@ export class ObjectBindingDeclarations extends JSMixin(Object) implements Statem
 export namespace ObjectBindingDeclarations {
     @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations$Binding")
     export class Binding extends JSMixin(Object) implements NameTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<Java.Identifier> | null, name: Java.Identifier, dimensionsAfterName: JLeftPadded<Space>[], afterVararg: Space | null, initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
+        public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<Java.Identifier> | null, name: TypedTree, dimensionsAfterName: JLeftPadded<Space>[], afterVararg: Space | null, initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
             super();
             this._id = id;
             this._prefix = prefix;
@@ -1221,13 +1221,13 @@ export namespace ObjectBindingDeclarations {
                 return this.padding.withPropertyName(JRightPadded.withElement(this._propertyName, propertyName));
             }
 
-            private readonly _name: Java.Identifier;
+            private readonly _name: TypedTree;
 
-            public get name(): Java.Identifier {
+            public get name(): TypedTree {
                 return this._name;
             }
 
-            public withName(name: Java.Identifier): ObjectBindingDeclarations.Binding {
+            public withName(name: TypedTree): ObjectBindingDeclarations.Binding {
                 return name === this._name ? this : new ObjectBindingDeclarations.Binding(this._id, this._prefix, this._markers, this._propertyName, name, this._dimensionsAfterName, this._afterVararg, this._initializer, this._variableType);
             }
 
@@ -1307,7 +1307,7 @@ export namespace ObjectBindingDeclarations {
 
 @LstType("org.openrewrite.javascript.tree.JS$PropertyAssignment")
 export class PropertyAssignment extends JSMixin(Object) implements Statement, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<Expression>, initializer: Expression) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<Expression>, initializer: Expression | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -1356,13 +1356,13 @@ export class PropertyAssignment extends JSMixin(Object) implements Statement, Ty
             return this.padding.withName(this._name.withElement(name));
         }
 
-        private readonly _initializer: Expression;
+        private readonly _initializer: Expression | null;
 
-        public get initializer(): Expression {
+        public get initializer(): Expression | null {
             return this._initializer;
         }
 
-        public withInitializer(initializer: Expression): PropertyAssignment {
+        public withInitializer(initializer: Expression | null): PropertyAssignment {
             return initializer === this._initializer ? this : new PropertyAssignment(this._id, this._prefix, this._markers, this._name, initializer);
         }
 

@@ -1,6 +1,16 @@
 import * as ts from 'typescript';
 import * as J from '../java';
-import {JavaType, JContainer, JLeftPadded, JRightPadded, Lambda, Semicolon, Space, TrailingComma} from '../java';
+import {
+    JavaType,
+    JContainer,
+    JLeftPadded,
+    JRightPadded,
+    Lambda,
+    Semicolon,
+    Space,
+    TrailingComma,
+    TypedTree
+} from '../java';
 import * as JS from '.';
 import {
     ExecutionContext,
@@ -248,8 +258,11 @@ export class JavaScriptParserVisitor {
 
     private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration
         | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration
-        | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration) {
-        if (ts.isVariableStatement(node) || ts.isModuleDeclaration(node)  || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node) || ts.isInterfaceDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node) || ts.isParameter(node) || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node)) {
+        | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration | ts.ArrowFunction) {
+        if (ts.isVariableStatement(node) || ts.isModuleDeclaration(node) || ts.isClassDeclaration(node)
+            || ts.isEnumDeclaration(node) || ts.isInterfaceDeclaration(node) || ts.isPropertyDeclaration(node)
+            || ts.isPropertySignature(node) || ts.isParameter(node) || ts.isMethodDeclaration(node)
+            || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         }  else if (ts.isFunctionDeclaration(node)) {
             return [...node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [],
@@ -654,7 +667,34 @@ export class JavaScriptParserVisitor {
             );
         }
 
-        return new J.VariableDeclarations(
+        const nameExpression = this.visit(node.name)
+
+        if (nameExpression instanceof J.Identifier) {
+            return new J.VariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [],
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [],
+                [this.rightPadded(
+                    new J.VariableDeclarations.NamedVariable(
+                        randomId(),
+                        this.prefix(node.name),
+                        Markers.EMPTY,
+                        nameExpression,
+                        [],
+                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
+                        this.mapVariableType(node)
+                    ),
+                    this.suffix(node.name)
+                )]
+            );
+        }
+
+        return new JS.JSVariableDeclarations(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
@@ -662,13 +702,12 @@ export class JavaScriptParserVisitor {
             this.mapModifiers(node),
             this.mapTypeInfo(node),
             null,
-            [],
             [this.rightPadded(
-                new J.VariableDeclarations.NamedVariable(
+                new JS.JSVariableDeclarations.JSNamedVariable(
                     randomId(),
                     this.prefix(node.name),
                     Markers.EMPTY,
-                    this.visit(node.name),
+                    nameExpression,
                     [],
                     node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
                     this.mapVariableType(node)
@@ -785,7 +824,34 @@ export class JavaScriptParserVisitor {
             );
         }
 
-        return new J.VariableDeclarations(
+        const nameExpression = this.visit(node.name)
+
+        if (nameExpression instanceof J.Identifier) {
+            return new J.VariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [],
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [],
+                [this.rightPadded(
+                    new J.VariableDeclarations.NamedVariable(
+                        randomId(),
+                        this.prefix(node.name),
+                        Markers.EMPTY,
+                        nameExpression,
+                        [],
+                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
+                        this.mapVariableType(node)
+                    ),
+                    this.suffix(node.name)
+                )]
+            );
+        }
+
+        return new JS.JSVariableDeclarations(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
@@ -793,9 +859,8 @@ export class JavaScriptParserVisitor {
             this.mapModifiers(node),
             this.mapTypeInfo(node),
             null,
-            [],
             [this.rightPadded(
-                new J.VariableDeclarations.NamedVariable(
+                new JS.JSVariableDeclarations.JSNamedVariable(
                     randomId(),
                     this.prefix(node.name),
                     Markers.EMPTY,
@@ -1154,7 +1219,16 @@ export class JavaScriptParserVisitor {
     }
 
     visitObjectBindingPattern(node: ts.ObjectBindingPattern) {
-        return this.visitUnknown(node);
+        return new JS.ObjectBindingDeclarations(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            [],
+            null,
+            this.mapCommaSeparatedList(node.getChildren(this.sourceFile)),
+            null
+        );
     }
 
     visitArrayBindingPattern(node: ts.ArrayBindingPattern) {
@@ -1162,7 +1236,24 @@ export class JavaScriptParserVisitor {
     }
 
     visitBindingElement(node: ts.BindingElement) {
-        return this.visitUnknown(node);
+        return new JS.ObjectBindingDeclarations.Binding(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            node.propertyName ? this.rightPadded(this.convert<J.Identifier>(node.propertyName), this.suffix(node.propertyName)) : null,
+            node.dotDotDotToken ? new JS.Unary(
+                randomId(),
+                this.prefix(node.dotDotDotToken),
+                Markers.EMPTY,
+                this.leftPadded(Space.EMPTY, JS.Unary.Type.Spread),
+                this.convert<J.Expression>(node.name),
+                null
+            ) : this.convert<TypedTree>(node.name),
+            [],
+            null,
+            node.initializer ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsToken)!), this.convert<J.Expression>(node.initializer)) : null,
+            this.mapVariableType(node),
+        );
     }
 
     visitArrayLiteralExpression(node: ts.ArrayLiteralExpression) {
@@ -1235,12 +1326,12 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.visit(node.expression),
+            this.convert(node.expression),
             new J.ArrayDimension(
                 randomId(),
                 this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBracketToken)!),
                 Markers.EMPTY,
-                this.rightPadded(this.visit(node.argumentExpression), this.suffix(node.argumentExpression))
+                this.rightPadded(this.convert(node.argumentExpression), this.suffix(node.argumentExpression))
             ),
             this.mapType(node)
         );
@@ -1344,10 +1435,10 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             [],
-            [],
+            this.mapModifiers(node),
             new Lambda.Parameters(
                 randomId(),
-                this.prefix(node),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
                 Markers.EMPTY,
                 true,
                 node.parameters.length > 0 ?
@@ -1956,11 +2047,25 @@ export class JavaScriptParserVisitor {
     }
 
     visitVariableDeclaration(node: ts.VariableDeclaration) {
-        return new J.VariableDeclarations.NamedVariable(
+        const nameExpression = this.visit(node.name);
+
+        if (nameExpression instanceof J.Identifier) {
+            return new J.VariableDeclarations.NamedVariable(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                nameExpression,
+                [],
+                node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
+                this.mapVariableType(node)
+            );
+        }
+
+        return new JS.JSVariableDeclarations.JSNamedVariable(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.visit(node.name),
+            nameExpression,
             [],
             node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildCount(this.sourceFile) - 2)), this.visit(node.initializer)) : null,
             this.mapVariableType(node)
@@ -1983,18 +2088,31 @@ export class JavaScriptParserVisitor {
                     : JS.ScopedVariableDeclarations.Scope.Var
             ),
             node.declarations.map((declaration) => {
+                const declarationExpression = this.visit(declaration);
+
                 return this.rightPadded(
-                    new J.VariableDeclarations(
-                        randomId(),
-                        this.prefix(declaration),
-                        Markers.EMPTY,
-                        [], // FIXME decorators?
-                        [], // FIXME modifiers?
-                        this.mapTypeInfo(declaration),
-                        null, // FIXME varargs
-                        [],
-                        [this.rightPadded(this.visit(declaration), Space.EMPTY)]
-                    ),
+                    JS.isJavaScript(declarationExpression)
+                        ? new JS.JSVariableDeclarations(
+                            randomId(),
+                            this.prefix(declaration),
+                            Markers.EMPTY,
+                            [], // FIXME decorators?
+                            [], // FIXME modifiers?
+                            this.mapTypeInfo(declaration),
+                            null, // FIXME varargs
+                            [this.rightPadded(declarationExpression as JS.JSVariableDeclarations.JSNamedVariable, Space.EMPTY)]
+                        )
+                        : new J.VariableDeclarations(
+                            randomId(),
+                            this.prefix(declaration),
+                            Markers.EMPTY,
+                            [], // FIXME decorators?
+                            [], // FIXME modifiers?
+                            this.mapTypeInfo(declaration),
+                            null, // FIXME varargs
+                            [],
+                            [this.rightPadded(declarationExpression, Space.EMPTY)]
+                        ),
                     this.suffix(declaration)
                 );
             })
@@ -2415,11 +2533,36 @@ export class JavaScriptParserVisitor {
     }
 
     visitShorthandPropertyAssignment(node: ts.ShorthandPropertyAssignment) {
-        return this.visitUnknown(node);
+        return new JS.PropertyAssignment(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.rightPadded(this.visit(node.name), this.suffix(node.name)),
+            null
+        );
     }
 
     visitSpreadAssignment(node: ts.SpreadAssignment) {
-        return this.visitUnknown(node);
+        return new JS.PropertyAssignment(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.rightPadded(
+                new JS.Unary(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    this.leftPadded(
+                        Space.EMPTY,
+                        JS.Unary.Type.Spread
+                    ),
+                    this.visit(node.expression),
+                    this.mapType(node.expression)
+                ),
+                this.suffix(node.expression)
+            ),
+            null
+        );
     }
 
     visitEnumMember(node: ts.EnumMember) {
@@ -2689,7 +2832,7 @@ export class JavaScriptParserVisitor {
         return this.typeMapping.methodType(node);
     }
 
-    private mapCommaSeparatedList(nodes: readonly ts.Node[]): JContainer<J.Expression> {
+    private mapCommaSeparatedList<T extends J.J>(nodes: readonly ts.Node[]): JContainer<T> {
         return this.mapToContainer(nodes, this.trailingComma(nodes));
     }
 
