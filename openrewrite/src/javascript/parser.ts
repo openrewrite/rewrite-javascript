@@ -406,7 +406,7 @@ export class JavaScriptParserVisitor {
             null,
             new J.Block(
                 randomId(),
-                this.prefix(node.getChildren().find(v => v.kind === ts.SyntaxKind.OpenBraceToken)!),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBraceToken)!),
                 Markers.EMPTY,
                 new JRightPadded(false, Space.EMPTY, Markers.EMPTY),
                 node.members.map((ce : ts.ClassElement) => new JRightPadded(
@@ -420,7 +420,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private mapExtends(node: ts.ClassDeclaration): JLeftPadded<J.TypeTree> | null {
+    private mapExtends(node: ts.ClassDeclaration | ts.ClassExpression): JLeftPadded<J.TypeTree> | null {
         if (node.heritageClauses == undefined || node.heritageClauses.length == 0) {
             return null;
         }
@@ -452,7 +452,7 @@ export class JavaScriptParserVisitor {
         return null;
     }
 
-    private mapImplements(node: ts.ClassDeclaration): JContainer<J.TypeTree> | null {
+    private mapImplements(node: ts.ClassDeclaration | ts.ClassExpression): JContainer<J.TypeTree> | null {
         if (node.heritageClauses == undefined || node.heritageClauses.length == 0) {
             return null;
         }
@@ -590,28 +590,14 @@ export class JavaScriptParserVisitor {
     }
 
     visitQualifiedName(node: ts.QualifiedName) {
-        const fieldAccess = new J.FieldAccess(
+        return new J.FieldAccess(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
             this.visit(node.left),
-            new JLeftPadded<J.Identifier>(this.suffix(node.left), this.convert<J.Identifier>(node.right), Markers.EMPTY),
+            this.leftPadded(this.suffix(node.left), this.convert(node.right)),
             this.mapType(node)
         );
-
-        const parent = node.parent as ts.TypeReferenceNode;
-        if (parent.typeArguments) {
-            return new J.ParameterizedType(
-                randomId(),
-                this.prefix(parent),
-                Markers.EMPTY,
-                fieldAccess,
-                this.mapTypeArguments(this.suffix(parent.typeName), parent.typeArguments),
-                this.mapType(parent)
-            )
-        } else {
-            return fieldAccess;
-        }
     }
 
     visitComputedPropertyName(node: ts.ComputedPropertyName) {
@@ -1051,11 +1037,14 @@ export class JavaScriptParserVisitor {
 
     visitTypeReference(node: ts.TypeReferenceNode) {
         if (node.typeArguments) {
-            // Temporary check for supported constructions with type arguments
-            if (ts.isQualifiedName(node.typeName)) {
-                return this.visit(node.typeName);
-            }
-            return this.visitUnknown(node);
+            return new J.ParameterizedType(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.visit(node.typeName),
+                this.mapTypeArguments(this.suffix(node.typeName), node.typeArguments),
+                this.mapType(node)
+            )
         }
         return this.visit(node.typeName);
     }
@@ -1642,7 +1631,42 @@ export class JavaScriptParserVisitor {
     }
 
     visitClassExpression(node: ts.ClassExpression) {
-        return this.visitUnknown(node);
+        return new JS.StatementExpression(
+            randomId(),
+            new J.ClassDeclaration(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [], //this.mapDecorators(node),
+                [], //this.mapModifiers(node),
+                new J.ClassDeclaration.Kind(
+                    randomId(),
+                    node.modifiers ? this.suffix(node.modifiers[node.modifiers.length - 1]) : this.prefix(node),
+                    Markers.EMPTY,
+                    [],
+                    J.ClassDeclaration.Kind.Type.Class
+                ),
+                node.name ? this.convert(node.name) : this.mapIdentifier(node, ""),
+                this.mapTypeParametersAsJContainer(node),
+                null, // FIXME primary constructor
+                this.mapExtends(node),
+                this.mapImplements(node),
+                null,
+                new J.Block(
+                    randomId(),
+                    this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBraceToken)!),
+                    Markers.EMPTY,
+                    this.rightPadded(false, Space.EMPTY),
+                    node.members.map(ce  => new JRightPadded(
+                        this.convert(ce),
+                        ce.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken ? this.prefix(ce.getLastToken()!) : Space.EMPTY,
+                        ce.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+                    )),
+                    this.prefix(node.getLastToken()!)
+                ),
+                this.mapType(node)
+            )
+        )
     }
 
     visitOmittedExpression(node: ts.OmittedExpression) {
@@ -2024,9 +2048,9 @@ export class JavaScriptParserVisitor {
             null,
             new J.Block(
                 randomId(),
-                this.prefix(node.getChildren().find(v => v.kind === ts.SyntaxKind.OpenBraceToken)!),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBraceToken)!),
                 Markers.EMPTY,
-                new JRightPadded(false, Space.EMPTY, Markers.EMPTY),
+               this.rightPadded(false, Space.EMPTY),
                 node.members.map(te  => new JRightPadded(
                     this.convert(te),
                     (te.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken) || (te.getLastToken()?.kind === ts.SyntaxKind.CommaToken) ? this.prefix(te.getLastToken()!) : Space.EMPTY,
@@ -2737,7 +2761,7 @@ export class JavaScriptParserVisitor {
         return node.modifiers?.filter(ts.isDecorator)?.map(this.convert<J.Annotation>) ?? [];
     }
 
-    private mapTypeParametersAsJContainer(node: ts.ClassDeclaration | ts.InterfaceDeclaration): JContainer<J.TypeParameter> | null {
+    private mapTypeParametersAsJContainer(node: ts.ClassDeclaration | ts.InterfaceDeclaration | ts.ClassExpression): JContainer<J.TypeParameter> | null {
         return node.typeParameters
             ? JContainer.build(
                 this.suffix(this.findChildNode(node, ts.SyntaxKind.Identifier)!),

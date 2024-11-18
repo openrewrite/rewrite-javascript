@@ -13,6 +13,15 @@ describe('arrow mapping', () => {
         );
     });
 
+    test('function with empty body', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const empty = (/*a*/) /*b*/ => {/*c*/};
+            `)
+        );
+    });
+
     test('function with simple body and comments', () => {
         rewriteRun(
           //language=typescript
@@ -48,6 +57,53 @@ describe('arrow mapping', () => {
           typeScript(`
               let sum = (x: number, y: number) => x + y;
           `)
+        );
+    });
+
+    test('function with trailing comma', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                let sum = (x: number, y: number /*a*/, /*b*/) => x + y;
+            `)
+        );
+    });
+
+    test('function with async modifier', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                let sum = async (x: number, y: number ) => x + y;
+            `)
+        );
+    });
+
+    test('basic async arrow function', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const fetchData = async (): Promise<string> => {
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            resolve("Data fetched successfully!");
+                        }, 2000);
+                    });
+                };
+
+                // Using the function
+                fetchData().then((message) => {
+                    console.log(message); // Outputs: Data fetched successfully! (after 2 seconds)
+                });
+            `)
+        );
+    });
+
+    test('function with async modifier and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                let sum = /*a*/async /*b*/ (/*c*/x: number, y: number /*d*/) /*e*/ => x + y;
+            `)
         );
     });
 
