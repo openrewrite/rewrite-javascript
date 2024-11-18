@@ -105,6 +105,16 @@ describe('variable declaration mapping', () => {
                 const numbers = [];
                 const obj = { a: 1, b: 2 };
                 ({ a: numbers[0], b: numbers[1] } = obj);
+            `),
+            //language=typescript
+            typeScript(`
+                const numbers = [];
+                const obj = { a: 1, b: 2 };
+                ({ a: numbers[0], b: numbers[1] } = obj);
+            `),
+            //language=typescript
+            typeScript(`
+                /*1*/ const /*2*/  {  /*3*/ a/*4*/  :/*5*/  aa /*6*/  = /*7*/  10 /*8*/ , /*9*/  b /*10*/ :  /*11*/ bb = {  } /*12*/ ,  /*13*/ } = { a: 3 };
             `)
         );
     });
