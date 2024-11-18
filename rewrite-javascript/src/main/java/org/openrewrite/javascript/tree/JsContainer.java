@@ -27,6 +27,8 @@ public class JsContainer {
         IMPORT_ELEMENT(JsSpace.Location.IMPORT_ELEMENTS, JsRightPadded.Location.IMPORT_ELEMENT_SUFFIX),
         TUPLE_ELEMENT(JsSpace.Location.TUPLE_ELEMENT, JsRightPadded.Location.TUPLE_ELEMENT_SUFFIX),
         JSMETHOD_DECLARATION_PARAMETERS(JsSpace.Location.JSMETHOD_DECLARATION_PARAMETERS, JsRightPadded.Location.JSMETHOD_DECLARATION_PARAMETER),
+        JSTYPE_PARAMETERS(JsSpace.Location.JSTYPE_PARAMETERS, JsRightPadded.Location.JSTYPE_PARAMETER),
+        JSMETHOD_INVOCATION_ARGUMENTS(JsSpace.Location.JSTYPE_PARAMETERS, JsRightPadded.Location.JSTYPE_PARAMETER)
         ;
 
         private final JsSpace.Location beforeLocation;

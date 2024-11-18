@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration, FunctionDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -52,6 +52,7 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(arrowFunction, v => v.markers, ctx.sendMarkers);
         ctx.sendNodes(arrowFunction, v => v.leadingAnnotations, ctx.sendTree, t => t.id);
         ctx.sendNodes(arrowFunction, v => v.modifiers, ctx.sendTree, t => t.id);
+        ctx.sendNode(arrowFunction, v => v.typeParameters, ctx.sendTree);
         ctx.sendNode(arrowFunction, v => v.parameters, ctx.sendTree);
         ctx.sendNode(arrowFunction, v => v.returnTypeExpression, ctx.sendTree);
         ctx.sendNode(arrowFunction, v => v.arrow, Visitor.sendSpace);
@@ -345,6 +346,18 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(jSMethodDeclaration, v => v.padding.defaultValue, Visitor.sendLeftPadded(ValueType.Tree));
         ctx.sendTypedValue(jSMethodDeclaration, v => v.methodType, ValueType.Object);
         return jSMethodDeclaration;
+    }
+
+    public visitJSMethodInvocation(jSMethodInvocation: JSMethodInvocation, ctx: SenderContext): J {
+        ctx.sendValue(jSMethodInvocation, v => v.id, ValueType.UUID);
+        ctx.sendNode(jSMethodInvocation, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(jSMethodInvocation, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(jSMethodInvocation, v => v.padding.select, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(jSMethodInvocation, v => v.padding.typeParameters, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendNode(jSMethodInvocation, v => v.name, ctx.sendTree);
+        ctx.sendNode(jSMethodInvocation, v => v.padding.arguments, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendTypedValue(jSMethodInvocation, v => v.methodType, ValueType.Object);
+        return jSMethodInvocation;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, ctx: SenderContext): J {

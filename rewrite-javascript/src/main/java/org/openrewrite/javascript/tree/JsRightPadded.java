@@ -16,6 +16,7 @@
 package org.openrewrite.javascript.tree;
 
 import lombok.Getter;
+import org.openrewrite.java.tree.Space;
 
 public class JsRightPadded {
     @Getter
@@ -35,7 +36,9 @@ public class JsRightPadded {
         UNION_TYPE(JsSpace.Location.UNION_TYPE_SUFFIX),
         JSNAMED_VARIABLE(JsSpace.Location.JSNAMED_VARIABLE_SUFFIX),
         NAMESPACE_DECLARATION_NAME(JsSpace.Location.NAMESPACE_DECLARATION_PREFIX),
-        JSMETHOD_DECLARATION_PARAMETER(JsSpace.Location.JSMETHOD_DECLARATION_PARAMETERS);
+        JSMETHOD_DECLARATION_PARAMETER(JsSpace.Location.JSMETHOD_DECLARATION_PARAMETERS),
+        JSMETHOD_SELECT(JsSpace.Location.JSMETHOD_SELECT_SUFFIX),
+        JSTYPE_PARAMETER(JsSpace.Location.JSTYPE_PARAMETER_SUFFIX);
 
         private final JsSpace.Location afterLocation;
 

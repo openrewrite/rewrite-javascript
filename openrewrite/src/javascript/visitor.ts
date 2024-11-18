@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration, FunctionDeclaration} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -51,6 +51,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         arrowFunction = arrowFunction.withMarkers(this.visitMarkers(arrowFunction.markers, p));
         arrowFunction = arrowFunction.withLeadingAnnotations(ListUtils.map(arrowFunction.leadingAnnotations, el => this.visitAndCast(el, p)));
         arrowFunction = arrowFunction.withModifiers(ListUtils.map(arrowFunction.modifiers, el => this.visitAndCast(el, p)));
+        arrowFunction = arrowFunction.withTypeParameters(this.visitAndCast(arrowFunction.typeParameters, p));
         arrowFunction = arrowFunction.withParameters(this.visitAndCast(arrowFunction.parameters, p)!);
         arrowFunction = arrowFunction.withReturnTypeExpression(this.visitAndCast(arrowFunction.returnTypeExpression, p));
         arrowFunction = arrowFunction.withArrow(this.visitJsSpace(arrowFunction.arrow, JsSpace.Location.ARROW_FUNCTION_ARROW, p)!);
@@ -457,6 +458,28 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         jSMethodDeclaration = jSMethodDeclaration.withBody(this.visitAndCast(jSMethodDeclaration.body, p));
         jSMethodDeclaration = jSMethodDeclaration.padding.withDefaultValue(this.visitJsLeftPadded(jSMethodDeclaration.padding.defaultValue, JsLeftPadded.Location.JSMETHOD_DECLARATION_DEFAULT_VALUE, p));
         return jSMethodDeclaration;
+    }
+
+    public visitJSMethodInvocation(jSMethodInvocation: JSMethodInvocation, p: P): J | null {
+        jSMethodInvocation = jSMethodInvocation.withPrefix(this.visitJsSpace(jSMethodInvocation.prefix, JsSpace.Location.JSMETHOD_INVOCATION_PREFIX, p)!);
+        let tempStatement = this.visitStatement(jSMethodInvocation, p) as Statement;
+        if (!(tempStatement instanceof JSMethodInvocation))
+        {
+            return tempStatement;
+        }
+        jSMethodInvocation = tempStatement as JSMethodInvocation;
+        let tempExpression = this.visitExpression(jSMethodInvocation, p) as Expression;
+        if (!(tempExpression instanceof JSMethodInvocation))
+        {
+            return tempExpression;
+        }
+        jSMethodInvocation = tempExpression as JSMethodInvocation;
+        jSMethodInvocation = jSMethodInvocation.withMarkers(this.visitMarkers(jSMethodInvocation.markers, p));
+        jSMethodInvocation = jSMethodInvocation.padding.withSelect(this.visitJsRightPadded(jSMethodInvocation.padding.select, JsRightPadded.Location.JSMETHOD_INVOCATION_SELECT, p));
+        jSMethodInvocation = jSMethodInvocation.padding.withTypeParameters(this.visitJsContainer(jSMethodInvocation.padding.typeParameters, JsContainer.Location.JSMETHOD_INVOCATION_TYPE_PARAMETERS, p));
+        jSMethodInvocation = jSMethodInvocation.withName(this.visitAndCast(jSMethodInvocation.name, p)!);
+        jSMethodInvocation = jSMethodInvocation.padding.withArguments(this.visitJsContainer(jSMethodInvocation.padding.arguments, JsContainer.Location.JSMETHOD_INVOCATION_ARGUMENTS, p)!);
+        return jSMethodInvocation;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, p: P): J | null {

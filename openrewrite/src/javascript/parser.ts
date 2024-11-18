@@ -1325,7 +1325,16 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.convert(node.expression),
+            node.questionDotToken ?
+                new JS.Unary(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    this.leftPadded(this.suffix(node.expression), JS.Unary.Type.QuestionDotWithDot),
+                    this.visit(node.expression),
+                    this.mapType(node)
+                ) :
+                this.convert(node.expression),
             new J.ArrayDimension(
                 randomId(),
                 this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBracketToken)!),
@@ -1339,7 +1348,7 @@ export class JavaScriptParserVisitor {
     visitCallExpression(node: ts.CallExpression) {
         const prefix = this.prefix(node);
         let select: JRightPadded<J.Expression> | null;
-        let name: J.Identifier;
+        let name: ts.Expression;
         if (ts.isPropertyAccessExpression(node.expression)) {
             select = this.rightPadded(
                 node.expression.questionDotToken ?
@@ -1354,21 +1363,44 @@ export class JavaScriptParserVisitor {
                     this.convert<J.Expression>(node.expression.expression),
                 this.prefix(node.expression.getChildAt(1, this.sourceFile))
             );
-            name = this.convert(node.expression.name);
+            name = node.expression.name;
         } else {
             select = null;
-            name = this.convert(node.expression);
+            name = node.expression;
         }
-        return new J.MethodInvocation(
-            randomId(),
-            prefix,
-            Markers.EMPTY,
-            select,
-            null, // FIXME type parameters
-            name,
-            this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
-            this.mapMethodType(node)
-        );
+
+        if (node.questionDotToken) {
+            const unary = new JS.Unary(
+                randomId(),
+                Space.EMPTY,
+                Markers.EMPTY,
+                this.leftPadded(this.suffix(name), JS.Unary.Type.QuestionDotWithDot),
+                this.visit(name),
+                this.mapType(node)
+            );
+
+            return new JS.JSMethodInvocation(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                select,
+                node.typeArguments ? this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments) : null,
+                unary,
+                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
+                this.mapMethodType(node)
+            );
+        } else {
+            return new J.MethodInvocation(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                select,
+                node.typeArguments ? this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments) : null,
+                this.convert(name),
+                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
+                this.mapMethodType(node)
+            );
+        }
     }
 
     visitNewExpression(node: ts.NewExpression) {
@@ -1435,6 +1467,7 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             [],
             this.mapModifiers(node),
+            node.typeParameters ? this.mapTypeParametersAsObject(node) : null,
             new Lambda.Parameters(
                 randomId(),
                 this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
@@ -2992,7 +3025,7 @@ export class JavaScriptParserVisitor {
     }
 
     private mapTypeParametersAsObject(node: ts.MethodDeclaration | ts.MethodSignature | ts.FunctionDeclaration
-        | ts.CallSignatureDeclaration | ts.ConstructSignatureDeclaration | ts.FunctionExpression) : J.TypeParameters | null {
+        | ts.CallSignatureDeclaration | ts.ConstructSignatureDeclaration | ts.FunctionExpression | ts.ArrowFunction) : J.TypeParameters | null {
         if (!node.typeParameters) return null;
 
         let ts_prefix: Space;

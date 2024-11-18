@@ -89,6 +89,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(arrowFunction, JS.ArrowFunction::getMarkers, ctx::sendMarkers);
             ctx.sendNodes(arrowFunction, JS.ArrowFunction::getLeadingAnnotations, ctx::sendTree, Tree::getId);
             ctx.sendNodes(arrowFunction, JS.ArrowFunction::getModifiers, ctx::sendTree, Tree::getId);
+            ctx.sendNode(arrowFunction, JS.ArrowFunction::getTypeParameters, ctx::sendTree);
             ctx.sendNode(arrowFunction, JS.ArrowFunction::getParameters, ctx::sendTree);
             ctx.sendNode(arrowFunction, JS.ArrowFunction::getReturnTypeExpression, ctx::sendTree);
             ctx.sendNode(arrowFunction, JS.ArrowFunction::getArrow, JavaScriptSender::sendSpace);
@@ -410,6 +411,19 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(jSMethodDeclaration, e -> e.getPadding().getDefaultValue(), JavaScriptSender::sendLeftPadded);
             ctx.sendTypedValue(jSMethodDeclaration, JS.JSMethodDeclaration::getMethodType);
             return jSMethodDeclaration;
+        }
+
+        @Override
+        public JS.JSMethodInvocation visitJSMethodInvocation(JS.JSMethodInvocation jSMethodInvocation, SenderContext ctx) {
+            ctx.sendValue(jSMethodInvocation, JS.JSMethodInvocation::getId);
+            ctx.sendNode(jSMethodInvocation, JS.JSMethodInvocation::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jSMethodInvocation, JS.JSMethodInvocation::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(jSMethodInvocation, e -> e.getPadding().getSelect(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(jSMethodInvocation, e -> e.getPadding().getTypeParameters(), JavaScriptSender::sendContainer);
+            ctx.sendNode(jSMethodInvocation, JS.JSMethodInvocation::getName, ctx::sendTree);
+            ctx.sendNode(jSMethodInvocation, e -> e.getPadding().getArguments(), JavaScriptSender::sendContainer);
+            ctx.sendTypedValue(jSMethodInvocation, JS.JSMethodInvocation::getMethodType);
+            return jSMethodInvocation;
         }
 
         @Override

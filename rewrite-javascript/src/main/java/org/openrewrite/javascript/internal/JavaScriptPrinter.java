@@ -76,6 +76,17 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         beforeSyntax(arrowFunction, JsSpace.Location.ARROW_FUNCTION_PREFIX, p);
         visit(arrowFunction.getLeadingAnnotations(), p);
         arrowFunction.getModifiers().forEach(m -> delegate.visitModifier(m, p));
+
+        J.TypeParameters typeParameters = arrowFunction.getTypeParameters();
+        if (typeParameters != null) {
+            visit(typeParameters.getAnnotations(), p);
+            visitSpace(typeParameters.getPrefix(), Space.Location.TYPE_PARAMETERS, p);
+            visitMarkers(typeParameters.getMarkers(), p);
+            p.append("<");
+            visitRightPadded(typeParameters.getPadding().getTypeParameters(), JRightPadded.Location.TYPE_PARAMETER, ",", p);
+            p.append(">");
+        }
+
         if (arrowFunction.getParameters().isParenthesized()) {
             visitSpace(arrowFunction.getParameters().getPrefix(), Space.Location.LAMBDA_PARAMETERS_PREFIX, p);
             p.append('(');
@@ -455,6 +466,11 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 visitSpace(unary.getPadding().getOperator().getBefore(), Space.Location.UNARY_OPERATOR, p);
                 p.append("?");
                 break;
+            case QuestionDotWithDot:
+                visit(unary.getExpression(), p);
+                visitSpace(unary.getPadding().getOperator().getBefore(), Space.Location.UNARY_OPERATOR, p);
+                p.append("?.");
+                break;
             default:
                 break;
         }
@@ -586,6 +602,17 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         visit(method.getBody(), p);
+        afterSyntax(method, p);
+        return method;
+    }
+
+    @Override
+    public J visitJSMethodInvocation(JS.JSMethodInvocation method, PrintOutputCapture<P> p) {
+        beforeSyntax(method, Space.Location.METHOD_INVOCATION_PREFIX, p);
+        visitRightPadded(method.getPadding().getSelect(), JsRightPadded.Location.JSMETHOD_SELECT, p);
+        visit(method.getName(), p);
+        visitContainer("<", method.getPadding().getTypeParameters(), JsContainer.Location.JSMETHOD_DECLARATION_PARAMETERS, ",", ">", p);
+        visitContainer("(", method.getPadding().getArguments(), JsContainer.Location.JSMETHOD_INVOCATION_ARGUMENTS, ",", ")", p);
         afterSyntax(method, p);
         return method;
     }
@@ -830,10 +857,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         @Override
         public J visitMethodInvocation(J.MethodInvocation method, PrintOutputCapture<P> p) {
             beforeSyntax(method, Space.Location.METHOD_INVOCATION_PREFIX, p);
-            String suffix = method.getMarkers().findFirst(OmitDot.class).isPresent() ? "" : ".";
-            visitRightPadded(method.getPadding().getSelect(), JRightPadded.Location.METHOD_SELECT, suffix, p);
-            visitContainer("<", method.getPadding().getTypeParameters(), JContainer.Location.TYPE_PARAMETERS, ",", ">", p);
+            visitRightPadded(method.getPadding().getSelect(), JRightPadded.Location.METHOD_SELECT, ".", p);
             visit(method.getName(), p);
+            visitContainer("<", method.getPadding().getTypeParameters(), JContainer.Location.TYPE_PARAMETERS, ",", ">", p);
             visitContainer("(", method.getPadding().getArguments(), JContainer.Location.METHOD_INVOCATION_ARGUMENTS, ",", ")", p);
             afterSyntax(method, p);
             return method;

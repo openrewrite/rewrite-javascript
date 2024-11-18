@@ -4,7 +4,7 @@ import * as extensions from "./extensions";
 import {JS, JSMixin, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./support_types";
 import {JavaScriptVisitor} from "../visitor";
 import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../../core";
-import {Expression, J, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypedTree, TypeTree} from "../../java/tree";
+import {Expression, J, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypedTree, TypeTree, MethodCall} from "../../java/tree";
 import * as Java from "../../java/tree";
 
 @LstType("org.openrewrite.javascript.tree.JS$CompilationUnit")
@@ -251,13 +251,14 @@ export class Alias extends JSMixin(Object) implements Expression {
 
 @LstType("org.openrewrite.javascript.tree.JS$ArrowFunction")
 export class ArrowFunction extends JSMixin(Object) implements Statement, Expression, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], parameters: Java.Lambda.Parameters, returnTypeExpression: TypeTree | null, arrow: Space, body: J, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeParameters: Java.TypeParameters | null, parameters: Java.Lambda.Parameters, returnTypeExpression: TypeTree | null, arrow: Space, body: J, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
         this._leadingAnnotations = leadingAnnotations;
         this._modifiers = modifiers;
+        this._typeParameters = typeParameters;
         this._parameters = parameters;
         this._returnTypeExpression = returnTypeExpression;
         this._arrow = arrow;
@@ -272,7 +273,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withId(id: UUID): ArrowFunction {
-            return id === this._id ? this : new ArrowFunction(id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return id === this._id ? this : new ArrowFunction(id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
         }
 
         private readonly _prefix: Space;
@@ -282,7 +283,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withPrefix(prefix: Space): ArrowFunction {
-            return prefix === this._prefix ? this : new ArrowFunction(this._id, prefix, this._markers, this._leadingAnnotations, this._modifiers, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return prefix === this._prefix ? this : new ArrowFunction(this._id, prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
         }
 
         private readonly _markers: Markers;
@@ -292,7 +293,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withMarkers(markers: Markers): ArrowFunction {
-            return markers === this._markers ? this : new ArrowFunction(this._id, this._prefix, markers, this._leadingAnnotations, this._modifiers, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return markers === this._markers ? this : new ArrowFunction(this._id, this._prefix, markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
         }
 
         private readonly _leadingAnnotations: Java.Annotation[];
@@ -302,7 +303,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withLeadingAnnotations(leadingAnnotations: Java.Annotation[]): ArrowFunction {
-            return leadingAnnotations === this._leadingAnnotations ? this : new ArrowFunction(this._id, this._prefix, this._markers, leadingAnnotations, this._modifiers, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return leadingAnnotations === this._leadingAnnotations ? this : new ArrowFunction(this._id, this._prefix, this._markers, leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
         }
 
         private readonly _modifiers: Java.Modifier[];
@@ -312,7 +313,17 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withModifiers(modifiers: Java.Modifier[]): ArrowFunction {
-            return modifiers === this._modifiers ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, modifiers, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return modifiers === this._modifiers ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+        }
+
+        private readonly _typeParameters: Java.TypeParameters | null;
+
+        public get typeParameters(): Java.TypeParameters | null {
+            return this._typeParameters;
+        }
+
+        public withTypeParameters(typeParameters: Java.TypeParameters | null): ArrowFunction {
+            return typeParameters === this._typeParameters ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
         }
 
         private readonly _parameters: Java.Lambda.Parameters;
@@ -322,7 +333,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withParameters(parameters: Java.Lambda.Parameters): ArrowFunction {
-            return parameters === this._parameters ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return parameters === this._parameters ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
         }
 
         private readonly _returnTypeExpression: TypeTree | null;
@@ -332,7 +343,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withReturnTypeExpression(returnTypeExpression: TypeTree | null): ArrowFunction {
-            return returnTypeExpression === this._returnTypeExpression ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._parameters, returnTypeExpression, this._arrow, this._body, this._type);
+            return returnTypeExpression === this._returnTypeExpression ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, returnTypeExpression, this._arrow, this._body, this._type);
         }
 
         private readonly _arrow: Space;
@@ -342,7 +353,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withArrow(arrow: Space): ArrowFunction {
-            return arrow === this._arrow ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._parameters, this._returnTypeExpression, arrow, this._body, this._type);
+            return arrow === this._arrow ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, arrow, this._body, this._type);
         }
 
         private readonly _body: J;
@@ -352,7 +363,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withBody(body: J): ArrowFunction {
-            return body === this._body ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._parameters, this._returnTypeExpression, this._arrow, body, this._type);
+            return body === this._body ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, body, this._type);
         }
 
         private readonly _type: JavaType | null;
@@ -362,7 +373,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withType(_type: JavaType | null): ArrowFunction {
-            return _type === this._type ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._parameters, this._returnTypeExpression, this._arrow, this._body, _type);
+            return _type === this._type ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, _type);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
@@ -2248,6 +2259,7 @@ export namespace Unary {
             Optional = 1,
             Exclamation = 2,
             QuestionDot = 3,
+            QuestionDotWithDot = 4,
 
     }
 
@@ -2957,6 +2969,138 @@ export class JSMethodDeclaration extends JSMixin(Object) implements Statement, T
             }
             public withDefaultValue(defaultValue: JLeftPadded<Expression> | null): JSMethodDeclaration {
                 return t._defaultValue === defaultValue ? t : new JSMethodDeclaration(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._returnTypeExpression, t._name, t._parameters, t._throwz, t._body, defaultValue, t._methodType);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JSMethodInvocation")
+export class JSMethodInvocation extends JSMixin(Object) implements Statement, TypedTree, MethodCall {
+    public constructor(id: UUID, prefix: Space, markers: Markers, select: JRightPadded<Expression> | null, typeParameters: JContainer<Expression> | null, name: Expression, _arguments: JContainer<Expression>, methodType: JavaType.Method | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._select = select;
+        this._typeParameters = typeParameters;
+        this._name = name;
+        this._arguments = _arguments;
+        this._methodType = methodType;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JSMethodInvocation {
+            return id === this._id ? this : new JSMethodInvocation(id, this._prefix, this._markers, this._select, this._typeParameters, this._name, this._arguments, this._methodType);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JSMethodInvocation {
+            return prefix === this._prefix ? this : new JSMethodInvocation(this._id, prefix, this._markers, this._select, this._typeParameters, this._name, this._arguments, this._methodType);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JSMethodInvocation {
+            return markers === this._markers ? this : new JSMethodInvocation(this._id, this._prefix, markers, this._select, this._typeParameters, this._name, this._arguments, this._methodType);
+        }
+
+        private readonly _select: JRightPadded<Expression> | null;
+
+        public get select(): Expression | null {
+            return this._select === null ? null : this._select.element;
+        }
+
+        public withSelect(select: Expression | null): JSMethodInvocation {
+            return this.padding.withSelect(JRightPadded.withElement(this._select, select));
+        }
+
+        private readonly _typeParameters: JContainer<Expression> | null;
+
+        public get typeParameters(): Expression[] | null {
+            return this._typeParameters === null ? null : this._typeParameters.elements;
+        }
+
+        public withTypeParameters(typeParameters: Expression[] | null): JSMethodInvocation {
+            return this.padding.withTypeParameters(JContainer.withElementsNullable(this._typeParameters, typeParameters));
+        }
+
+        private readonly _name: Expression;
+
+        public get name(): Expression {
+            return this._name;
+        }
+
+        public withName(name: Expression): JSMethodInvocation {
+            return name === this._name ? this : new JSMethodInvocation(this._id, this._prefix, this._markers, this._select, this._typeParameters, name, this._arguments, this._methodType);
+        }
+
+        private readonly _arguments: JContainer<Expression>;
+
+        public get arguments(): Expression[] {
+            return this._arguments.elements;
+        }
+
+        public withArguments(_arguments: Expression[]): JSMethodInvocation {
+            return this.padding.withArguments(JContainer.withElements(this._arguments, _arguments));
+        }
+
+        private readonly _methodType: JavaType.Method | null;
+
+        public get methodType(): JavaType.Method | null {
+            return this._methodType;
+        }
+
+        public withMethodType(methodType: JavaType.Method | null): JSMethodInvocation {
+            return methodType === this._methodType ? this : new JSMethodInvocation(this._id, this._prefix, this._markers, this._select, this._typeParameters, this._name, this._arguments, methodType);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJSMethodInvocation(this, p);
+    }
+
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): JSMethodInvocation {
+        return extensions.withJavaType(this, type);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get select(): JRightPadded<Expression> | null {
+                return t._select;
+            }
+            public withSelect(select: JRightPadded<Expression> | null): JSMethodInvocation {
+                return t._select === select ? t : new JSMethodInvocation(t._id, t._prefix, t._markers, select, t._typeParameters, t._name, t._arguments, t._methodType);
+            }
+            public get typeParameters(): JContainer<Expression> | null {
+                return t._typeParameters;
+            }
+            public withTypeParameters(typeParameters: JContainer<Expression> | null): JSMethodInvocation {
+                return t._typeParameters === typeParameters ? t : new JSMethodInvocation(t._id, t._prefix, t._markers, t._select, typeParameters, t._name, t._arguments, t._methodType);
+            }
+            public get arguments(): JContainer<Expression> {
+                return t._arguments;
+            }
+            public withArguments(_arguments: JContainer<Expression>): JSMethodInvocation {
+                return t._arguments === _arguments ? t : new JSMethodInvocation(t._id, t._prefix, t._markers, t._select, t._typeParameters, t._name, _arguments, t._methodType);
             }
         }
     }
