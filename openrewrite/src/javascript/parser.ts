@@ -259,10 +259,9 @@ export class JavaScriptParserVisitor {
     private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration
         | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration
         | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration | ts.ArrowFunction) {
-        if (ts.isVariableStatement(node) || ts.isModuleDeclaration(node) || ts.isClassDeclaration(node)
-            || ts.isEnumDeclaration(node) || ts.isInterfaceDeclaration(node) || ts.isPropertyDeclaration(node)
-            || ts.isPropertySignature(node) || ts.isParameter(node) || ts.isMethodDeclaration(node)
-            || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node)) {
+        if (ts.isVariableStatement(node) || ts.isModuleDeclaration(node)  || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node)
+            || ts.isInterfaceDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node) || ts.isParameter(node)
+            || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         }  else if (ts.isFunctionDeclaration(node)) {
             return [...node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [],
@@ -1442,13 +1441,14 @@ export class JavaScriptParserVisitor {
                 Markers.EMPTY,
                 true,
                 node.parameters.length > 0 ?
-                    node.parameters.map(p => this.rightPadded(this.convert(p), this.suffix(p))) :
-                    [this.rightPadded(this.newJEmpty(), this.prefix(node.getChildren().find(n => n.kind === ts.SyntaxKind.CloseParenToken)!))] // to handle the case: (/*no*/) => ...
+                    node.parameters.map(p => this.rightPadded(this.convert(p), this.suffix(p)))
+                        .concat(node.parameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!)) : []) :
+                    [this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!))] // to handle the case: (/*no*/) => ...
             ),
             this.mapTypeInfo(node),
             this.prefix(node.equalsGreaterThanToken),
-            node.body ? this.convert<J.Block>(node.body) : this.newJEmpty(),
-            null
+            this.convert(node.body),
+            this.mapType(node)
         );
     }
 
