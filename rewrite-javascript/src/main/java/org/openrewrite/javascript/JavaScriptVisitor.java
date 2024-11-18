@@ -87,6 +87,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         a = a.withModifiers(ListUtils.map(a.getModifiers(),
                 mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
         a = a.withModifiers(ListUtils.map(a.getModifiers(), m -> visitAndCast(m, p)));
+        a = a.withTypeParameters(visitAndCast(a.getTypeParameters(), p));
 
         a = a.withParameters(
                 a.getParameters().withPrefix(
@@ -673,6 +674,42 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         if (m.getPadding().getDefaultValue() != null) {
             m = m.getPadding().withDefaultValue(visitLeftPadded(m.getPadding().getDefaultValue(), JLeftPadded.Location.METHOD_DECLARATION_DEFAULT_VALUE, p));
         }
+        m = m.withMethodType((JavaType.Method) visitType(m.getMethodType(), p));
+        return m;
+    }
+
+    public J visitJSMethodInvocation(JS.JSMethodInvocation method, P p) {
+        JS.JSMethodInvocation m = method;
+        m = m.withPrefix(visitSpace(m.getPrefix(), Space.Location.METHOD_INVOCATION_PREFIX, p));
+        m = m.withMarkers(visitMarkers(m.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(m, p);
+        if (!(temp instanceof J.MethodInvocation)) {
+            return temp;
+        } else {
+            m = (JS.JSMethodInvocation) temp;
+        }
+        Expression temp2 = (Expression) visitExpression(m, p);
+        if (!(temp2 instanceof JS.MethodInvocation)) {
+            return temp2;
+        } else {
+            m = (JS.JSMethodInvocation) temp2;
+        }
+        if (m.getPadding().getSelect() != null && m.getPadding().getSelect().getElement() instanceof NameTree &&
+                method.getMethodType() != null && method.getMethodType().hasFlags(Flag.Static)) {
+            //noinspection unchecked
+            m = m.getPadding().withSelect(
+                    (JRightPadded<Expression>) (JRightPadded<?>)
+                            visitTypeName((JRightPadded<NameTree>) (JRightPadded<?>) m.getPadding().getSelect(), p));
+        }
+        if (m.getPadding().getSelect() != null) {
+            m = m.getPadding().withSelect(visitRightPadded(m.getPadding().getSelect(), JsRightPadded.Location.JSMETHOD_SELECT, p));
+        }
+        if (m.getPadding().getTypeParameters() != null) {
+            m = m.getPadding().withTypeParameters(visitContainer(m.getPadding().getTypeParameters(), JsContainer.Location.JSTYPE_PARAMETERS, p));
+        }
+        m = m.getPadding().withTypeParameters(visitTypeNames(m.getPadding().getTypeParameters(), p));
+        m = m.withName(this.visitAndCast(m.getName(), p));
+        m = m.getPadding().withArguments(visitContainer(m.getPadding().getArguments(), JsContainer.Location.JSMETHOD_INVOCATION_ARGUMENTS, p));
         m = m.withMethodType((JavaType.Method) visitType(m.getMethodType(), p));
         return m;
     }

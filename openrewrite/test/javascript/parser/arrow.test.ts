@@ -134,4 +134,22 @@ describe('arrow mapping', () => {
         );
     });
 
+    test('with generic type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const echo = <T>(input: T): T => input;
+            `)
+        );
+    });
+
+    test('with generic type and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const echo = /*a*/</*0*/T/*1*/>/*b*/(/*c*/input: T/*d*/)/*e*/: T => input;
+            `)
+        );
+    });
+
 });

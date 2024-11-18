@@ -38,4 +38,69 @@ describe('call mapping', () => {
           typeScript('parseInt("42" , )')
         );
     });
+
+    test('with optional chaining operator', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const func = (message: string) => message;
+                const result1 = func/*a*/?./*b*/("TS"); // Invokes the function
+            `)
+        );
+    });
+
+    test('call expression with type parameters', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function identity<T>(value: T): T {
+                    return value;
+                }
+
+                const result = identity<string>("Hello TypeScript");
+            `)
+        );
+    });
+
+    test('call expression with type parameters and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function identity<T>(value: T): T {
+                    return value;
+                }
+
+                const result = /*a*/identity/*b*/</*c*/string/*d*/>/*e*/("Hello TypeScript");
+            `)
+        );
+    });
+
+    test('call expression with type parameters and optional chaining operator', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function identity<T>(value: T): T {
+                    return value;
+                }
+
+                const result1 = identity<string>?.("Hello TypeScript");
+                const result2 = identity?.<string>("Hello TypeScript");
+            `)
+        );
+    });
+
+    test('call expression with type parameters and optional chaining operator with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function identity<T>(value: T): T {
+                    return value;
+                }
+
+                const result1 = /*a*/identity/*b*/<string>/*c*/?./*d*/("Hello TypeScript");
+                const result2 = /*a*/identity/*b*/?./*c*/<string>/*d*/("Hello TypeScript");
+            `)
+        );
+    });
+
 });

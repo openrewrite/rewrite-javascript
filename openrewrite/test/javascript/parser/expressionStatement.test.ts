@@ -129,4 +129,30 @@ describe('expression statement mapping', () => {
             `)
         );
     });
+
+    test('optional chaining operator with ?.', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+            const func1 = (msg: string) => {
+                return {
+                    func2: (greeting: string) => greeting + msg
+                };
+            };
+
+            const result1 = func1?.("World")?.func2("Hello"); // Invokes func1 and then func2 if func1 is not null/undefined.
+            `)
+        );
+    });
+
+    test.skip('optional chaining operator with ?. and custom type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const func1: ((msg: string) => { func2: (greeting: string) => string }) | undefined = undefined;
+                const result2 = func1?.("Test")?.func2("Hi"); // Does not invoke and returns \`undefined\`.
+            `)
+        );
+    });
+
 });

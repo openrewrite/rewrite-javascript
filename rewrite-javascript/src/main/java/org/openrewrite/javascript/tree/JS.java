@@ -415,6 +415,10 @@ public interface JS extends J {
         @With
         List<J.Modifier> modifiers;
 
+        @Getter
+        @With
+        J.@Nullable TypeParameters typeParameters;
+
         @With
         Lambda.Parameters parameters;
 
@@ -2036,7 +2040,8 @@ public interface JS extends J {
             Spread,
             Optional,
             Exclamation,
-            QuestionDot;
+            QuestionDot,
+            QuestionDotWithDot;
 
             public boolean isModifying() {
                 switch (this) {
@@ -2669,6 +2674,158 @@ public interface JS extends J {
 
             public JSMethodDeclaration withDefaultValue(@Nullable JLeftPadded<Expression> defaultValue) {
                 return t.defaultValue == defaultValue ? t : new JSMethodDeclaration(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.typeParameters, t.returnTypeExpression, t.name, t.parameters, t.throwz, t.body, defaultValue, t.methodType);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class JSMethodInvocation implements JS, Statement, TypedTree, MethodCall {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<JSMethodInvocation.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        /**
+         * Right padded before the '.'
+         */
+        @Nullable
+        JRightPadded<Expression> select;
+
+        public @Nullable Expression getSelect() {
+            return select == null ? null : select.getElement();
+        }
+
+        public JSMethodInvocation withSelect(@Nullable Expression select) {
+            return getPadding().withSelect(JRightPadded.withElement(this.select, select));
+        }
+
+        @Nullable
+        @With
+        JContainer<Expression> typeParameters;
+
+        public @Nullable List<Expression> getTypeParameters() {
+            return typeParameters == null ? null : typeParameters.getElements();
+        }
+
+        @With
+        @Getter
+        Expression name;
+
+        JContainer<Expression> arguments;
+
+        @Override
+        public List<Expression> getArguments() {
+            return arguments.getElements();
+        }
+
+        @Override
+        public JSMethodInvocation withArguments(List<Expression> arguments) {
+            return getPadding().withArguments(JContainer.withElements(this.arguments, arguments));
+        }
+
+        @Getter
+        JavaType.@Nullable Method methodType;
+
+        @Override
+        public JSMethodInvocation withMethodType(JavaType.@Nullable Method type) {
+            if (type == this.methodType) {
+                return this;
+            }
+            return new JSMethodInvocation(id, prefix, markers, select, typeParameters, name, arguments, type);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public JSMethodInvocation withType(@Nullable JavaType type) {
+            throw new UnsupportedOperationException("To change the return type of this method invocation, use withMethodType(..)");
+        }
+
+        public JSMethodInvocation withDeclaringType(JavaType.FullyQualified type) {
+            if (this.methodType == null) {
+                return this;
+            } else {
+                return withMethodType(this.methodType.withDeclaringType(type));
+            }
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJSMethodInvocation(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        @Override
+        public JavaType getType() {
+            return methodType == null ? null : methodType.getReturnType();
+        }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @Override
+        public String toString() {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JSMethodInvocation t;
+
+            public @Nullable JRightPadded<Expression> getSelect() {
+                return t.select;
+            }
+
+            public JSMethodInvocation withSelect(@Nullable JRightPadded<Expression> select) {
+                return t.select == select ? t : new JSMethodInvocation(t.id, t.prefix, t.markers, select, t.typeParameters, t.name, t.arguments, t.methodType);
+            }
+
+            public @Nullable JContainer<Expression> getTypeParameters() {
+                return t.typeParameters;
+            }
+
+            public JSMethodInvocation withTypeParameters(@Nullable JContainer<Expression> typeParameters) {
+                return t.typeParameters == typeParameters ? t : new JSMethodInvocation(t.id, t.prefix, t.markers, t.select, typeParameters, t.name, t.arguments, t.methodType);
+            }
+
+            public JContainer<Expression> getArguments() {
+                return t.arguments;
+            }
+
+            public JSMethodInvocation withArguments(JContainer<Expression> arguments) {
+                return t.arguments == arguments ? t : new JSMethodInvocation(t.id, t.prefix, t.markers, t.select, t.typeParameters, t.name, arguments, t.methodType);
             }
         }
     }

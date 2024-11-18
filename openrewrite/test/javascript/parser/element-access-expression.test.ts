@@ -74,4 +74,28 @@ describe('array literal mapping', () => {
         );
     });
 
+
+    test('with optional chaining operator', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const arr = [10, 20, 30];
+                const value1 = arr/*a*/?./*b*/[1];
+          `)
+        );
+    });
+
+    test('with optional chaining operator and object access', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const obj = {
+                    val: null
+                };
+
+                const result2 = obj.val?.[1];
+            `)
+        );
+    });
+
 });
