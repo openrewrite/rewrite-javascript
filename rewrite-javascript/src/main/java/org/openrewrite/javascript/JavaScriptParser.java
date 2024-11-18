@@ -119,7 +119,11 @@ public class JavaScriptParser implements Parser {
 
                 JS.CompilationUnit py = (JS.CompilationUnit) parsed;
                 parsingListener.parsed(input, py);
-                return requirePrintEqualsInput(py, input, relativeTo, ctx);
+                SourceFile sourceFile = requirePrintEqualsInput(py, input, relativeTo, ctx);
+                if (sourceFile instanceof ParseError) {
+                    return ((ParseError) sourceFile).withErroneous(null);
+                }
+                return sourceFile;
             } catch (Throwable t) {
                 ctx.getOnError().accept(t);
                 return ParseError.build(this, input, relativeTo, ctx, t);

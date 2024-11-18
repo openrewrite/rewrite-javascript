@@ -73,4 +73,24 @@ describe('import mapping', () => {
           typeScript('const module = await import("module-name");')
         )
     });
+
+    test('type import and others', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`import {
+                Client,
+                defaultAxiosInstance,
+                defaultHttpsAgent,
+                type ElevationResponse,
+                /*1*/ type  /*2*/ ElevationResponseSuper /*3*/ as   /*4*/ ERS   /*5*/ ,  /*6*/
+            } from "../src";`)
+        );
+    });
+
+    test('type imports only', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`import type { Component } from "react";`)
+        );
+    });
 });

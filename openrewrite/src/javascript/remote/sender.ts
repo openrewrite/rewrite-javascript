@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration, FunctionDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, NamespaceDeclaration, FunctionDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -122,11 +122,22 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(jsImport, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(jsImport, v => v.markers, ctx.sendMarkers);
         ctx.sendNode(jsImport, v => v.padding.name, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(jsImport, v => v.padding.importType, Visitor.sendLeftPadded(ValueType.Primitive));
         ctx.sendNode(jsImport, v => v.padding.imports, Visitor.sendContainer(ValueType.Tree));
         ctx.sendNode(jsImport, v => v.from, Visitor.sendSpace);
         ctx.sendNode(jsImport, v => v.target, ctx.sendTree);
         ctx.sendNode(jsImport, v => v.padding.initializer, Visitor.sendLeftPadded(ValueType.Tree));
         return jsImport;
+    }
+
+    public visitJsImportSpecifier(jsImportSpecifier: JsImportSpecifier, ctx: SenderContext): J {
+        ctx.sendValue(jsImportSpecifier, v => v.id, ValueType.UUID);
+        ctx.sendNode(jsImportSpecifier, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(jsImportSpecifier, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(jsImportSpecifier, v => v.padding.importType, Visitor.sendLeftPadded(ValueType.Primitive));
+        ctx.sendNode(jsImportSpecifier, v => v.specifier, ctx.sendTree);
+        ctx.sendTypedValue(jsImportSpecifier, v => v.type, ValueType.Object);
+        return jsImportSpecifier;
     }
 
     public visitJsBinary(jsBinary: JsBinary, ctx: SenderContext): J {
