@@ -108,6 +108,17 @@ describe('function mapping', () => {
         );
     });
 
+    test('function with type ref', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function getLength(arr: Array<string>): number {
+                    return arr.length;
+                }
+            `)
+        );
+    });
+
     test.skip('function type with parameter', () => {
         rewriteRun(
             //language=typescript

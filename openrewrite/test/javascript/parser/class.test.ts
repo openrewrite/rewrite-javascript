@@ -116,12 +116,12 @@ describe('class mapping', () => {
                     b = 6;
 
                     // method 1
-                    abs(): string{
+                    abs(x): string{
                         return "1";
                     }
 
                     //method 2
-                    max(): number {
+                    max(x, y /*a*/, /*b*/): number {
                         return 2;
                     }
                 } /*asdasdas*/
@@ -179,7 +179,6 @@ describe('class mapping', () => {
         );
     });
 
-
     test('class with simple ctor', () => {
         rewriteRun(
           //language=typescript
@@ -220,7 +219,70 @@ describe('class mapping', () => {
         );
     });
 
-    test.skip('anonymous class declaration', () => {
+    test('anonymous class expression', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const MyClass = class {
+                    constructor(public name: string) {
+                    }
+                };
+            `)
+        );
+    });
+
+    test('anonymous class expression with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const MyClass = /*a*/class/*b*/ {/*c*/
+                    constructor(public name: string) {
+                    }
+                };
+            `)
+        );
+    });
+
+    test('named class expression', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const Employee = class EmployeeClass {
+                    constructor(public position: string, public salary: number, ) {
+                    }
+                };
+            `)
+        );
+    });
+
+    test('class extends expression', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class OuterClass extends (class extends Number { }) {
+                }
+            `)
+        );
+    });
+
+    test.skip('class expressions inline', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function createInstance(ClassType: new () => any) {
+                    return new ClassType();
+                }
+
+                const instance = createInstance(class {
+                    sayHello() {
+                        console.log("Hello from an inline class!");
+                    }
+                });
+            `)
+        );
+    });
+
+    test.skip('inner class declaration with extends', () => {
       rewriteRun(
         //language=typescript
         typeScript(`
@@ -230,18 +292,7 @@ describe('class mapping', () => {
             const a: typeof OuterClass.InnerClass.prototype = 1;
         `)
       );
-  });
-
-  test.skip('nested class qualified name', () => {
-      rewriteRun(
-          //language=typescript
-          typeScript(`
-              class OuterClass extends (class extends Number { }) {
-              }
-              const a: typeof OuterClass.InnerClass.prototype = 1;
-          `)
-      );
-  });
+    });
 
     test('class with optional properties, ctor and modifiers', () => {
         rewriteRun(
