@@ -301,7 +301,6 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         }
         typeDeclaration = tempStatement as TypeDeclaration;
         typeDeclaration = typeDeclaration.withMarkers(this.visitMarkers(typeDeclaration.markers, p));
-        typeDeclaration = typeDeclaration.withLeadingAnnotations(ListUtils.map(typeDeclaration.leadingAnnotations, el => this.visitAndCast(el, p)));
         typeDeclaration = typeDeclaration.withModifiers(ListUtils.map(typeDeclaration.modifiers, el => this.visitAndCast(el, p)));
         typeDeclaration = typeDeclaration.withName(this.visitAndCast(typeDeclaration.name, p)!);
         typeDeclaration = typeDeclaration.withTypeParameters(this.visitAndCast(typeDeclaration.typeParameters, p));

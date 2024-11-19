@@ -417,7 +417,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             t = (JS.TypeDeclaration) temp;
         }
-        t = t.withLeadingAnnotations(ListUtils.map(t.getLeadingAnnotations(), a -> visitAndCast(a, p)));
         t = t.withModifiers(ListUtils.map(t.getModifiers(),
                 mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
         t = t.withModifiers(Objects.requireNonNull(ListUtils.map(t.getModifiers(), e -> visitAndCast(e, p))));

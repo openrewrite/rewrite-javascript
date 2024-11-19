@@ -1778,14 +1778,10 @@ public interface JS extends J {
         Markers markers;
 
         @With
-        List<Annotation> leadingAnnotations;
-
-        @With
         List<Modifier> modifiers;
 
         @With
         J.Identifier name;
-
 
         @With
         J.@Nullable TypeParameters typeParameters;
@@ -1811,7 +1807,7 @@ public interface JS extends J {
         @SuppressWarnings("unchecked")
         @Override
         public TypeDeclaration withType(@Nullable JavaType javaType) {
-            return this.type == javaType ? this : new TypeDeclaration(id, prefix, markers, leadingAnnotations, modifiers, name, typeParameters, initializer, javaType);
+            return this.type == javaType ? this : new TypeDeclaration(id, prefix, markers, modifiers, name, typeParameters, initializer, javaType);
         }
 
         @Override
@@ -1849,7 +1845,7 @@ public interface JS extends J {
             }
 
             public TypeDeclaration withInitializer(JLeftPadded<Expression> initializer) {
-                return t.initializer == initializer ? t : new TypeDeclaration(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.name, t.typeParameters, initializer, t.type);
+                return t.initializer == initializer ? t : new TypeDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.name, t.typeParameters, initializer, t.type);
             }
         }
     }
