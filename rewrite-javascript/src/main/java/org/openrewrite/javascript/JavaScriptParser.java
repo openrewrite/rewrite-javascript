@@ -117,9 +117,9 @@ public class JavaScriptParser implements Parser {
                     return parsed;
                 }
 
-                JS.CompilationUnit py = (JS.CompilationUnit) parsed;
-                parsingListener.parsed(input, py);
-                SourceFile sourceFile = requirePrintEqualsInput(py, input, relativeTo, ctx);
+                JS.CompilationUnit js = (JS.CompilationUnit) parsed;
+                parsingListener.parsed(input, js);
+                SourceFile sourceFile = validate(js, input, relativeTo, ctx);
                 if (sourceFile instanceof ParseError) {
                     return ((ParseError) sourceFile).withErroneous(null);
                 }
@@ -132,6 +132,16 @@ public class JavaScriptParser implements Parser {
                 client.getContext().reset();
             }
         });
+    }
+
+    private SourceFile validate(JS.CompilationUnit sourceFile, Input input, @Nullable Path relativeTo, ExecutionContext ctx) {
+        JavaScriptValidator<Integer> typeValidator = new JavaScriptValidator<>();
+        try {
+            typeValidator.visit(sourceFile, 0);
+            return requirePrintEqualsInput(sourceFile, input, relativeTo, ctx);
+        } catch (Exception e) {
+            return ParseError.build(this, input, relativeTo, ctx, new IllegalStateException("LST model has type validation errors", e));
+        }
     }
 
     private final static List<String> EXTENSIONS = Collections.unmodifiableList(Arrays.asList(
