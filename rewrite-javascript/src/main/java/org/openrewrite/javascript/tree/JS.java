@@ -2905,6 +2905,264 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class JSForOfLoop implements JS, Loop {
+        @Nullable
+        @NonFinal
+        transient WeakReference<JSForOfLoop.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Nullable
+        @Getter
+        Space for_suffix;
+
+        JRightPadded<Boolean> await;
+
+        public boolean isAwait() {
+            return await.getElement();
+        }
+
+        public JSForOfLoop withAwait(boolean await) {
+            return getPadding().withAwait(this.await.withElement(await));
+        }
+
+        JRightPadded<Expression> initializer;
+
+        public Expression getInitializer() { return initializer.getElement(); }
+
+        public JSForOfLoop withInitializer(Expression initializer) {
+            return getPadding().withInitializer(this.initializer.withElement(initializer));
+        }
+
+        JRightPadded<Expression> iterable;
+
+        public Expression getIterable() {
+            return iterable.getElement();
+        }
+
+        public JSForOfLoop withIterable(Expression iterable) {
+            return getPadding().withIterable(this.iterable.withElement(iterable));
+        }
+
+        JRightPadded<Statement> body;
+
+        @Override
+        public Statement getBody() {
+            return body.getElement();
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public JSForOfLoop withBody(Statement body) {
+            return getPadding().withBody(this.body.withElement(body));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJSForOfLoop(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public JSForOfLoop.Padding getPadding() {
+            JSForOfLoop.Padding p;
+
+            if (this.padding == null) {
+                p = new JSForOfLoop.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JSForOfLoop.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JSForOfLoop t;
+
+            public JRightPadded<Boolean> getAwait() {
+                return t.await;
+            }
+
+            public JSForOfLoop withAwait(JRightPadded<Boolean> await) {
+                return t.await == await ? t : new JSForOfLoop(t.id, t.prefix, t.markers, t.for_suffix, await, t.initializer, t.iterable, t.body);
+            }
+
+            public JRightPadded<Expression> getInitializer() {
+                return t.initializer;
+            }
+
+            public JSForOfLoop withInitializer(JRightPadded<Expression> initializer) {
+                return t.initializer == initializer ? t : new JSForOfLoop(t.id, t.prefix, t.markers, t.for_suffix, t.await, initializer, t.iterable, t.body);
+            }
+
+            public JRightPadded<Expression> getIterable() {
+                return t.iterable;
+            }
+
+            public JSForOfLoop withIterable(JRightPadded<Expression> iterable) {
+                return t.iterable == iterable ? t : new JSForOfLoop(t.id, t.prefix, t.markers, t.for_suffix, t.await, t.initializer, iterable, t.body);
+            }
+
+            public JRightPadded<Statement> getBody() {
+                return t.body;
+            }
+
+            public JSForOfLoop withBody(JRightPadded<Statement> body) {
+                return t.body == body ? t : new JSForOfLoop(t.id, t.prefix, t.markers, t.for_suffix, t.await, t.initializer, t.iterable, body);
+            }
+        }
+
+        @Override
+        public String toString() {
+                return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
+            }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class JSForInLoop implements JS, Loop {
+        @Nullable
+        @NonFinal
+        transient WeakReference<JSForInLoop.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Nullable
+        @Getter
+        Space for_suffix;
+
+        JRightPadded<Expression> initializer;
+
+        public Expression getInitializer() { return initializer.getElement(); }
+
+        public JSForInLoop withInitializer(Expression initializer) {
+            return getPadding().withInitializer(this.initializer.withElement(initializer));
+        }
+
+        JRightPadded<Expression> iterable;
+
+        public Expression getIterable() {
+            return iterable.getElement();
+        }
+
+        public JSForInLoop withIterable(Expression iterable) {
+            return getPadding().withIterable(this.iterable.withElement(iterable));
+        }
+
+        JRightPadded<Statement> body;
+
+        @Override
+        public Statement getBody() {
+            return body.getElement();
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public JSForInLoop withBody(Statement body) {
+            return getPadding().withBody(this.body.withElement(body));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJSForInLoop(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public JSForInLoop.Padding getPadding() {
+            JSForInLoop.Padding p;
+
+            if (this.padding == null) {
+                p = new JSForInLoop.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JSForInLoop.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JSForInLoop t;
+
+            public JRightPadded<Expression> getInitializer() {
+                return t.initializer;
+            }
+
+            public JSForInLoop withInitializer(JRightPadded<Expression> initializer) {
+                return t.initializer == initializer ? t : new JSForInLoop(t.id, t.prefix, t.markers, t.for_suffix, initializer, t.iterable, t.body);
+            }
+
+            public JRightPadded<Expression> getIterable() {
+                return t.iterable;
+            }
+
+            public JSForInLoop withIterable(JRightPadded<Expression> iterable) {
+                return t.iterable == iterable ? t : new JSForInLoop(t.id, t.prefix, t.markers, t.for_suffix, t.initializer, iterable, t.body);
+            }
+
+            public JRightPadded<Statement> getBody() {
+                return t.body;
+            }
+
+            public JSForInLoop withBody(JRightPadded<Statement> body) {
+                return t.body == body ? t : new JSForInLoop(t.id, t.prefix, t.markers, t.for_suffix, t.initializer, t.iterable, body);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class NamespaceDeclaration implements JS, Statement {
 
         @Nullable

@@ -679,6 +679,40 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
 
 
+    @Override
+    public J visitJSForOfLoop(JS.JSForOfLoop loop, PrintOutputCapture<P> p) {
+        beforeSyntax(loop, JsSpace.Location.FOR_OF_LOOP_PREFIX, p);
+        p.append("for");
+        visitSpace(loop.getFor_suffix(), JsSpace.Location.FOR_LOOP_SUFFIX, p);
+        if (loop.isAwait()) {
+                p.append("await");
+                visitRightPadded(loop.getPadding().getAwait(), JsRightPadded.Location.FOR_OF_AWAIT, p);
+        }
+        p.append('(');
+        visitRightPadded(loop.getPadding().getInitializer(), JsRightPadded.Location.FOR_INIT, p);
+        p.append("of");
+        visitRightPadded(loop.getPadding().getIterable(), JsRightPadded.Location.FOR_ITER, p);
+        p.append(')');
+        visitRightPadded(loop.getPadding().getBody(), JsRightPadded.Location.FOR_BODY, p);
+        afterSyntax(loop, p);
+        return loop;
+    }
+
+    @Override
+    public J visitJSForInLoop(JS.JSForInLoop loop, PrintOutputCapture<P> p) {
+        beforeSyntax(loop, JsSpace.Location.FOR_IN_LOOP_PREFIX, p);
+        p.append("for");
+        visitSpace(loop.getFor_suffix(), JsSpace.Location.FOR_LOOP_SUFFIX, p);
+        p.append('(');
+        visitRightPadded(loop.getPadding().getInitializer(), JsRightPadded.Location.FOR_INIT, p);
+        p.append("in");
+        visitRightPadded(loop.getPadding().getIterable(), JsRightPadded.Location.FOR_ITER, p);
+        p.append(')');
+        visitRightPadded(loop.getPadding().getBody(), JsRightPadded.Location.FOR_BODY, p);
+        afterSyntax(loop, p);
+        return loop;
+    }
+
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
         @Override
@@ -813,21 +847,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitLeftPadded(postFixOperator != null ? "?." : ".", fieldAccess.getPadding().getName(), JLeftPadded.Location.FIELD_ACCESS_NAME, p);
             afterSyntax(fieldAccess, p);
             return fieldAccess;
-        }
-
-        @Override
-        public J visitForEachLoop(J.ForEachLoop forEachLoop, PrintOutputCapture<P> p) {
-            beforeSyntax(forEachLoop, Space.Location.FOR_EACH_LOOP_PREFIX, p);
-            p.append("for");
-            J.ForEachLoop.Control ctrl = forEachLoop.getControl();
-            visitSpace(ctrl.getPrefix(), Space.Location.FOR_EACH_CONTROL_PREFIX, p);
-            p.append('(');
-            visitRightPadded(ctrl.getPadding().getVariable(), JRightPadded.Location.FOREACH_VARIABLE, "of", p);
-            visitRightPadded(ctrl.getPadding().getIterable(), JRightPadded.Location.FOREACH_ITERABLE, "", p);
-            p.append(')');
-            visitStatement(forEachLoop.getPadding().getBody(), JRightPadded.Location.FOR_BODY, p);
-            afterSyntax(forEachLoop, p);
-            return forEachLoop;
         }
 
         @Override

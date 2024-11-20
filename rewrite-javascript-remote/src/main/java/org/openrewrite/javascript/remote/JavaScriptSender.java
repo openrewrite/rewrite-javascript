@@ -436,6 +436,31 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.JSForOfLoop visitJSForOfLoop(JS.JSForOfLoop jSForOfLoop, SenderContext ctx) {
+            ctx.sendValue(jSForOfLoop, JS.JSForOfLoop::getId);
+            ctx.sendNode(jSForOfLoop, JS.JSForOfLoop::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jSForOfLoop, JS.JSForOfLoop::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(jSForOfLoop, JS.JSForOfLoop::getFor_suffix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jSForOfLoop, e -> e.getPadding().getAwait(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(jSForOfLoop, e -> e.getPadding().getInitializer(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(jSForOfLoop, e -> e.getPadding().getIterable(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(jSForOfLoop, e -> e.getPadding().getBody(), JavaScriptSender::sendRightPadded);
+            return jSForOfLoop;
+        }
+
+        @Override
+        public JS.JSForInLoop visitJSForInLoop(JS.JSForInLoop jSForInLoop, SenderContext ctx) {
+            ctx.sendValue(jSForInLoop, JS.JSForInLoop::getId);
+            ctx.sendNode(jSForInLoop, JS.JSForInLoop::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jSForInLoop, JS.JSForInLoop::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(jSForInLoop, JS.JSForInLoop::getFor_suffix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jSForInLoop, e -> e.getPadding().getInitializer(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(jSForInLoop, e -> e.getPadding().getIterable(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(jSForInLoop, e -> e.getPadding().getBody(), JavaScriptSender::sendRightPadded);
+            return jSForInLoop;
+        }
+
+        @Override
         public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, SenderContext ctx) {
             ctx.sendValue(namespaceDeclaration, JS.NamespaceDeclaration::getId);
             ctx.sendNode(namespaceDeclaration, JS.NamespaceDeclaration::getPrefix, JavaScriptSender::sendSpace);

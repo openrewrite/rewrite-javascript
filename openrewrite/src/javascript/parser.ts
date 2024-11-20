@@ -2113,21 +2113,30 @@ export class JavaScriptParserVisitor {
     }
 
     visitForInStatement(node: ts.ForInStatement) {
-        return this.visitUnknown(node);
-    }
-
-    visitForOfStatement(node: ts.ForOfStatement) {
-        return new J.ForEachLoop(
+        return new JS.JSForInLoop(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            new J.ForEachLoop.Control(
-                randomId(),
-                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
-                Markers.EMPTY,
-                this.rightPadded(this.visit(node.initializer), Space.EMPTY),
-                this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
-            ),
+            this.suffix(this.findChildNode(node, ts.SyntaxKind.ForKeyword)!),
+            this.rightPadded(this.visit(node.initializer), this.prefix(node.initializer)),
+            this.rightPadded(this.visit(node.expression), this.suffix(node.expression)),
+            this.rightPadded(
+                this.convert(node.statement),
+                this.semicolonPrefix(node.statement),
+                node.statement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+            )
+        );
+    }
+
+    visitForOfStatement(node: ts.ForOfStatement) {
+        return new JS.JSForOfLoop(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.suffix(this.findChildNode(node, ts.SyntaxKind.ForKeyword)!),
+            node.awaitModifier ? this.rightPadded(true, this.suffix(node.awaitModifier)) : this.rightPadded(false, Space.EMPTY),
+            this.rightPadded(this.visit(node.initializer), this.prefix(node.initializer)),
+            this.rightPadded(this.visit(node.expression), this.suffix(node.expression)),
             this.rightPadded(
                 this.convert(node.statement),
                 this.semicolonPrefix(node.statement),

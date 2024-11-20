@@ -494,6 +494,39 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return jSMethodInvocation;
     }
 
+    public visitJSForOfLoop(jSForOfLoop: JSForOfLoop, p: P): J | null {
+        jSForOfLoop = jSForOfLoop.withPrefix(this.visitJsSpace(jSForOfLoop.prefix, JsSpace.Location.JSFOR_OF_LOOP_PREFIX, p)!);
+        let tempStatement = this.visitStatement(jSForOfLoop, p) as Statement;
+        if (!(tempStatement instanceof JSForOfLoop))
+        {
+            return tempStatement;
+        }
+        jSForOfLoop = tempStatement as JSForOfLoop;
+        jSForOfLoop = jSForOfLoop.withMarkers(this.visitMarkers(jSForOfLoop.markers, p));
+        jSForOfLoop = jSForOfLoop.withFor_suffix(this.visitJsSpace(jSForOfLoop.for_suffix, JsSpace.Location.JSFOR_OF_LOOP_FOR_SUFFIX, p));
+        jSForOfLoop = jSForOfLoop.padding.withAwait(this.visitJsRightPadded(jSForOfLoop.padding.await, JsRightPadded.Location.JSFOR_OF_LOOP_AWAIT, p)!);
+        jSForOfLoop = jSForOfLoop.padding.withInitializer(this.visitJsRightPadded(jSForOfLoop.padding.initializer, JsRightPadded.Location.JSFOR_OF_LOOP_INITIALIZER, p)!);
+        jSForOfLoop = jSForOfLoop.padding.withIterable(this.visitJsRightPadded(jSForOfLoop.padding.iterable, JsRightPadded.Location.JSFOR_OF_LOOP_ITERABLE, p)!);
+        jSForOfLoop = jSForOfLoop.padding.withBody(this.visitJsRightPadded(jSForOfLoop.padding.body, JsRightPadded.Location.JSFOR_OF_LOOP_BODY, p)!);
+        return jSForOfLoop;
+    }
+
+    public visitJSForInLoop(jSForInLoop: JSForInLoop, p: P): J | null {
+        jSForInLoop = jSForInLoop.withPrefix(this.visitJsSpace(jSForInLoop.prefix, JsSpace.Location.JSFOR_IN_LOOP_PREFIX, p)!);
+        let tempStatement = this.visitStatement(jSForInLoop, p) as Statement;
+        if (!(tempStatement instanceof JSForInLoop))
+        {
+            return tempStatement;
+        }
+        jSForInLoop = tempStatement as JSForInLoop;
+        jSForInLoop = jSForInLoop.withMarkers(this.visitMarkers(jSForInLoop.markers, p));
+        jSForInLoop = jSForInLoop.withFor_suffix(this.visitJsSpace(jSForInLoop.for_suffix, JsSpace.Location.JSFOR_IN_LOOP_FOR_SUFFIX, p));
+        jSForInLoop = jSForInLoop.padding.withInitializer(this.visitJsRightPadded(jSForInLoop.padding.initializer, JsRightPadded.Location.JSFOR_IN_LOOP_INITIALIZER, p)!);
+        jSForInLoop = jSForInLoop.padding.withIterable(this.visitJsRightPadded(jSForInLoop.padding.iterable, JsRightPadded.Location.JSFOR_IN_LOOP_ITERABLE, p)!);
+        jSForInLoop = jSForInLoop.padding.withBody(this.visitJsRightPadded(jSForInLoop.padding.body, JsRightPadded.Location.JSFOR_IN_LOOP_BODY, p)!);
+        return jSForInLoop;
+    }
+
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, p: P): J | null {
         namespaceDeclaration = namespaceDeclaration.withPrefix(this.visitJsSpace(namespaceDeclaration.prefix, JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p)!);
         let tempStatement = this.visitStatement(namespaceDeclaration, p) as Statement;

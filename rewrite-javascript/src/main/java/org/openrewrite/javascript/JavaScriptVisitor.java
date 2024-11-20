@@ -683,7 +683,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         if (m.getPadding().getThrowz() != null) {
             m = m.getPadding().withThrowz(visitContainer(m.getPadding().getThrowz(), JContainer.Location.THROWS, p));
         }
-        m = m.getPadding().withThrowz(visitTypeNames(m.getPadding().getThrowz(), p));
         m = m.withBody(visitAndCast(m.getBody(), p));
         if (m.getPadding().getDefaultValue() != null) {
             m = m.getPadding().withDefaultValue(visitLeftPadded(m.getPadding().getDefaultValue(), JLeftPadded.Location.METHOD_DECLARATION_DEFAULT_VALUE, p));
@@ -803,5 +802,40 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         isd = isd.getPadding().withTypeExpression(visitLeftPadded(isd.getPadding().getTypeExpression(), JsLeftPadded.Location.INDEXED_SIGNATURE_DECLARATION_TYPE_EXPRESSION, p));
         isd = isd.withType(visitType(isd.getType(), p));
         return isd;
+    }
+
+    public J visitJSForOfLoop(JS.JSForOfLoop jsForOfLoop, P p) {
+        JS.JSForOfLoop f = jsForOfLoop;
+        f = f.withPrefix(visitSpace(f.getPrefix(), JsSpace.Location.FOR_OF_LOOP_PREFIX, p));
+        f = f.withMarkers(visitMarkers(f.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(f, p);
+        if (!(temp instanceof JS.JSForOfLoop)) {
+            return temp;
+        } else {
+            f = (JS.JSForOfLoop) temp;
+        }
+        f = f.withFor_suffix(visitSpace(f.getFor_suffix(), JsSpace.Location.FOR_LOOP_SUFFIX, p));
+        f = f.getPadding().withAwait(visitRightPadded(f.getPadding().getAwait(), JsRightPadded.Location.FOR_OF_AWAIT, p));
+        f = f.getPadding().withInitializer(visitRightPadded(f.getPadding().getInitializer(), JsRightPadded.Location.FOR_INIT, p));
+        f = f.getPadding().withIterable(visitRightPadded(f.getPadding().getIterable(), JsRightPadded.Location.FOR_ITER, p));
+        f = f.getPadding().withBody(visitRightPadded(f.getPadding().getBody(), JsRightPadded.Location.FOR_BODY, p));
+        return f;
+    }
+
+    public J visitJSForInLoop(JS.JSForInLoop jsForInLoop, P p) {
+        JS.JSForInLoop f = jsForInLoop;
+        f = f.withPrefix(visitSpace(f.getPrefix(), JsSpace.Location.FOR_IN_LOOP_PREFIX, p));
+        f = f.withMarkers(visitMarkers(f.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(f, p);
+        if (!(temp instanceof JS.JSForOfLoop)) {
+            return temp;
+        } else {
+            f = (JS.JSForInLoop) temp;
+        }
+        f = f.withFor_suffix(visitSpace(f.getFor_suffix(), JsSpace.Location.FOR_LOOP_SUFFIX, p));
+        f = f.getPadding().withInitializer(visitRightPadded(f.getPadding().getInitializer(), JsRightPadded.Location.FOR_INIT, p));
+        f = f.getPadding().withIterable(visitRightPadded(f.getPadding().getIterable(), JsRightPadded.Location.FOR_ITER, p));
+        f = f.getPadding().withBody(visitRightPadded(f.getPadding().getBody(), JsRightPadded.Location.FOR_BODY, p));
+        return f;
     }
 }

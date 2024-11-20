@@ -368,6 +368,29 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         return jSMethodInvocation;
     }
 
+    public visitJSForOfLoop(jSForOfLoop: JSForOfLoop, ctx: SenderContext): J {
+        ctx.sendValue(jSForOfLoop, v => v.id, ValueType.UUID);
+        ctx.sendNode(jSForOfLoop, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(jSForOfLoop, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(jSForOfLoop, v => v.for_suffix, Visitor.sendSpace);
+        ctx.sendNode(jSForOfLoop, v => v.padding.await, Visitor.sendRightPadded(ValueType.Primitive));
+        ctx.sendNode(jSForOfLoop, v => v.padding.initializer, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(jSForOfLoop, v => v.padding.iterable, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(jSForOfLoop, v => v.padding.body, Visitor.sendRightPadded(ValueType.Tree));
+        return jSForOfLoop;
+    }
+
+    public visitJSForInLoop(jSForInLoop: JSForInLoop, ctx: SenderContext): J {
+        ctx.sendValue(jSForInLoop, v => v.id, ValueType.UUID);
+        ctx.sendNode(jSForInLoop, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(jSForInLoop, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(jSForInLoop, v => v.for_suffix, Visitor.sendSpace);
+        ctx.sendNode(jSForInLoop, v => v.padding.initializer, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(jSForInLoop, v => v.padding.iterable, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(jSForInLoop, v => v.padding.body, Visitor.sendRightPadded(ValueType.Tree));
+        return jSForInLoop;
+    }
+
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, ctx: SenderContext): J {
         ctx.sendValue(namespaceDeclaration, v => v.id, ValueType.UUID);
         ctx.sendNode(namespaceDeclaration, v => v.prefix, Visitor.sendSpace);

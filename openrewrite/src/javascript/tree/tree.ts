@@ -3175,6 +3175,249 @@ export class JSMethodInvocation extends JSMixin(Object) implements Statement, Ty
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$JSForOfLoop")
+export class JSForOfLoop extends JSMixin(Object) implements Loop {
+    public constructor(id: UUID, prefix: Space, markers: Markers, for_suffix: Space | null, await: JRightPadded<boolean>, initializer: JRightPadded<Expression>, iterable: JRightPadded<Expression>, body: JRightPadded<Statement>) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._for_suffix = for_suffix;
+        this._await = await;
+        this._initializer = initializer;
+        this._iterable = iterable;
+        this._body = body;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JSForOfLoop {
+            return id === this._id ? this : new JSForOfLoop(id, this._prefix, this._markers, this._for_suffix, this._await, this._initializer, this._iterable, this._body);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JSForOfLoop {
+            return prefix === this._prefix ? this : new JSForOfLoop(this._id, prefix, this._markers, this._for_suffix, this._await, this._initializer, this._iterable, this._body);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JSForOfLoop {
+            return markers === this._markers ? this : new JSForOfLoop(this._id, this._prefix, markers, this._for_suffix, this._await, this._initializer, this._iterable, this._body);
+        }
+
+        private readonly _for_suffix: Space | null;
+
+        public get for_suffix(): Space | null {
+            return this._for_suffix;
+        }
+
+        public withFor_suffix(for_suffix: Space | null): JSForOfLoop {
+            return for_suffix === this._for_suffix ? this : new JSForOfLoop(this._id, this._prefix, this._markers, for_suffix, this._await, this._initializer, this._iterable, this._body);
+        }
+
+        private readonly _await: JRightPadded<boolean>;
+
+        public get await(): boolean {
+            return this._await.element;
+        }
+
+        public withAwait(await: boolean): JSForOfLoop {
+            return this.padding.withAwait(this._await.withElement(await));
+        }
+
+        private readonly _initializer: JRightPadded<Expression>;
+
+        public get initializer(): Expression {
+            return this._initializer.element;
+        }
+
+        public withInitializer(initializer: Expression): JSForOfLoop {
+            return this.padding.withInitializer(this._initializer.withElement(initializer));
+        }
+
+        private readonly _iterable: JRightPadded<Expression>;
+
+        public get iterable(): Expression {
+            return this._iterable.element;
+        }
+
+        public withIterable(iterable: Expression): JSForOfLoop {
+            return this.padding.withIterable(this._iterable.withElement(iterable));
+        }
+
+        private readonly _body: JRightPadded<Statement>;
+
+        public get body(): Statement {
+            return this._body.element;
+        }
+
+        public withBody(body: Statement): JSForOfLoop {
+            return this.padding.withBody(this._body.withElement(body));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJSForOfLoop(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get await(): JRightPadded<boolean> {
+                return t._await;
+            }
+            public withAwait(await: JRightPadded<boolean>): JSForOfLoop {
+                return t._await === await ? t : new JSForOfLoop(t._id, t._prefix, t._markers, t._for_suffix, await, t._initializer, t._iterable, t._body);
+            }
+            public get initializer(): JRightPadded<Expression> {
+                return t._initializer;
+            }
+            public withInitializer(initializer: JRightPadded<Expression>): JSForOfLoop {
+                return t._initializer === initializer ? t : new JSForOfLoop(t._id, t._prefix, t._markers, t._for_suffix, t._await, initializer, t._iterable, t._body);
+            }
+            public get iterable(): JRightPadded<Expression> {
+                return t._iterable;
+            }
+            public withIterable(iterable: JRightPadded<Expression>): JSForOfLoop {
+                return t._iterable === iterable ? t : new JSForOfLoop(t._id, t._prefix, t._markers, t._for_suffix, t._await, t._initializer, iterable, t._body);
+            }
+            public get body(): JRightPadded<Statement> {
+                return t._body;
+            }
+            public withBody(body: JRightPadded<Statement>): JSForOfLoop {
+                return t._body === body ? t : new JSForOfLoop(t._id, t._prefix, t._markers, t._for_suffix, t._await, t._initializer, t._iterable, body);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JSForInLoop")
+export class JSForInLoop extends JSMixin(Object) implements Loop {
+    public constructor(id: UUID, prefix: Space, markers: Markers, for_suffix: Space | null, initializer: JRightPadded<Expression>, iterable: JRightPadded<Expression>, body: JRightPadded<Statement>) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._for_suffix = for_suffix;
+        this._initializer = initializer;
+        this._iterable = iterable;
+        this._body = body;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JSForInLoop {
+            return id === this._id ? this : new JSForInLoop(id, this._prefix, this._markers, this._for_suffix, this._initializer, this._iterable, this._body);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JSForInLoop {
+            return prefix === this._prefix ? this : new JSForInLoop(this._id, prefix, this._markers, this._for_suffix, this._initializer, this._iterable, this._body);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JSForInLoop {
+            return markers === this._markers ? this : new JSForInLoop(this._id, this._prefix, markers, this._for_suffix, this._initializer, this._iterable, this._body);
+        }
+
+        private readonly _for_suffix: Space | null;
+
+        public get for_suffix(): Space | null {
+            return this._for_suffix;
+        }
+
+        public withFor_suffix(for_suffix: Space | null): JSForInLoop {
+            return for_suffix === this._for_suffix ? this : new JSForInLoop(this._id, this._prefix, this._markers, for_suffix, this._initializer, this._iterable, this._body);
+        }
+
+        private readonly _initializer: JRightPadded<Expression>;
+
+        public get initializer(): Expression {
+            return this._initializer.element;
+        }
+
+        public withInitializer(initializer: Expression): JSForInLoop {
+            return this.padding.withInitializer(this._initializer.withElement(initializer));
+        }
+
+        private readonly _iterable: JRightPadded<Expression>;
+
+        public get iterable(): Expression {
+            return this._iterable.element;
+        }
+
+        public withIterable(iterable: Expression): JSForInLoop {
+            return this.padding.withIterable(this._iterable.withElement(iterable));
+        }
+
+        private readonly _body: JRightPadded<Statement>;
+
+        public get body(): Statement {
+            return this._body.element;
+        }
+
+        public withBody(body: Statement): JSForInLoop {
+            return this.padding.withBody(this._body.withElement(body));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJSForInLoop(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get initializer(): JRightPadded<Expression> {
+                return t._initializer;
+            }
+            public withInitializer(initializer: JRightPadded<Expression>): JSForInLoop {
+                return t._initializer === initializer ? t : new JSForInLoop(t._id, t._prefix, t._markers, t._for_suffix, initializer, t._iterable, t._body);
+            }
+            public get iterable(): JRightPadded<Expression> {
+                return t._iterable;
+            }
+            public withIterable(iterable: JRightPadded<Expression>): JSForInLoop {
+                return t._iterable === iterable ? t : new JSForInLoop(t._id, t._prefix, t._markers, t._for_suffix, t._initializer, iterable, t._body);
+            }
+            public get body(): JRightPadded<Statement> {
+                return t._body;
+            }
+            public withBody(body: JRightPadded<Statement>): JSForInLoop {
+                return t._body === body ? t : new JSForInLoop(t._id, t._prefix, t._markers, t._for_suffix, t._initializer, t._iterable, body);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$NamespaceDeclaration")
 export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
     public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], keywordType: JLeftPadded<NamespaceDeclaration.KeywordType>, name: JRightPadded<Expression>, body: Java.Block) {

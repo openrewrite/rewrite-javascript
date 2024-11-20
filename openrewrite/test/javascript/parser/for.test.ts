@@ -122,17 +122,86 @@ describe('for mapping', () => {
         );
     });
 
-    test.skip('for-in empty', () => {
+    test('for-of with await and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('/*a*/for/*b*/ await/*bb*/(/*c*/const /*d*/char /*e*/of /*f*/ "text"/*g*/)/*h*/ {/*j*/} /*k*/;/*l*/')
+        );
+    });
+
+    test('for-in empty', () => {
         rewriteRun(
             //language=typescript
             typeScript('for (const index in []) ;')
         );
     });
 
-    test.skip('for-in with comments', () => {
+    test('for-in with comments', () => {
         rewriteRun(
             //language=typescript
             typeScript('/*a*/for/*b*/ (/*c*/const /*d*/index /*e*/in /*f*/ []/*g*/)/*h*/ {/*j*/} /*k*/;/*l*/')
+        );
+    });
+
+    test.skip('for-in with keyof typeof TypeOperator', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const person = {
+                    name: "Alice",
+                    age: 25,
+                    city: "New York",
+                };
+
+                for (const key in person) {
+                    console.log(person[key as keyof typeof person]);
+                }
+            `)
+        );
+    });
+
+    test.skip('for-in with dynamic object', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const dynamicObject: { [key: string]: any } = {
+                    prop1: "Value1",
+                    prop2: 42,
+                    prop3: true,
+                };
+
+                for (const key in dynamicObject) {
+                    console.log(dynamicObject[key]);
+                }
+            `)
+        );
+    });
+
+    test('for-of with await', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const asyncIterable = {
+                    [Symbol.asyncIterator]() {
+                        let count = 0;
+                        return {
+                            async next() {
+                                if (count < 3) {
+                                    count++;
+                                    return {value: count, done: false};
+                                }
+                                return {value: undefined, done: true};
+                            },
+                        };
+                    },
+                };
+
+                async function iterateAsyncIterable() {
+                    for await (const value of asyncIterable) {
+                        console.log(value);
+                    }
+                }
+            `)
         );
     });
 });

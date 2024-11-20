@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, JSForOfLoop, JSForInLoop} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -371,6 +371,29 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         jSMethodInvocation = jSMethodInvocation.padding.withArguments(ctx.receiveNode(jSMethodInvocation.padding.arguments, receiveContainer)!);
         jSMethodInvocation = jSMethodInvocation.withMethodType(ctx.receiveValue(jSMethodInvocation.methodType, ValueType.Object));
         return jSMethodInvocation;
+    }
+
+    public visitJSForOfLoop(jSForOfLoop: JSForOfLoop, ctx: ReceiverContext): J {
+        jSForOfLoop = jSForOfLoop.withId(ctx.receiveValue(jSForOfLoop.id, ValueType.UUID)!);
+        jSForOfLoop = jSForOfLoop.withPrefix(ctx.receiveNode(jSForOfLoop.prefix, receiveSpace)!);
+        jSForOfLoop = jSForOfLoop.withMarkers(ctx.receiveNode(jSForOfLoop.markers, ctx.receiveMarkers)!);
+        jSForOfLoop = jSForOfLoop.withFor_suffix(ctx.receiveNode(jSForOfLoop.for_suffix, receiveSpace));
+        jSForOfLoop = jSForOfLoop.padding.withAwait(ctx.receiveNode(jSForOfLoop.padding.await, rightPaddedValueReceiver(ValueType.Primitive))!);
+        jSForOfLoop = jSForOfLoop.padding.withInitializer(ctx.receiveNode(jSForOfLoop.padding.initializer, receiveRightPaddedTree)!);
+        jSForOfLoop = jSForOfLoop.padding.withIterable(ctx.receiveNode(jSForOfLoop.padding.iterable, receiveRightPaddedTree)!);
+        jSForOfLoop = jSForOfLoop.padding.withBody(ctx.receiveNode(jSForOfLoop.padding.body, receiveRightPaddedTree)!);
+        return jSForOfLoop;
+    }
+
+    public visitJSForInLoop(jSForInLoop: JSForInLoop, ctx: ReceiverContext): J {
+        jSForInLoop = jSForInLoop.withId(ctx.receiveValue(jSForInLoop.id, ValueType.UUID)!);
+        jSForInLoop = jSForInLoop.withPrefix(ctx.receiveNode(jSForInLoop.prefix, receiveSpace)!);
+        jSForInLoop = jSForInLoop.withMarkers(ctx.receiveNode(jSForInLoop.markers, ctx.receiveMarkers)!);
+        jSForInLoop = jSForInLoop.withFor_suffix(ctx.receiveNode(jSForInLoop.for_suffix, receiveSpace));
+        jSForInLoop = jSForInLoop.padding.withInitializer(ctx.receiveNode(jSForInLoop.padding.initializer, receiveRightPaddedTree)!);
+        jSForInLoop = jSForInLoop.padding.withIterable(ctx.receiveNode(jSForInLoop.padding.iterable, receiveRightPaddedTree)!);
+        jSForInLoop = jSForInLoop.padding.withBody(ctx.receiveNode(jSForInLoop.padding.body, receiveRightPaddedTree)!);
+        return jSForInLoop;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, ctx: ReceiverContext): J {
@@ -1464,6 +1487,31 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
                 ctx.receiveNode<JContainer<Expression>>(null, receiveContainer)!,
                 ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$JSForOfLoop") {
+            return new JSForOfLoop(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode(null, receiveSpace),
+                ctx.receiveNode<JRightPadded<boolean>>(null, rightPaddedValueReceiver(ValueType.Primitive))!,
+                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
+                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
+                ctx.receiveNode<JRightPadded<Statement>>(null, receiveRightPaddedTree)!
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$JSForInLoop") {
+            return new JSForInLoop(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode(null, receiveSpace),
+                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
+                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
+                ctx.receiveNode<JRightPadded<Statement>>(null, receiveRightPaddedTree)!
             );
         }
 
