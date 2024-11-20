@@ -23,13 +23,10 @@
 package org.openrewrite.javascript;
 
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.*;
+import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.marker.Markers;
-import org.openrewrite.tree.*;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.*;
-import org.openrewrite.javascript.tree.*;
+import org.openrewrite.javascript.tree.JS;
 
 import java.util.List;
 
@@ -56,6 +53,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.Alias visitAlias(JS.Alias alias, P p) {
+        visitAndValidate(alias.getPropertyName(), J.Identifier.class, p);
         visitAndValidate(alias.getAlias(), J.Identifier.class, p);
         return alias;
     }
@@ -92,7 +90,9 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.Export visitExport(JS.Export export, P p) {
+        visitAndValidate(export.getExports(), Expression.class, p);
         visitAndValidate(export.getTarget(), J.Literal.class, p);
+        visitAndValidate(export.getInitializer(), Expression.class, p);
         return export;
     }
 
@@ -104,13 +104,17 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.FunctionType visitFunctionType(JS.FunctionType functionType, P p) {
+        visitAndValidate(functionType.getParameters(), Statement.class, p);
         visitAndValidate(functionType.getReturnType(), Expression.class, p);
         return functionType;
     }
 
     @Override
     public JS.JsImport visitJsImport(JS.JsImport jsImport, P p) {
+        visitAndValidate(jsImport.getName(), J.Identifier.class, p);
+        visitAndValidate(jsImport.getImports(), Expression.class, p);
         visitAndValidate(jsImport.getTarget(), J.Literal.class, p);
+        visitAndValidate(jsImport.getInitializer(), Expression.class, p);
         return jsImport;
     }
 
@@ -132,17 +136,22 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         ListUtils.map(objectBindingDeclarations.getLeadingAnnotations(), el -> visitAndValidate(el, J.Annotation.class, p));
         ListUtils.map(objectBindingDeclarations.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
         visitAndValidate(objectBindingDeclarations.getTypeExpression(), TypeTree.class, p);
+        visitAndValidate(objectBindingDeclarations.getBindings(), JS.ObjectBindingDeclarations.Binding.class, p);
+        visitAndValidate(objectBindingDeclarations.getInitializer(), Expression.class, p);
         return objectBindingDeclarations;
     }
 
     @Override
     public JS.ObjectBindingDeclarations.Binding visitBinding(JS.ObjectBindingDeclarations.Binding binding, P p) {
+        visitAndValidate(binding.getPropertyName(), J.Identifier.class, p);
         visitAndValidate(binding.getName(), TypedTree.class, p);
+        visitAndValidate(binding.getInitializer(), Expression.class, p);
         return binding;
     }
 
     @Override
     public JS.PropertyAssignment visitPropertyAssignment(JS.PropertyAssignment propertyAssignment, P p) {
+        visitAndValidate(propertyAssignment.getName(), Expression.class, p);
         visitAndValidate(propertyAssignment.getInitializer(), Expression.class, p);
         return propertyAssignment;
     }
@@ -162,6 +171,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.TemplateExpression visitTemplateExpression(JS.TemplateExpression templateExpression, P p) {
+        visitAndValidate(templateExpression.getTag(), Expression.class, p);
         ListUtils.map(templateExpression.getStrings(), el -> visitAndValidate(el, J.class, p));
         return templateExpression;
     }
@@ -174,6 +184,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.Tuple visitTuple(JS.Tuple tuple, P p) {
+        visitAndValidate(tuple.getElements(), J.class, p);
         return tuple;
     }
 
@@ -182,6 +193,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         ListUtils.map(typeDeclaration.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
         visitAndValidate(typeDeclaration.getName(), J.Identifier.class, p);
         visitAndValidate(typeDeclaration.getTypeParameters(), J.TypeParameters.class, p);
+        visitAndValidate(typeDeclaration.getInitializer(), Expression.class, p);
         return typeDeclaration;
     }
 
@@ -193,6 +205,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.TypeOperator visitTypeOperator(JS.TypeOperator typeOperator, P p) {
+        visitAndValidate(typeOperator.getExpression(), Expression.class, p);
         return typeOperator;
     }
 
@@ -238,6 +251,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public JS.JSVariableDeclarations.JSNamedVariable visitJSVariableDeclarationsJSNamedVariable(JS.JSVariableDeclarations.JSNamedVariable jSNamedVariable, P p) {
         visitAndValidate(jSNamedVariable.getName(), Expression.class, p);
+        visitAndValidate(jSNamedVariable.getInitializer(), Expression.class, p);
         return jSNamedVariable;
     }
 
@@ -248,19 +262,26 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         visitAndValidate(jSMethodDeclaration.getTypeParameters(), J.TypeParameters.class, p);
         visitAndValidate(jSMethodDeclaration.getReturnTypeExpression(), TypeTree.class, p);
         visitAndValidate(jSMethodDeclaration.getName(), Expression.class, p);
+        visitAndValidate(jSMethodDeclaration.getParameters(), Statement.class, p);
+        visitAndValidate(jSMethodDeclaration.getThrowz(), NameTree.class, p);
         visitAndValidate(jSMethodDeclaration.getBody(), J.Block.class, p);
+        visitAndValidate(jSMethodDeclaration.getDefaultValue(), Expression.class, p);
         return jSMethodDeclaration;
     }
 
     @Override
     public JS.JSMethodInvocation visitJSMethodInvocation(JS.JSMethodInvocation jSMethodInvocation, P p) {
+        visitAndValidate(jSMethodInvocation.getSelect(), Expression.class, p);
+        visitAndValidate(jSMethodInvocation.getTypeParameters(), Expression.class, p);
         visitAndValidate(jSMethodInvocation.getName(), Expression.class, p);
+        visitAndValidate(jSMethodInvocation.getArguments(), Expression.class, p);
         return jSMethodInvocation;
     }
 
     @Override
     public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, P p) {
         ListUtils.map(namespaceDeclaration.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
+        visitAndValidate(namespaceDeclaration.getName(), Expression.class, p);
         visitAndValidate(namespaceDeclaration.getBody(), J.Block.class, p);
         return namespaceDeclaration;
     }
@@ -270,6 +291,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         ListUtils.map(functionDeclaration.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
         visitAndValidate(functionDeclaration.getName(), J.Identifier.class, p);
         visitAndValidate(functionDeclaration.getTypeParameters(), J.TypeParameters.class, p);
+        visitAndValidate(functionDeclaration.getParameters(), Statement.class, p);
         visitAndValidate(functionDeclaration.getReturnTypeExpression(), TypeTree.class, p);
         visitAndValidate(functionDeclaration.getBody(), J.class, p);
         return functionDeclaration;
@@ -285,6 +307,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.Annotation visitAnnotation(J.Annotation annotation, P p) {
         visitAndValidate(annotation.getAnnotationType(), NameTree.class, p);
+        visitAndValidate(annotation.getArguments(), Expression.class, p);
         return annotation;
     }
 
@@ -305,12 +328,14 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.Assert visitAssert(J.Assert assert_, P p) {
         visitAndValidate(assert_.getCondition(), Expression.class, p);
+        visitAndValidate(assert_.getDetail().getElement(), Expression.class, p);
         return assert_;
     }
 
     @Override
     public J.Assignment visitAssignment(J.Assignment assignment, P p) {
         visitAndValidate(assignment.getVariable(), Expression.class, p);
+        visitAndValidate(assignment.getAssignment(), Expression.class, p);
         return assignment;
     }
 
@@ -342,6 +367,9 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public J.Case visitCase(J.Case case_, P p) {
+        visitAndValidate(case_.getExpressions(), Expression.class, p);
+        visitAndValidate(case_.getStatements(), Statement.class, p);
+        visitAndValidate(case_.getBody(), J.class, p);
         return case_;
     }
 
@@ -351,6 +379,11 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         ListUtils.map(classDeclaration.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
         visit(classDeclaration.getPadding().getKind(), p);
         visitAndValidate(classDeclaration.getName(), J.Identifier.class, p);
+        visitAndValidate(classDeclaration.getTypeParameters(), J.TypeParameter.class, p);
+        visitAndValidate(classDeclaration.getPrimaryConstructor(), Statement.class, p);
+        visitAndValidate(classDeclaration.getExtends(), TypeTree.class, p);
+        visitAndValidate(classDeclaration.getImplements(), TypeTree.class, p);
+        visitAndValidate(classDeclaration.getPermits(), TypeTree.class, p);
         visitAndValidate(classDeclaration.getBody(), J.Block.class, p);
         return classDeclaration;
     }
@@ -363,6 +396,8 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public J.DoWhileLoop visitDoWhileLoop(J.DoWhileLoop doWhileLoop, P p) {
+        visitAndValidate(doWhileLoop.getBody(), Statement.class, p);
+        visitAndValidate(doWhileLoop.getWhileCondition(), Expression.class, p);
         return doWhileLoop;
     }
 
@@ -388,29 +423,35 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.FieldAccess visitFieldAccess(J.FieldAccess fieldAccess, P p) {
         visitAndValidate(fieldAccess.getTarget(), Expression.class, p);
+        visitAndValidate(fieldAccess.getName(), J.Identifier.class, p);
         return fieldAccess;
     }
 
     @Override
     public J.ForEachLoop visitForEachLoop(J.ForEachLoop forEachLoop, P p) {
         visitAndValidate(forEachLoop.getControl(), J.ForEachLoop.Control.class, p);
+        visitAndValidate(forEachLoop.getBody(), Statement.class, p);
         return forEachLoop;
     }
 
     @Override
     public J.ForEachLoop.Control visitForEachControl(J.ForEachLoop.Control control, P p) {
+        visitAndValidate(control.getVariable(), J.VariableDeclarations.class, p);
+        visitAndValidate(control.getIterable(), Expression.class, p);
         return control;
     }
 
     @Override
     public J.ForLoop visitForLoop(J.ForLoop forLoop, P p) {
         visitAndValidate(forLoop.getControl(), J.ForLoop.Control.class, p);
+        visitAndValidate(forLoop.getBody(), Statement.class, p);
         return forLoop;
     }
 
     @Override
     public J.ForLoop.Control visitForControl(J.ForLoop.Control control, P p) {
         ListUtils.map(control.getInit(), el -> visitAndValidate(el, Statement.class, p));
+        visitAndValidate(control.getCondition(), Expression.class, p);
         ListUtils.map(control.getUpdate(), el -> visitAndValidate(el, Statement.class, p));
         return control;
     }
@@ -431,23 +472,27 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.If visitIf(J.If if_, P p) {
         visitAndValidate(if_.getIfCondition(), J.ControlParentheses.class, p);
+        visitAndValidate(if_.getThenPart(), Statement.class, p);
         visitAndValidate(if_.getElsePart(), J.If.Else.class, p);
         return if_;
     }
 
     @Override
     public J.If.Else visitElse(J.If.Else else_, P p) {
+        visitAndValidate(else_.getBody(), Statement.class, p);
         return else_;
     }
 
     @Override
     public J.Import visitImport(J.Import import_, P p) {
         visitAndValidate(import_.getQualid(), J.FieldAccess.class, p);
+        visitAndValidate(import_.getAlias(), J.Identifier.class, p);
         return import_;
     }
 
     @Override
     public J.InstanceOf visitInstanceOf(J.InstanceOf instanceOf, P p) {
+        visitAndValidate(instanceOf.getExpression(), Expression.class, p);
         visitAndValidate(instanceOf.getClazz(), J.class, p);
         visitAndValidate(instanceOf.getPattern(), J.class, p);
         return instanceOf;
@@ -455,11 +500,13 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public J.IntersectionType visitIntersectionType(J.IntersectionType intersectionType, P p) {
+        visitAndValidate(intersectionType.getBounds(), TypeTree.class, p);
         return intersectionType;
     }
 
     @Override
     public J.Label visitLabel(J.Label label, P p) {
+        visitAndValidate(label.getLabel(), J.Identifier.class, p);
         visitAndValidate(label.getStatement(), Statement.class, p);
         return label;
     }
@@ -478,6 +525,9 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public J.MemberReference visitMemberReference(J.MemberReference memberReference, P p) {
+        visitAndValidate(memberReference.getContaining(), Expression.class, p);
+        visitAndValidate(memberReference.getTypeParameters(), Expression.class, p);
+        visitAndValidate(memberReference.getReference(), J.Identifier.class, p);
         return memberReference;
     }
 
@@ -487,13 +537,19 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         ListUtils.map(methodDeclaration.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
         visitAndValidate(methodDeclaration.getTypeParameters(), J.TypeParameters.class, p);
         visitAndValidate(methodDeclaration.getReturnTypeExpression(), TypeTree.class, p);
+        visitAndValidate(methodDeclaration.getParameters(), Statement.class, p);
+        visitAndValidate(methodDeclaration.getThrows(), NameTree.class, p);
         visitAndValidate(methodDeclaration.getBody(), J.Block.class, p);
+        visitAndValidate(methodDeclaration.getDefaultValue(), Expression.class, p);
         return methodDeclaration;
     }
 
     @Override
     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation methodInvocation, P p) {
+        visitAndValidate(methodInvocation.getSelect(), Expression.class, p);
+        visitAndValidate(methodInvocation.getTypeParameters(), Expression.class, p);
         visitAndValidate(methodInvocation.getName(), J.Identifier.class, p);
+        visitAndValidate(methodInvocation.getArguments(), Expression.class, p);
         return methodInvocation;
     }
 
@@ -507,17 +563,21 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     public J.NewArray visitNewArray(J.NewArray newArray, P p) {
         visitAndValidate(newArray.getTypeExpression(), TypeTree.class, p);
         ListUtils.map(newArray.getDimensions(), el -> visitAndValidate(el, J.ArrayDimension.class, p));
+        visitAndValidate(newArray.getInitializer(), Expression.class, p);
         return newArray;
     }
 
     @Override
     public J.ArrayDimension visitArrayDimension(J.ArrayDimension arrayDimension, P p) {
+        visitAndValidate(arrayDimension.getIndex(), Expression.class, p);
         return arrayDimension;
     }
 
     @Override
     public J.NewClass visitNewClass(J.NewClass newClass, P p) {
+        visitAndValidate(newClass.getEnclosing(), Expression.class, p);
         visitAndValidate(newClass.getClazz(), TypeTree.class, p);
+        visitAndValidate(newClass.getArguments(), Expression.class, p);
         visitAndValidate(newClass.getBody(), J.Block.class, p);
         return newClass;
     }
@@ -525,6 +585,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.NullableType visitNullableType(J.NullableType nullableType, P p) {
         ListUtils.map(nullableType.getAnnotations(), el -> visitAndValidate(el, J.Annotation.class, p));
+        visitAndValidate(nullableType.getTypeTree(), TypeTree.class, p);
         return nullableType;
     }
 
@@ -538,6 +599,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.ParameterizedType visitParameterizedType(J.ParameterizedType parameterizedType, P p) {
         visitAndValidate(parameterizedType.getClazz(), NameTree.class, p);
+        visitAndValidate(parameterizedType.getTypeParameters(), Expression.class, p);
         return parameterizedType;
     }
 
@@ -588,6 +650,8 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.Ternary visitTernary(J.Ternary ternary, P p) {
         visitAndValidate(ternary.getCondition(), Expression.class, p);
+        visitAndValidate(ternary.getTruePart(), Expression.class, p);
+        visitAndValidate(ternary.getFalsePart(), Expression.class, p);
         return ternary;
     }
 
@@ -599,8 +663,10 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public J.Try visitTry(J.Try try_, P p) {
+        visitAndValidate(try_.getResources(), J.Try.Resource.class, p);
         visitAndValidate(try_.getBody(), J.Block.class, p);
         ListUtils.map(try_.getCatches(), el -> visitAndValidate(el, J.Try.Catch.class, p));
+        visitAndValidate(try_.getFinally(), J.Block.class, p);
         return try_;
     }
 
@@ -629,6 +695,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         ListUtils.map(typeParameter.getAnnotations(), el -> visitAndValidate(el, J.Annotation.class, p));
         ListUtils.map(typeParameter.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
         visitAndValidate(typeParameter.getName(), Expression.class, p);
+        visitAndValidate(typeParameter.getBounds(), TypeTree.class, p);
         return typeParameter;
     }
 
@@ -650,12 +717,14 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable namedVariable, P p) {
         visitAndValidate(namedVariable.getName(), J.Identifier.class, p);
+        visitAndValidate(namedVariable.getInitializer(), Expression.class, p);
         return namedVariable;
     }
 
     @Override
     public J.WhileLoop visitWhileLoop(J.WhileLoop whileLoop, P p) {
         visitAndValidate(whileLoop.getCondition(), J.ControlParentheses.class, p);
+        visitAndValidate(whileLoop.getBody(), Statement.class, p);
         return whileLoop;
     }
 
