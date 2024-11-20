@@ -308,7 +308,6 @@ public class JavaScriptReceiver implements Receiver<JS> {
             typeDeclaration = typeDeclaration.withId(ctx.receiveNonNullValue(typeDeclaration.getId(), UUID.class));
             typeDeclaration = typeDeclaration.withPrefix(ctx.receiveNonNullNode(typeDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
             typeDeclaration = typeDeclaration.withMarkers(ctx.receiveNonNullNode(typeDeclaration.getMarkers(), ctx::receiveMarkers));
-            typeDeclaration = typeDeclaration.withLeadingAnnotations(ctx.receiveNonNullNodes(typeDeclaration.getLeadingAnnotations(), ctx::receiveTree));
             typeDeclaration = typeDeclaration.withModifiers(ctx.receiveNonNullNodes(typeDeclaration.getModifiers(), ctx::receiveTree));
             typeDeclaration = typeDeclaration.withName(ctx.receiveNonNullNode(typeDeclaration.getName(), ctx::receiveTree));
             typeDeclaration = typeDeclaration.withTypeParameters(ctx.receiveNode(typeDeclaration.getTypeParameters(), ctx::receiveTree));
@@ -1405,7 +1404,6 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
-                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, ctx::receiveTree),

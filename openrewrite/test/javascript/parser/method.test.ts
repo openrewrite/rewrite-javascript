@@ -162,4 +162,41 @@ describe('method mapping', () => {
           `)
         );
     });
+
+    test('method with ComputedPropertyName', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const asyncIterable = {
+                    [ Symbol .  asyncIterator ] () {
+                        return {
+                            async next() {
+                                return {value: undefined, done: true};
+                            },
+                        };
+                    },
+                };
+          `)
+        );
+    });
+
+    test('method signature with ComputedPropertyName', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const greetSymbol = Symbol("greet");
+
+                interface Greeter {
+                    /*a*/[/*b*/greetSymbol/*c*/]/*d*/(message: string): void; // Computed method name
+                }
+
+                const greeter: Greeter = {
+                    [greetSymbol](message: string): void {
+                        console.log(message);
+                    },
+                };
+          `)
+        );
+    });
+
 });

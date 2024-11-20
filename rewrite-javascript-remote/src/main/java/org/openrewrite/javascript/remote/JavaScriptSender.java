@@ -291,7 +291,6 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendValue(typeDeclaration, JS.TypeDeclaration::getId);
             ctx.sendNode(typeDeclaration, JS.TypeDeclaration::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(typeDeclaration, JS.TypeDeclaration::getMarkers, ctx::sendMarkers);
-            ctx.sendNodes(typeDeclaration, JS.TypeDeclaration::getLeadingAnnotations, ctx::sendTree, Tree::getId);
             ctx.sendNodes(typeDeclaration, JS.TypeDeclaration::getModifiers, ctx::sendTree, Tree::getId);
             ctx.sendNode(typeDeclaration, JS.TypeDeclaration::getName, ctx::sendTree);
             ctx.sendNode(typeDeclaration, JS.TypeDeclaration::getTypeParameters, ctx::sendTree);

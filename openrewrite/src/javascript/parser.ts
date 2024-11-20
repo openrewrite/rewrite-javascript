@@ -892,6 +892,24 @@ export class JavaScriptParserVisitor {
             );
         }
 
+        if (ts.isComputedPropertyName(node.name)) {
+            return new JS.JSMethodDeclaration(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [], // no decorators allowed
+                [], // no modifiers allowed
+                this.mapTypeParametersAsObject(node),
+                this.mapTypeInfo(node),
+                this.convert(node.name),
+                this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+                null,
+                null,
+                null,
+                this.mapMethodType(node)
+            );
+        }
+
         return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
@@ -923,6 +941,24 @@ export class JavaScriptParserVisitor {
                 this.mapTypeParametersAsObject(node),
                 this.mapTypeInfo(node),
                 this.getOptionalUnary(node),
+                this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+                null,
+                node.body ? this.convert<J.Block>(node.body) : null,
+                null,
+                this.mapMethodType(node)
+            );
+        }
+
+        if (ts.isComputedPropertyName(node.name)) {
+            return new JS.JSMethodDeclaration(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.mapDecorators(node),
+                this.mapModifiers(node),
+                this.mapTypeParametersAsObject(node),
+                this.mapTypeInfo(node),
+                this.convert(node.name),
                 this.mapCommaSeparatedList(this.getParameterListNodes(node)),
                 null,
                 node.body ? this.convert<J.Block>(node.body) : null,
@@ -1464,7 +1500,7 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             [],
-            null,
+            node.name ? this.visit(node.name) : null,
             this.mapTypeParametersAsObject(node),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
             this.mapTypeInfo(node),
@@ -2284,7 +2320,16 @@ export class JavaScriptParserVisitor {
     }
 
     visitTypeAliasDeclaration(node: ts.TypeAliasDeclaration) {
-        return this.visitUnknown(node);
+        return new JS.TypeDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [],
+            this.visit(node.name),
+            node.typeParameters ? this.mapTypeParametersAsObject(node) : null,
+            this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsToken)!), this.convert(node.type)),
+            this.mapType(node)
+        );
     }
 
     visitEnumDeclaration(node: ts.EnumDeclaration) {
@@ -3038,7 +3083,7 @@ export class JavaScriptParserVisitor {
     }
 
     private mapTypeParametersAsObject(node: ts.MethodDeclaration | ts.MethodSignature | ts.FunctionDeclaration
-        | ts.CallSignatureDeclaration | ts.ConstructSignatureDeclaration | ts.FunctionExpression | ts.ArrowFunction) : J.TypeParameters | null {
+        | ts.CallSignatureDeclaration | ts.ConstructSignatureDeclaration | ts.FunctionExpression | ts.ArrowFunction | ts.TypeAliasDeclaration) : J.TypeParameters | null {
         if (!node.typeParameters) return null;
 
         let ts_prefix: Space;
@@ -3046,6 +3091,8 @@ export class JavaScriptParserVisitor {
             ts_prefix = this.suffix(this.findChildNode(node, ts.SyntaxKind.NewKeyword)!);
         } else if (ts.isFunctionExpression(node)) {
             ts_prefix = this.suffix(this.findChildNode(node, ts.SyntaxKind.FunctionKeyword)!);
+        } else if (ts.isTypeAliasDeclaration(node)) {
+            ts_prefix = this.suffix(node.name);
         } else {
             ts_prefix = node.questionToken ? this.suffix(node.questionToken) : node.name ? this.suffix(node.name) : Space.EMPTY;
         }

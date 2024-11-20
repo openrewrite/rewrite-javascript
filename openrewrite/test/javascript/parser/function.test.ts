@@ -145,7 +145,7 @@ describe('function mapping', () => {
         );
     });
 
-    test.skip('function type with parameter', () => {
+    test('function type with parameter', () => {
         rewriteRun(
             //language=typescript
             typeScript('type Transformer<T> = (input: T) => T;')
@@ -170,6 +170,32 @@ describe('function mapping', () => {
                 (function() {
                     console.log('IIFE');
                 })();
+        `)
+        );
+    });
+
+    test('function expression with name assigment', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                var helloString = 'Hello world!';
+
+                var hello = function hello() {
+                    return helloString;
+                };
+        `)
+        );
+    });
+
+    test('function expression with name assigment with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                var helloString = 'Hello world!';
+
+                var hello = /*a*/function/*b*/ hello /*c*/(/*d*/) {
+                    return helloString;
+                };
         `)
         );
     });

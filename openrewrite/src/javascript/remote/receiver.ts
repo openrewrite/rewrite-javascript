@@ -241,7 +241,6 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         typeDeclaration = typeDeclaration.withId(ctx.receiveValue(typeDeclaration.id, ValueType.UUID)!);
         typeDeclaration = typeDeclaration.withPrefix(ctx.receiveNode(typeDeclaration.prefix, receiveSpace)!);
         typeDeclaration = typeDeclaration.withMarkers(ctx.receiveNode(typeDeclaration.markers, ctx.receiveMarkers)!);
-        typeDeclaration = typeDeclaration.withLeadingAnnotations(ctx.receiveNodes(typeDeclaration.leadingAnnotations, ctx.receiveTree)!);
         typeDeclaration = typeDeclaration.withModifiers(ctx.receiveNodes(typeDeclaration.modifiers, ctx.receiveTree)!);
         typeDeclaration = typeDeclaration.withName(ctx.receiveNode(typeDeclaration.name, ctx.receiveTree)!);
         typeDeclaration = typeDeclaration.withTypeParameters(ctx.receiveNode(typeDeclaration.typeParameters, ctx.receiveTree));
@@ -1295,7 +1294,6 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveNodes<Java.Annotation>(null, ctx.receiveTree)!,
                 ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
                 ctx.receiveNode<Java.Identifier>(null, ctx.receiveTree)!,
                 ctx.receiveNode<Java.TypeParameters>(null, ctx.receiveTree),
