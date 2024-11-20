@@ -892,6 +892,24 @@ export class JavaScriptParserVisitor {
             );
         }
 
+        if (ts.isComputedPropertyName(node.name)) {
+            return new JS.JSMethodDeclaration(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [], // no decorators allowed
+                [], // no modifiers allowed
+                this.mapTypeParametersAsObject(node),
+                this.mapTypeInfo(node),
+                this.convert(node.name),
+                this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+                null,
+                null,
+                null,
+                this.mapMethodType(node)
+            );
+        }
+
         return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
@@ -923,6 +941,24 @@ export class JavaScriptParserVisitor {
                 this.mapTypeParametersAsObject(node),
                 this.mapTypeInfo(node),
                 this.getOptionalUnary(node),
+                this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+                null,
+                node.body ? this.convert<J.Block>(node.body) : null,
+                null,
+                this.mapMethodType(node)
+            );
+        }
+
+        if (ts.isComputedPropertyName(node.name)) {
+            return new JS.JSMethodDeclaration(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.mapDecorators(node),
+                this.mapModifiers(node),
+                this.mapTypeParametersAsObject(node),
+                this.mapTypeInfo(node),
+                this.convert(node.name),
                 this.mapCommaSeparatedList(this.getParameterListNodes(node)),
                 null,
                 node.body ? this.convert<J.Block>(node.body) : null,
