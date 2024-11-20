@@ -543,11 +543,13 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public <J2 extends J> J.Parentheses<J2> visitParentheses(J.Parentheses<J2> parentheses, P p) {
+        visitAndValidate(parentheses.getTree(), J.class, p);
         return parentheses;
     }
 
     @Override
     public <J2 extends J> J.ControlParentheses<J2> visitControlParentheses(J.ControlParentheses<J2> controlParentheses, P p) {
+        visitAndValidate(controlParentheses.getTree(), J.class, p);
         return controlParentheses;
     }
 
