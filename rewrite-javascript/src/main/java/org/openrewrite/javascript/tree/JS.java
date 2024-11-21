@@ -3105,31 +3105,27 @@ public interface JS extends J {
     }
 
 
+    @Getter
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
-    final class TypeLiteral implements JS, Expression, TypedTree {
+    final class TypeLiteral implements JS, Expression, TypeTree {
 
         @With
         @EqualsAndHashCode.Include
-        @Getter
         UUID id;
 
         @With
-        @Getter
         Space prefix;
 
         @With
-        @Getter
         Markers markers;
 
         @With
-        @Getter
         J.Block members;
 
         @Nullable
         @With
-        @Getter
         JavaType type;
 
         @Override
