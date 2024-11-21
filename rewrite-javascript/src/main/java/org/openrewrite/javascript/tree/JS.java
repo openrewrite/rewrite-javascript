@@ -2923,12 +2923,7 @@ public interface JS extends J {
         @Getter
         Markers markers;
 
-        @With
-        @Nullable
-        @Getter
-        Space for_suffix;
-
-        JRightPadded<Boolean> await;
+        JLeftPadded<Boolean> await;
 
         public boolean isAwait() {
             return await.getElement();
@@ -2938,23 +2933,9 @@ public interface JS extends J {
             return getPadding().withAwait(this.await.withElement(await));
         }
 
-        JRightPadded<Expression> initializer;
-
-        public Expression getInitializer() { return initializer.getElement(); }
-
-        public JSForOfLoop withInitializer(Expression initializer) {
-            return getPadding().withInitializer(this.initializer.withElement(initializer));
-        }
-
-        JRightPadded<Expression> iterable;
-
-        public Expression getIterable() {
-            return iterable.getElement();
-        }
-
-        public JSForOfLoop withIterable(Expression iterable) {
-            return getPadding().withIterable(this.iterable.withElement(iterable));
-        }
+        @With
+        @Getter
+        JSForInOfLoopControl control;
 
         JRightPadded<Statement> body;
 
@@ -3000,28 +2981,12 @@ public interface JS extends J {
         public static class Padding {
             private final JSForOfLoop t;
 
-            public JRightPadded<Boolean> getAwait() {
+            public JLeftPadded<Boolean> getAwait() {
                 return t.await;
             }
 
-            public JSForOfLoop withAwait(JRightPadded<Boolean> await) {
-                return t.await == await ? t : new JSForOfLoop(t.id, t.prefix, t.markers, t.for_suffix, await, t.initializer, t.iterable, t.body);
-            }
-
-            public JRightPadded<Expression> getInitializer() {
-                return t.initializer;
-            }
-
-            public JSForOfLoop withInitializer(JRightPadded<Expression> initializer) {
-                return t.initializer == initializer ? t : new JSForOfLoop(t.id, t.prefix, t.markers, t.for_suffix, t.await, initializer, t.iterable, t.body);
-            }
-
-            public JRightPadded<Expression> getIterable() {
-                return t.iterable;
-            }
-
-            public JSForOfLoop withIterable(JRightPadded<Expression> iterable) {
-                return t.iterable == iterable ? t : new JSForOfLoop(t.id, t.prefix, t.markers, t.for_suffix, t.await, t.initializer, iterable, t.body);
+            public JSForOfLoop withAwait(JLeftPadded<Boolean> await) {
+                return t.await == await ? t : new JSForOfLoop(t.id, t.prefix, t.markers, await, t.control, t.body);
             }
 
             public JRightPadded<Statement> getBody() {
@@ -3029,14 +2994,9 @@ public interface JS extends J {
             }
 
             public JSForOfLoop withBody(JRightPadded<Statement> body) {
-                return t.body == body ? t : new JSForOfLoop(t.id, t.prefix, t.markers, t.for_suffix, t.await, t.initializer, t.iterable, body);
+                return t.body == body ? t : new JSForOfLoop(t.id, t.prefix, t.markers, t.await, t.control, body);
             }
         }
-
-        @Override
-        public String toString() {
-                return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
-            }
     }
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -3062,27 +3022,8 @@ public interface JS extends J {
         Markers markers;
 
         @With
-        @Nullable
         @Getter
-        Space for_suffix;
-
-        JRightPadded<Expression> initializer;
-
-        public Expression getInitializer() { return initializer.getElement(); }
-
-        public JSForInLoop withInitializer(Expression initializer) {
-            return getPadding().withInitializer(this.initializer.withElement(initializer));
-        }
-
-        JRightPadded<Expression> iterable;
-
-        public Expression getIterable() {
-            return iterable.getElement();
-        }
-
-        public JSForInLoop withIterable(Expression iterable) {
-            return getPadding().withIterable(this.iterable.withElement(iterable));
-        }
+        JSForInOfLoopControl control;
 
         JRightPadded<Statement> body;
 
@@ -3128,34 +3069,102 @@ public interface JS extends J {
         public static class Padding {
             private final JSForInLoop t;
 
-            public JRightPadded<Expression> getInitializer() {
-                return t.initializer;
+            public JRightPadded<Statement> getBody() {
+                return t.body;
             }
 
-            public JSForInLoop withInitializer(JRightPadded<Expression> initializer) {
-                return t.initializer == initializer ? t : new JSForInLoop(t.id, t.prefix, t.markers, t.for_suffix, initializer, t.iterable, t.body);
+            public JSForInLoop withBody(JRightPadded<Statement> body) {
+                return t.body == body ? t : new JSForInLoop(t.id, t.prefix, t.markers, t.control, body);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class JSForInOfLoopControl implements JS {
+        @Nullable
+        @NonFinal
+        transient WeakReference<Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JRightPadded<Expression> variable;
+
+        public Expression getVariable() {
+            return variable.getElement();
+        }
+
+        public JSForInOfLoopControl withVariable(Expression variable) {
+            return getPadding().withVariable(this.variable.withElement(variable));
+        }
+
+        JRightPadded<Expression> iterable;
+
+        public Expression getIterable() {
+            return iterable.getElement();
+        }
+
+        public JSForInOfLoopControl withIterable(Expression iterable) {
+            return getPadding().withIterable(this.iterable.withElement(iterable));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJSForInOfLoopControl(this, p);
+        }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @Override
+        public String toString() {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JSForInOfLoopControl t;
+
+            public JRightPadded<Expression> getVariable() {
+                return t.variable;
+            }
+
+            public JSForInOfLoopControl withVariable(JRightPadded<Expression> variable) {
+                return t.variable == variable ? t : new JSForInOfLoopControl(t.id, t.prefix, t.markers, variable, t.iterable);
             }
 
             public JRightPadded<Expression> getIterable() {
                 return t.iterable;
             }
 
-            public JSForInLoop withIterable(JRightPadded<Expression> iterable) {
-                return t.iterable == iterable ? t : new JSForInLoop(t.id, t.prefix, t.markers, t.for_suffix, t.initializer, iterable, t.body);
+            public JSForInOfLoopControl withIterable(JRightPadded<Expression> iterable) {
+                return t.iterable == iterable ? t : new JSForInOfLoopControl(t.id, t.prefix, t.markers, t.variable, iterable);
             }
-
-            public JRightPadded<Statement> getBody() {
-                return t.body;
-            }
-
-            public JSForInLoop withBody(JRightPadded<Statement> body) {
-                return t.body == body ? t : new JSForInLoop(t.id, t.prefix, t.markers, t.for_suffix, t.initializer, t.iterable, body);
-            }
-        }
-
-        @Override
-        public String toString() {
-            return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
         }
     }
 

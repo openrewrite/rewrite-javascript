@@ -440,10 +440,8 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendValue(jSForOfLoop, JS.JSForOfLoop::getId);
             ctx.sendNode(jSForOfLoop, JS.JSForOfLoop::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(jSForOfLoop, JS.JSForOfLoop::getMarkers, ctx::sendMarkers);
-            ctx.sendNode(jSForOfLoop, JS.JSForOfLoop::getFor_suffix, JavaScriptSender::sendSpace);
-            ctx.sendNode(jSForOfLoop, e -> e.getPadding().getAwait(), JavaScriptSender::sendRightPadded);
-            ctx.sendNode(jSForOfLoop, e -> e.getPadding().getInitializer(), JavaScriptSender::sendRightPadded);
-            ctx.sendNode(jSForOfLoop, e -> e.getPadding().getIterable(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(jSForOfLoop, e -> e.getPadding().getAwait(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(jSForOfLoop, JS.JSForOfLoop::getControl, ctx::sendTree);
             ctx.sendNode(jSForOfLoop, e -> e.getPadding().getBody(), JavaScriptSender::sendRightPadded);
             return jSForOfLoop;
         }
@@ -453,11 +451,19 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendValue(jSForInLoop, JS.JSForInLoop::getId);
             ctx.sendNode(jSForInLoop, JS.JSForInLoop::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(jSForInLoop, JS.JSForInLoop::getMarkers, ctx::sendMarkers);
-            ctx.sendNode(jSForInLoop, JS.JSForInLoop::getFor_suffix, JavaScriptSender::sendSpace);
-            ctx.sendNode(jSForInLoop, e -> e.getPadding().getInitializer(), JavaScriptSender::sendRightPadded);
-            ctx.sendNode(jSForInLoop, e -> e.getPadding().getIterable(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(jSForInLoop, JS.JSForInLoop::getControl, ctx::sendTree);
             ctx.sendNode(jSForInLoop, e -> e.getPadding().getBody(), JavaScriptSender::sendRightPadded);
             return jSForInLoop;
+        }
+
+        @Override
+        public JS.JSForInOfLoopControl visitJSForInOfLoopControl(JS.JSForInOfLoopControl jSForInOfLoopControl, SenderContext ctx) {
+            ctx.sendValue(jSForInOfLoopControl, JS.JSForInOfLoopControl::getId);
+            ctx.sendNode(jSForInOfLoopControl, JS.JSForInOfLoopControl::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jSForInOfLoopControl, JS.JSForInOfLoopControl::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(jSForInOfLoopControl, e -> e.getPadding().getVariable(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(jSForInOfLoopControl, e -> e.getPadding().getIterable(), JavaScriptSender::sendRightPadded);
+            return jSForInOfLoopControl;
         }
 
         @Override

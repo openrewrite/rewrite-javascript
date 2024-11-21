@@ -814,10 +814,8 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             f = (JS.JSForOfLoop) temp;
         }
-        f = f.withFor_suffix(visitSpace(f.getFor_suffix(), JsSpace.Location.FOR_LOOP_SUFFIX, p));
-        f = f.getPadding().withAwait(visitRightPadded(f.getPadding().getAwait(), JsRightPadded.Location.FOR_OF_AWAIT, p));
-        f = f.getPadding().withInitializer(visitRightPadded(f.getPadding().getInitializer(), JsRightPadded.Location.FOR_INIT, p));
-        f = f.getPadding().withIterable(visitRightPadded(f.getPadding().getIterable(), JsRightPadded.Location.FOR_ITER, p));
+        f = f.getPadding().withAwait(visitLeftPadded(f.getPadding().getAwait(), JsLeftPadded.Location.FOR_OF_AWAIT, p));
+        f = f.withControl(visitAndCast(f.getControl(), p));
         f = f.getPadding().withBody(visitRightPadded(f.getPadding().getBody(), JsRightPadded.Location.FOR_BODY, p));
         return f;
     }
@@ -832,10 +830,17 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             f = (JS.JSForInLoop) temp;
         }
-        f = f.withFor_suffix(visitSpace(f.getFor_suffix(), JsSpace.Location.FOR_LOOP_SUFFIX, p));
-        f = f.getPadding().withInitializer(visitRightPadded(f.getPadding().getInitializer(), JsRightPadded.Location.FOR_INIT, p));
-        f = f.getPadding().withIterable(visitRightPadded(f.getPadding().getIterable(), JsRightPadded.Location.FOR_ITER, p));
+        f = f.withControl(visitAndCast(f.getControl(), p));
         f = f.getPadding().withBody(visitRightPadded(f.getPadding().getBody(), JsRightPadded.Location.FOR_BODY, p));
         return f;
+    }
+
+    public J visitJSForInOfLoopControl(JS.JSForInOfLoopControl jsForInOfLoopControl, P p) {
+        JS.JSForInOfLoopControl c = jsForInOfLoopControl;
+        c = c.withPrefix(visitSpace(c.getPrefix(), JsSpace.Location.FOR_LOOP_CONTROL_PREFIX, p));
+        c = c.withMarkers(visitMarkers(c.getMarkers(), p));
+        c = c.getPadding().withVariable(visitRightPadded(c.getPadding().getVariable(), JsRightPadded.Location.FOR_CONTROL_VAR, p));
+        c = c.getPadding().withIterable(visitRightPadded(c.getPadding().getIterable(), JsRightPadded.Location.FOR_CONTROL_ITER, p));
+        return c;
     }
 }

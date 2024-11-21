@@ -41,11 +41,10 @@ public class JsRightPadded {
         JSTYPE_PARAMETER(JsSpace.Location.JSTYPE_PARAMETER_SUFFIX),
         TYPE_LITERAL_MEMBERS(JsSpace.Location.TYPE_LITERAL_MEMBERS_SUFFIX),
         INDEXED_SIGNATURE_DECLARATION_PARAMETERS(JsSpace.Location.INDEXED_SIGNATURE_DECLARATION_PARAMETERS_SUFFIX),
-        JSTYPE_PARAMETER(JsSpace.Location.JSTYPE_PARAMETER_SUFFIX),
-        FOR_OF_AWAIT(JsSpace.Location.FOR_OF_AWAIT_SUFFIX),
-        FOR_INIT(JsSpace.Location.FOR_INIT_SUFFIX),
-        FOR_ITER(JsSpace.Location.FOR_ITER_SUFFIX),
-        FOR_BODY(JsSpace.Location.FOR_BODY_SUFFIX);
+        FOR_CONTROL_VAR(JsSpace.Location.FOR_INIT_SUFFIX),
+        FOR_CONTROL_ITER(JsSpace.Location.FOR_ITER_SUFFIX),
+        FOR_BODY(JsSpace.Location.FOR_BODY_SUFFIX),
+        FUNCTION_TYPE_CONSTRUCTOR(JsSpace.Location.FUNCTION_TYPE_CONSTRUCTOR_SUFFIX);
 
         private final JsSpace.Location afterLocation;
 

@@ -377,10 +377,8 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         jSForOfLoop = jSForOfLoop.withId(ctx.receiveValue(jSForOfLoop.id, ValueType.UUID)!);
         jSForOfLoop = jSForOfLoop.withPrefix(ctx.receiveNode(jSForOfLoop.prefix, receiveSpace)!);
         jSForOfLoop = jSForOfLoop.withMarkers(ctx.receiveNode(jSForOfLoop.markers, ctx.receiveMarkers)!);
-        jSForOfLoop = jSForOfLoop.withFor_suffix(ctx.receiveNode(jSForOfLoop.for_suffix, receiveSpace));
-        jSForOfLoop = jSForOfLoop.padding.withAwait(ctx.receiveNode(jSForOfLoop.padding.await, rightPaddedValueReceiver(ValueType.Primitive))!);
-        jSForOfLoop = jSForOfLoop.padding.withInitializer(ctx.receiveNode(jSForOfLoop.padding.initializer, receiveRightPaddedTree)!);
-        jSForOfLoop = jSForOfLoop.padding.withIterable(ctx.receiveNode(jSForOfLoop.padding.iterable, receiveRightPaddedTree)!);
+        jSForOfLoop = jSForOfLoop.padding.withAwait(ctx.receiveNode(jSForOfLoop.padding.await, leftPaddedValueReceiver(ValueType.Primitive))!);
+        jSForOfLoop = jSForOfLoop.withControl(ctx.receiveNode(jSForOfLoop.control, ctx.receiveTree)!);
         jSForOfLoop = jSForOfLoop.padding.withBody(ctx.receiveNode(jSForOfLoop.padding.body, receiveRightPaddedTree)!);
         return jSForOfLoop;
     }
@@ -389,11 +387,18 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         jSForInLoop = jSForInLoop.withId(ctx.receiveValue(jSForInLoop.id, ValueType.UUID)!);
         jSForInLoop = jSForInLoop.withPrefix(ctx.receiveNode(jSForInLoop.prefix, receiveSpace)!);
         jSForInLoop = jSForInLoop.withMarkers(ctx.receiveNode(jSForInLoop.markers, ctx.receiveMarkers)!);
-        jSForInLoop = jSForInLoop.withFor_suffix(ctx.receiveNode(jSForInLoop.for_suffix, receiveSpace));
-        jSForInLoop = jSForInLoop.padding.withInitializer(ctx.receiveNode(jSForInLoop.padding.initializer, receiveRightPaddedTree)!);
-        jSForInLoop = jSForInLoop.padding.withIterable(ctx.receiveNode(jSForInLoop.padding.iterable, receiveRightPaddedTree)!);
+        jSForInLoop = jSForInLoop.withControl(ctx.receiveNode(jSForInLoop.control, ctx.receiveTree)!);
         jSForInLoop = jSForInLoop.padding.withBody(ctx.receiveNode(jSForInLoop.padding.body, receiveRightPaddedTree)!);
         return jSForInLoop;
+    }
+
+    public visitJSForInOfLoopControl(jSForInOfLoopControl: JSForInOfLoopControl, ctx: ReceiverContext): J {
+        jSForInOfLoopControl = jSForInOfLoopControl.withId(ctx.receiveValue(jSForInOfLoopControl.id, ValueType.UUID)!);
+        jSForInOfLoopControl = jSForInOfLoopControl.withPrefix(ctx.receiveNode(jSForInOfLoopControl.prefix, receiveSpace)!);
+        jSForInOfLoopControl = jSForInOfLoopControl.withMarkers(ctx.receiveNode(jSForInOfLoopControl.markers, ctx.receiveMarkers)!);
+        jSForInOfLoopControl = jSForInOfLoopControl.padding.withVariable(ctx.receiveNode(jSForInOfLoopControl.padding.variable, receiveRightPaddedTree)!);
+        jSForInOfLoopControl = jSForInOfLoopControl.padding.withIterable(ctx.receiveNode(jSForInOfLoopControl.padding.iterable, receiveRightPaddedTree)!);
+        return jSForInOfLoopControl;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, ctx: ReceiverContext): J {
@@ -1495,10 +1500,8 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveNode(null, receiveSpace),
-                ctx.receiveNode<JRightPadded<boolean>>(null, rightPaddedValueReceiver(ValueType.Primitive))!,
-                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
-                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
+                ctx.receiveNode<JLeftPadded<boolean>>(null, leftPaddedValueReceiver(ValueType.Primitive))!,
+                ctx.receiveNode<JSForInOfLoopControl>(null, ctx.receiveTree)!,
                 ctx.receiveNode<JRightPadded<Statement>>(null, receiveRightPaddedTree)!
             );
         }
@@ -1508,10 +1511,18 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveNode(null, receiveSpace),
-                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
-                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
+                ctx.receiveNode<JSForInOfLoopControl>(null, ctx.receiveTree)!,
                 ctx.receiveNode<JRightPadded<Statement>>(null, receiveRightPaddedTree)!
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$JSForInOfLoopControl") {
+            return new JSForInOfLoopControl(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
+                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!
             );
         }
 

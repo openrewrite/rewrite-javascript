@@ -503,10 +503,8 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         }
         jSForOfLoop = tempStatement as JSForOfLoop;
         jSForOfLoop = jSForOfLoop.withMarkers(this.visitMarkers(jSForOfLoop.markers, p));
-        jSForOfLoop = jSForOfLoop.withFor_suffix(this.visitJsSpace(jSForOfLoop.for_suffix, JsSpace.Location.JSFOR_OF_LOOP_FOR_SUFFIX, p));
-        jSForOfLoop = jSForOfLoop.padding.withAwait(this.visitJsRightPadded(jSForOfLoop.padding.await, JsRightPadded.Location.JSFOR_OF_LOOP_AWAIT, p)!);
-        jSForOfLoop = jSForOfLoop.padding.withInitializer(this.visitJsRightPadded(jSForOfLoop.padding.initializer, JsRightPadded.Location.JSFOR_OF_LOOP_INITIALIZER, p)!);
-        jSForOfLoop = jSForOfLoop.padding.withIterable(this.visitJsRightPadded(jSForOfLoop.padding.iterable, JsRightPadded.Location.JSFOR_OF_LOOP_ITERABLE, p)!);
+        jSForOfLoop = jSForOfLoop.padding.withAwait(this.visitJsLeftPadded(jSForOfLoop.padding.await, JsLeftPadded.Location.JSFOR_OF_LOOP_AWAIT, p)!);
+        jSForOfLoop = jSForOfLoop.withControl(this.visitAndCast(jSForOfLoop.control, p)!);
         jSForOfLoop = jSForOfLoop.padding.withBody(this.visitJsRightPadded(jSForOfLoop.padding.body, JsRightPadded.Location.JSFOR_OF_LOOP_BODY, p)!);
         return jSForOfLoop;
     }
@@ -520,11 +518,17 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         }
         jSForInLoop = tempStatement as JSForInLoop;
         jSForInLoop = jSForInLoop.withMarkers(this.visitMarkers(jSForInLoop.markers, p));
-        jSForInLoop = jSForInLoop.withFor_suffix(this.visitJsSpace(jSForInLoop.for_suffix, JsSpace.Location.JSFOR_IN_LOOP_FOR_SUFFIX, p));
-        jSForInLoop = jSForInLoop.padding.withInitializer(this.visitJsRightPadded(jSForInLoop.padding.initializer, JsRightPadded.Location.JSFOR_IN_LOOP_INITIALIZER, p)!);
-        jSForInLoop = jSForInLoop.padding.withIterable(this.visitJsRightPadded(jSForInLoop.padding.iterable, JsRightPadded.Location.JSFOR_IN_LOOP_ITERABLE, p)!);
+        jSForInLoop = jSForInLoop.withControl(this.visitAndCast(jSForInLoop.control, p)!);
         jSForInLoop = jSForInLoop.padding.withBody(this.visitJsRightPadded(jSForInLoop.padding.body, JsRightPadded.Location.JSFOR_IN_LOOP_BODY, p)!);
         return jSForInLoop;
+    }
+
+    public visitJSForInOfLoopControl(jSForInOfLoopControl: JSForInOfLoopControl, p: P): J | null {
+        jSForInOfLoopControl = jSForInOfLoopControl.withPrefix(this.visitJsSpace(jSForInOfLoopControl.prefix, JsSpace.Location.JSFOR_IN_OF_LOOP_CONTROL_PREFIX, p)!);
+        jSForInOfLoopControl = jSForInOfLoopControl.withMarkers(this.visitMarkers(jSForInOfLoopControl.markers, p));
+        jSForInOfLoopControl = jSForInOfLoopControl.padding.withVariable(this.visitJsRightPadded(jSForInOfLoopControl.padding.variable, JsRightPadded.Location.JSFOR_IN_OF_LOOP_CONTROL_VARIABLE, p)!);
+        jSForInOfLoopControl = jSForInOfLoopControl.padding.withIterable(this.visitJsRightPadded(jSForInOfLoopControl.padding.iterable, JsRightPadded.Location.JSFOR_IN_OF_LOOP_CONTROL_ITERABLE, p)!);
+        return jSForInOfLoopControl;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, p: P): J | null {

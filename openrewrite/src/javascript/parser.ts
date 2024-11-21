@@ -2117,9 +2117,13 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.suffix(this.findChildNode(node, ts.SyntaxKind.ForKeyword)!),
-            this.rightPadded(this.visit(node.initializer), this.prefix(node.initializer)),
-            this.rightPadded(this.visit(node.expression), this.suffix(node.expression)),
+            new JS.JSForInOfLoopControl(
+                randomId(),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
+                Markers.EMPTY,
+                this.rightPadded(this.visit(node.initializer), this.prefix(node.initializer)),
+                this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
+            ),
             this.rightPadded(
                 this.convert(node.statement),
                 this.semicolonPrefix(node.statement),
@@ -2133,10 +2137,14 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.suffix(this.findChildNode(node, ts.SyntaxKind.ForKeyword)!),
-            node.awaitModifier ? this.rightPadded(true, this.suffix(node.awaitModifier)) : this.rightPadded(false, Space.EMPTY),
-            this.rightPadded(this.visit(node.initializer), this.prefix(node.initializer)),
-            this.rightPadded(this.visit(node.expression), this.suffix(node.expression)),
+            node.awaitModifier ? this.leftPadded(this.prefix(node.awaitModifier), true) : this.leftPadded(Space.EMPTY, false),
+            new JS.JSForInOfLoopControl(
+                randomId(),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
+                Markers.EMPTY,
+                this.rightPadded(this.visit(node.initializer), this.prefix(node.initializer)),
+                this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
+            ),
             this.rightPadded(
                 this.convert(node.statement),
                 this.semicolonPrefix(node.statement),
