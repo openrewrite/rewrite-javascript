@@ -479,6 +479,21 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return u;
     }
 
+    public J visitIntersection(JS.Intersection intersection, P p) {
+        JS.Intersection u = intersection;
+        u = u.withPrefix(visitSpace(u.getPrefix(), JsSpace.Location.INTERSECTION_PREFIX, p));
+        u = u.withMarkers(visitMarkers(u.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(u, p);
+        if (!(temp instanceof JS.Intersection)) {
+            return temp;
+        } else {
+            u = (JS.Intersection) temp;
+        }
+        u = u.getPadding().withTypes(ListUtils.map(u.getPadding().getTypes(), t -> visitRightPadded(t, JsRightPadded.Location.INTERSECTION_TYPE, p)));
+        u = u.withType(visitType(u.getType(), p));
+        return u;
+    }
+
     // TODO: remove me. Requires changes from rewrite-java.
     @Override
     public J visitAnnotatedType(J.AnnotatedType annotatedType, P p) {
@@ -751,5 +766,42 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         f = f.withBody(visitAndCast(f.getBody(), p));
         f = f.withType(visitType(f.getType(), p));
         return f;
+    }
+
+    public J visitTypeLiteral(JS.TypeLiteral typeLiteral, P p) {
+        JS.TypeLiteral t = typeLiteral;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.TYPE_LITERAL_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+
+        Expression temp = (Expression) visitExpression(t, p);
+        if (!(temp instanceof JS.TypeLiteral)) {
+            return temp;
+        } else {
+            t = (JS.TypeLiteral) temp;
+        }
+
+        t = t.withMembers(Objects.requireNonNull(visitAndCast(t.getMembers(), p)));
+        t = t.withType(visitType(t.getType(), p));
+        return t;
+    }
+
+    public J visitIndexSignatureDeclaration(JS.IndexSignatureDeclaration indexSignatureDeclaration, P p) {
+        JS.IndexSignatureDeclaration isd = indexSignatureDeclaration;
+        isd = isd.withPrefix(visitSpace(isd.getPrefix(), JsSpace.Location.INDEXED_SIGNATURE_DECLARATION_PREFIX, p));
+        isd = isd.withMarkers(visitMarkers(isd.getMarkers(), p));
+
+        Statement temp = (Statement) visitStatement(isd, p);
+        if (!(temp instanceof JS.IndexSignatureDeclaration)) {
+            return temp;
+        } else {
+            isd = (JS.IndexSignatureDeclaration) temp;
+        }
+
+        isd = isd.withModifiers(ListUtils.map(isd.getModifiers(),
+                mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
+        isd = isd.getPadding().withParameters(visitContainer(isd.getPadding().getParameters(), JsContainer.Location.INDEXED_SIGNATURE_DECLARATION_PARAMETERS, p));
+        isd = isd.getPadding().withTypeExpression(visitLeftPadded(isd.getPadding().getTypeExpression(), JsLeftPadded.Location.INDEXED_SIGNATURE_DECLARATION_TYPE_EXPRESSION, p));
+        isd = isd.withType(visitType(isd.getType(), p));
+        return isd;
     }
 }

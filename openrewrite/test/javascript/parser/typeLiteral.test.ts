@@ -1,0 +1,35 @@
+import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
+
+describe('type literal mapping', () => {
+    beforeAll(() => connect());
+    afterAll(() => disconnect());
+
+    test('indexed type literal', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                /*1*/
+                type/*2*/ OnlyBoolsAndHorses /*3*/ =/*4*/ { /*5*/
+                    /*6*/
+                    /*7*/[/*8*/key/*9*/:/*10*/ string/*11*/]/*12*/:/*13*/ boolean/*14*/ |/*15*/ Horse/*16*/; /*17*/
+                    /*18*/
+                }/*19*/; /*20*/
+
+                const conforms: OnlyBoolsAndHorses = {
+                    del: true,
+                    rodney: false,
+                };
+            `),
+            //language=typescript
+            typeScript(`
+              type test = {
+                  (start: number): string;   // Call signature
+                  interval: number;          // Property
+                  reset(): void;             // Method
+                  [index: number]: string    // Indexable
+                  add(): (x: number, y: number) => number; //Function signature
+              }
+          `)
+        );
+    });
+});

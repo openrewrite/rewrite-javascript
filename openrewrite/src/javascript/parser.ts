@@ -258,10 +258,11 @@ export class JavaScriptParserVisitor {
 
     private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration
         | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration
-        | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration | ts.ArrowFunction) {
+        | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration
+        | ts.ArrowFunction | ts.IndexSignatureDeclaration) {
         if (ts.isVariableStatement(node) || ts.isModuleDeclaration(node)  || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node)
             || ts.isInterfaceDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node) || ts.isParameter(node)
-            || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node)) {
+            || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node) || ts.isIndexSignatureDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         }  else if (ts.isFunctionDeclaration(node)) {
             return [...node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [],
@@ -1128,7 +1129,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitIndexSignature(node: ts.IndexSignatureDeclaration) {
-        return this.visitUnknown(node);
+        return new JS.IndexSignatureDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.mapModifiers(node),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node, ts.SyntaxKind.OpenBracketToken)),
+            this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.type) - 1)), this.convert(node.type)),
+            this.mapType(node)
+        );
     }
 
     visitTypePredicate(node: ts.TypePredicateNode) {
@@ -1172,7 +1181,24 @@ export class JavaScriptParserVisitor {
     }
 
     visitTypeLiteral(node: ts.TypeLiteralNode) {
-        return this.visitUnknown(node);
+        return new JS.TypeLiteral(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            new J.Block(
+                randomId(),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBraceToken)!),
+                Markers.EMPTY,
+                this.rightPadded(false, Space.EMPTY),
+                node.members.map(te  => new JRightPadded(
+                    this.convert(te),
+                    (te.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken) || (te.getLastToken()?.kind === ts.SyntaxKind.CommaToken) ? this.prefix(te.getLastToken()!) : Space.EMPTY,
+                    (te.getLastToken()?.kind === ts.SyntaxKind.SemicolonToken) || (te.getLastToken()?.kind === ts.SyntaxKind.CommaToken) ? Markers.build([this.convertToken(te.getLastToken())!]) : Markers.EMPTY
+                )),
+                this.prefix(node.getLastToken()!)
+            ),
+            this.mapType(node)
+        );
     }
 
     visitArrayType(node: ts.ArrayTypeNode) {
@@ -1202,7 +1228,13 @@ export class JavaScriptParserVisitor {
     }
 
     visitIntersectionType(node: ts.IntersectionTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.Intersection(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.rightPaddedList([...node.types], (n) => this.keywordPrefix(ts.SyntaxKind.AmpersandToken)(n)),
+            this.mapType(node),
+        );
     }
 
     visitConditionalType(node: ts.ConditionalTypeNode) {
@@ -2273,10 +2305,10 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private getParameterListNodes(node: ts.SignatureDeclarationBase) {
+    private getParameterListNodes(node: ts.SignatureDeclarationBase, openToken : ts.SyntaxKind = ts.SyntaxKind.OpenParenToken) {
         const children = node.getChildren(this.sourceFile);
         for (let i = 0; i < children.length; i++) {
-            if (children[i].kind == ts.SyntaxKind.OpenParenToken) {
+            if (children[i].kind == openToken) {
                 return children.slice(i, i + 3);
             }
         }

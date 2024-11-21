@@ -341,6 +341,16 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.Intersection visitIntersection(JS.Intersection intersection, SenderContext ctx) {
+            ctx.sendValue(intersection, JS.Intersection::getId);
+            ctx.sendNode(intersection, JS.Intersection::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(intersection, JS.Intersection::getMarkers, ctx::sendMarkers);
+            ctx.sendNodes(intersection, e -> e.getPadding().getTypes(), JavaScriptSender::sendRightPadded, e -> e.getElement().getId());
+            ctx.sendTypedValue(intersection, JS.Intersection::getType);
+            return intersection;
+        }
+
+        @Override
         public JS.Void visitVoid(JS.Void void_, SenderContext ctx) {
             ctx.sendValue(void_, JS.Void::getId);
             ctx.sendNode(void_, JS.Void::getPrefix, JavaScriptSender::sendSpace);
@@ -450,6 +460,28 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getBody, ctx::sendTree);
             ctx.sendTypedValue(functionDeclaration, JS.FunctionDeclaration::getType);
             return functionDeclaration;
+        }
+
+        @Override
+        public JS.TypeLiteral visitTypeLiteral(JS.TypeLiteral typeLiteral, SenderContext ctx) {
+            ctx.sendValue(typeLiteral, JS.TypeLiteral::getId);
+            ctx.sendNode(typeLiteral, JS.TypeLiteral::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(typeLiteral, JS.TypeLiteral::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(typeLiteral, JS.TypeLiteral::getMembers, ctx::sendTree);
+            ctx.sendTypedValue(typeLiteral, JS.TypeLiteral::getType);
+            return typeLiteral;
+        }
+
+        @Override
+        public JS.IndexSignatureDeclaration visitIndexSignatureDeclaration(JS.IndexSignatureDeclaration indexSignatureDeclaration, SenderContext ctx) {
+            ctx.sendValue(indexSignatureDeclaration, JS.IndexSignatureDeclaration::getId);
+            ctx.sendNode(indexSignatureDeclaration, JS.IndexSignatureDeclaration::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(indexSignatureDeclaration, JS.IndexSignatureDeclaration::getMarkers, ctx::sendMarkers);
+            ctx.sendNodes(indexSignatureDeclaration, JS.IndexSignatureDeclaration::getModifiers, ctx::sendTree, Tree::getId);
+            ctx.sendNode(indexSignatureDeclaration, e -> e.getPadding().getParameters(), JavaScriptSender::sendContainer);
+            ctx.sendNode(indexSignatureDeclaration, e -> e.getPadding().getTypeExpression(), JavaScriptSender::sendLeftPadded);
+            ctx.sendTypedValue(indexSignatureDeclaration, JS.IndexSignatureDeclaration::getType);
+            return indexSignatureDeclaration;
         }
 
         @Override
