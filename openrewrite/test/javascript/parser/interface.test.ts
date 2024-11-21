@@ -351,7 +351,7 @@ describe('interface mapping', () => {
         );
     });
 
-    test.skip('interface with hybrid types', () => {
+    test('interface with hybrid types', () => {
         rewriteRun(
           //language=typescript
           typeScript(`
