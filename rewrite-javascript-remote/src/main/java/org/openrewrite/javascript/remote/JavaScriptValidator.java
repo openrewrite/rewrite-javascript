@@ -20,13 +20,17 @@
  * the code is regenerated.
 */
 
-package org.openrewrite.javascript;
+package org.openrewrite.javascript.remote;
 
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.Tree;
+import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.marker.Markers;
+import org.openrewrite.tree.*;
+import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.*;
-import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.javascript.JavaScriptIsoVisitor;
+import org.openrewrite.javascript.tree.*;
 
 import java.util.List;
 
@@ -34,7 +38,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     private <T extends Tree> @Nullable T visitAndValidate(@Nullable T tree, Class<? extends Tree> expected, P p) {
         if (tree != null && !expected.isInstance(tree)) {
-            throw new IllegalStateException("Type " + tree.getClass() + " is not assignable to " + expected);
+            throw new ClassCastException("Type " + tree.getClass() + " is not assignable to " + expected);
         }
         // noinspection unchecked
         return (T) visit(tree, p);

@@ -25,6 +25,7 @@ import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.remote.RemotingContext;
 import org.openrewrite.remote.RemotingExecutionContextView;
 import org.openrewrite.remote.RemotingMessenger;
+import org.openrewrite.remote.Validator;
 import org.openrewrite.remote.java.RemotingClient;
 import org.openrewrite.style.NamedStyles;
 import org.openrewrite.text.PlainTextParser;
@@ -135,13 +136,14 @@ public class JavaScriptParser implements Parser {
     }
 
     private SourceFile validate(JS.CompilationUnit sourceFile, Input input, @Nullable Path relativeTo, ExecutionContext ctx) {
-        JavaScriptValidator<Integer> typeValidator = new JavaScriptValidator<>();
+        assert remotingContext != null;
+        Validator validator = remotingContext.getProvider(sourceFile.getClass()).newValidator();
         try {
-            typeValidator.visit(sourceFile, 0);
-            return requirePrintEqualsInput(sourceFile, input, relativeTo, ctx);
+            validator.validate(sourceFile, ctx);
         } catch (Exception e) {
             return ParseError.build(this, input, relativeTo, ctx, new IllegalStateException("LST model has type validation errors", e));
         }
+        return requirePrintEqualsInput(sourceFile, input, relativeTo, ctx);
     }
 
     private final static List<String> EXTENSIONS = Collections.unmodifiableList(Arrays.asList(
