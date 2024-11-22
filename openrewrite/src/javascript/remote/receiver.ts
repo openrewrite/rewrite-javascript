@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -168,19 +168,6 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         objectBindingDeclarations = objectBindingDeclarations.padding.withBindings(ctx.receiveNode(objectBindingDeclarations.padding.bindings, receiveContainer)!);
         objectBindingDeclarations = objectBindingDeclarations.padding.withInitializer(ctx.receiveNode(objectBindingDeclarations.padding.initializer, receiveLeftPaddedTree));
         return objectBindingDeclarations;
-    }
-
-    public visitBinding(binding: ObjectBindingDeclarations.Binding, ctx: ReceiverContext): J {
-        binding = binding.withId(ctx.receiveValue(binding.id, ValueType.UUID)!);
-        binding = binding.withPrefix(ctx.receiveNode(binding.prefix, receiveSpace)!);
-        binding = binding.withMarkers(ctx.receiveNode(binding.markers, ctx.receiveMarkers)!);
-        binding = binding.padding.withPropertyName(ctx.receiveNode(binding.padding.propertyName, receiveRightPaddedTree));
-        binding = binding.withName(ctx.receiveNode(binding.name, ctx.receiveTree)!);
-        binding = binding.withDimensionsAfterName(ctx.receiveNodes(binding.dimensionsAfterName, leftPaddedNodeReceiver(Space))!);
-        binding = binding.withAfterVararg(ctx.receiveNode(binding.afterVararg, receiveSpace));
-        binding = binding.padding.withInitializer(ctx.receiveNode(binding.padding.initializer, receiveLeftPaddedTree));
-        binding = binding.withVariableType(ctx.receiveValue(binding.variableType, ValueType.Object));
-        return binding;
     }
 
     public visitPropertyAssignment(propertyAssignment: PropertyAssignment, ctx: ReceiverContext): J {
@@ -454,6 +441,26 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         indexSignatureDeclaration = indexSignatureDeclaration.padding.withTypeExpression(ctx.receiveNode(indexSignatureDeclaration.padding.typeExpression, receiveLeftPaddedTree)!);
         indexSignatureDeclaration = indexSignatureDeclaration.withType(ctx.receiveValue(indexSignatureDeclaration.type, ValueType.Object));
         return indexSignatureDeclaration;
+    }
+
+    public visitArrayBindingPattern(arrayBindingPattern: ArrayBindingPattern, ctx: ReceiverContext): J {
+        arrayBindingPattern = arrayBindingPattern.withId(ctx.receiveValue(arrayBindingPattern.id, ValueType.UUID)!);
+        arrayBindingPattern = arrayBindingPattern.withPrefix(ctx.receiveNode(arrayBindingPattern.prefix, receiveSpace)!);
+        arrayBindingPattern = arrayBindingPattern.withMarkers(ctx.receiveNode(arrayBindingPattern.markers, ctx.receiveMarkers)!);
+        arrayBindingPattern = arrayBindingPattern.padding.withElements(ctx.receiveNode(arrayBindingPattern.padding.elements, receiveContainer)!);
+        arrayBindingPattern = arrayBindingPattern.withType(ctx.receiveValue(arrayBindingPattern.type, ValueType.Object));
+        return arrayBindingPattern;
+    }
+
+    public visitBindingElement(bindingElement: BindingElement, ctx: ReceiverContext): J {
+        bindingElement = bindingElement.withId(ctx.receiveValue(bindingElement.id, ValueType.UUID)!);
+        bindingElement = bindingElement.withPrefix(ctx.receiveNode(bindingElement.prefix, receiveSpace)!);
+        bindingElement = bindingElement.withMarkers(ctx.receiveNode(bindingElement.markers, ctx.receiveMarkers)!);
+        bindingElement = bindingElement.padding.withPropertyName(ctx.receiveNode(bindingElement.padding.propertyName, receiveRightPaddedTree));
+        bindingElement = bindingElement.withName(ctx.receiveNode(bindingElement.name, ctx.receiveTree)!);
+        bindingElement = bindingElement.padding.withInitializer(ctx.receiveNode(bindingElement.padding.initializer, receiveLeftPaddedTree));
+        bindingElement = bindingElement.withVariableType(ctx.receiveValue(bindingElement.variableType, ValueType.Object));
+        return bindingElement;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: ReceiverContext): J {
@@ -1277,22 +1284,8 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNodes<Java.Annotation>(null, ctx.receiveTree)!,
                 ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
                 ctx.receiveNode<TypeTree>(null, ctx.receiveTree),
-                ctx.receiveNode<JContainer<ObjectBindingDeclarations.Binding>>(null, receiveContainer)!,
+                ctx.receiveNode<JContainer<BindingElement>>(null, receiveContainer)!,
                 ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)
-            );
-        }
-
-        if (type === "org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations$Binding") {
-            return new ObjectBindingDeclarations.Binding(
-                ctx.receiveValue(null, ValueType.UUID)!,
-                ctx.receiveNode(null, receiveSpace)!,
-                ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveNode<JRightPadded<Java.Identifier>>(null, receiveRightPaddedTree),
-                ctx.receiveNode<TypedTree>(null, ctx.receiveTree)!,
-                ctx.receiveNodes(null, leftPaddedNodeReceiver(Space))!,
-                ctx.receiveNode(null, receiveSpace),
-                ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree),
-                ctx.receiveValue(null, ValueType.Object)
             );
         }
 
@@ -1592,6 +1585,28 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
                 ctx.receiveNode<JContainer<J>>(null, receiveContainer)!,
                 ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$ArrayBindingPattern") {
+            return new ArrayBindingPattern(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JContainer<Expression>>(null, receiveContainer)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$BindingElement") {
+            return new BindingElement(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree),
+                ctx.receiveNode<TypedTree>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree),
                 ctx.receiveValue(null, ValueType.Object)
             );
         }

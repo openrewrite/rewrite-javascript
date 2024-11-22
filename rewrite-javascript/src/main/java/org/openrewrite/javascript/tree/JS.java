@@ -932,6 +932,7 @@ public interface JS extends J {
             }
         }
     }
+
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
@@ -1135,13 +1136,13 @@ public interface JS extends J {
         @Getter
         TypeTree typeExpression;
 
-        JContainer<ObjectBindingDeclarations.Binding> bindings;
+        JContainer<BindingElement> bindings;
 
-        public List<ObjectBindingDeclarations.Binding> getBindings() {
+        public List<BindingElement> getBindings() {
             return bindings.getElements();
         }
 
-        public ObjectBindingDeclarations withBindings(List<ObjectBindingDeclarations.Binding> bindings) {
+        public ObjectBindingDeclarations withBindings(List<BindingElement> bindings) {
             return getPadding().withBindings(JContainer.withElements(this.bindings, bindings));
         }
 
@@ -1195,122 +1196,6 @@ public interface JS extends J {
                     withTypeExpression(typeExpression.withType(type));
         }
 
-        @SuppressWarnings("unchecked")
-        @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-        @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
-        @RequiredArgsConstructor
-        @AllArgsConstructor(access = AccessLevel.PRIVATE)
-        public static final class Binding implements JS, NameTree {
-
-            @Nullable
-            @NonFinal
-            transient WeakReference<ObjectBindingDeclarations.Binding.Padding> padding;
-
-            @With
-            @EqualsAndHashCode.Include
-            @Getter
-            UUID id;
-
-            @With
-            @Getter
-            Space prefix;
-
-            @With
-            @Getter
-            Markers markers;
-
-            @Nullable
-            JRightPadded<J.Identifier> propertyName;
-
-            public J.@Nullable Identifier getPropertyName() {
-                return propertyName == null ? null : propertyName.getElement();
-            }
-
-            public ObjectBindingDeclarations.Binding withPropertyName(J.@Nullable Identifier propertyName) {
-                return getPadding().withPropertyName(JRightPadded.withElement(this.propertyName, propertyName));
-            }
-
-            @With
-            @Getter
-            TypedTree name;
-
-            @With
-            @Getter
-            List<JLeftPadded<Space>> dimensionsAfterName;
-
-            @With
-            @Nullable
-            @Getter
-            Space afterVararg;
-
-            @Nullable
-            JLeftPadded<Expression> initializer;
-
-            public @Nullable Expression getInitializer() {
-                return initializer == null ? null : initializer.getElement();
-            }
-
-            public ObjectBindingDeclarations.Binding withInitializer(@Nullable Expression initializer) {
-                return getPadding().withInitializer(JLeftPadded.withElement(this.initializer, initializer));
-            }
-
-            @With
-            @Getter
-            JavaType.@Nullable Variable variableType;
-
-            @Override
-            public JavaType getType() {
-                return variableType != null ? variableType.getType() : null;
-            }
-
-            @SuppressWarnings({"unchecked", "DataFlowIssue"})
-            @Override
-            public ObjectBindingDeclarations.Binding withType(@Nullable JavaType type) {
-                return variableType != null ? withVariableType(variableType.withType(type)) : this;
-            }
-
-            @Override
-            public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
-                return v.visitBinding(this, p);
-            }
-
-            public ObjectBindingDeclarations.Binding.Padding getPadding() {
-                ObjectBindingDeclarations.Binding.Padding p;
-                if (this.padding == null) {
-                    p = new ObjectBindingDeclarations.Binding.Padding(this);
-                    this.padding = new WeakReference<>(p);
-                } else {
-                    p = this.padding.get();
-                    if (p == null || p.t != this) {
-                        p = new ObjectBindingDeclarations.Binding.Padding(this);
-                        this.padding = new WeakReference<>(p);
-                    }
-                }
-                return p;
-            }
-
-            @RequiredArgsConstructor
-            public static class Padding {
-                private final ObjectBindingDeclarations.Binding t;
-
-                public @Nullable JRightPadded<J.Identifier> getPropertyName() {
-                    return t.propertyName;
-                }
-
-                public ObjectBindingDeclarations.Binding withPropertyName(@Nullable JRightPadded<J.Identifier> propertyName) {
-                    return t.propertyName == propertyName ? t : new ObjectBindingDeclarations.Binding(t.id, t.prefix, t.markers, propertyName, t.name, t.dimensionsAfterName, t.afterVararg, t.initializer, t.variableType);
-                }
-
-                public @Nullable JLeftPadded<Expression> getInitializer() {
-                    return t.initializer;
-                }
-
-                public ObjectBindingDeclarations.Binding withInitializer(@Nullable JLeftPadded<Expression> initializer) {
-                    return t.initializer == initializer ? t : new ObjectBindingDeclarations.Binding(t.id, t.prefix, t.markers, t.propertyName, t.name, t.dimensionsAfterName, t.afterVararg, initializer, t.variableType);
-                }
-            }
-        }
-
         public boolean hasModifier(Modifier.Type modifier) {
             return Modifier.hasModifier(getModifiers(), modifier);
         }
@@ -1334,11 +1219,11 @@ public interface JS extends J {
         public static class Padding {
             private final ObjectBindingDeclarations t;
 
-            public JContainer<ObjectBindingDeclarations.Binding> getBindings() {
+            public JContainer<BindingElement> getBindings() {
                 return t.bindings;
             }
 
-            public ObjectBindingDeclarations withBindings(JContainer<ObjectBindingDeclarations.Binding> bindings) {
+            public ObjectBindingDeclarations withBindings(JContainer<BindingElement> bindings) {
                 return t.bindings == bindings ? t : new ObjectBindingDeclarations(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.typeExpression, bindings, t.initializer);
             }
 
@@ -1374,7 +1259,9 @@ public interface JS extends J {
 
         JRightPadded<Expression> name;
 
-        public Expression getName() { return name.getElement(); }
+        public Expression getName() {
+            return name.getElement();
+        }
 
         public PropertyAssignment withName(Expression property) {
             return getPadding().withName(JRightPadded.withElement(this.name, property));
@@ -3268,7 +3155,7 @@ public interface JS extends J {
 
         @Override
         public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
-                return v.visitNamespaceDeclaration(this, p);
+            return v.visitNamespaceDeclaration(this, p);
         }
 
         @Transient
@@ -3551,6 +3438,196 @@ public interface JS extends J {
 
             public IndexSignatureDeclaration withTypeExpression(JLeftPadded<Expression> typeExpression) {
                 return isd.typeExpression == typeExpression ? isd : new IndexSignatureDeclaration(isd.id, isd.prefix, isd.markers, isd.modifiers, isd.parameters, typeExpression, isd.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class ArrayBindingPattern implements JS, Expression, TypedTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<ArrayBindingPattern.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JContainer<Expression> elements;
+
+        public List<Expression> getElements() {
+            return elements.getElements();
+        }
+
+        public ArrayBindingPattern withElements(List<Expression> elements) {
+            return getPadding().withElements(JContainer.withElements(this.elements, elements));
+        }
+
+        @Nullable
+        @With
+        @Getter
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitArrayBindingPattern(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public ArrayBindingPattern.Padding getPadding() {
+            ArrayBindingPattern.Padding p;
+            if (this.padding == null) {
+                p = new ArrayBindingPattern.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.abp != this) {
+                    p = new ArrayBindingPattern.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ArrayBindingPattern abp;
+
+            public JContainer<Expression> getElements() {
+                return abp.elements;
+            }
+
+            public ArrayBindingPattern withElements(JContainer<Expression> elements) {
+                return abp.elements == elements ? abp : new ArrayBindingPattern(abp.id, abp.prefix, abp.markers, elements, abp.type);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class BindingElement implements JS, Statement, Expression, TypeTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @Nullable
+        JRightPadded<Expression> propertyName;
+
+        public @Nullable Expression getPropertyName() {
+            return propertyName == null ? null : propertyName.getElement();
+        }
+
+        public BindingElement withPropertyName(@Nullable Expression propertyName) {
+            return getPadding().withPropertyName(JRightPadded.withElement(this.propertyName, propertyName));
+        }
+
+        @With
+        @Getter
+        TypedTree name;
+
+        @Nullable
+        JLeftPadded<Expression> initializer;
+
+        public @Nullable Expression getInitializer() {
+            return initializer == null ? null : initializer.getElement();
+        }
+
+        public BindingElement withInitializer(@Nullable Expression initializer) {
+            return getPadding().withInitializer(JLeftPadded.withElement(this.initializer, initializer));
+        }
+
+        @With
+        @Getter
+        JavaType.@Nullable Variable variableType;
+
+        @Override
+        public JavaType getType() {
+            return variableType != null ? variableType.getType() : null;
+        }
+
+        @SuppressWarnings({"unchecked", "DataFlowIssue"})
+        @Override
+        public BindingElement withType(@Nullable JavaType type) {
+            return variableType != null ? withVariableType(variableType.withType(type)) : this;
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitBindingElement(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final BindingElement t;
+
+            public @Nullable JRightPadded<Expression> getPropertyName() {
+                return t.propertyName;
+            }
+
+            public BindingElement withPropertyName(@Nullable JRightPadded<Expression> propertyName) {
+                return t.propertyName == propertyName ? t : new BindingElement(t.id, t.prefix, t.markers, propertyName, t.name, t.initializer, t.variableType);
+            }
+
+            public @Nullable JLeftPadded<Expression> getInitializer() {
+                return t.initializer;
+            }
+
+            public BindingElement withInitializer(@Nullable JLeftPadded<Expression> initializer) {
+                return t.initializer == initializer ? t : new BindingElement(t.id, t.prefix, t.markers, t.propertyName, t.name, initializer, t.variableType);
             }
         }
     }

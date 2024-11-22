@@ -140,17 +140,9 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         ListUtils.map(objectBindingDeclarations.getLeadingAnnotations(), el -> visitAndValidate(el, J.Annotation.class, p));
         ListUtils.map(objectBindingDeclarations.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
         visitAndValidate(objectBindingDeclarations.getTypeExpression(), TypeTree.class, p);
-        visitAndValidate(objectBindingDeclarations.getBindings(), JS.ObjectBindingDeclarations.Binding.class, p);
+        visitAndValidate(objectBindingDeclarations.getBindings(), JS.BindingElement.class, p);
         visitAndValidate(objectBindingDeclarations.getInitializer(), Expression.class, p);
         return objectBindingDeclarations;
-    }
-
-    @Override
-    public JS.ObjectBindingDeclarations.Binding visitBinding(JS.ObjectBindingDeclarations.Binding binding, P p) {
-        visitAndValidate(binding.getPropertyName(), J.Identifier.class, p);
-        visitAndValidate(binding.getName(), TypedTree.class, p);
-        visitAndValidate(binding.getInitializer(), Expression.class, p);
-        return binding;
     }
 
     @Override
@@ -346,6 +338,20 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         visitAndValidate(indexSignatureDeclaration.getParameters(), J.class, p);
         visitAndValidate(indexSignatureDeclaration.getTypeExpression(), Expression.class, p);
         return indexSignatureDeclaration;
+    }
+
+    @Override
+    public JS.ArrayBindingPattern visitArrayBindingPattern(JS.ArrayBindingPattern arrayBindingPattern, P p) {
+        visitAndValidate(arrayBindingPattern.getElements(), Expression.class, p);
+        return arrayBindingPattern;
+    }
+
+    @Override
+    public JS.BindingElement visitBindingElement(JS.BindingElement bindingElement, P p) {
+        visitAndValidate(bindingElement.getPropertyName(), Expression.class, p);
+        visitAndValidate(bindingElement.getName(), TypedTree.class, p);
+        visitAndValidate(bindingElement.getInitializer(), Expression.class, p);
+        return bindingElement;
     }
 
     @Override

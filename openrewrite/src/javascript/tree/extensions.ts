@@ -1,5 +1,5 @@
 import {J, JavaType} from "../../java";
-import {Alias, ObjectBindingDeclarations, TypeOperator, Void} from "./tree";
+import {Alias, BindingElement, ObjectBindingDeclarations, TypeOperator, Void} from "./tree";
 import {ExpressionStatement, StatementExpression} from "./support_types";
 import * as java_extensions from "../../java/tree/extensions";
 
@@ -10,7 +10,7 @@ export function getJavaType<T extends J>(expr: T): JavaType | null {
         return expr.expression.type;
     } else if (expr instanceof ObjectBindingDeclarations) {
         return expr.typeExpression != null ? expr.typeExpression.type : null;
-    } else if (expr instanceof ObjectBindingDeclarations.Binding) {
+    } else if (expr instanceof BindingElement) {
         return expr.variableType != null ? expr.variableType.type : null;
     } else if (expr instanceof StatementExpression) {
         return null;
@@ -29,7 +29,7 @@ export function withJavaType<T>(expr: T, type: JavaType): T {
         return expr.withExpression(expr.expression.withType(type)) as T;
     } else if (expr instanceof ObjectBindingDeclarations) {
         return (expr.typeExpression != null ? expr.withTypeExpression(expr.typeExpression.withType(type)) : null) as T;
-    } else if (expr instanceof ObjectBindingDeclarations.Binding) {
+    } else if (expr instanceof BindingElement) {
         return (expr.variableType != null ? expr.withVariableType(expr.variableType.withType(type)) : null) as T;
     } else if (expr instanceof StatementExpression) {
         return expr as T;

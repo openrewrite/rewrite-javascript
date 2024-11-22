@@ -124,21 +124,15 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return a;
     }
 
-    public J visitBinding(JS.ObjectBindingDeclarations.Binding binding, P p) {
-        JS.ObjectBindingDeclarations.Binding b = binding;
-        b = b.withPrefix(visitSpace(b.getPrefix(), JsSpace.Location.BINDING_PREFIX, p));
+    public J visitBindingElement(JS.BindingElement binding, P p) {
+        JS.BindingElement b = binding;
+        b = b.withPrefix(visitSpace(b.getPrefix(), JsSpace.Location.BINDING_ELEMENT_PREFIX, p));
         b = b.withMarkers(visitMarkers(b.getMarkers(), p));
         b = b.withPropertyName(visitAndCast(b.getPropertyName(), p));
-        b = b.withName(visitAndCast(b.getName(), p));
-        b = b.withDimensionsAfterName(
-                ListUtils.map(b.getDimensionsAfterName(),
-                        dim -> dim.withBefore(visitSpace(dim.getBefore(), Space.Location.DIMENSION_PREFIX, p))
-                                .withElement(visitSpace(dim.getElement(), Space.Location.DIMENSION, p))
-                )
-        );
+        b = b.withName(Objects.requireNonNull(visitAndCast(b.getName(), p)));
         if (b.getPadding().getInitializer() != null) {
             b = b.getPadding().withInitializer(visitLeftPadded(b.getPadding().getInitializer(),
-                    JsLeftPadded.Location.BINDING_INITIALIZER, p));
+                    JsLeftPadded.Location.BINDING_ELEMENT_INITIALIZER, p));
         }
         b = b.withVariableType((JavaType.Variable) visitType(b.getVariableType(), p));
         return b;
@@ -315,7 +309,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         o = o.getPadding().withBindings(visitContainer(o.getPadding().getBindings(), JsContainer.Location.BINDING_ELEMENT, p));
         if (o.getPadding().getInitializer() != null) {
             o = o.getPadding().withInitializer(visitLeftPadded(o.getPadding().getInitializer(),
-                    JsLeftPadded.Location.BINDING_INITIALIZER, p));
+                    JsLeftPadded.Location.BINDING_ELEMENT_INITIALIZER, p));
         }
         return o;
     }
@@ -857,6 +851,20 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         c = c.withMarkers(visitMarkers(c.getMarkers(), p));
         c = c.getPadding().withVariable(visitRightPadded(c.getPadding().getVariable(), JsRightPadded.Location.FOR_CONTROL_VAR, p));
         c = c.getPadding().withIterable(visitRightPadded(c.getPadding().getIterable(), JsRightPadded.Location.FOR_CONTROL_ITER, p));
+        return c;
+    }
+
+    public J visitArrayBindingPattern(JS.ArrayBindingPattern arrayBindingPattern, P p) {
+        JS.ArrayBindingPattern c = arrayBindingPattern;
+        c = c.withPrefix(visitSpace(c.getPrefix(), JsSpace.Location.ARRAY_BINDING_PATTERN_PREFIX, p));
+        c = c.withMarkers(visitMarkers(c.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(c, p);
+        if (!(temp instanceof JS.ArrayBindingPattern)) {
+            return temp;
+        } else {
+            c = (JS.ArrayBindingPattern) temp;
+        }
+        c = c.getPadding().withElements(visitContainer(c.getPadding().getElements(), JsContainer.Location.ARRAY_BINDING_PATTERN_ELEMENTS, p));
         return c;
     }
 }

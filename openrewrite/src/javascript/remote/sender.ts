@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -163,19 +163,6 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(objectBindingDeclarations, v => v.padding.bindings, Visitor.sendContainer(ValueType.Tree));
         ctx.sendNode(objectBindingDeclarations, v => v.padding.initializer, Visitor.sendLeftPadded(ValueType.Tree));
         return objectBindingDeclarations;
-    }
-
-    public visitBinding(binding: ObjectBindingDeclarations.Binding, ctx: SenderContext): J {
-        ctx.sendValue(binding, v => v.id, ValueType.UUID);
-        ctx.sendNode(binding, v => v.prefix, Visitor.sendSpace);
-        ctx.sendNode(binding, v => v.markers, ctx.sendMarkers);
-        ctx.sendNode(binding, v => v.padding.propertyName, Visitor.sendRightPadded(ValueType.Tree));
-        ctx.sendNode(binding, v => v.name, ctx.sendTree);
-        ctx.sendNodes(binding, v => v.dimensionsAfterName, Visitor.sendLeftPadded(ValueType.Object), t => t);
-        ctx.sendNode(binding, v => v.afterVararg, Visitor.sendSpace);
-        ctx.sendNode(binding, v => v.padding.initializer, Visitor.sendLeftPadded(ValueType.Tree));
-        ctx.sendTypedValue(binding, v => v.variableType, ValueType.Object);
-        return binding;
     }
 
     public visitPropertyAssignment(propertyAssignment: PropertyAssignment, ctx: SenderContext): J {
@@ -449,6 +436,26 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(indexSignatureDeclaration, v => v.padding.typeExpression, Visitor.sendLeftPadded(ValueType.Tree));
         ctx.sendTypedValue(indexSignatureDeclaration, v => v.type, ValueType.Object);
         return indexSignatureDeclaration;
+    }
+
+    public visitArrayBindingPattern(arrayBindingPattern: ArrayBindingPattern, ctx: SenderContext): J {
+        ctx.sendValue(arrayBindingPattern, v => v.id, ValueType.UUID);
+        ctx.sendNode(arrayBindingPattern, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(arrayBindingPattern, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(arrayBindingPattern, v => v.padding.elements, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendTypedValue(arrayBindingPattern, v => v.type, ValueType.Object);
+        return arrayBindingPattern;
+    }
+
+    public visitBindingElement(bindingElement: BindingElement, ctx: SenderContext): J {
+        ctx.sendValue(bindingElement, v => v.id, ValueType.UUID);
+        ctx.sendNode(bindingElement, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(bindingElement, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(bindingElement, v => v.padding.propertyName, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(bindingElement, v => v.name, ctx.sendTree);
+        ctx.sendNode(bindingElement, v => v.padding.initializer, Visitor.sendLeftPadded(ValueType.Tree));
+        ctx.sendTypedValue(bindingElement, v => v.variableType, ValueType.Object);
+        return bindingElement;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: SenderContext): J {

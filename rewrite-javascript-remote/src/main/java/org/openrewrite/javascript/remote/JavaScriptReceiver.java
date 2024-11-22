@@ -230,20 +230,6 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
-        public JS.ObjectBindingDeclarations.Binding visitBinding(JS.ObjectBindingDeclarations.Binding binding, ReceiverContext ctx) {
-            binding = binding.withId(ctx.receiveNonNullValue(binding.getId(), UUID.class));
-            binding = binding.withPrefix(ctx.receiveNonNullNode(binding.getPrefix(), JavaScriptReceiver::receiveSpace));
-            binding = binding.withMarkers(ctx.receiveNonNullNode(binding.getMarkers(), ctx::receiveMarkers));
-            binding = binding.getPadding().withPropertyName(ctx.receiveNode(binding.getPadding().getPropertyName(), JavaScriptReceiver::receiveRightPaddedTree));
-            binding = binding.withName(ctx.receiveNonNullNode(binding.getName(), ctx::receiveTree));
-            binding = binding.withDimensionsAfterName(ctx.receiveNonNullNodes(binding.getDimensionsAfterName(), leftPaddedNodeReceiver(org.openrewrite.java.tree.Space.class)));
-            binding = binding.withAfterVararg(ctx.receiveNode(binding.getAfterVararg(), JavaScriptReceiver::receiveSpace));
-            binding = binding.getPadding().withInitializer(ctx.receiveNode(binding.getPadding().getInitializer(), JavaScriptReceiver::receiveLeftPaddedTree));
-            binding = binding.withVariableType(ctx.receiveValue(binding.getVariableType(), JavaType.Variable.class));
-            return binding;
-        }
-
-        @Override
         public JS.PropertyAssignment visitPropertyAssignment(JS.PropertyAssignment propertyAssignment, ReceiverContext ctx) {
             propertyAssignment = propertyAssignment.withId(ctx.receiveNonNullValue(propertyAssignment.getId(), UUID.class));
             propertyAssignment = propertyAssignment.withPrefix(ctx.receiveNonNullNode(propertyAssignment.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -541,6 +527,28 @@ public class JavaScriptReceiver implements Receiver<JS> {
             indexSignatureDeclaration = indexSignatureDeclaration.getPadding().withTypeExpression(ctx.receiveNonNullNode(indexSignatureDeclaration.getPadding().getTypeExpression(), JavaScriptReceiver::receiveLeftPaddedTree));
             indexSignatureDeclaration = indexSignatureDeclaration.withType(ctx.receiveValue(indexSignatureDeclaration.getType(), JavaType.class));
             return indexSignatureDeclaration;
+        }
+
+        @Override
+        public JS.ArrayBindingPattern visitArrayBindingPattern(JS.ArrayBindingPattern arrayBindingPattern, ReceiverContext ctx) {
+            arrayBindingPattern = arrayBindingPattern.withId(ctx.receiveNonNullValue(arrayBindingPattern.getId(), UUID.class));
+            arrayBindingPattern = arrayBindingPattern.withPrefix(ctx.receiveNonNullNode(arrayBindingPattern.getPrefix(), JavaScriptReceiver::receiveSpace));
+            arrayBindingPattern = arrayBindingPattern.withMarkers(ctx.receiveNonNullNode(arrayBindingPattern.getMarkers(), ctx::receiveMarkers));
+            arrayBindingPattern = arrayBindingPattern.getPadding().withElements(ctx.receiveNonNullNode(arrayBindingPattern.getPadding().getElements(), JavaScriptReceiver::receiveContainer));
+            arrayBindingPattern = arrayBindingPattern.withType(ctx.receiveValue(arrayBindingPattern.getType(), JavaType.class));
+            return arrayBindingPattern;
+        }
+
+        @Override
+        public JS.BindingElement visitBindingElement(JS.BindingElement bindingElement, ReceiverContext ctx) {
+            bindingElement = bindingElement.withId(ctx.receiveNonNullValue(bindingElement.getId(), UUID.class));
+            bindingElement = bindingElement.withPrefix(ctx.receiveNonNullNode(bindingElement.getPrefix(), JavaScriptReceiver::receiveSpace));
+            bindingElement = bindingElement.withMarkers(ctx.receiveNonNullNode(bindingElement.getMarkers(), ctx::receiveMarkers));
+            bindingElement = bindingElement.getPadding().withPropertyName(ctx.receiveNode(bindingElement.getPadding().getPropertyName(), JavaScriptReceiver::receiveRightPaddedTree));
+            bindingElement = bindingElement.withName(ctx.receiveNonNullNode(bindingElement.getName(), ctx::receiveTree));
+            bindingElement = bindingElement.getPadding().withInitializer(ctx.receiveNode(bindingElement.getPadding().getInitializer(), JavaScriptReceiver::receiveLeftPaddedTree));
+            bindingElement = bindingElement.withVariableType(ctx.receiveValue(bindingElement.getVariableType(), JavaType.Variable.class));
+            return bindingElement;
         }
 
         @Override
@@ -1399,20 +1407,6 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 );
             }
 
-            if (type == JS.ObjectBindingDeclarations.Binding.class) {
-                return (T) new JS.ObjectBindingDeclarations.Binding(
-                    ctx.receiveNonNullValue(null, UUID.class),
-                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
-                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
-                    ctx.receiveNode(null, JavaScriptReceiver::receiveRightPaddedTree),
-                    ctx.receiveNonNullNode(null, ctx::receiveTree),
-                    ctx.receiveNonNullNodes(null, leftPaddedNodeReceiver(org.openrewrite.java.tree.Space.class)),
-                    ctx.receiveNode(null, JavaScriptReceiver::receiveSpace),
-                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
-                    ctx.receiveValue(null, JavaType.Variable.class)
-                );
-            }
-
             if (type == JS.PropertyAssignment.class) {
                 return (T) new JS.PropertyAssignment(
                     ctx.receiveNonNullValue(null, UUID.class),
@@ -1710,6 +1704,28 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.ArrayBindingPattern.class) {
+                return (T) new JS.ArrayBindingPattern(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.BindingElement.class) {
+                return (T) new JS.BindingElement(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveRightPaddedTree),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
+                    ctx.receiveValue(null, JavaType.Variable.class)
                 );
             }
 

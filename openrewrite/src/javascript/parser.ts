@@ -1363,11 +1363,17 @@ export class JavaScriptParserVisitor {
     }
 
     visitArrayBindingPattern(node: ts.ArrayBindingPattern) {
-        return this.visitUnknown(node);
+        return new JS.ArrayBindingPattern(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.mapCommaSeparatedList(node.getChildren(this.sourceFile)),
+            this.mapType(node)
+        );
     }
 
     visitBindingElement(node: ts.BindingElement) {
-        return new JS.ObjectBindingDeclarations.Binding(
+        return new JS.BindingElement(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
@@ -1380,8 +1386,6 @@ export class JavaScriptParserVisitor {
                 this.convert<J.Expression>(node.name),
                 null
             ) : this.convert<TypedTree>(node.name),
-            [],
-            null,
             node.initializer ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsToken)!), this.convert<J.Expression>(node.initializer)) : null,
             this.mapVariableType(node),
         );
@@ -1994,7 +1998,11 @@ export class JavaScriptParserVisitor {
     }
 
     visitOmittedExpression(node: ts.OmittedExpression) {
-        return this.visitUnknown(node);
+        return new J.Empty(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+        );
     }
 
     visitExpressionWithTypeArguments(node: ts.ExpressionWithTypeArguments) {

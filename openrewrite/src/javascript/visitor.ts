@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -205,17 +205,6 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         objectBindingDeclarations = objectBindingDeclarations.padding.withBindings(this.visitJsContainer(objectBindingDeclarations.padding.bindings, JsContainer.Location.OBJECT_BINDING_DECLARATIONS_BINDINGS, p)!);
         objectBindingDeclarations = objectBindingDeclarations.padding.withInitializer(this.visitJsLeftPadded(objectBindingDeclarations.padding.initializer, JsLeftPadded.Location.OBJECT_BINDING_DECLARATIONS_INITIALIZER, p));
         return objectBindingDeclarations;
-    }
-
-    public visitBinding(binding: ObjectBindingDeclarations.Binding, p: P): J | null {
-        binding = binding.withPrefix(this.visitJsSpace(binding.prefix, JsSpace.Location.OBJECT_BINDING_DECLARATIONS_BINDING_PREFIX, p)!);
-        binding = binding.withMarkers(this.visitMarkers(binding.markers, p));
-        binding = binding.padding.withPropertyName(this.visitJsRightPadded(binding.padding.propertyName, JsRightPadded.Location.OBJECT_BINDING_DECLARATIONS_BINDING_PROPERTY_NAME, p));
-        binding = binding.withName(this.visitAndCast(binding.name, p)!);
-        binding = binding.withDimensionsAfterName(ListUtils.map(binding.dimensionsAfterName, el => this.visitJsLeftPadded(el, JsLeftPadded.Location.OBJECT_BINDING_DECLARATIONS_BINDING_DIMENSIONS_AFTER_NAME, p)));
-        binding = binding.withAfterVararg(this.visitJsSpace(binding.afterVararg, JsSpace.Location.OBJECT_BINDING_DECLARATIONS_BINDING_AFTER_VARARG, p));
-        binding = binding.padding.withInitializer(this.visitJsLeftPadded(binding.padding.initializer, JsLeftPadded.Location.OBJECT_BINDING_DECLARATIONS_BINDING_INITIALIZER, p));
-        return binding;
     }
 
     public visitPropertyAssignment(propertyAssignment: PropertyAssignment, p: P): J | null {
@@ -611,6 +600,40 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         indexSignatureDeclaration = indexSignatureDeclaration.padding.withParameters(this.visitJsContainer(indexSignatureDeclaration.padding.parameters, JsContainer.Location.INDEX_SIGNATURE_DECLARATION_PARAMETERS, p)!);
         indexSignatureDeclaration = indexSignatureDeclaration.padding.withTypeExpression(this.visitJsLeftPadded(indexSignatureDeclaration.padding.typeExpression, JsLeftPadded.Location.INDEX_SIGNATURE_DECLARATION_TYPE_EXPRESSION, p)!);
         return indexSignatureDeclaration;
+    }
+
+    public visitArrayBindingPattern(arrayBindingPattern: ArrayBindingPattern, p: P): J | null {
+        arrayBindingPattern = arrayBindingPattern.withPrefix(this.visitJsSpace(arrayBindingPattern.prefix, JsSpace.Location.ARRAY_BINDING_PATTERN_PREFIX, p)!);
+        let tempExpression = this.visitExpression(arrayBindingPattern, p) as Expression;
+        if (!(tempExpression instanceof ArrayBindingPattern))
+        {
+            return tempExpression;
+        }
+        arrayBindingPattern = tempExpression as ArrayBindingPattern;
+        arrayBindingPattern = arrayBindingPattern.withMarkers(this.visitMarkers(arrayBindingPattern.markers, p));
+        arrayBindingPattern = arrayBindingPattern.padding.withElements(this.visitJsContainer(arrayBindingPattern.padding.elements, JsContainer.Location.ARRAY_BINDING_PATTERN_ELEMENTS, p)!);
+        return arrayBindingPattern;
+    }
+
+    public visitBindingElement(bindingElement: BindingElement, p: P): J | null {
+        bindingElement = bindingElement.withPrefix(this.visitJsSpace(bindingElement.prefix, JsSpace.Location.BINDING_ELEMENT_PREFIX, p)!);
+        let tempStatement = this.visitStatement(bindingElement, p) as Statement;
+        if (!(tempStatement instanceof BindingElement))
+        {
+            return tempStatement;
+        }
+        bindingElement = tempStatement as BindingElement;
+        let tempExpression = this.visitExpression(bindingElement, p) as Expression;
+        if (!(tempExpression instanceof BindingElement))
+        {
+            return tempExpression;
+        }
+        bindingElement = tempExpression as BindingElement;
+        bindingElement = bindingElement.withMarkers(this.visitMarkers(bindingElement.markers, p));
+        bindingElement = bindingElement.padding.withPropertyName(this.visitJsRightPadded(bindingElement.padding.propertyName, JsRightPadded.Location.BINDING_ELEMENT_PROPERTY_NAME, p));
+        bindingElement = bindingElement.withName(this.visitAndCast(bindingElement.name, p)!);
+        bindingElement = bindingElement.padding.withInitializer(this.visitJsLeftPadded(bindingElement.padding.initializer, JsLeftPadded.Location.BINDING_ELEMENT_INITIALIZER, p));
+        return bindingElement;
     }
 
     public visitJsLeftPadded<T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P): JLeftPadded<T> {
