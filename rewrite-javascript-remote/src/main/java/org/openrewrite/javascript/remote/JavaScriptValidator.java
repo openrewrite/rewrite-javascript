@@ -208,6 +208,12 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.TypeQuery visitTypeQuery(JS.TypeQuery typeQuery, P p) {
+        visitAndValidate(typeQuery.getTypeExpression(), TypeTree.class, p);
+        return typeQuery;
+    }
+
+    @Override
     public JS.TypeOperator visitTypeOperator(JS.TypeOperator typeOperator, P p) {
         visitAndValidate(typeOperator.getExpression(), Expression.class, p);
         return typeOperator;

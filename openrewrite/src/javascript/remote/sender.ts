@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -111,6 +111,7 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendValue(functionType, v => v.id, ValueType.UUID);
         ctx.sendNode(functionType, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(functionType, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(functionType, v => v.padding.constructorType, Visitor.sendRightPadded(ValueType.Primitive));
         ctx.sendNode(functionType, v => v.padding.parameters, Visitor.sendContainer(ValueType.Tree));
         ctx.sendNode(functionType, v => v.arrow, Visitor.sendSpace);
         ctx.sendNode(functionType, v => v.returnType, ctx.sendTree);
@@ -251,6 +252,15 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(typeOf, v => v.expression, ctx.sendTree);
         ctx.sendTypedValue(typeOf, v => v.type, ValueType.Object);
         return typeOf;
+    }
+
+    public visitTypeQuery(typeQuery: TypeQuery, ctx: SenderContext): J {
+        ctx.sendValue(typeQuery, v => v.id, ValueType.UUID);
+        ctx.sendNode(typeQuery, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(typeQuery, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(typeQuery, v => v.typeExpression, ctx.sendTree);
+        ctx.sendTypedValue(typeQuery, v => v.type, ValueType.Object);
+        return typeQuery;
     }
 
     public visitTypeOperator(typeOperator: TypeOperator, ctx: SenderContext): J {

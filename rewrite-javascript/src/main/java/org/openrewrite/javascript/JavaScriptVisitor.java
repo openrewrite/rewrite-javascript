@@ -226,6 +226,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             f = (JS.FunctionType) temp;
         }
+        f = f.getPadding().withConstructorType(visitRightPadded(f.getPadding().getConstructorType(), JsRightPadded.Location.FUNCTION_TYPE_CONSTRUCTOR, p));
         f = f.getPadding().withParameters(visitContainer(f.getPadding().getParameters(), JContainer.Location.LANGUAGE_EXTENSION, p));
         f = f.withParameters(ListUtils.map(f.getParameters(), e -> visitAndCast(e, p)));
         f = f.withArrow(visitSpace(f.getArrow(), JsSpace.Location.FUNCTION_TYPE_ARROW_PREFIX, p));
@@ -583,6 +584,21 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
             t = (JS.TypeOf) temp;
         }
         t = t.withExpression(visitAndCast(t.getExpression(), p));
+        t = t.withType(visitType(t.getType(), p));
+        return t;
+    }
+
+    public J visitTypeQuery(JS.TypeQuery typeQuery, P p) {
+        JS.TypeQuery t = typeQuery;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.TYPE_QUERY_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(t, p);
+        if (!(temp instanceof JS.TypeQuery)) {
+            return temp;
+        } else {
+            t = (JS.TypeQuery) temp;
+        }
+        t = t.withTypeExpression(visitAndCast(t.getTypeExpression(), p));
         t = t.withType(visitType(t.getType(), p));
         return t;
     }

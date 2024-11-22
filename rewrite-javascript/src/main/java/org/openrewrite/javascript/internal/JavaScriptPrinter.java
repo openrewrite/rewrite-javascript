@@ -183,6 +183,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     @Override
     public J visitFunctionType(JS.FunctionType functionType, PrintOutputCapture<P> p) {
         beforeSyntax(functionType, JsSpace.Location.FUNCTION_TYPE_PREFIX, p);
+        if (functionType.isConstructorType()) {
+            p.append("new");
+            visitRightPadded(functionType.getPadding().getConstructorType(), JsRightPadded.Location.FUNCTION_TYPE_CONSTRUCTOR, p);
+        }
         visitContainer("(", functionType.getPadding().getParameters(), JsContainer.Location.FUNCTION_TYPE_PARAMETER, ",", ")", p);
         visitSpace(functionType.getArrow(), JsSpace.Location.FUNCTION_TYPE_ARROW_PREFIX, p);
         p.append("=>");
@@ -413,6 +417,15 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(typeOf.getExpression(), p);
         afterSyntax(typeOf, p);
         return typeOf;
+    }
+
+    @Override
+    public J visitTypeQuery(JS.TypeQuery typeQuery, PrintOutputCapture<P> p) {
+        beforeSyntax(typeQuery, JsSpace.Location.TYPE_QUERY_PREFIX, p);
+        p.append("typeof");
+        visit(typeQuery.getTypeExpression(), p);
+        afterSyntax(typeQuery, p);
+        return typeQuery;
     }
 
     @Override
@@ -1033,6 +1046,32 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
             afterSyntax(typeCast, p);
             return typeCast;
+        }
+
+        @Override
+        public J visitTypeParameter(J.TypeParameter typeParameter, PrintOutputCapture<P> p) {
+            beforeSyntax(typeParameter, Space.Location.TYPE_PARAMETERS_PREFIX, p);
+            visit(typeParameter.getAnnotations(), p);
+            visit(typeParameter.getName(), p);
+
+            JContainer<TypeTree> bounds = typeParameter.getPadding().getBounds();
+            if (bounds != null) {
+                visitSpace(bounds.getBefore(), JContainer.Location.TYPE_BOUNDS.getBeforeLocation(), p);
+                JRightPadded<TypeTree> constraintType = bounds.getPadding().getElements().get(0);
+                if (!(constraintType.getElement() instanceof J.Empty)) {
+                    p.append("extends");
+                    this.visitRightPadded(constraintType, JContainer.Location.TYPE_BOUNDS.getElementLocation(), p);
+                }
+
+                JRightPadded<TypeTree> defaultType = bounds.getPadding().getElements().get(1);
+                if (!(defaultType.getElement() instanceof J.Empty)) {
+                    p.append("=");
+                    this.visitRightPadded(defaultType, JContainer.Location.TYPE_BOUNDS.getElementLocation(), p);
+                }
+            }
+
+            afterSyntax(typeParameter, p);
+            return typeParameter;
         }
 
         @Override

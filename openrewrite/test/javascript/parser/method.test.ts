@@ -122,7 +122,7 @@ describe('method mapping', () => {
         );
     });
 
-    test.skip('type parameters with bounds', () => {
+    test('type parameters with bounds', () => {
         rewriteRun(
           //language=typescript
           typeScript(`

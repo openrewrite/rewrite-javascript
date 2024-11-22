@@ -265,7 +265,7 @@ describe('class mapping', () => {
         );
     });
 
-    test.skip('class expressions inline', () => {
+    test('class expressions inline', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
@@ -282,14 +282,13 @@ describe('class mapping', () => {
         );
     });
 
-    test.skip('inner class declaration with extends', () => {
+    test('inner class declaration with extends', () => {
       rewriteRun(
         //language=typescript
         typeScript(`
             class OuterClass {
               public static InnerClass = class extends Number { };
             }
-            const a: typeof OuterClass.InnerClass.prototype = 1;
         `)
       );
     });

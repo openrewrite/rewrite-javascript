@@ -105,6 +105,8 @@ public class JsSpace {
         FOR_INIT_SUFFIX,
         FOR_ITER_SUFFIX,
         FOR_IN_LOOP_PREFIX,
+        TYPE_QUERY_PREFIX,
+        FUNCTION_TYPE_CONSTRUCTOR_SUFFIX,
 
     }
 }

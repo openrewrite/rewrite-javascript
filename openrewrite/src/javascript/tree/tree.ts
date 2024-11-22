@@ -714,11 +714,12 @@ export class Export extends JSMixin(Object) implements Statement {
 
 @LstType("org.openrewrite.javascript.tree.JS$FunctionType")
 export class FunctionType extends JSMixin(Object) implements Expression, TypeTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, parameters: JContainer<Statement>, arrow: Space, returnType: Expression, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, constructorType: JRightPadded<boolean>, parameters: JContainer<Statement>, arrow: Space, returnType: Expression, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
+        this._constructorType = constructorType;
         this._parameters = parameters;
         this._arrow = arrow;
         this._returnType = returnType;
@@ -732,7 +733,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withId(id: UUID): FunctionType {
-            return id === this._id ? this : new FunctionType(id, this._prefix, this._markers, this._parameters, this._arrow, this._returnType, this._type);
+            return id === this._id ? this : new FunctionType(id, this._prefix, this._markers, this._constructorType, this._parameters, this._arrow, this._returnType, this._type);
         }
 
         private readonly _prefix: Space;
@@ -742,7 +743,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withPrefix(prefix: Space): FunctionType {
-            return prefix === this._prefix ? this : new FunctionType(this._id, prefix, this._markers, this._parameters, this._arrow, this._returnType, this._type);
+            return prefix === this._prefix ? this : new FunctionType(this._id, prefix, this._markers, this._constructorType, this._parameters, this._arrow, this._returnType, this._type);
         }
 
         private readonly _markers: Markers;
@@ -752,7 +753,17 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withMarkers(markers: Markers): FunctionType {
-            return markers === this._markers ? this : new FunctionType(this._id, this._prefix, markers, this._parameters, this._arrow, this._returnType, this._type);
+            return markers === this._markers ? this : new FunctionType(this._id, this._prefix, markers, this._constructorType, this._parameters, this._arrow, this._returnType, this._type);
+        }
+
+        private readonly _constructorType: JRightPadded<boolean>;
+
+        public get constructorType(): boolean {
+            return this._constructorType.element;
+        }
+
+        public withConstructorType(constructorType: boolean): FunctionType {
+            return this.padding.withConstructorType(this._constructorType.withElement(constructorType));
         }
 
         private readonly _parameters: JContainer<Statement>;
@@ -772,7 +783,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withArrow(arrow: Space): FunctionType {
-            return arrow === this._arrow ? this : new FunctionType(this._id, this._prefix, this._markers, this._parameters, arrow, this._returnType, this._type);
+            return arrow === this._arrow ? this : new FunctionType(this._id, this._prefix, this._markers, this._constructorType, this._parameters, arrow, this._returnType, this._type);
         }
 
         private readonly _returnType: Expression;
@@ -782,7 +793,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withReturnType(returnType: Expression): FunctionType {
-            return returnType === this._returnType ? this : new FunctionType(this._id, this._prefix, this._markers, this._parameters, this._arrow, returnType, this._type);
+            return returnType === this._returnType ? this : new FunctionType(this._id, this._prefix, this._markers, this._constructorType, this._parameters, this._arrow, returnType, this._type);
         }
 
         private readonly _type: JavaType | null;
@@ -792,7 +803,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withType(_type: JavaType | null): FunctionType {
-            return _type === this._type ? this : new FunctionType(this._id, this._prefix, this._markers, this._parameters, this._arrow, this._returnType, _type);
+            return _type === this._type ? this : new FunctionType(this._id, this._prefix, this._markers, this._constructorType, this._parameters, this._arrow, this._returnType, _type);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
@@ -802,11 +813,17 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
     get padding() {
         const t = this;
         return new class {
+            public get constructorType(): JRightPadded<boolean> {
+                return t._constructorType;
+            }
+            public withConstructorType(constructorType: JRightPadded<boolean>): FunctionType {
+                return t._constructorType === constructorType ? t : new FunctionType(t._id, t._prefix, t._markers, constructorType, t._parameters, t._arrow, t._returnType, t._type);
+            }
             public get parameters(): JContainer<Statement> {
                 return t._parameters;
             }
             public withParameters(parameters: JContainer<Statement>): FunctionType {
-                return t._parameters === parameters ? t : new FunctionType(t._id, t._prefix, t._markers, parameters, t._arrow, t._returnType, t._type);
+                return t._parameters === parameters ? t : new FunctionType(t._id, t._prefix, t._markers, t._constructorType, parameters, t._arrow, t._returnType, t._type);
             }
         }
     }
@@ -2052,6 +2069,73 @@ export class TypeOf extends JSMixin(Object) implements Expression {
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
         return v.visitTypeOf(this, p);
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$TypeQuery")
+export class TypeQuery extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, typeExpression: TypeTree, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._typeExpression = typeExpression;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): TypeQuery {
+            return id === this._id ? this : new TypeQuery(id, this._prefix, this._markers, this._typeExpression, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): TypeQuery {
+            return prefix === this._prefix ? this : new TypeQuery(this._id, prefix, this._markers, this._typeExpression, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): TypeQuery {
+            return markers === this._markers ? this : new TypeQuery(this._id, this._prefix, markers, this._typeExpression, this._type);
+        }
+
+        private readonly _typeExpression: TypeTree;
+
+        public get typeExpression(): TypeTree {
+            return this._typeExpression;
+        }
+
+        public withTypeExpression(typeExpression: TypeTree): TypeQuery {
+            return typeExpression === this._typeExpression ? this : new TypeQuery(this._id, this._prefix, this._markers, typeExpression, this._type);
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): TypeQuery {
+            return _type === this._type ? this : new TypeQuery(this._id, this._prefix, this._markers, this._typeExpression, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTypeQuery(this, p);
     }
 
 }

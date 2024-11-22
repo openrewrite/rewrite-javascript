@@ -160,7 +160,7 @@ describe('for mapping', () => {
         );
     });
 
-    test.skip('for-in with dynamic object', () => {
+    test('for-in with dynamic object', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
