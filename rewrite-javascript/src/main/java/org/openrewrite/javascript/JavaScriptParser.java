@@ -141,7 +141,7 @@ public class JavaScriptParser implements Parser {
         try {
             validator.validate(sourceFile, ctx);
         } catch (Exception e) {
-            return ParseError.build(this, input, relativeTo, ctx, new IllegalStateException("LST model has type validation errors", e));
+            return ParseError.build(this, input, relativeTo, ctx, e);
         }
         return requirePrintEqualsInput(sourceFile, input, relativeTo, ctx);
     }
