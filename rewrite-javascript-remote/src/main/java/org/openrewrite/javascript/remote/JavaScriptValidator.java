@@ -23,14 +23,11 @@
 package org.openrewrite.javascript.remote;
 
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.*;
+import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.marker.Markers;
-import org.openrewrite.tree.*;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptIsoVisitor;
-import org.openrewrite.javascript.tree.*;
+import org.openrewrite.javascript.tree.JS;
 
 import java.util.List;
 
@@ -226,6 +223,12 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.Intersection visitIntersection(JS.Intersection intersection, P p) {
+        ListUtils.map(intersection.getTypes(), el -> visitAndValidate(el, Expression.class, p));
+        return intersection;
+    }
+
+    @Override
     public JS.Void visitVoid(JS.Void void_, P p) {
         visitAndValidate(void_.getExpression(), Expression.class, p);
         return void_;
@@ -299,6 +302,20 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         visitAndValidate(functionDeclaration.getReturnTypeExpression(), TypeTree.class, p);
         visitAndValidate(functionDeclaration.getBody(), J.class, p);
         return functionDeclaration;
+    }
+
+    @Override
+    public JS.TypeLiteral visitTypeLiteral(JS.TypeLiteral typeLiteral, P p) {
+        visitAndValidate(typeLiteral.getMembers(), J.Block.class, p);
+        return typeLiteral;
+    }
+
+    @Override
+    public JS.IndexSignatureDeclaration visitIndexSignatureDeclaration(JS.IndexSignatureDeclaration indexSignatureDeclaration, P p) {
+        ListUtils.map(indexSignatureDeclaration.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
+        visitAndValidate(indexSignatureDeclaration.getParameters(), J.class, p);
+        visitAndValidate(indexSignatureDeclaration.getTypeExpression(), Expression.class, p);
+        return indexSignatureDeclaration;
     }
 
     @Override
@@ -539,7 +556,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration methodDeclaration, P p) {
         ListUtils.map(methodDeclaration.getLeadingAnnotations(), el -> visitAndValidate(el, J.Annotation.class, p));
         ListUtils.map(methodDeclaration.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
-        visitAndValidate(methodDeclaration.getTypeParameters(), J.TypeParameters.class, p);
+        visitAndValidate(methodDeclaration.getPadding().getTypeParameters(), J.TypeParameters.class, p);
         visitAndValidate(methodDeclaration.getReturnTypeExpression(), TypeTree.class, p);
         visitAndValidate(methodDeclaration.getParameters(), Statement.class, p);
         visitAndValidate(methodDeclaration.getThrows(), NameTree.class, p);
