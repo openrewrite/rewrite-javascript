@@ -4,7 +4,7 @@ import * as extensions from "./extensions";
 import {JS, JSMixin, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./support_types";
 import {JavaScriptVisitor} from "../visitor";
 import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../../core";
-import {Expression, J, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypedTree, TypeTree, MethodCall} from "../../java/tree";
+import {Expression, J, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypedTree, TypeTree, MethodCall, Loop} from "../../java/tree";
 import * as Java from "../../java/tree";
 
 @LstType("org.openrewrite.javascript.tree.JS$CompilationUnit")
@@ -2333,6 +2333,85 @@ export class Union extends JSMixin(Object) implements Expression, TypeTree {
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$Intersection")
+export class Intersection extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, types: JRightPadded<Expression>[], _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._types = types;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): Intersection {
+            return id === this._id ? this : new Intersection(id, this._prefix, this._markers, this._types, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): Intersection {
+            return prefix === this._prefix ? this : new Intersection(this._id, prefix, this._markers, this._types, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): Intersection {
+            return markers === this._markers ? this : new Intersection(this._id, this._prefix, markers, this._types, this._type);
+        }
+
+        private readonly _types: JRightPadded<Expression>[];
+
+        public get types(): Expression[] {
+            return JRightPadded.getElements(this._types);
+        }
+
+        public withTypes(types: Expression[]): Intersection {
+            return this.padding.withTypes(JRightPadded.withElements(this._types, types));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): Intersection {
+            return _type === this._type ? this : new Intersection(this._id, this._prefix, this._markers, this._types, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitIntersection(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get types(): JRightPadded<Expression>[] {
+                return t._types;
+            }
+            public withTypes(types: JRightPadded<Expression>[]): Intersection {
+                return t._types === types ? t : new Intersection(t._id, t._prefix, t._markers, types, t._type);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$Void")
 export class Void extends JSMixin(Object) implements Expression, Statement {
     public constructor(id: UUID, prefix: Space, markers: Markers, expression: Expression) {
@@ -3340,6 +3419,180 @@ export class FunctionDeclaration extends JSMixin(Object) implements Statement, E
             }
             public withParameters(parameters: JContainer<Statement>): FunctionDeclaration {
                 return t._parameters === parameters ? t : new FunctionDeclaration(t._id, t._prefix, t._markers, t._modifiers, t._name, t._typeParameters, parameters, t._returnTypeExpression, t._body, t._type);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$TypeLiteral")
+export class TypeLiteral extends JSMixin(Object) implements Expression, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, members: Java.Block, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._members = members;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): TypeLiteral {
+            return id === this._id ? this : new TypeLiteral(id, this._prefix, this._markers, this._members, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): TypeLiteral {
+            return prefix === this._prefix ? this : new TypeLiteral(this._id, prefix, this._markers, this._members, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): TypeLiteral {
+            return markers === this._markers ? this : new TypeLiteral(this._id, this._prefix, markers, this._members, this._type);
+        }
+
+        private readonly _members: Java.Block;
+
+        public get members(): Java.Block {
+            return this._members;
+        }
+
+        public withMembers(members: Java.Block): TypeLiteral {
+            return members === this._members ? this : new TypeLiteral(this._id, this._prefix, this._markers, members, this._type);
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): TypeLiteral {
+            return _type === this._type ? this : new TypeLiteral(this._id, this._prefix, this._markers, this._members, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTypeLiteral(this, p);
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$IndexSignatureDeclaration")
+export class IndexSignatureDeclaration extends JSMixin(Object) implements Statement, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], parameters: JContainer<J>, typeExpression: JLeftPadded<Expression>, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._modifiers = modifiers;
+        this._parameters = parameters;
+        this._typeExpression = typeExpression;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): IndexSignatureDeclaration {
+            return id === this._id ? this : new IndexSignatureDeclaration(id, this._prefix, this._markers, this._modifiers, this._parameters, this._typeExpression, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): IndexSignatureDeclaration {
+            return prefix === this._prefix ? this : new IndexSignatureDeclaration(this._id, prefix, this._markers, this._modifiers, this._parameters, this._typeExpression, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): IndexSignatureDeclaration {
+            return markers === this._markers ? this : new IndexSignatureDeclaration(this._id, this._prefix, markers, this._modifiers, this._parameters, this._typeExpression, this._type);
+        }
+
+        private readonly _modifiers: Java.Modifier[];
+
+        public get modifiers(): Java.Modifier[] {
+            return this._modifiers;
+        }
+
+        public withModifiers(modifiers: Java.Modifier[]): IndexSignatureDeclaration {
+            return modifiers === this._modifiers ? this : new IndexSignatureDeclaration(this._id, this._prefix, this._markers, modifiers, this._parameters, this._typeExpression, this._type);
+        }
+
+        private readonly _parameters: JContainer<J>;
+
+        public get parameters(): J[] {
+            return this._parameters.elements;
+        }
+
+        public withParameters(parameters: J[]): IndexSignatureDeclaration {
+            return this.padding.withParameters(JContainer.withElements(this._parameters, parameters));
+        }
+
+        private readonly _typeExpression: JLeftPadded<Expression>;
+
+        public get typeExpression(): Expression {
+            return this._typeExpression.element;
+        }
+
+        public withTypeExpression(typeExpression: Expression): IndexSignatureDeclaration {
+            return this.padding.withTypeExpression(this._typeExpression.withElement(typeExpression));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): IndexSignatureDeclaration {
+            return _type === this._type ? this : new IndexSignatureDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._parameters, this._typeExpression, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitIndexSignatureDeclaration(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get parameters(): JContainer<J> {
+                return t._parameters;
+            }
+            public withParameters(parameters: JContainer<J>): IndexSignatureDeclaration {
+                return t._parameters === parameters ? t : new IndexSignatureDeclaration(t._id, t._prefix, t._markers, t._modifiers, parameters, t._typeExpression, t._type);
+            }
+            public get typeExpression(): JLeftPadded<Expression> {
+                return t._typeExpression;
+            }
+            public withTypeExpression(typeExpression: JLeftPadded<Expression>): IndexSignatureDeclaration {
+                return t._typeExpression === typeExpression ? t : new IndexSignatureDeclaration(t._id, t._prefix, t._markers, t._modifiers, t._parameters, typeExpression, t._type);
             }
         }
     }

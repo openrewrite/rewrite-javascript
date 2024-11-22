@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -286,6 +286,15 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         return union;
     }
 
+    public visitIntersection(intersection: Intersection, ctx: ReceiverContext): J {
+        intersection = intersection.withId(ctx.receiveValue(intersection.id, ValueType.UUID)!);
+        intersection = intersection.withPrefix(ctx.receiveNode(intersection.prefix, receiveSpace)!);
+        intersection = intersection.withMarkers(ctx.receiveNode(intersection.markers, ctx.receiveMarkers)!);
+        intersection = intersection.padding.withTypes(ctx.receiveNodes(intersection.padding.types, receiveRightPaddedTree)!);
+        intersection = intersection.withType(ctx.receiveValue(intersection.type, ValueType.Object));
+        return intersection;
+    }
+
     public visitVoid(_void: Void, ctx: ReceiverContext): J {
         _void = _void.withId(ctx.receiveValue(_void.id, ValueType.UUID)!);
         _void = _void.withPrefix(ctx.receiveNode(_void.prefix, receiveSpace)!);
@@ -387,6 +396,26 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         functionDeclaration = functionDeclaration.withBody(ctx.receiveNode(functionDeclaration.body, ctx.receiveTree)!);
         functionDeclaration = functionDeclaration.withType(ctx.receiveValue(functionDeclaration.type, ValueType.Object));
         return functionDeclaration;
+    }
+
+    public visitTypeLiteral(typeLiteral: TypeLiteral, ctx: ReceiverContext): J {
+        typeLiteral = typeLiteral.withId(ctx.receiveValue(typeLiteral.id, ValueType.UUID)!);
+        typeLiteral = typeLiteral.withPrefix(ctx.receiveNode(typeLiteral.prefix, receiveSpace)!);
+        typeLiteral = typeLiteral.withMarkers(ctx.receiveNode(typeLiteral.markers, ctx.receiveMarkers)!);
+        typeLiteral = typeLiteral.withMembers(ctx.receiveNode(typeLiteral.members, ctx.receiveTree)!);
+        typeLiteral = typeLiteral.withType(ctx.receiveValue(typeLiteral.type, ValueType.Object));
+        return typeLiteral;
+    }
+
+    public visitIndexSignatureDeclaration(indexSignatureDeclaration: IndexSignatureDeclaration, ctx: ReceiverContext): J {
+        indexSignatureDeclaration = indexSignatureDeclaration.withId(ctx.receiveValue(indexSignatureDeclaration.id, ValueType.UUID)!);
+        indexSignatureDeclaration = indexSignatureDeclaration.withPrefix(ctx.receiveNode(indexSignatureDeclaration.prefix, receiveSpace)!);
+        indexSignatureDeclaration = indexSignatureDeclaration.withMarkers(ctx.receiveNode(indexSignatureDeclaration.markers, ctx.receiveMarkers)!);
+        indexSignatureDeclaration = indexSignatureDeclaration.withModifiers(ctx.receiveNodes(indexSignatureDeclaration.modifiers, ctx.receiveTree)!);
+        indexSignatureDeclaration = indexSignatureDeclaration.padding.withParameters(ctx.receiveNode(indexSignatureDeclaration.padding.parameters, receiveContainer)!);
+        indexSignatureDeclaration = indexSignatureDeclaration.padding.withTypeExpression(ctx.receiveNode(indexSignatureDeclaration.padding.typeExpression, receiveLeftPaddedTree)!);
+        indexSignatureDeclaration = indexSignatureDeclaration.withType(ctx.receiveValue(indexSignatureDeclaration.type, ValueType.Object));
+        return indexSignatureDeclaration;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: ReceiverContext): J {
@@ -1343,6 +1372,16 @@ class Factory implements ReceiverFactory {
             );
         }
 
+        if (type === "org.openrewrite.javascript.tree.JS$Intersection") {
+            return new Intersection(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNodes(null, receiveRightPaddedTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
         if (type === "org.openrewrite.javascript.tree.JS$Void") {
             return new Void(
                 ctx.receiveValue(null, ValueType.UUID)!,
@@ -1451,6 +1490,28 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<JContainer<Statement>>(null, receiveContainer)!,
                 ctx.receiveNode<TypeTree>(null, ctx.receiveTree),
                 ctx.receiveNode<J>(null, ctx.receiveTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$TypeLiteral") {
+            return new TypeLiteral(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<Java.Block>(null, ctx.receiveTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$IndexSignatureDeclaration") {
+            return new IndexSignatureDeclaration(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JContainer<J>>(null, receiveContainer)!,
+                ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }

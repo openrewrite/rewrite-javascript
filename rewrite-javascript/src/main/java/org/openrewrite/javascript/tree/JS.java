@@ -2159,6 +2159,81 @@ public interface JS extends J {
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Data
+    final class Intersection implements JS, Expression, TypeTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<JS.Intersection.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        List<JRightPadded<Expression>> types;
+
+        public List<Expression> getTypes() {
+            return JRightPadded.getElements(types);
+        }
+
+        public JS.Intersection withTypes(List<Expression> types) {
+            return getPadding().withTypes(JRightPadded.withElements(this.types, types));
+        }
+
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitIntersection(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public JS.Intersection.Padding getPadding() {
+            JS.Intersection.Padding p;
+            if (this.padding == null) {
+                p = new JS.Intersection.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JS.Intersection.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JS.Intersection t;
+
+            public List<JRightPadded<Expression>> getTypes() {
+                return t.types;
+            }
+
+            public JS.Intersection withTypes(List<JRightPadded<Expression>> types) {
+                return t.types == types ? t : new JS.Intersection(t.id, t.prefix, t.markers, types, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @Data
     @With
     final class Void implements JS, Expression, Statement {
@@ -3025,6 +3100,147 @@ public interface JS extends J {
 
             public FunctionDeclaration withParameters(JContainer<Statement> parameters) {
                 return t.parameters == parameters ? t : new FunctionDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.name, t.typeParameters, parameters, t.returnTypeExpression, t.body, t.type);
+            }
+        }
+    }
+
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    final class TypeLiteral implements JS, Expression, TypedTree {
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        J.Block members;
+
+        @Nullable
+        @With
+        @Getter
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTypeLiteral(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class IndexSignatureDeclaration implements JS, Statement, TypedTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<IndexSignatureDeclaration.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @Getter
+        @With
+        List<J.Modifier> modifiers;
+
+        JContainer<J> parameters;
+
+        public List<J> getParameters() {
+            return parameters.getElements();
+        }
+
+        public IndexSignatureDeclaration withParameters(List<J> parameters) {
+            return getPadding().withParameters(JContainer.withElements(this.parameters, parameters));
+        }
+
+        JLeftPadded<Expression> typeExpression;
+
+        public Expression getTypeExpression() {
+            return typeExpression.getElement();
+        }
+
+        public IndexSignatureDeclaration withTypeExpression(Expression typeExpression) {
+            return getPadding().withTypeExpression(JLeftPadded.withElement(this.typeExpression, typeExpression));
+        }
+
+        @Nullable
+        @With
+        @Getter
+        JavaType type;
+
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitIndexSignatureDeclaration(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public IndexSignatureDeclaration.Padding getPadding() {
+            IndexSignatureDeclaration.Padding p;
+            if (this.padding == null) {
+                p = new IndexSignatureDeclaration.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.isd != this) {
+                    p = new IndexSignatureDeclaration.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final IndexSignatureDeclaration isd;
+
+            public JContainer<J> getParameters() {
+                return isd.parameters;
+            }
+
+            public IndexSignatureDeclaration withParameters(JContainer<J> parameters) {
+                return isd.parameters == parameters ? isd : new IndexSignatureDeclaration(isd.id, isd.prefix, isd.markers, isd.modifiers, parameters, isd.typeExpression, isd.type);
+            }
+
+            public JLeftPadded<Expression> getTypeExpression() {
+                return isd.typeExpression;
+            }
+
+            public IndexSignatureDeclaration withTypeExpression(JLeftPadded<Expression> typeExpression) {
+                return isd.typeExpression == typeExpression ? isd : new IndexSignatureDeclaration(isd.id, isd.prefix, isd.markers, isd.modifiers, isd.parameters, typeExpression, isd.type);
             }
         }
     }

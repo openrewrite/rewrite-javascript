@@ -103,6 +103,18 @@ describe('for mapping', () => {
         );
     });
 
+    test('for-of with object binding pattern', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const list : any = [];
+                for (let {a, b} of list) {
+                    console.log(a); // 4, 5, 6
+                }
+            `)
+        );
+    });
+
     test('for-of with comments', () => {
         rewriteRun(
             //language=typescript

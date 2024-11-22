@@ -358,6 +358,16 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.Intersection visitIntersection(JS.Intersection intersection, ReceiverContext ctx) {
+            intersection = intersection.withId(ctx.receiveNonNullValue(intersection.getId(), UUID.class));
+            intersection = intersection.withPrefix(ctx.receiveNonNullNode(intersection.getPrefix(), JavaScriptReceiver::receiveSpace));
+            intersection = intersection.withMarkers(ctx.receiveNonNullNode(intersection.getMarkers(), ctx::receiveMarkers));
+            intersection = intersection.getPadding().withTypes(ctx.receiveNonNullNodes(intersection.getPadding().getTypes(), JavaScriptReceiver::receiveRightPaddedTree));
+            intersection = intersection.withType(ctx.receiveValue(intersection.getType(), JavaType.class));
+            return intersection;
+        }
+
+        @Override
         public JS.Void visitVoid(JS.Void void_, ReceiverContext ctx) {
             void_ = void_.withId(ctx.receiveNonNullValue(void_.getId(), UUID.class));
             void_ = void_.withPrefix(ctx.receiveNonNullNode(void_.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -467,6 +477,28 @@ public class JavaScriptReceiver implements Receiver<JS> {
             functionDeclaration = functionDeclaration.withBody(ctx.receiveNonNullNode(functionDeclaration.getBody(), ctx::receiveTree));
             functionDeclaration = functionDeclaration.withType(ctx.receiveValue(functionDeclaration.getType(), JavaType.class));
             return functionDeclaration;
+        }
+
+        @Override
+        public JS.TypeLiteral visitTypeLiteral(JS.TypeLiteral typeLiteral, ReceiverContext ctx) {
+            typeLiteral = typeLiteral.withId(ctx.receiveNonNullValue(typeLiteral.getId(), UUID.class));
+            typeLiteral = typeLiteral.withPrefix(ctx.receiveNonNullNode(typeLiteral.getPrefix(), JavaScriptReceiver::receiveSpace));
+            typeLiteral = typeLiteral.withMarkers(ctx.receiveNonNullNode(typeLiteral.getMarkers(), ctx::receiveMarkers));
+            typeLiteral = typeLiteral.withMembers(ctx.receiveNonNullNode(typeLiteral.getMembers(), ctx::receiveTree));
+            typeLiteral = typeLiteral.withType(ctx.receiveValue(typeLiteral.getType(), JavaType.class));
+            return typeLiteral;
+        }
+
+        @Override
+        public JS.IndexSignatureDeclaration visitIndexSignatureDeclaration(JS.IndexSignatureDeclaration indexSignatureDeclaration, ReceiverContext ctx) {
+            indexSignatureDeclaration = indexSignatureDeclaration.withId(ctx.receiveNonNullValue(indexSignatureDeclaration.getId(), UUID.class));
+            indexSignatureDeclaration = indexSignatureDeclaration.withPrefix(ctx.receiveNonNullNode(indexSignatureDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
+            indexSignatureDeclaration = indexSignatureDeclaration.withMarkers(ctx.receiveNonNullNode(indexSignatureDeclaration.getMarkers(), ctx::receiveMarkers));
+            indexSignatureDeclaration = indexSignatureDeclaration.withModifiers(ctx.receiveNonNullNodes(indexSignatureDeclaration.getModifiers(), ctx::receiveTree));
+            indexSignatureDeclaration = indexSignatureDeclaration.getPadding().withParameters(ctx.receiveNonNullNode(indexSignatureDeclaration.getPadding().getParameters(), JavaScriptReceiver::receiveContainer));
+            indexSignatureDeclaration = indexSignatureDeclaration.getPadding().withTypeExpression(ctx.receiveNonNullNode(indexSignatureDeclaration.getPadding().getTypeExpression(), JavaScriptReceiver::receiveLeftPaddedTree));
+            indexSignatureDeclaration = indexSignatureDeclaration.withType(ctx.receiveValue(indexSignatureDeclaration.getType(), JavaType.class));
+            return indexSignatureDeclaration;
         }
 
         @Override
@@ -1453,6 +1485,16 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 );
             }
 
+            if (type == JS.Intersection.class) {
+                return (T) new JS.Intersection(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
             if (type == JS.Void.class) {
                 return (T) new JS.Void(
                     ctx.receiveNonNullValue(null, UUID.class),
@@ -1561,6 +1603,28 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.TypeLiteral.class) {
+                return (T) new JS.TypeLiteral(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.IndexSignatureDeclaration.class) {
+                return (T) new JS.IndexSignatureDeclaration(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
                 );
             }

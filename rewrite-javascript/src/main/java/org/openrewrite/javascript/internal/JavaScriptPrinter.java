@@ -489,6 +489,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitIntersection(JS.Intersection intersection, PrintOutputCapture<P> p) {
+        beforeSyntax(intersection, JsSpace.Location.INTERSECTION_PREFIX, p);
+
+        visitRightPadded(intersection.getPadding().getTypes(), JsRightPadded.Location.INTERSECTION_TYPE, "&", p);
+
+        afterSyntax(intersection, p);
+        return intersection;
+    }
+
+    @Override
     public J visitVoid(JS.Void aVoid, PrintOutputCapture<P> p) {
         beforeSyntax(aVoid, JsSpace.Location.VOID_PREFIX, p);
         p.append("void");
@@ -644,6 +654,30 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         afterSyntax(functionDeclaration, p);
         return functionDeclaration;
     }
+
+    @Override
+    public J visitTypeLiteral(JS.TypeLiteral tl, PrintOutputCapture<P> p) {
+        beforeSyntax(tl, JsSpace.Location.TYPE_LITERAL_PREFIX, p);
+
+        visit(tl.getMembers(), p);
+
+        afterSyntax(tl, p);
+        return tl;
+    }
+
+    @Override
+    public J visitIndexSignatureDeclaration(JS.IndexSignatureDeclaration isd, PrintOutputCapture<P> p) {
+        beforeSyntax(isd, JsSpace.Location.INDEXED_SIGNATURE_DECLARATION_PREFIX, p);
+
+        visitContainer("[", isd.getPadding().getParameters(), JsContainer.Location.INDEXED_SIGNATURE_DECLARATION_PARAMETERS, "", "]", p);
+
+        visitLeftPadded(":", isd.getPadding().getTypeExpression(), JsLeftPadded.Location.INDEXED_SIGNATURE_DECLARATION_TYPE_EXPRESSION, p);
+
+        afterSyntax(isd, p);
+        return isd;
+    }
+
+
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
