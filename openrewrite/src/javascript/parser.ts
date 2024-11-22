@@ -1998,11 +1998,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitOmittedExpression(node: ts.OmittedExpression) {
-        return new J.Empty(
-            randomId(),
-            this.prefix(node),
-            Markers.EMPTY,
-        );
+        return this.newJEmpty(this.prefix(node));
     }
 
     visitExpressionWithTypeArguments(node: ts.ExpressionWithTypeArguments) {

@@ -119,8 +119,7 @@ describe('google-maps-services-js files tests', () => {
     });
 
     test('reversegeocode.ts', () => {
-      rewriteRunWithOptions(
-          {expectUnknowns : false},
+        rewriteRun(
           //language=typescript
           typeScript(`
              /**
