@@ -1462,13 +1462,13 @@ public interface JS extends J {
             return getPadding().withScope(JLeftPadded.withElement(this.scope, scope));
         }
 
-        List<JRightPadded<Expression>> variables;
+        List<JRightPadded<J>> variables;
 
-        public List<Expression> getVariables() {
+        public List<J> getVariables() {
             return JRightPadded.getElements(variables);
         }
 
-        public ScopedVariableDeclarations withVariables(List<Expression> variables) {
+        public ScopedVariableDeclarations withVariables(List<J> variables) {
             return getPadding().withVariables(JRightPadded.withElements(this.variables, variables));
         }
 
@@ -1507,11 +1507,11 @@ public interface JS extends J {
         public static class Padding {
             private final ScopedVariableDeclarations t;
 
-            public List<JRightPadded<Expression>> getVariables() {
+            public List<JRightPadded<J>> getVariables() {
                 return t.variables;
             }
 
-            public ScopedVariableDeclarations withVariables(List<JRightPadded<Expression>> variables) {
+            public ScopedVariableDeclarations withVariables(List<JRightPadded<J>> variables) {
                 return t.variables == variables ? t : new ScopedVariableDeclarations(t.id, t.prefix, t.markers, t.modifiers, t.scope, variables);
             }
 
@@ -3101,13 +3101,13 @@ public interface JS extends J {
         @Getter
         Markers markers;
 
-        JRightPadded<Expression> variable;
+        JRightPadded<Statement> variable;
 
-        public Expression getVariable() {
+        public Statement getVariable() {
             return variable.getElement();
         }
 
-        public JSForInOfLoopControl withVariable(Expression variable) {
+        public JSForInOfLoopControl withVariable(Statement variable) {
             return getPadding().withVariable(this.variable.withElement(variable));
         }
 
@@ -3150,11 +3150,11 @@ public interface JS extends J {
         public static class Padding {
             private final JSForInOfLoopControl t;
 
-            public JRightPadded<Expression> getVariable() {
+            public JRightPadded<Statement> getVariable() {
                 return t.variable;
             }
 
-            public JSForInOfLoopControl withVariable(JRightPadded<Expression> variable) {
+            public JSForInOfLoopControl withVariable(JRightPadded<Statement> variable) {
                 return t.variable == variable ? t : new JSForInOfLoopControl(t.id, t.prefix, t.markers, variable, t.iterable);
             }
 

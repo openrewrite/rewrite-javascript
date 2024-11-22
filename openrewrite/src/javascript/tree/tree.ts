@@ -1512,7 +1512,7 @@ export class PropertyAssignment extends JSMixin(Object) implements Statement, Ty
 
 @LstType("org.openrewrite.javascript.tree.JS$ScopedVariableDeclarations")
 export class ScopedVariableDeclarations extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], scope: JLeftPadded<ScopedVariableDeclarations.Scope> | null, variables: JRightPadded<Expression>[]) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], scope: JLeftPadded<ScopedVariableDeclarations.Scope> | null, variables: JRightPadded<J>[]) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -1572,13 +1572,13 @@ export class ScopedVariableDeclarations extends JSMixin(Object) implements State
             return this.padding.withScope(JLeftPadded.withElement(this._scope, scope));
         }
 
-        private readonly _variables: JRightPadded<Expression>[];
+        private readonly _variables: JRightPadded<J>[];
 
-        public get variables(): Expression[] {
+        public get variables(): J[] {
             return JRightPadded.getElements(this._variables);
         }
 
-        public withVariables(variables: Expression[]): ScopedVariableDeclarations {
+        public withVariables(variables: J[]): ScopedVariableDeclarations {
             return this.padding.withVariables(JRightPadded.withElements(this._variables, variables));
         }
 
@@ -1595,10 +1595,10 @@ export class ScopedVariableDeclarations extends JSMixin(Object) implements State
             public withScope(scope: JLeftPadded<ScopedVariableDeclarations.Scope> | null): ScopedVariableDeclarations {
                 return t._scope === scope ? t : new ScopedVariableDeclarations(t._id, t._prefix, t._markers, t._modifiers, scope, t._variables);
             }
-            public get variables(): JRightPadded<Expression>[] {
+            public get variables(): JRightPadded<J>[] {
                 return t._variables;
             }
-            public withVariables(variables: JRightPadded<Expression>[]): ScopedVariableDeclarations {
+            public withVariables(variables: JRightPadded<J>[]): ScopedVariableDeclarations {
                 return t._variables === variables ? t : new ScopedVariableDeclarations(t._id, t._prefix, t._markers, t._modifiers, t._scope, variables);
             }
         }
@@ -3352,7 +3352,7 @@ export class JSForInLoop extends JSMixin(Object) implements Loop {
 
 @LstType("org.openrewrite.javascript.tree.JS$JSForInOfLoopControl")
 export class JSForInOfLoopControl extends JSMixin(Object) {
-    public constructor(id: UUID, prefix: Space, markers: Markers, variable: JRightPadded<Expression>, iterable: JRightPadded<Expression>) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, variable: JRightPadded<Statement>, iterable: JRightPadded<Expression>) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -3391,13 +3391,13 @@ export class JSForInOfLoopControl extends JSMixin(Object) {
             return markers === this._markers ? this : new JSForInOfLoopControl(this._id, this._prefix, markers, this._variable, this._iterable);
         }
 
-        private readonly _variable: JRightPadded<Expression>;
+        private readonly _variable: JRightPadded<Statement>;
 
-        public get variable(): Expression {
+        public get variable(): Statement {
             return this._variable.element;
         }
 
-        public withVariable(variable: Expression): JSForInOfLoopControl {
+        public withVariable(variable: Statement): JSForInOfLoopControl {
             return this.padding.withVariable(this._variable.withElement(variable));
         }
 
@@ -3418,10 +3418,10 @@ export class JSForInOfLoopControl extends JSMixin(Object) {
     get padding() {
         const t = this;
         return new class {
-            public get variable(): JRightPadded<Expression> {
+            public get variable(): JRightPadded<Statement> {
                 return t._variable;
             }
-            public withVariable(variable: JRightPadded<Expression>): JSForInOfLoopControl {
+            public withVariable(variable: JRightPadded<Statement>): JSForInOfLoopControl {
                 return t._variable === variable ? t : new JSForInOfLoopControl(t._id, t._prefix, t._markers, variable, t._iterable);
             }
             public get iterable(): JRightPadded<Expression> {

@@ -23,11 +23,14 @@
 package org.openrewrite.javascript.remote;
 
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.Tree;
+import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.marker.Markers;
+import org.openrewrite.tree.*;
+import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptIsoVisitor;
-import org.openrewrite.javascript.tree.JS;
+import org.openrewrite.javascript.tree.*;
 
 import java.util.List;
 
@@ -160,7 +163,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public JS.ScopedVariableDeclarations visitScopedVariableDeclarations(JS.ScopedVariableDeclarations scopedVariableDeclarations, P p) {
         ListUtils.map(scopedVariableDeclarations.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
-        ListUtils.map(scopedVariableDeclarations.getVariables(), el -> visitAndValidate(el, Expression.class, p));
+        ListUtils.map(scopedVariableDeclarations.getVariables(), el -> visitAndValidate(el, J.class, p));
         return scopedVariableDeclarations;
     }
 
@@ -286,6 +289,27 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.JSForOfLoop visitJSForOfLoop(JS.JSForOfLoop jSForOfLoop, P p) {
+        visitAndValidate(jSForOfLoop.getControl(), JS.JSForInOfLoopControl.class, p);
+        visitAndValidate(jSForOfLoop.getBody(), Statement.class, p);
+        return jSForOfLoop;
+    }
+
+    @Override
+    public JS.JSForInLoop visitJSForInLoop(JS.JSForInLoop jSForInLoop, P p) {
+        visitAndValidate(jSForInLoop.getControl(), JS.JSForInOfLoopControl.class, p);
+        visitAndValidate(jSForInLoop.getBody(), Statement.class, p);
+        return jSForInLoop;
+    }
+
+    @Override
+    public JS.JSForInOfLoopControl visitJSForInOfLoopControl(JS.JSForInOfLoopControl jSForInOfLoopControl, P p) {
+        visitAndValidate(jSForInOfLoopControl.getVariable(), Statement.class, p);
+        visitAndValidate(jSForInOfLoopControl.getIterable(), Expression.class, p);
+        return jSForInOfLoopControl;
+    }
+
+    @Override
     public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, P p) {
         ListUtils.map(namespaceDeclaration.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
         visitAndValidate(namespaceDeclaration.getName(), Expression.class, p);
@@ -349,7 +373,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.Assert visitAssert(J.Assert assert_, P p) {
         visitAndValidate(assert_.getCondition(), Expression.class, p);
-        visitAndValidate(assert_.getDetail().getElement(), Expression.class, p);
+        visitAndValidate(assert_.getDetail() != null ? assert_.getDetail().getElement() : null, Expression.class, p);
         return assert_;
     }
 

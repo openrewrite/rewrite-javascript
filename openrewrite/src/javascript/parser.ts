@@ -1,6 +1,7 @@
 import * as ts from 'typescript';
 import * as J from '../java';
 import {
+    FieldAccess,
     JavaType,
     JContainer,
     JLeftPadded,
@@ -1518,12 +1519,18 @@ export class JavaScriptParserVisitor {
     }
 
     visitParenthesizedExpression(node: ts.ParenthesizedExpression) {
-        return new J.Parentheses(
+        return new J.ParenthesizedTypeTree(
             randomId(),
-            this.prefix(node),
+            Space.EMPTY,
             Markers.EMPTY,
-            this.rightPadded(this.convert(node.expression), this.prefix(node.getLastToken()!))
-        )
+            [],
+            new J.Parentheses(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.rightPadded(this.convert(node.expression), this.prefix(node.getLastToken()!))
+            )
+        );
     }
 
     visitFunctionExpression(node: ts.FunctionExpression) {
@@ -2437,9 +2444,11 @@ export class JavaScriptParserVisitor {
                     keywordType
                 ),
                 this.rightPadded(
-                        new J.FieldAccess(
+                    (body.name instanceof J.FieldAccess)
+                        ? this.remapFieldAccess(body.name, node.name)
+                        : new J.FieldAccess(
                             randomId(),
-                            this.prefix(node),
+                            Space.EMPTY,
                             Markers.EMPTY,
                             this.visit(node.name),
                             new J.JLeftPadded(
@@ -2449,7 +2458,7 @@ export class JavaScriptParserVisitor {
                             ),
                             null
                         ),
-                    Space.EMPTY
+                    body.padding.name.after
                 ),
                 body.body
             );
@@ -2463,10 +2472,42 @@ export class JavaScriptParserVisitor {
                     namespaceKeyword ? this.prefix(namespaceKeyword) : Space.EMPTY,
                     keywordType
                 ),
-                this.rightPadded(this.convert(node.name), this.prefix(node)), // J.FieldAccess
+                this.rightPadded(this.convert(node.name), this.suffix(node.name)), // J.FieldAccess
                 body // J.Block
             );
         }
+    }
+
+    private remapFieldAccess(fa: FieldAccess, name: ts.ModuleName): FieldAccess {
+        if (fa.target instanceof J.Identifier) {
+            return new J.FieldAccess(
+                randomId(),
+                Space.EMPTY,
+                Markers.EMPTY,
+                new J.FieldAccess(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    this.visit(name),
+                    this.leftPadded(
+                        this.suffix(name),
+                        fa.target
+                    ),
+                    null
+                ),
+                fa.padding.name,
+                null
+            );
+        }
+
+        return new J.FieldAccess(
+            randomId(),
+            Space.EMPTY,
+            Markers.EMPTY,
+            this.remapFieldAccess(fa.target as FieldAccess, name),
+            fa.padding.name,
+            null
+        );
     }
 
     visitModuleBlock(node: ts.ModuleBlock) {
