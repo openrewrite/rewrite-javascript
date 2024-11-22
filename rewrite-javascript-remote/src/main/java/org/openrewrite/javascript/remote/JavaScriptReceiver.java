@@ -171,6 +171,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
             functionType = functionType.withId(ctx.receiveNonNullValue(functionType.getId(), UUID.class));
             functionType = functionType.withPrefix(ctx.receiveNonNullNode(functionType.getPrefix(), JavaScriptReceiver::receiveSpace));
             functionType = functionType.withMarkers(ctx.receiveNonNullNode(functionType.getMarkers(), ctx::receiveMarkers));
+            functionType = functionType.getPadding().withConstructorType(ctx.receiveNonNullNode(functionType.getPadding().getConstructorType(), rightPaddedValueReceiver(java.lang.Boolean.class)));
             functionType = functionType.getPadding().withParameters(ctx.receiveNonNullNode(functionType.getPadding().getParameters(), JavaScriptReceiver::receiveContainer));
             functionType = functionType.withArrow(ctx.receiveNonNullNode(functionType.getArrow(), JavaScriptReceiver::receiveSpace));
             functionType = functionType.withReturnType(ctx.receiveNonNullNode(functionType.getReturnType(), ctx::receiveTree));
@@ -324,6 +325,16 @@ public class JavaScriptReceiver implements Receiver<JS> {
             typeOf = typeOf.withExpression(ctx.receiveNonNullNode(typeOf.getExpression(), ctx::receiveTree));
             typeOf = typeOf.withType(ctx.receiveValue(typeOf.getType(), JavaType.class));
             return typeOf;
+        }
+
+        @Override
+        public JS.TypeQuery visitTypeQuery(JS.TypeQuery typeQuery, ReceiverContext ctx) {
+            typeQuery = typeQuery.withId(ctx.receiveNonNullValue(typeQuery.getId(), UUID.class));
+            typeQuery = typeQuery.withPrefix(ctx.receiveNonNullNode(typeQuery.getPrefix(), JavaScriptReceiver::receiveSpace));
+            typeQuery = typeQuery.withMarkers(ctx.receiveNonNullNode(typeQuery.getMarkers(), ctx::receiveMarkers));
+            typeQuery = typeQuery.withTypeExpression(ctx.receiveNonNullNode(typeQuery.getTypeExpression(), ctx::receiveTree));
+            typeQuery = typeQuery.withType(ctx.receiveValue(typeQuery.getType(), JavaType.class));
+            return typeQuery;
         }
 
         @Override
@@ -1330,6 +1341,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, rightPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
@@ -1477,6 +1489,16 @@ public class JavaScriptReceiver implements Receiver<JS> {
 
             if (type == JS.TypeOf.class) {
                 return (T) new JS.TypeOf(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.TypeQuery.class) {
+                return (T) new JS.TypeQuery(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),

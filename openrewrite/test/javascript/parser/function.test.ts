@@ -199,4 +199,124 @@ describe('function mapping', () => {
             `)
         );
     });
+
+    test('function with simple type bound', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function greet<T extends Number>(person: T): void {}
+            `)
+        );
+    });
+
+    test('function with simple type bound and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function /*a*/greet/*b*/</*c*/T /*d*/ extends /*e*/ Number/*f*/>/*g*/(person: T): void {}
+            `)
+        );
+    });
+
+    test('function with union type bound', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function getLength<T extends string | number>(input: T) : void {}
+            `)
+        );
+    });
+
+    test('function with multiple type bound', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function merge<T extends object, U extends object>(obj1: T, obj2: U): T & U {
+                    return { ...obj1, ...obj2 };
+                }
+            `)
+        );
+    });
+
+    test('function with default type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function createArray<T = string>(value: T, count: number): T[] {
+                    return Array(count).fill(value);
+                }
+            `)
+        );
+    });
+
+    test('function with default type and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function createArray<T /*a*/ = /*b*/string /*c*/>(value: T, count: number): T[] {
+                    return Array(count).fill(value);
+                }
+            `)
+        );
+    });
+
+    test.skip('function with multiple default types', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function createMap<K = string, V = number>(key: K, value: V): [K, V] {
+                    return [key, value];
+                }
+            `)
+        );
+    });
+
+    test('function with extends and default type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function createArray<T extends string | number = string>(value: T, length: number): T[] {
+                    return Array(length).fill(value);
+                }
+            `)
+        );
+    });
+
+    test('function with extends and default type with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function createArray<T /*-2*/extends/*-1*/ string | number /*0*/ = /*1*/ string/*2*/>/*3*/(value: T, length: number): /*a*/T/*b*/[/*c*/]/*d*/ {
+                    return Array(length).fill(value);
+                }
+            `)
+        );
+    });
+
+    test('function with constrained type literal ', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function logLength<T extends { length: number }>(input: T): void {}
+            `)
+        );
+    });
+
+    test('function with rest type parameters ', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function f(...args: any[]): void {}
+            `)
+        );
+    });
+
+    test('function with rest type parameters and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function /*a*/f/*b*/(/*c*/.../*d*/args/*e*/: /*f*/any[]): void {}
+            `)
+        );
+    });
 });

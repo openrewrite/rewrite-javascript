@@ -31,7 +31,7 @@ describe('type alias mapping', () => {
         );
     });
 
-    test('generic type alias', () => {
+    test('generic function type alias', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
@@ -63,6 +63,51 @@ describe('type alias mapping', () => {
             //language=typescript
             typeScript(`
                 type ID = number | string;
+            `)
+        );
+    });
+
+    test('construct function type alias', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type MyConstructor = new (arg: string) => string;
+            `)
+        );
+    });
+
+    test('construct function type alias with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type MyConstructor = /*a*/new/*b*/ (/*c*/arg: string) => string;
+            `)
+        );
+    });
+
+    test('recursive array type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type NestedArray<T> = T | NestedArray<T[]>;
+            `)
+        );
+    });
+
+    test.skip('conditional type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Flatten<T> = T extends (infer R)[] ? Flatten<R> : T;
+            `)
+        );
+    });
+
+    test('construct function type alias with generic', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type GenericConstructor<T> = new (/*a*/.../*b*/args: any[]) => T;
             `)
         );
     });

@@ -340,7 +340,7 @@ describe('interface mapping', () => {
         );
     });
 
-    test.skip('interface with indexable type', () => {
+    test('interface with indexable type', () => {
         rewriteRun(
           //language=typescript
           typeScript(`

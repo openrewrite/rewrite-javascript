@@ -154,6 +154,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendValue(functionType, JS.FunctionType::getId);
             ctx.sendNode(functionType, JS.FunctionType::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(functionType, JS.FunctionType::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(functionType, e -> e.getPadding().getConstructorType(), JavaScriptSender::sendRightPadded);
             ctx.sendNode(functionType, e -> e.getPadding().getParameters(), JavaScriptSender::sendContainer);
             ctx.sendNode(functionType, JS.FunctionType::getArrow, JavaScriptSender::sendSpace);
             ctx.sendNode(functionType, JS.FunctionType::getReturnType, ctx::sendTree);
@@ -307,6 +308,16 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(typeOf, JS.TypeOf::getExpression, ctx::sendTree);
             ctx.sendTypedValue(typeOf, JS.TypeOf::getType);
             return typeOf;
+        }
+
+        @Override
+        public JS.TypeQuery visitTypeQuery(JS.TypeQuery typeQuery, SenderContext ctx) {
+            ctx.sendValue(typeQuery, JS.TypeQuery::getId);
+            ctx.sendNode(typeQuery, JS.TypeQuery::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(typeQuery, JS.TypeQuery::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(typeQuery, JS.TypeQuery::getTypeExpression, ctx::sendTree);
+            ctx.sendTypedValue(typeQuery, JS.TypeQuery::getType);
+            return typeQuery;
         }
 
         @Override

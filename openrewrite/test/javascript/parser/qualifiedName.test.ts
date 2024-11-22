@@ -37,11 +37,12 @@ describe('empty mapping', () => {
         );
     });
 
-    test.skip('nested class qualified name', () => {
+    test('nested class qualified name', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
-                class OuterClass extends (class extends Number { }) {
+                class OuterClass {
+                    public static InnerClass = class extends Number { };
                 }
                 const a: typeof OuterClass.InnerClass.prototype = 1;
             `)

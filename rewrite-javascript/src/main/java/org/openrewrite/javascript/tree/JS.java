@@ -715,6 +715,16 @@ public interface JS extends J {
         @With
         Markers markers;
 
+        JRightPadded<Boolean> constructorType;
+
+        public boolean isConstructorType() {
+            return constructorType.getElement();
+        }
+
+        public FunctionType withConstructorType(boolean constructor) {
+            return getPadding().withConstructorType(this.constructorType.withElement(constructor));
+        }
+
         JContainer<Statement> parameters;
 
         public List<Statement> getParameters() {
@@ -767,12 +777,20 @@ public interface JS extends J {
         public static class Padding {
             private final FunctionType t;
 
+            public JRightPadded<Boolean> getConstructorType() {
+                return t.constructorType;
+            }
+
+            public FunctionType withConstructorType(JRightPadded<Boolean> constructor) {
+                return t.constructorType == constructor ? t : new FunctionType(t.id, t.prefix, t.markers, constructor, t.parameters, t.arrow, t.returnType, t.type);
+            }
+
             public JContainer<Statement> getParameters() {
                 return t.parameters;
             }
 
             public FunctionType withParameters(JContainer<Statement> parameters) {
-                return t.parameters == parameters ? t : new FunctionType(t.id, t.prefix, t.markers, parameters, t.arrow, t.returnType, t.type);
+                return t.parameters == parameters ? t : new FunctionType(t.id, t.prefix, t.markers, t.constructorType, parameters, t.arrow, t.returnType, t.type);
             }
         }
     }
@@ -1871,6 +1889,35 @@ public interface JS extends J {
         @Override
         public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
             return v.visitTypeOf(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+    }
+
+    @Getter
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @With
+    final class TypeQuery implements JS, Expression, TypeTree {
+
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        Space prefix;
+        Markers markers;
+
+        TypeTree typeExpression;
+
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTypeQuery(this, p);
         }
 
         @Override

@@ -514,6 +514,10 @@ export class JavaScriptParserVisitor {
         return this.mapIdentifier(node, 'any');
     }
 
+    visitObjectKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'object');
+    }
+
     visitUnknownKeyword(node: ts.Node) {
         return this.mapIdentifier(node, 'unknown');
     }
@@ -628,10 +632,6 @@ export class JavaScriptParserVisitor {
     }
 
     visitTypeParameter(node: ts.TypeParameterDeclaration) {
-        if (node.constraint || (node.modifiers && node.modifiers.length) || node.default) {
-            return this.visitUnknown(node);
-        }
-
         return new J.TypeParameter(
             randomId(),
             this.prefix(node),
@@ -639,7 +639,13 @@ export class JavaScriptParserVisitor {
             [],
             [],
             this.visit(node.name),
-            null
+            (node.constraint || node.default) ?
+                new JContainer(
+                    this.prefix(this.findChildNode(node, ts.SyntaxKind.ExtendsKeyword) ?? this.findChildNode(node, ts.SyntaxKind.EqualsToken)!),
+                    [node.constraint ? this.rightPadded(this.visit(node.constraint), this.suffix(node.constraint)) : this.rightPadded(this.newJEmpty(), Space.EMPTY),
+                        node.default ? this.rightPadded(this.visit(node.default), this.suffix(node.default)) : this.rightPadded(this.newJEmpty(), Space.EMPTY)],
+                Markers.EMPTY)
+                : null
         );
     }
 
@@ -659,6 +665,37 @@ export class JavaScriptParserVisitor {
                         this.prefix(node.name),
                         Markers.EMPTY,
                         this.getOptionalUnary(node),
+                        [],
+                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
+                        this.mapVariableType(node)
+                    ),
+                    this.suffix(node.name)
+                )]
+            );
+        }
+
+        if (node.dotDotDotToken) {
+            return new JS.JSVariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [],
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [this.rightPadded(
+                    new JS.JSVariableDeclarations.JSNamedVariable(
+                        randomId(),
+                        Space.EMPTY,
+                        Markers.EMPTY,
+                        new JS.Unary(
+                            randomId(),
+                            Space.EMPTY,
+                            Markers.EMPTY,
+                            this.leftPadded(Space.EMPTY, JS.Unary.Type.Spread),
+                            this.visit(node.name),
+                            this.mapType(node)
+                        ),
                         [],
                         node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
                         this.mapVariableType(node)
@@ -1164,21 +1201,39 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
+            this.rightPadded(false, Space.EMPTY),
             new JContainer(
                 this.prefix(node),
                 node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p))),
                 Markers.EMPTY),
-            this.prefix(node.getChildren().find(v => v.kind === ts.SyntaxKind.EqualsGreaterThanToken)!),
+            this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsGreaterThanToken)!),
             this.convert(node.type),
             null);
     }
 
     visitConstructorType(node: ts.ConstructorTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.FunctionType(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.rightPadded(true, this.suffix(this.findChildNode(node, ts.SyntaxKind.NewKeyword)!)),
+            new JContainer(
+                this.prefix(node),
+                node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p))),
+                Markers.EMPTY),
+            this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsGreaterThanToken)!),
+            this.convert(node.type),
+            null);
     }
 
     visitTypeQuery(node: ts.TypeQueryNode) {
-        return this.visitUnknown(node);
+        return new JS.TypeQuery(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.exprName),
+            this.mapType(node)
+        )
     }
 
     visitTypeLiteral(node: ts.TypeLiteralNode) {
@@ -1203,7 +1258,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitArrayType(node: ts.ArrayTypeNode) {
-        return this.visitUnknown(node);
+        return new J.ArrayType(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.elementType),
+            null,
+            this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBracketToken)!), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseBracketToken)!) ),
+            this.mapType(node)!
+        )
     }
 
     visitTupleType(node: ts.TupleTypeNode) {

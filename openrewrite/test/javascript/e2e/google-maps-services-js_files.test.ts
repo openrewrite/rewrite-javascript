@@ -120,7 +120,7 @@ describe('google-maps-services-js files tests', () => {
 
     test('reversegeocode.ts', () => {
       rewriteRunWithOptions(
-          {expectUnknowns : true},
+          {expectUnknowns : false},
           //language=typescript
           typeScript(`
              /**

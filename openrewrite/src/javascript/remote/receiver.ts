@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -116,6 +116,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         functionType = functionType.withId(ctx.receiveValue(functionType.id, ValueType.UUID)!);
         functionType = functionType.withPrefix(ctx.receiveNode(functionType.prefix, receiveSpace)!);
         functionType = functionType.withMarkers(ctx.receiveNode(functionType.markers, ctx.receiveMarkers)!);
+        functionType = functionType.padding.withConstructorType(ctx.receiveNode(functionType.padding.constructorType, rightPaddedValueReceiver(ValueType.Primitive))!);
         functionType = functionType.padding.withParameters(ctx.receiveNode(functionType.padding.parameters, receiveContainer)!);
         functionType = functionType.withArrow(ctx.receiveNode(functionType.arrow, receiveSpace)!);
         functionType = functionType.withReturnType(ctx.receiveNode(functionType.returnType, ctx.receiveTree)!);
@@ -256,6 +257,15 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         typeOf = typeOf.withExpression(ctx.receiveNode(typeOf.expression, ctx.receiveTree)!);
         typeOf = typeOf.withType(ctx.receiveValue(typeOf.type, ValueType.Object));
         return typeOf;
+    }
+
+    public visitTypeQuery(typeQuery: TypeQuery, ctx: ReceiverContext): J {
+        typeQuery = typeQuery.withId(ctx.receiveValue(typeQuery.id, ValueType.UUID)!);
+        typeQuery = typeQuery.withPrefix(ctx.receiveNode(typeQuery.prefix, receiveSpace)!);
+        typeQuery = typeQuery.withMarkers(ctx.receiveNode(typeQuery.markers, ctx.receiveMarkers)!);
+        typeQuery = typeQuery.withTypeExpression(ctx.receiveNode(typeQuery.typeExpression, ctx.receiveTree)!);
+        typeQuery = typeQuery.withType(ctx.receiveValue(typeQuery.type, ValueType.Object));
+        return typeQuery;
     }
 
     public visitTypeOperator(typeOperator: TypeOperator, ctx: ReceiverContext): J {
@@ -1214,6 +1224,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JRightPadded<boolean>>(null, rightPaddedValueReceiver(ValueType.Primitive))!,
                 ctx.receiveNode<JContainer<Statement>>(null, receiveContainer)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
@@ -1365,6 +1376,16 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$TypeQuery") {
+            return new TypeQuery(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<TypeTree>(null, ctx.receiveTree)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }

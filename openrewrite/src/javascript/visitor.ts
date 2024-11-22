@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -136,6 +136,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         }
         functionType = tempExpression as FunctionType;
         functionType = functionType.withMarkers(this.visitMarkers(functionType.markers, p));
+        functionType = functionType.padding.withConstructorType(this.visitJsRightPadded(functionType.padding.constructorType, JsRightPadded.Location.FUNCTION_TYPE_CONSTRUCTOR_TYPE, p)!);
         functionType = functionType.padding.withParameters(this.visitJsContainer(functionType.padding.parameters, JsContainer.Location.FUNCTION_TYPE_PARAMETERS, p)!);
         functionType = functionType.withArrow(this.visitJsSpace(functionType.arrow, JsSpace.Location.FUNCTION_TYPE_ARROW, p)!);
         functionType = functionType.withReturnType(this.visitAndCast(functionType.returnType, p)!);
@@ -319,6 +320,19 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         typeOf = typeOf.withMarkers(this.visitMarkers(typeOf.markers, p));
         typeOf = typeOf.withExpression(this.visitAndCast(typeOf.expression, p)!);
         return typeOf;
+    }
+
+    public visitTypeQuery(typeQuery: TypeQuery, p: P): J | null {
+        typeQuery = typeQuery.withPrefix(this.visitJsSpace(typeQuery.prefix, JsSpace.Location.TYPE_QUERY_PREFIX, p)!);
+        let tempExpression = this.visitExpression(typeQuery, p) as Expression;
+        if (!(tempExpression instanceof TypeQuery))
+        {
+            return tempExpression;
+        }
+        typeQuery = tempExpression as TypeQuery;
+        typeQuery = typeQuery.withMarkers(this.visitMarkers(typeQuery.markers, p));
+        typeQuery = typeQuery.withTypeExpression(this.visitAndCast(typeQuery.typeExpression, p)!);
+        return typeQuery;
     }
 
     public visitTypeOperator(typeOperator: TypeOperator, p: P): J | null {
