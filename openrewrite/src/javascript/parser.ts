@@ -674,7 +674,36 @@ export class JavaScriptParserVisitor {
             );
         }
 
-        // TODO should process node.dotDotDotToken
+        if (node.dotDotDotToken) {
+            return new JS.JSVariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [],
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [this.rightPadded(
+                    new JS.JSVariableDeclarations.JSNamedVariable(
+                        randomId(),
+                        Space.EMPTY,
+                        Markers.EMPTY,
+                        new JS.Unary(
+                            randomId(),
+                            Space.EMPTY,
+                            Markers.EMPTY,
+                            this.leftPadded(Space.EMPTY, JS.Unary.Type.Spread),
+                            this.visit(node.name),
+                            this.mapType(node)
+                        ),
+                        [],
+                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
+                        this.mapVariableType(node)
+                    ),
+                    this.suffix(node.name)
+                )]
+            );
+        }
 
         const nameExpression = this.visit(node.name)
 

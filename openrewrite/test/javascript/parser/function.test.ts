@@ -301,4 +301,22 @@ describe('function mapping', () => {
             `)
         );
     });
+
+    test('function with rest type parameters ', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function f(...args: any[]): void {}
+            `)
+        );
+    });
+
+    test('function with rest type parameters and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function /*a*/f/*b*/(/*c*/.../*d*/args/*e*/: /*f*/any[]): void {}
+            `)
+        );
+    });
 });

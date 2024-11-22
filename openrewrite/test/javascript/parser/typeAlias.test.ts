@@ -103,11 +103,11 @@ describe('type alias mapping', () => {
         );
     });
 
-    test.skip('construct function type alias with generic', () => {
+    test('construct function type alias with generic', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
-                type GenericConstructor<T> = new (...args: any[]) => T;
+                type GenericConstructor<T> = new (/*a*/.../*b*/args: any[]) => T;
             `)
         );
     });
