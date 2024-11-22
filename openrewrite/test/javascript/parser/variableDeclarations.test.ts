@@ -116,6 +116,19 @@ describe('variable declaration mapping', () => {
             `),
             //language=typescript
             typeScript(`
+                const key = "test";
+                const obj = {};
+                const aDefault = {};
+                const bDefault = {};
+                const { x, y } = obj;
+                const { a: a1, b: b1 } = obj;
+                const { z: a2 = aDefault, f = bDefault } = obj;
+                const { c, k, ...rest } = obj;
+                const { re: a12, rb: b12, ...rest1 } = obj;
+                const { [key]: a } = obj;
+            `),
+            //language=typescript
+            typeScript(`
                 /*1*/ const /*2*/  {  /*3*/ a/*4*/  :/*5*/  aa /*6*/  = /*7*/  10 /*8*/ , /*9*/  b /*10*/ :  /*11*/ bb = {  } /*12*/ ,  /*13*/ } = { a: 3 };
             `)
         );

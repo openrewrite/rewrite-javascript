@@ -213,20 +213,6 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
-        public JS.ObjectBindingDeclarations.Binding visitBinding(JS.ObjectBindingDeclarations.Binding binding, SenderContext ctx) {
-            ctx.sendValue(binding, JS.ObjectBindingDeclarations.Binding::getId);
-            ctx.sendNode(binding, JS.ObjectBindingDeclarations.Binding::getPrefix, JavaScriptSender::sendSpace);
-            ctx.sendNode(binding, JS.ObjectBindingDeclarations.Binding::getMarkers, ctx::sendMarkers);
-            ctx.sendNode(binding, e -> e.getPadding().getPropertyName(), JavaScriptSender::sendRightPadded);
-            ctx.sendNode(binding, JS.ObjectBindingDeclarations.Binding::getName, ctx::sendTree);
-            ctx.sendNodes(binding, JS.ObjectBindingDeclarations.Binding::getDimensionsAfterName, JavaScriptSender::sendLeftPadded, Function.identity());
-            ctx.sendNode(binding, JS.ObjectBindingDeclarations.Binding::getAfterVararg, JavaScriptSender::sendSpace);
-            ctx.sendNode(binding, e -> e.getPadding().getInitializer(), JavaScriptSender::sendLeftPadded);
-            ctx.sendTypedValue(binding, JS.ObjectBindingDeclarations.Binding::getVariableType);
-            return binding;
-        }
-
-        @Override
         public JS.PropertyAssignment visitPropertyAssignment(JS.PropertyAssignment propertyAssignment, SenderContext ctx) {
             ctx.sendValue(propertyAssignment, JS.PropertyAssignment::getId);
             ctx.sendNode(propertyAssignment, JS.PropertyAssignment::getPrefix, JavaScriptSender::sendSpace);
@@ -524,6 +510,28 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(indexSignatureDeclaration, e -> e.getPadding().getTypeExpression(), JavaScriptSender::sendLeftPadded);
             ctx.sendTypedValue(indexSignatureDeclaration, JS.IndexSignatureDeclaration::getType);
             return indexSignatureDeclaration;
+        }
+
+        @Override
+        public JS.ArrayBindingPattern visitArrayBindingPattern(JS.ArrayBindingPattern arrayBindingPattern, SenderContext ctx) {
+            ctx.sendValue(arrayBindingPattern, JS.ArrayBindingPattern::getId);
+            ctx.sendNode(arrayBindingPattern, JS.ArrayBindingPattern::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(arrayBindingPattern, JS.ArrayBindingPattern::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(arrayBindingPattern, e -> e.getPadding().getElements(), JavaScriptSender::sendContainer);
+            ctx.sendTypedValue(arrayBindingPattern, JS.ArrayBindingPattern::getType);
+            return arrayBindingPattern;
+        }
+
+        @Override
+        public JS.BindingElement visitBindingElement(JS.BindingElement bindingElement, SenderContext ctx) {
+            ctx.sendValue(bindingElement, JS.BindingElement::getId);
+            ctx.sendNode(bindingElement, JS.BindingElement::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(bindingElement, JS.BindingElement::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(bindingElement, e -> e.getPadding().getPropertyName(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(bindingElement, JS.BindingElement::getName, ctx::sendTree);
+            ctx.sendNode(bindingElement, e -> e.getPadding().getInitializer(), JavaScriptSender::sendLeftPadded);
+            ctx.sendTypedValue(bindingElement, JS.BindingElement::getVariableType);
+            return bindingElement;
         }
 
         @Override

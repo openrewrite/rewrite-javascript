@@ -119,24 +119,14 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
-    public J visitBinding(JS.ObjectBindingDeclarations.Binding binding, PrintOutputCapture<P> p) {
-        beforeSyntax(binding, JsSpace.Location.BINDING_PREFIX, p);
-        if (binding.getAfterVararg() != null) {
-            p.append("...");
-            visitSpace(binding.getAfterVararg(), Space.Location.VARARGS, p);
-        }
+    public J visitBindingElement(JS.BindingElement binding, PrintOutputCapture<P> p) {
+        beforeSyntax(binding, JsSpace.Location.BINDING_ELEMENT_PREFIX, p);
         if (binding.getPropertyName() != null) {
-            visitRightPadded(binding.getPadding().getPropertyName(), JsRightPadded.Location.BINDING_PROPERTY_NAME_SUFFIX, p);
+            visitRightPadded(binding.getPadding().getPropertyName(), JsRightPadded.Location.BINDING_ELEMENT_PROPERTY_NAME, p);
             p.append(":");
         }
         visit(binding.getName(), p);
-        for (JLeftPadded<Space> dimension : binding.getDimensionsAfterName()) {
-            visitSpace(dimension.getBefore(), Space.Location.DIMENSION_PREFIX, p);
-            p.append('[');
-            visitSpace(dimension.getElement(), Space.Location.DIMENSION, p);
-            p.append(']');
-        }
-        visitLeftPadded("=", binding.getPadding().getInitializer(), JsLeftPadded.Location.BINDING_INITIALIZER, p);
+        visitLeftPadded("=", binding.getPadding().getInitializer(), JsLeftPadded.Location.BINDING_ELEMENT_INITIALIZER, p);
         afterSyntax(binding, p);
         return binding;
     }
@@ -343,7 +333,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         visit(objectBindingDeclarations.getTypeExpression(), p);
         visitContainer("{", objectBindingDeclarations.getPadding().getBindings(), JsContainer.Location.BINDING_ELEMENT, ",", "}", p);
-        visitLeftPadded("=", objectBindingDeclarations.getPadding().getInitializer(), JsLeftPadded.Location.BINDING_INITIALIZER, p);
+        visitLeftPadded("=", objectBindingDeclarations.getPadding().getInitializer(), JsLeftPadded.Location.BINDING_ELEMENT_INITIALIZER, p);
         afterSyntax(objectBindingDeclarations, p);
         return objectBindingDeclarations;
     }
@@ -719,6 +709,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visitRightPadded(loop.getPadding().getBody(), JsRightPadded.Location.FOR_BODY, p);
         afterSyntax(loop, p);
         return loop;
+    }
+
+    @Override
+    public J visitArrayBindingPattern(JS.ArrayBindingPattern abp, PrintOutputCapture<P> p) {
+        beforeSyntax(abp, JsSpace.Location.ARRAY_BINDING_PATTERN_PREFIX, p);
+
+        visitContainer("[", abp.getPadding().getElements(), JsContainer.Location.ARRAY_BINDING_PATTERN_ELEMENTS, "," , "]", p);
+
+        afterSyntax(abp, p);
+        return abp;
     }
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {

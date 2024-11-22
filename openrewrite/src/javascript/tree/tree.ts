@@ -1176,7 +1176,7 @@ export namespace JsBinary {
 
 @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations")
 export class ObjectBindingDeclarations extends JSMixin(Object) implements Expression, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<ObjectBindingDeclarations.Binding>, initializer: JLeftPadded<Expression> | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<BindingElement>, initializer: JLeftPadded<Expression> | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -1248,13 +1248,13 @@ export class ObjectBindingDeclarations extends JSMixin(Object) implements Expres
             return typeExpression === this._typeExpression ? this : new ObjectBindingDeclarations(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, typeExpression, this._bindings, this._initializer);
         }
 
-        private readonly _bindings: JContainer<ObjectBindingDeclarations.Binding>;
+        private readonly _bindings: JContainer<BindingElement>;
 
-        public get bindings(): ObjectBindingDeclarations.Binding[] {
+        public get bindings(): BindingElement[] {
             return this._bindings.elements;
         }
 
-        public withBindings(bindings: ObjectBindingDeclarations.Binding[]): ObjectBindingDeclarations {
+        public withBindings(bindings: BindingElement[]): ObjectBindingDeclarations {
             return this.padding.withBindings(JContainer.withElements(this._bindings, bindings));
         }
 
@@ -1283,10 +1283,10 @@ export class ObjectBindingDeclarations extends JSMixin(Object) implements Expres
     get padding() {
         const t = this;
         return new class {
-            public get bindings(): JContainer<ObjectBindingDeclarations.Binding> {
+            public get bindings(): JContainer<BindingElement> {
                 return t._bindings;
             }
-            public withBindings(bindings: JContainer<ObjectBindingDeclarations.Binding>): ObjectBindingDeclarations {
+            public withBindings(bindings: JContainer<BindingElement>): ObjectBindingDeclarations {
                 return t._bindings === bindings ? t : new ObjectBindingDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, bindings, t._initializer);
             }
             public get initializer(): JLeftPadded<Expression> | null {
@@ -1296,146 +1296,6 @@ export class ObjectBindingDeclarations extends JSMixin(Object) implements Expres
                 return t._initializer === initializer ? t : new ObjectBindingDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, t._bindings, initializer);
             }
         }
-    }
-
-}
-
-export namespace ObjectBindingDeclarations {
-    @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations$Binding")
-    export class Binding extends JSMixin(Object) implements NameTree {
-        public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<Java.Identifier> | null, name: TypedTree, dimensionsAfterName: JLeftPadded<Space>[], afterVararg: Space | null, initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._propertyName = propertyName;
-            this._name = name;
-            this._dimensionsAfterName = dimensionsAfterName;
-            this._afterVararg = afterVararg;
-            this._initializer = initializer;
-            this._variableType = variableType;
-        }
-
-            private readonly _id: UUID;
-
-            public get id(): UUID {
-                return this._id;
-            }
-
-            public withId(id: UUID): ObjectBindingDeclarations.Binding {
-                return id === this._id ? this : new ObjectBindingDeclarations.Binding(id, this._prefix, this._markers, this._propertyName, this._name, this._dimensionsAfterName, this._afterVararg, this._initializer, this._variableType);
-            }
-
-            private readonly _prefix: Space;
-
-            public get prefix(): Space {
-                return this._prefix;
-            }
-
-            public withPrefix(prefix: Space): ObjectBindingDeclarations.Binding {
-                return prefix === this._prefix ? this : new ObjectBindingDeclarations.Binding(this._id, prefix, this._markers, this._propertyName, this._name, this._dimensionsAfterName, this._afterVararg, this._initializer, this._variableType);
-            }
-
-            private readonly _markers: Markers;
-
-            public get markers(): Markers {
-                return this._markers;
-            }
-
-            public withMarkers(markers: Markers): ObjectBindingDeclarations.Binding {
-                return markers === this._markers ? this : new ObjectBindingDeclarations.Binding(this._id, this._prefix, markers, this._propertyName, this._name, this._dimensionsAfterName, this._afterVararg, this._initializer, this._variableType);
-            }
-
-            private readonly _propertyName: JRightPadded<Java.Identifier> | null;
-
-            public get propertyName(): Java.Identifier | null {
-                return this._propertyName === null ? null : this._propertyName.element;
-            }
-
-            public withPropertyName(propertyName: Java.Identifier | null): ObjectBindingDeclarations.Binding {
-                return this.padding.withPropertyName(JRightPadded.withElement(this._propertyName, propertyName));
-            }
-
-            private readonly _name: TypedTree;
-
-            public get name(): TypedTree {
-                return this._name;
-            }
-
-            public withName(name: TypedTree): ObjectBindingDeclarations.Binding {
-                return name === this._name ? this : new ObjectBindingDeclarations.Binding(this._id, this._prefix, this._markers, this._propertyName, name, this._dimensionsAfterName, this._afterVararg, this._initializer, this._variableType);
-            }
-
-            private readonly _dimensionsAfterName: JLeftPadded<Space>[];
-
-            public get dimensionsAfterName(): JLeftPadded<Space>[] {
-                return this._dimensionsAfterName;
-            }
-
-            public withDimensionsAfterName(dimensionsAfterName: JLeftPadded<Space>[]): ObjectBindingDeclarations.Binding {
-                return dimensionsAfterName === this._dimensionsAfterName ? this : new ObjectBindingDeclarations.Binding(this._id, this._prefix, this._markers, this._propertyName, this._name, dimensionsAfterName, this._afterVararg, this._initializer, this._variableType);
-            }
-
-            private readonly _afterVararg: Space | null;
-
-            public get afterVararg(): Space | null {
-                return this._afterVararg;
-            }
-
-            public withAfterVararg(afterVararg: Space | null): ObjectBindingDeclarations.Binding {
-                return afterVararg === this._afterVararg ? this : new ObjectBindingDeclarations.Binding(this._id, this._prefix, this._markers, this._propertyName, this._name, this._dimensionsAfterName, afterVararg, this._initializer, this._variableType);
-            }
-
-            private readonly _initializer: JLeftPadded<Expression> | null;
-
-            public get initializer(): Expression | null {
-                return this._initializer === null ? null : this._initializer.element;
-            }
-
-            public withInitializer(initializer: Expression | null): ObjectBindingDeclarations.Binding {
-                return this.padding.withInitializer(JLeftPadded.withElement(this._initializer, initializer));
-            }
-
-            private readonly _variableType: JavaType.Variable | null;
-
-            public get variableType(): JavaType.Variable | null {
-                return this._variableType;
-            }
-
-            public withVariableType(variableType: JavaType.Variable | null): ObjectBindingDeclarations.Binding {
-                return variableType === this._variableType ? this : new ObjectBindingDeclarations.Binding(this._id, this._prefix, this._markers, this._propertyName, this._name, this._dimensionsAfterName, this._afterVararg, this._initializer, variableType);
-            }
-
-        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitBinding(this, p);
-        }
-
-        public get type(): JavaType | null {
-            return extensions.getJavaType(this);
-        }
-
-        public withType(type: JavaType): ObjectBindingDeclarations.Binding {
-            return extensions.withJavaType(this, type);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get propertyName(): JRightPadded<Java.Identifier> | null {
-                    return t._propertyName;
-                }
-                public withPropertyName(propertyName: JRightPadded<Java.Identifier> | null): ObjectBindingDeclarations.Binding {
-                    return t._propertyName === propertyName ? t : new ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, propertyName, t._name, t._dimensionsAfterName, t._afterVararg, t._initializer, t._variableType);
-                }
-                public get initializer(): JLeftPadded<Expression> | null {
-                    return t._initializer;
-                }
-                public withInitializer(initializer: JLeftPadded<Expression> | null): ObjectBindingDeclarations.Binding {
-                    return t._initializer === initializer ? t : new ObjectBindingDeclarations.Binding(t._id, t._prefix, t._markers, t._propertyName, t._name, t._dimensionsAfterName, t._afterVararg, initializer, t._variableType);
-                }
-            }
-        }
-
     }
 
 }
@@ -3937,6 +3797,200 @@ export class IndexSignatureDeclaration extends JSMixin(Object) implements Statem
             }
             public withTypeExpression(typeExpression: JLeftPadded<Expression>): IndexSignatureDeclaration {
                 return t._typeExpression === typeExpression ? t : new IndexSignatureDeclaration(t._id, t._prefix, t._markers, t._modifiers, t._parameters, typeExpression, t._type);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$ArrayBindingPattern")
+export class ArrayBindingPattern extends JSMixin(Object) implements Expression, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, elements: JContainer<Expression>, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._elements = elements;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): ArrayBindingPattern {
+            return id === this._id ? this : new ArrayBindingPattern(id, this._prefix, this._markers, this._elements, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): ArrayBindingPattern {
+            return prefix === this._prefix ? this : new ArrayBindingPattern(this._id, prefix, this._markers, this._elements, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): ArrayBindingPattern {
+            return markers === this._markers ? this : new ArrayBindingPattern(this._id, this._prefix, markers, this._elements, this._type);
+        }
+
+        private readonly _elements: JContainer<Expression>;
+
+        public get elements(): Expression[] {
+            return this._elements.elements;
+        }
+
+        public withElements(elements: Expression[]): ArrayBindingPattern {
+            return this.padding.withElements(JContainer.withElements(this._elements, elements));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): ArrayBindingPattern {
+            return _type === this._type ? this : new ArrayBindingPattern(this._id, this._prefix, this._markers, this._elements, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitArrayBindingPattern(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get elements(): JContainer<Expression> {
+                return t._elements;
+            }
+            public withElements(elements: JContainer<Expression>): ArrayBindingPattern {
+                return t._elements === elements ? t : new ArrayBindingPattern(t._id, t._prefix, t._markers, elements, t._type);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$BindingElement")
+export class BindingElement extends JSMixin(Object) implements Statement, Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, propertyName: JRightPadded<Expression> | null, name: TypedTree, initializer: JLeftPadded<Expression> | null, variableType: JavaType.Variable | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._propertyName = propertyName;
+        this._name = name;
+        this._initializer = initializer;
+        this._variableType = variableType;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): BindingElement {
+            return id === this._id ? this : new BindingElement(id, this._prefix, this._markers, this._propertyName, this._name, this._initializer, this._variableType);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): BindingElement {
+            return prefix === this._prefix ? this : new BindingElement(this._id, prefix, this._markers, this._propertyName, this._name, this._initializer, this._variableType);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): BindingElement {
+            return markers === this._markers ? this : new BindingElement(this._id, this._prefix, markers, this._propertyName, this._name, this._initializer, this._variableType);
+        }
+
+        private readonly _propertyName: JRightPadded<Expression> | null;
+
+        public get propertyName(): Expression | null {
+            return this._propertyName === null ? null : this._propertyName.element;
+        }
+
+        public withPropertyName(propertyName: Expression | null): BindingElement {
+            return this.padding.withPropertyName(JRightPadded.withElement(this._propertyName, propertyName));
+        }
+
+        private readonly _name: TypedTree;
+
+        public get name(): TypedTree {
+            return this._name;
+        }
+
+        public withName(name: TypedTree): BindingElement {
+            return name === this._name ? this : new BindingElement(this._id, this._prefix, this._markers, this._propertyName, name, this._initializer, this._variableType);
+        }
+
+        private readonly _initializer: JLeftPadded<Expression> | null;
+
+        public get initializer(): Expression | null {
+            return this._initializer === null ? null : this._initializer.element;
+        }
+
+        public withInitializer(initializer: Expression | null): BindingElement {
+            return this.padding.withInitializer(JLeftPadded.withElement(this._initializer, initializer));
+        }
+
+        private readonly _variableType: JavaType.Variable | null;
+
+        public get variableType(): JavaType.Variable | null {
+            return this._variableType;
+        }
+
+        public withVariableType(variableType: JavaType.Variable | null): BindingElement {
+            return variableType === this._variableType ? this : new BindingElement(this._id, this._prefix, this._markers, this._propertyName, this._name, this._initializer, variableType);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitBindingElement(this, p);
+    }
+
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): BindingElement {
+        return extensions.withJavaType(this, type);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get propertyName(): JRightPadded<Expression> | null {
+                return t._propertyName;
+            }
+            public withPropertyName(propertyName: JRightPadded<Expression> | null): BindingElement {
+                return t._propertyName === propertyName ? t : new BindingElement(t._id, t._prefix, t._markers, propertyName, t._name, t._initializer, t._variableType);
+            }
+            public get initializer(): JLeftPadded<Expression> | null {
+                return t._initializer;
+            }
+            public withInitializer(initializer: JLeftPadded<Expression> | null): BindingElement {
+                return t._initializer === initializer ? t : new BindingElement(t._id, t._prefix, t._markers, t._propertyName, t._name, initializer, t._variableType);
             }
         }
     }
