@@ -197,11 +197,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         p.append("import");
 
         if (jsImport.getImportType()) {
-            JLeftPadded<Boolean> importType = jsImport.getPadding().getImportType();
-            JsLeftPadded.Location location = JsLeftPadded.Location.JS_IMPORT_IMPORT_TYPE;
-            beforeSyntax(importType.getBefore(), importType.getMarkers(), location.getBeforeLocation(), p);
-            p.append("type");
-            afterSyntax(importType.getMarkers(), p);
+            visitLeftPaddedBoolean("type", jsImport.getPadding().getImportType(), JsLeftPadded.Location.JS_IMPORT_IMPORT_TYPE, p);
         }
 
         // for default export or `* as <alias>`
@@ -231,11 +227,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     public J visitJsImportSpecifier(JS.JsImportSpecifier jis, PrintOutputCapture<P> p) {
         beforeSyntax(jis, JsSpace.Location.JS_IMPORT_SPECIFIER_PREFIX, p);
         if (jis.getImportType()) {
-            JLeftPadded<Boolean> importType = jis.getPadding().getImportType();
-            JsLeftPadded.Location location = JsLeftPadded.Location.JS_IMPORT_SPECIFIER_IMPORT_TYPE;
-            beforeSyntax(importType.getBefore(), importType.getMarkers(), location.getBeforeLocation(), p);
-            p.append("type");
-            afterSyntax(importType.getMarkers(), p);
+            visitLeftPaddedBoolean("type", jis.getPadding().getImportType(), JsLeftPadded.Location.JS_IMPORT_SPECIFIER_IMPORT_TYPE, p);
         }
 
         visit(jis.getSpecifier(), p);
@@ -679,6 +671,43 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
 
 
+    @Override
+    public J visitJSForOfLoop(JS.JSForOfLoop loop, PrintOutputCapture<P> p) {
+        beforeSyntax(loop, JsSpace.Location.FOR_OF_LOOP_PREFIX, p);
+        p.append("for");
+        if (loop.isAwait()) {
+            visitLeftPaddedBoolean("await", loop.getPadding().getAwait(), JsLeftPadded.Location.FOR_OF_AWAIT, p);
+        }
+
+        JS.JSForInOfLoopControl control = loop.getControl();
+        visitSpace(control.getPrefix(), JsSpace.Location.FOR_LOOP_CONTROL_PREFIX, p);
+        p.append('(');
+        visitRightPadded(control.getPadding().getVariable(), JsRightPadded.Location.FOR_CONTROL_VAR, p);
+        p.append("of");
+        visitRightPadded(control.getPadding().getIterable(), JsRightPadded.Location.FOR_CONTROL_ITER, p);
+        p.append(')');
+        visitRightPadded(loop.getPadding().getBody(), JsRightPadded.Location.FOR_BODY, p);
+        afterSyntax(loop, p);
+        return loop;
+    }
+
+    @Override
+    public J visitJSForInLoop(JS.JSForInLoop loop, PrintOutputCapture<P> p) {
+        beforeSyntax(loop, JsSpace.Location.FOR_IN_LOOP_PREFIX, p);
+        p.append("for");
+
+        JS.JSForInOfLoopControl control = loop.getControl();
+        visitSpace(control.getPrefix(), JsSpace.Location.FOR_LOOP_CONTROL_PREFIX, p);
+        p.append('(');
+        visitRightPadded(control.getPadding().getVariable(), JsRightPadded.Location.FOR_CONTROL_VAR, p);
+        p.append("in");
+        visitRightPadded(control.getPadding().getIterable(), JsRightPadded.Location.FOR_CONTROL_ITER, p);
+        p.append(')');
+        visitRightPadded(loop.getPadding().getBody(), JsRightPadded.Location.FOR_BODY, p);
+        afterSyntax(loop, p);
+        return loop;
+    }
+
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
         @Override
@@ -813,21 +842,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitLeftPadded(postFixOperator != null ? "?." : ".", fieldAccess.getPadding().getName(), JLeftPadded.Location.FIELD_ACCESS_NAME, p);
             afterSyntax(fieldAccess, p);
             return fieldAccess;
-        }
-
-        @Override
-        public J visitForEachLoop(J.ForEachLoop forEachLoop, PrintOutputCapture<P> p) {
-            beforeSyntax(forEachLoop, Space.Location.FOR_EACH_LOOP_PREFIX, p);
-            p.append("for");
-            J.ForEachLoop.Control ctrl = forEachLoop.getControl();
-            visitSpace(ctrl.getPrefix(), Space.Location.FOR_EACH_CONTROL_PREFIX, p);
-            p.append('(');
-            visitRightPadded(ctrl.getPadding().getVariable(), JRightPadded.Location.FOREACH_VARIABLE, "of", p);
-            visitRightPadded(ctrl.getPadding().getIterable(), JRightPadded.Location.FOREACH_ITERABLE, "", p);
-            p.append(')');
-            visitStatement(forEachLoop.getPadding().getBody(), JRightPadded.Location.FOR_BODY, p);
-            afterSyntax(forEachLoop, p);
-            return forEachLoop;
         }
 
         @Override
@@ -1176,6 +1190,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 p.append(prefix);
             }
             visit(leftPadded.getElement(), p);
+            afterSyntax(leftPadded.getMarkers(), p);
+        }
+    }
+
+    protected void visitLeftPaddedBoolean(@Nullable String prefix, @Nullable JLeftPadded<Boolean> leftPadded, JsLeftPadded.Location location, PrintOutputCapture<P> p) {
+        if (leftPadded != null) {
+            beforeSyntax(leftPadded.getBefore(), leftPadded.getMarkers(), location.getBeforeLocation(), p);
+            if (prefix != null) {
+                p.append(prefix);
+            }
             afterSyntax(leftPadded.getMarkers(), p);
         }
     }

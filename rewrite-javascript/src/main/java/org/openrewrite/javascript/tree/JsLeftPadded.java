@@ -32,7 +32,7 @@ public class JsLeftPadded {
         JS_IMPORT_IMPORT_TYPE(JsSpace.Location.JS_IMPORT_IMPORT_TYPE_PREFIX),
         JS_IMPORT_SPECIFIER_IMPORT_TYPE(JsSpace.Location.JS_IMPORT_SPECIFIER_IMPORT_TYPE_PREFIX),
         INDEXED_SIGNATURE_DECLARATION_TYPE_EXPRESSION(JsSpace.Location.INDEXED_SIGNATURE_DECLARATION_TYPE_EXPRESSION_PREFIX),
-        ;
+        FOR_OF_AWAIT(JsSpace.Location.FOR_OF_AWAIT_PREFIX);
 
         private final JsSpace.Location beforeLocation;
 

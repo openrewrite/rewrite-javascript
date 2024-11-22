@@ -453,6 +453,37 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.JSForOfLoop visitJSForOfLoop(JS.JSForOfLoop jSForOfLoop, ReceiverContext ctx) {
+            jSForOfLoop = jSForOfLoop.withId(ctx.receiveNonNullValue(jSForOfLoop.getId(), UUID.class));
+            jSForOfLoop = jSForOfLoop.withPrefix(ctx.receiveNonNullNode(jSForOfLoop.getPrefix(), JavaScriptReceiver::receiveSpace));
+            jSForOfLoop = jSForOfLoop.withMarkers(ctx.receiveNonNullNode(jSForOfLoop.getMarkers(), ctx::receiveMarkers));
+            jSForOfLoop = jSForOfLoop.getPadding().withAwait(ctx.receiveNonNullNode(jSForOfLoop.getPadding().getAwait(), leftPaddedValueReceiver(java.lang.Boolean.class)));
+            jSForOfLoop = jSForOfLoop.withControl(ctx.receiveNonNullNode(jSForOfLoop.getControl(), ctx::receiveTree));
+            jSForOfLoop = jSForOfLoop.getPadding().withBody(ctx.receiveNonNullNode(jSForOfLoop.getPadding().getBody(), JavaScriptReceiver::receiveRightPaddedTree));
+            return jSForOfLoop;
+        }
+
+        @Override
+        public JS.JSForInLoop visitJSForInLoop(JS.JSForInLoop jSForInLoop, ReceiverContext ctx) {
+            jSForInLoop = jSForInLoop.withId(ctx.receiveNonNullValue(jSForInLoop.getId(), UUID.class));
+            jSForInLoop = jSForInLoop.withPrefix(ctx.receiveNonNullNode(jSForInLoop.getPrefix(), JavaScriptReceiver::receiveSpace));
+            jSForInLoop = jSForInLoop.withMarkers(ctx.receiveNonNullNode(jSForInLoop.getMarkers(), ctx::receiveMarkers));
+            jSForInLoop = jSForInLoop.withControl(ctx.receiveNonNullNode(jSForInLoop.getControl(), ctx::receiveTree));
+            jSForInLoop = jSForInLoop.getPadding().withBody(ctx.receiveNonNullNode(jSForInLoop.getPadding().getBody(), JavaScriptReceiver::receiveRightPaddedTree));
+            return jSForInLoop;
+        }
+
+        @Override
+        public JS.JSForInOfLoopControl visitJSForInOfLoopControl(JS.JSForInOfLoopControl jSForInOfLoopControl, ReceiverContext ctx) {
+            jSForInOfLoopControl = jSForInOfLoopControl.withId(ctx.receiveNonNullValue(jSForInOfLoopControl.getId(), UUID.class));
+            jSForInOfLoopControl = jSForInOfLoopControl.withPrefix(ctx.receiveNonNullNode(jSForInOfLoopControl.getPrefix(), JavaScriptReceiver::receiveSpace));
+            jSForInOfLoopControl = jSForInOfLoopControl.withMarkers(ctx.receiveNonNullNode(jSForInOfLoopControl.getMarkers(), ctx::receiveMarkers));
+            jSForInOfLoopControl = jSForInOfLoopControl.getPadding().withVariable(ctx.receiveNonNullNode(jSForInOfLoopControl.getPadding().getVariable(), JavaScriptReceiver::receiveRightPaddedTree));
+            jSForInOfLoopControl = jSForInOfLoopControl.getPadding().withIterable(ctx.receiveNonNullNode(jSForInOfLoopControl.getPadding().getIterable(), JavaScriptReceiver::receiveRightPaddedTree));
+            return jSForInOfLoopControl;
+        }
+
+        @Override
         public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, ReceiverContext ctx) {
             namespaceDeclaration = namespaceDeclaration.withId(ctx.receiveNonNullValue(namespaceDeclaration.getId(), UUID.class));
             namespaceDeclaration = namespaceDeclaration.withPrefix(ctx.receiveNonNullNode(namespaceDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1577,6 +1608,37 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.Method.class)
+                );
+            }
+
+            if (type == JS.JSForOfLoop.class) {
+                return (T) new JS.JSForOfLoop(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
+                );
+            }
+
+            if (type == JS.JSForInLoop.class) {
+                return (T) new JS.JSForInLoop(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
+                );
+            }
+
+            if (type == JS.JSForInOfLoopControl.class) {
+                return (T) new JS.JSForInOfLoopControl(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
                 );
             }
 

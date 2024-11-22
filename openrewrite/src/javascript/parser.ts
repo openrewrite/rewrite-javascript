@@ -2113,19 +2113,36 @@ export class JavaScriptParserVisitor {
     }
 
     visitForInStatement(node: ts.ForInStatement) {
-        return this.visitUnknown(node);
-    }
-
-    visitForOfStatement(node: ts.ForOfStatement) {
-        return new J.ForEachLoop(
+        return new JS.JSForInLoop(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            new J.ForEachLoop.Control(
+            new JS.JSForInOfLoopControl(
                 randomId(),
                 this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
                 Markers.EMPTY,
-                this.rightPadded(this.visit(node.initializer), Space.EMPTY),
+                this.rightPadded(this.visit(node.initializer), this.prefix(node.initializer)),
+                this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
+            ),
+            this.rightPadded(
+                this.convert(node.statement),
+                this.semicolonPrefix(node.statement),
+                node.statement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+            )
+        );
+    }
+
+    visitForOfStatement(node: ts.ForOfStatement) {
+        return new JS.JSForOfLoop(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            node.awaitModifier ? this.leftPadded(this.prefix(node.awaitModifier), true) : this.leftPadded(Space.EMPTY, false),
+            new JS.JSForInOfLoopControl(
+                randomId(),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
+                Markers.EMPTY,
+                this.rightPadded(this.visit(node.initializer), this.prefix(node.initializer)),
                 this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
             ),
             this.rightPadded(

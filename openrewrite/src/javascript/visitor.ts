@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -492,6 +492,43 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         jSMethodInvocation = jSMethodInvocation.withName(this.visitAndCast(jSMethodInvocation.name, p)!);
         jSMethodInvocation = jSMethodInvocation.padding.withArguments(this.visitJsContainer(jSMethodInvocation.padding.arguments, JsContainer.Location.JSMETHOD_INVOCATION_ARGUMENTS, p)!);
         return jSMethodInvocation;
+    }
+
+    public visitJSForOfLoop(jSForOfLoop: JSForOfLoop, p: P): J | null {
+        jSForOfLoop = jSForOfLoop.withPrefix(this.visitJsSpace(jSForOfLoop.prefix, JsSpace.Location.JSFOR_OF_LOOP_PREFIX, p)!);
+        let tempStatement = this.visitStatement(jSForOfLoop, p) as Statement;
+        if (!(tempStatement instanceof JSForOfLoop))
+        {
+            return tempStatement;
+        }
+        jSForOfLoop = tempStatement as JSForOfLoop;
+        jSForOfLoop = jSForOfLoop.withMarkers(this.visitMarkers(jSForOfLoop.markers, p));
+        jSForOfLoop = jSForOfLoop.padding.withAwait(this.visitJsLeftPadded(jSForOfLoop.padding.await, JsLeftPadded.Location.JSFOR_OF_LOOP_AWAIT, p)!);
+        jSForOfLoop = jSForOfLoop.withControl(this.visitAndCast(jSForOfLoop.control, p)!);
+        jSForOfLoop = jSForOfLoop.padding.withBody(this.visitJsRightPadded(jSForOfLoop.padding.body, JsRightPadded.Location.JSFOR_OF_LOOP_BODY, p)!);
+        return jSForOfLoop;
+    }
+
+    public visitJSForInLoop(jSForInLoop: JSForInLoop, p: P): J | null {
+        jSForInLoop = jSForInLoop.withPrefix(this.visitJsSpace(jSForInLoop.prefix, JsSpace.Location.JSFOR_IN_LOOP_PREFIX, p)!);
+        let tempStatement = this.visitStatement(jSForInLoop, p) as Statement;
+        if (!(tempStatement instanceof JSForInLoop))
+        {
+            return tempStatement;
+        }
+        jSForInLoop = tempStatement as JSForInLoop;
+        jSForInLoop = jSForInLoop.withMarkers(this.visitMarkers(jSForInLoop.markers, p));
+        jSForInLoop = jSForInLoop.withControl(this.visitAndCast(jSForInLoop.control, p)!);
+        jSForInLoop = jSForInLoop.padding.withBody(this.visitJsRightPadded(jSForInLoop.padding.body, JsRightPadded.Location.JSFOR_IN_LOOP_BODY, p)!);
+        return jSForInLoop;
+    }
+
+    public visitJSForInOfLoopControl(jSForInOfLoopControl: JSForInOfLoopControl, p: P): J | null {
+        jSForInOfLoopControl = jSForInOfLoopControl.withPrefix(this.visitJsSpace(jSForInOfLoopControl.prefix, JsSpace.Location.JSFOR_IN_OF_LOOP_CONTROL_PREFIX, p)!);
+        jSForInOfLoopControl = jSForInOfLoopControl.withMarkers(this.visitMarkers(jSForInOfLoopControl.markers, p));
+        jSForInOfLoopControl = jSForInOfLoopControl.padding.withVariable(this.visitJsRightPadded(jSForInOfLoopControl.padding.variable, JsRightPadded.Location.JSFOR_IN_OF_LOOP_CONTROL_VARIABLE, p)!);
+        jSForInOfLoopControl = jSForInOfLoopControl.padding.withIterable(this.visitJsRightPadded(jSForInOfLoopControl.padding.iterable, JsRightPadded.Location.JSFOR_IN_OF_LOOP_CONTROL_ITERABLE, p)!);
+        return jSForInOfLoopControl;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, p: P): J | null {

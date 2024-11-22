@@ -3175,6 +3175,266 @@ export class JSMethodInvocation extends JSMixin(Object) implements Statement, Ty
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$JSForOfLoop")
+export class JSForOfLoop extends JSMixin(Object) implements Loop {
+    public constructor(id: UUID, prefix: Space, markers: Markers, await: JLeftPadded<boolean>, control: JSForInOfLoopControl, body: JRightPadded<Statement>) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._await = await;
+        this._control = control;
+        this._body = body;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JSForOfLoop {
+            return id === this._id ? this : new JSForOfLoop(id, this._prefix, this._markers, this._await, this._control, this._body);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JSForOfLoop {
+            return prefix === this._prefix ? this : new JSForOfLoop(this._id, prefix, this._markers, this._await, this._control, this._body);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JSForOfLoop {
+            return markers === this._markers ? this : new JSForOfLoop(this._id, this._prefix, markers, this._await, this._control, this._body);
+        }
+
+        private readonly _await: JLeftPadded<boolean>;
+
+        public get await(): boolean {
+            return this._await.element;
+        }
+
+        public withAwait(await: boolean): JSForOfLoop {
+            return this.padding.withAwait(this._await.withElement(await));
+        }
+
+        private readonly _control: JSForInOfLoopControl;
+
+        public get control(): JSForInOfLoopControl {
+            return this._control;
+        }
+
+        public withControl(control: JSForInOfLoopControl): JSForOfLoop {
+            return control === this._control ? this : new JSForOfLoop(this._id, this._prefix, this._markers, this._await, control, this._body);
+        }
+
+        private readonly _body: JRightPadded<Statement>;
+
+        public get body(): Statement {
+            return this._body.element;
+        }
+
+        public withBody(body: Statement): JSForOfLoop {
+            return this.padding.withBody(this._body.withElement(body));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJSForOfLoop(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get await(): JLeftPadded<boolean> {
+                return t._await;
+            }
+            public withAwait(await: JLeftPadded<boolean>): JSForOfLoop {
+                return t._await === await ? t : new JSForOfLoop(t._id, t._prefix, t._markers, await, t._control, t._body);
+            }
+            public get body(): JRightPadded<Statement> {
+                return t._body;
+            }
+            public withBody(body: JRightPadded<Statement>): JSForOfLoop {
+                return t._body === body ? t : new JSForOfLoop(t._id, t._prefix, t._markers, t._await, t._control, body);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JSForInLoop")
+export class JSForInLoop extends JSMixin(Object) implements Loop {
+    public constructor(id: UUID, prefix: Space, markers: Markers, control: JSForInOfLoopControl, body: JRightPadded<Statement>) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._control = control;
+        this._body = body;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JSForInLoop {
+            return id === this._id ? this : new JSForInLoop(id, this._prefix, this._markers, this._control, this._body);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JSForInLoop {
+            return prefix === this._prefix ? this : new JSForInLoop(this._id, prefix, this._markers, this._control, this._body);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JSForInLoop {
+            return markers === this._markers ? this : new JSForInLoop(this._id, this._prefix, markers, this._control, this._body);
+        }
+
+        private readonly _control: JSForInOfLoopControl;
+
+        public get control(): JSForInOfLoopControl {
+            return this._control;
+        }
+
+        public withControl(control: JSForInOfLoopControl): JSForInLoop {
+            return control === this._control ? this : new JSForInLoop(this._id, this._prefix, this._markers, control, this._body);
+        }
+
+        private readonly _body: JRightPadded<Statement>;
+
+        public get body(): Statement {
+            return this._body.element;
+        }
+
+        public withBody(body: Statement): JSForInLoop {
+            return this.padding.withBody(this._body.withElement(body));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJSForInLoop(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get body(): JRightPadded<Statement> {
+                return t._body;
+            }
+            public withBody(body: JRightPadded<Statement>): JSForInLoop {
+                return t._body === body ? t : new JSForInLoop(t._id, t._prefix, t._markers, t._control, body);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JSForInOfLoopControl")
+export class JSForInOfLoopControl extends JSMixin(Object) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, variable: JRightPadded<Expression>, iterable: JRightPadded<Expression>) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._variable = variable;
+        this._iterable = iterable;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JSForInOfLoopControl {
+            return id === this._id ? this : new JSForInOfLoopControl(id, this._prefix, this._markers, this._variable, this._iterable);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JSForInOfLoopControl {
+            return prefix === this._prefix ? this : new JSForInOfLoopControl(this._id, prefix, this._markers, this._variable, this._iterable);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JSForInOfLoopControl {
+            return markers === this._markers ? this : new JSForInOfLoopControl(this._id, this._prefix, markers, this._variable, this._iterable);
+        }
+
+        private readonly _variable: JRightPadded<Expression>;
+
+        public get variable(): Expression {
+            return this._variable.element;
+        }
+
+        public withVariable(variable: Expression): JSForInOfLoopControl {
+            return this.padding.withVariable(this._variable.withElement(variable));
+        }
+
+        private readonly _iterable: JRightPadded<Expression>;
+
+        public get iterable(): Expression {
+            return this._iterable.element;
+        }
+
+        public withIterable(iterable: Expression): JSForInOfLoopControl {
+            return this.padding.withIterable(this._iterable.withElement(iterable));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJSForInOfLoopControl(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get variable(): JRightPadded<Expression> {
+                return t._variable;
+            }
+            public withVariable(variable: JRightPadded<Expression>): JSForInOfLoopControl {
+                return t._variable === variable ? t : new JSForInOfLoopControl(t._id, t._prefix, t._markers, variable, t._iterable);
+            }
+            public get iterable(): JRightPadded<Expression> {
+                return t._iterable;
+            }
+            public withIterable(iterable: JRightPadded<Expression>): JSForInOfLoopControl {
+                return t._iterable === iterable ? t : new JSForInOfLoopControl(t._id, t._prefix, t._markers, t._variable, iterable);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$NamespaceDeclaration")
 export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
     public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], keywordType: JLeftPadded<NamespaceDeclaration.KeywordType>, name: JRightPadded<Expression>, body: Java.Block) {

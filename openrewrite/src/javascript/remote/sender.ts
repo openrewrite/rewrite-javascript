@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -366,6 +366,34 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(jSMethodInvocation, v => v.padding.arguments, Visitor.sendContainer(ValueType.Tree));
         ctx.sendTypedValue(jSMethodInvocation, v => v.methodType, ValueType.Object);
         return jSMethodInvocation;
+    }
+
+    public visitJSForOfLoop(jSForOfLoop: JSForOfLoop, ctx: SenderContext): J {
+        ctx.sendValue(jSForOfLoop, v => v.id, ValueType.UUID);
+        ctx.sendNode(jSForOfLoop, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(jSForOfLoop, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(jSForOfLoop, v => v.padding.await, Visitor.sendLeftPadded(ValueType.Primitive));
+        ctx.sendNode(jSForOfLoop, v => v.control, ctx.sendTree);
+        ctx.sendNode(jSForOfLoop, v => v.padding.body, Visitor.sendRightPadded(ValueType.Tree));
+        return jSForOfLoop;
+    }
+
+    public visitJSForInLoop(jSForInLoop: JSForInLoop, ctx: SenderContext): J {
+        ctx.sendValue(jSForInLoop, v => v.id, ValueType.UUID);
+        ctx.sendNode(jSForInLoop, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(jSForInLoop, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(jSForInLoop, v => v.control, ctx.sendTree);
+        ctx.sendNode(jSForInLoop, v => v.padding.body, Visitor.sendRightPadded(ValueType.Tree));
+        return jSForInLoop;
+    }
+
+    public visitJSForInOfLoopControl(jSForInOfLoopControl: JSForInOfLoopControl, ctx: SenderContext): J {
+        ctx.sendValue(jSForInOfLoopControl, v => v.id, ValueType.UUID);
+        ctx.sendNode(jSForInOfLoopControl, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(jSForInOfLoopControl, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(jSForInOfLoopControl, v => v.padding.variable, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(jSForInOfLoopControl, v => v.padding.iterable, Visitor.sendRightPadded(ValueType.Tree));
+        return jSForInOfLoopControl;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, ctx: SenderContext): J {

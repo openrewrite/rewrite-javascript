@@ -2905,6 +2905,273 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class JSForOfLoop implements JS, Loop {
+        @Nullable
+        @NonFinal
+        transient WeakReference<JSForOfLoop.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JLeftPadded<Boolean> await;
+
+        public boolean isAwait() {
+            return await.getElement();
+        }
+
+        public JSForOfLoop withAwait(boolean await) {
+            return getPadding().withAwait(this.await.withElement(await));
+        }
+
+        @With
+        @Getter
+        JSForInOfLoopControl control;
+
+        JRightPadded<Statement> body;
+
+        @Override
+        public Statement getBody() {
+            return body.getElement();
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public JSForOfLoop withBody(Statement body) {
+            return getPadding().withBody(this.body.withElement(body));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJSForOfLoop(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public JSForOfLoop.Padding getPadding() {
+            JSForOfLoop.Padding p;
+
+            if (this.padding == null) {
+                p = new JSForOfLoop.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JSForOfLoop.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JSForOfLoop t;
+
+            public JLeftPadded<Boolean> getAwait() {
+                return t.await;
+            }
+
+            public JSForOfLoop withAwait(JLeftPadded<Boolean> await) {
+                return t.await == await ? t : new JSForOfLoop(t.id, t.prefix, t.markers, await, t.control, t.body);
+            }
+
+            public JRightPadded<Statement> getBody() {
+                return t.body;
+            }
+
+            public JSForOfLoop withBody(JRightPadded<Statement> body) {
+                return t.body == body ? t : new JSForOfLoop(t.id, t.prefix, t.markers, t.await, t.control, body);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class JSForInLoop implements JS, Loop {
+        @Nullable
+        @NonFinal
+        transient WeakReference<JSForInLoop.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        JSForInOfLoopControl control;
+
+        JRightPadded<Statement> body;
+
+        @Override
+        public Statement getBody() {
+            return body.getElement();
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public JSForInLoop withBody(Statement body) {
+            return getPadding().withBody(this.body.withElement(body));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJSForInLoop(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public JSForInLoop.Padding getPadding() {
+            JSForInLoop.Padding p;
+
+            if (this.padding == null) {
+                p = new JSForInLoop.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JSForInLoop.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JSForInLoop t;
+
+            public JRightPadded<Statement> getBody() {
+                return t.body;
+            }
+
+            public JSForInLoop withBody(JRightPadded<Statement> body) {
+                return t.body == body ? t : new JSForInLoop(t.id, t.prefix, t.markers, t.control, body);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class JSForInOfLoopControl implements JS {
+        @Nullable
+        @NonFinal
+        transient WeakReference<Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JRightPadded<Expression> variable;
+
+        public Expression getVariable() {
+            return variable.getElement();
+        }
+
+        public JSForInOfLoopControl withVariable(Expression variable) {
+            return getPadding().withVariable(this.variable.withElement(variable));
+        }
+
+        JRightPadded<Expression> iterable;
+
+        public Expression getIterable() {
+            return iterable.getElement();
+        }
+
+        public JSForInOfLoopControl withIterable(Expression iterable) {
+            return getPadding().withIterable(this.iterable.withElement(iterable));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJSForInOfLoopControl(this, p);
+        }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @Override
+        public String toString() {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JSForInOfLoopControl t;
+
+            public JRightPadded<Expression> getVariable() {
+                return t.variable;
+            }
+
+            public JSForInOfLoopControl withVariable(JRightPadded<Expression> variable) {
+                return t.variable == variable ? t : new JSForInOfLoopControl(t.id, t.prefix, t.markers, variable, t.iterable);
+            }
+
+            public JRightPadded<Expression> getIterable() {
+                return t.iterable;
+            }
+
+            public JSForInOfLoopControl withIterable(JRightPadded<Expression> iterable) {
+                return t.iterable == iterable ? t : new JSForInOfLoopControl(t.id, t.prefix, t.markers, t.variable, iterable);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class NamespaceDeclaration implements JS, Statement {
 
         @Nullable
