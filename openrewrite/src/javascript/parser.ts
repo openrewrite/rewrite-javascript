@@ -1270,15 +1270,41 @@ export class JavaScriptParserVisitor {
     }
 
     visitTupleType(node: ts.TupleTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.Tuple(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            new JContainer(
+                Space.EMPTY,
+                node.elements.length > 0 ?
+                    node.elements.map(p => this.rightPadded(this.convert(p), this.suffix(p)))
+                        .concat(node.elements.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseBracketToken)!)) : [])
+                    : [this.rightPadded(this.newJEmpty(this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseBracketToken)!)), Space.EMPTY)], // to handle the case: [/*no*/]
+                    Markers.EMPTY),
+            this.mapType(node)
+        );
     }
 
     visitOptionalType(node: ts.OptionalTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.Unary(
+            randomId(),
+            Space.EMPTY,
+            Markers.EMPTY,
+            this.leftPadded(this.suffix(node.type), JS.Unary.Type.Optional),
+            this.visit(node.type),
+            this.mapType(node)
+        );
     }
 
     visitRestType(node: ts.RestTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.Unary(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.leftPadded(Space.EMPTY, JS.Unary.Type.Spread),
+            this.convert(node.type),
+            this.mapType(node)
+        );
     }
 
     visitUnionType(node: ts.UnionTypeNode) {
@@ -1318,7 +1344,22 @@ export class JavaScriptParserVisitor {
     }
 
     visitTypeOperator(node: ts.TypeOperatorNode) {
-        return this.visitUnknown(node);
+        function mapTypeOperator(operator: ts.SyntaxKind.KeyOfKeyword | ts.SyntaxKind.UniqueKeyword | ts.SyntaxKind.ReadonlyKeyword): JS.TypeOperator.Type | undefined {
+            switch (operator) {
+                case ts.SyntaxKind.KeyOfKeyword:
+                    return JS.TypeOperator.Type.KeyOf;
+                case ts.SyntaxKind.ReadonlyKeyword:
+                    return JS.TypeOperator.Type.ReadOnly;
+            }
+        }
+
+        return new JS.TypeOperator(
+          randomId(),
+          this.prefix(node),
+          Markers.EMPTY,
+          mapTypeOperator(node.operator)!,
+          this.leftPadded(this.prefix(node.type), this.visit(node.type))
+        );
     }
 
     visitIndexedAccessType(node: ts.IndexedAccessTypeNode) {

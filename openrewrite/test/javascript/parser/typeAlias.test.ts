@@ -94,6 +94,96 @@ describe('type alias mapping', () => {
         );
     });
 
+    test('construct function type alias with generic', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type GenericConstructor<T> = new (/*a*/.../*b*/args: any[]) => T;
+            `)
+        );
+    });
+
+    test('tuple type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type MyTuple = [number, string, boolean];
+            `)
+        );
+    });
+
+    test('tuple type with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type MyTuple = /*a*/[/*b*/number/*c*/, /*d*/string/*e*/, /*f*/boolean/*g*/, /*h*/]/*j*/;
+            `)
+        );
+    });
+
+    test('tuple type empty', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type MyTuple = [/*a*/];
+            `)
+        );
+    });
+
+    test('nested tuple type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type NestedTuple = [number, [string, boolean]];
+            `)
+        );
+    });
+
+    test('optional tuple type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type OptionalTuple = [string, /*a*/number/*b*/?/*c*/];
+            `)
+        );
+    });
+
+    test('tuple rest type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type FlexibleTuple = [string, ...number[]];
+            `)
+        );
+    });
+
+    test('readonly operator tuple type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type ReadonlyTuple = readonly [string, number];
+            `)
+        );
+    });
+
+    test('readonly operator tuple type with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type ReadonlyTuple = /*a*/keyof /*b*/ [string, number];
+            `)
+        );
+    });
+
+    test.skip('basic conditional type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type IsString<T> = T extends string ? "Yes" : "No";
+            `)
+        );
+    });
+
     test.skip('conditional type', () => {
         rewriteRun(
             //language=typescript
@@ -103,12 +193,4 @@ describe('type alias mapping', () => {
         );
     });
 
-    test('construct function type alias with generic', () => {
-        rewriteRun(
-            //language=typescript
-            typeScript(`
-                type GenericConstructor<T> = new (/*a*/.../*b*/args: any[]) => T;
-            `)
-        );
-    });
 });
