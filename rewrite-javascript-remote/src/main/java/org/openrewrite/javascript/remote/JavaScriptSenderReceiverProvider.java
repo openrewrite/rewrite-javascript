@@ -20,6 +20,7 @@ import org.openrewrite.javascript.tree.JS;
 import org.openrewrite.remote.Receiver;
 import org.openrewrite.remote.Sender;
 import org.openrewrite.remote.SenderReceiverProvider;
+import org.openrewrite.remote.Validator;
 
 @AutoService(SenderReceiverProvider.class)
 public class JavaScriptSenderReceiverProvider implements SenderReceiverProvider<JS> {
@@ -36,5 +37,10 @@ public class JavaScriptSenderReceiverProvider implements SenderReceiverProvider<
     @Override
     public Receiver<JS> newReceiver() {
         return new JavaScriptReceiver();
+    }
+
+    @Override
+    public Validator newValidator() {
+        return Validator.fromVisitor(new JavaScriptValidator<>());
     }
 }
