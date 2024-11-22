@@ -152,14 +152,14 @@ describe('function mapping', () => {
         );
     });
 
-    test.skip('parameter with anonymous type', () => {
+    test('parameter with anonymous type', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
-           function create<Type>(c: { new (): Type }): Type {
-              return new c();
-           }
-        `)
+               function create<Type>(c: { new (): Type }): Type {
+                  return new c();
+               }
+            `)
         );
     });
 
@@ -170,7 +170,7 @@ describe('function mapping', () => {
                 (function() {
                     console.log('IIFE');
                 })();
-        `)
+            `)
         );
     });
 
@@ -183,7 +183,7 @@ describe('function mapping', () => {
                 var hello = function hello() {
                     return helloString;
                 };
-        `)
+            `)
         );
     });
 
@@ -196,7 +196,7 @@ describe('function mapping', () => {
                 var hello = /*a*/function/*b*/ hello /*c*/(/*d*/) {
                     return helloString;
                 };
-        `)
+            `)
         );
     });
 });

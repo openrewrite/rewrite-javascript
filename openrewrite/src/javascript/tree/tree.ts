@@ -3686,7 +3686,7 @@ export class FunctionDeclaration extends JSMixin(Object) implements Statement, E
 }
 
 @LstType("org.openrewrite.javascript.tree.JS$TypeLiteral")
-export class TypeLiteral extends JSMixin(Object) implements Expression, TypedTree {
+export class TypeLiteral extends JSMixin(Object) implements Expression, TypeTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, members: Java.Block, _type: JavaType | null) {
         super();
         this._id = id;
