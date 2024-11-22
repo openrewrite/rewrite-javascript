@@ -108,9 +108,11 @@ describe('variable declaration mapping', () => {
             `),
             //language=typescript
             typeScript(`
-                const numbers = [];
-                const obj = { a: 1, b: 2 };
-                ({ a: numbers[0], b: numbers[1] } = obj);
+                const {
+                    size = "big",
+                    coords = { x: 0, y: 0 },
+                    radius = 25,
+                } = {}
             `),
             //language=typescript
             typeScript(`

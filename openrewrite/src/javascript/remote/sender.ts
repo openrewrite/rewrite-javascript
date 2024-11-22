@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -281,6 +281,15 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         return union;
     }
 
+    public visitIntersection(intersection: Intersection, ctx: SenderContext): J {
+        ctx.sendValue(intersection, v => v.id, ValueType.UUID);
+        ctx.sendNode(intersection, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(intersection, v => v.markers, ctx.sendMarkers);
+        ctx.sendNodes(intersection, v => v.padding.types, Visitor.sendRightPadded(ValueType.Tree), t => t.element.id);
+        ctx.sendTypedValue(intersection, v => v.type, ValueType.Object);
+        return intersection;
+    }
+
     public visitVoid(_void: Void, ctx: SenderContext): J {
         ctx.sendValue(_void, v => v.id, ValueType.UUID);
         ctx.sendNode(_void, v => v.prefix, Visitor.sendSpace);
@@ -382,6 +391,26 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(functionDeclaration, v => v.body, ctx.sendTree);
         ctx.sendTypedValue(functionDeclaration, v => v.type, ValueType.Object);
         return functionDeclaration;
+    }
+
+    public visitTypeLiteral(typeLiteral: TypeLiteral, ctx: SenderContext): J {
+        ctx.sendValue(typeLiteral, v => v.id, ValueType.UUID);
+        ctx.sendNode(typeLiteral, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(typeLiteral, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(typeLiteral, v => v.members, ctx.sendTree);
+        ctx.sendTypedValue(typeLiteral, v => v.type, ValueType.Object);
+        return typeLiteral;
+    }
+
+    public visitIndexSignatureDeclaration(indexSignatureDeclaration: IndexSignatureDeclaration, ctx: SenderContext): J {
+        ctx.sendValue(indexSignatureDeclaration, v => v.id, ValueType.UUID);
+        ctx.sendNode(indexSignatureDeclaration, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(indexSignatureDeclaration, v => v.markers, ctx.sendMarkers);
+        ctx.sendNodes(indexSignatureDeclaration, v => v.modifiers, ctx.sendTree, t => t.id);
+        ctx.sendNode(indexSignatureDeclaration, v => v.padding.parameters, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendNode(indexSignatureDeclaration, v => v.padding.typeExpression, Visitor.sendLeftPadded(ValueType.Tree));
+        ctx.sendTypedValue(indexSignatureDeclaration, v => v.type, ValueType.Object);
+        return indexSignatureDeclaration;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: SenderContext): J {

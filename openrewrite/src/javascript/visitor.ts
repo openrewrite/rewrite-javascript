@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -367,6 +367,19 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return union;
     }
 
+    public visitIntersection(intersection: Intersection, p: P): J | null {
+        intersection = intersection.withPrefix(this.visitJsSpace(intersection.prefix, JsSpace.Location.INTERSECTION_PREFIX, p)!);
+        let tempExpression = this.visitExpression(intersection, p) as Expression;
+        if (!(tempExpression instanceof Intersection))
+        {
+            return tempExpression;
+        }
+        intersection = tempExpression as Intersection;
+        intersection = intersection.withMarkers(this.visitMarkers(intersection.markers, p));
+        intersection = intersection.padding.withTypes(ListUtils.map(intersection.padding.types, el => this.visitJsRightPadded(el, JsRightPadded.Location.INTERSECTION_TYPES, p)));
+        return intersection;
+    }
+
     public visitVoid(_void: Void, p: P): J | null {
         _void = _void.withPrefix(this.visitJsSpace(_void.prefix, JsSpace.Location.VOID_PREFIX, p)!);
         let tempStatement = this.visitStatement(_void, p) as Statement;
@@ -519,6 +532,34 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         functionDeclaration = functionDeclaration.withReturnTypeExpression(this.visitAndCast(functionDeclaration.returnTypeExpression, p));
         functionDeclaration = functionDeclaration.withBody(this.visitAndCast(functionDeclaration.body, p)!);
         return functionDeclaration;
+    }
+
+    public visitTypeLiteral(typeLiteral: TypeLiteral, p: P): J | null {
+        typeLiteral = typeLiteral.withPrefix(this.visitJsSpace(typeLiteral.prefix, JsSpace.Location.TYPE_LITERAL_PREFIX, p)!);
+        let tempExpression = this.visitExpression(typeLiteral, p) as Expression;
+        if (!(tempExpression instanceof TypeLiteral))
+        {
+            return tempExpression;
+        }
+        typeLiteral = tempExpression as TypeLiteral;
+        typeLiteral = typeLiteral.withMarkers(this.visitMarkers(typeLiteral.markers, p));
+        typeLiteral = typeLiteral.withMembers(this.visitAndCast(typeLiteral.members, p)!);
+        return typeLiteral;
+    }
+
+    public visitIndexSignatureDeclaration(indexSignatureDeclaration: IndexSignatureDeclaration, p: P): J | null {
+        indexSignatureDeclaration = indexSignatureDeclaration.withPrefix(this.visitJsSpace(indexSignatureDeclaration.prefix, JsSpace.Location.INDEX_SIGNATURE_DECLARATION_PREFIX, p)!);
+        let tempStatement = this.visitStatement(indexSignatureDeclaration, p) as Statement;
+        if (!(tempStatement instanceof IndexSignatureDeclaration))
+        {
+            return tempStatement;
+        }
+        indexSignatureDeclaration = tempStatement as IndexSignatureDeclaration;
+        indexSignatureDeclaration = indexSignatureDeclaration.withMarkers(this.visitMarkers(indexSignatureDeclaration.markers, p));
+        indexSignatureDeclaration = indexSignatureDeclaration.withModifiers(ListUtils.map(indexSignatureDeclaration.modifiers, el => this.visitAndCast(el, p)));
+        indexSignatureDeclaration = indexSignatureDeclaration.padding.withParameters(this.visitJsContainer(indexSignatureDeclaration.padding.parameters, JsContainer.Location.INDEX_SIGNATURE_DECLARATION_PARAMETERS, p)!);
+        indexSignatureDeclaration = indexSignatureDeclaration.padding.withTypeExpression(this.visitJsLeftPadded(indexSignatureDeclaration.padding.typeExpression, JsLeftPadded.Location.INDEX_SIGNATURE_DECLARATION_TYPE_EXPRESSION, p)!);
+        return indexSignatureDeclaration;
     }
 
     public visitJsLeftPadded<T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P): JLeftPadded<T> {
