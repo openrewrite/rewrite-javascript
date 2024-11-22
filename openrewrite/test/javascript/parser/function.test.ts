@@ -260,7 +260,7 @@ describe('function mapping', () => {
         );
     });
 
-    test.skip('function with multiple default types', () => {
+    test('function with multiple default types', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
