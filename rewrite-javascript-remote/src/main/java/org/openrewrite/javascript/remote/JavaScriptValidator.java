@@ -570,7 +570,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public J.Lambda visitLambda(J.Lambda lambda, P p) {
-        visitAndValidate(lambda.getParameters(), J.Lambda.Parameters.class, p);
+        visitAndValidate(lambda.getParameters().getParameters(), J.class, p);
         visitAndValidate(lambda.getBody(), J.class, p);
         return lambda;
     }
