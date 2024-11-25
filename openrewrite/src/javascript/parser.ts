@@ -1671,6 +1671,8 @@ export class JavaScriptParserVisitor {
     }
 
     visitArrowFunction(node: ts.ArrowFunction) {
+        const openParenToken = this.findChildNode(node, ts.SyntaxKind.OpenParenToken);
+        const isParenthesized = openParenToken != undefined;
         return new JS.ArrowFunction(
             randomId(),
             this.prefix(node),
@@ -1680,13 +1682,13 @@ export class JavaScriptParserVisitor {
             node.typeParameters ? this.mapTypeParametersAsObject(node) : null,
             new Lambda.Parameters(
                 randomId(),
-                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken) ?? node),
+                isParenthesized ? this.prefix(openParenToken) : Space.EMPTY,
                 Markers.EMPTY,
-                this.findChildNode(node, ts.SyntaxKind.OpenParenToken) ? true : false,
+                isParenthesized,
                 node.parameters.length > 0 ?
                     node.parameters.map(p => this.rightPadded(this.convert(p), this.suffix(p)))
-                        .concat(node.parameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken) ?? node.equalsGreaterThanToken)) : []) :
-                    [this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!))] // to handle the case: (/*no*/) => ...
+                        .concat(node.parameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!)) : []) :
+                    isParenthesized ? [this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!))] : [] // to handle the case: (/*no*/) => ...
             ),
             this.mapTypeInfo(node),
             this.prefix(node.equalsGreaterThanToken),
