@@ -46,7 +46,6 @@ describe('call mapping', () => {
                 const func = (message: string) => message;
                 const result1 = func/*a*/?./*b*/("TS"); // Invokes the function
                 const result2 = func/*a*/?./*b*/call("TS"); // Invokes the function
-
             `)
         );
     });
