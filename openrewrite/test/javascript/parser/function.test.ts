@@ -66,6 +66,13 @@ describe('function mapping', () => {
         );
     });
 
+    test('function with modifiers and without name', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('export default function(hljs) {}')
+        );
+    });
+
     test('function with modifiers and comments', () => {
         rewriteRun(
             //language=typescript

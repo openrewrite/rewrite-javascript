@@ -103,4 +103,38 @@ describe('call mapping', () => {
         );
     });
 
+    test('call expression with mapping', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Operation = (a: number, b: number) => number;
+
+                // Define an object with methods accessed by string keys
+                const operations: { [key: string]: Operation } = {
+                    add: (a, b) => a + b,
+                    multiply: (a, b) => a * b,
+                };
+
+                // Access and call the "add" method using bracket notation
+                const result1 = operations["add"](3, 4); // 3 + 4 = 7
+            `)
+        );
+    });
+
+
+    test('call expression with mapping adv', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const arr: { [key: string]: (x: number, y: number) => number }[] = [
+                    {
+                        abc: (x, y) => x - y,
+                    },
+                ];
+
+                const result = arr[0]["abc"](10, 5); // Calls the function and subtracts 10 - 5 = 5
+            `)
+        );
+    });
+
 });

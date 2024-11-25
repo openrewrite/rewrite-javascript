@@ -152,4 +152,22 @@ describe('arrow mapping', () => {
         );
     });
 
+    test('no paren', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const echo = input => input;
+            `)
+        );
+    });
+
+    test('no paren with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const echo = /*a*/input/*b*/ => input;
+            `)
+        );
+    });
+
 });

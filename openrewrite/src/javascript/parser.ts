@@ -1581,16 +1581,30 @@ export class JavaScriptParserVisitor {
             name = this.convert(node.expression);
         }
 
-        return new J.MethodInvocation(
-            randomId(),
-            prefix,
-            Markers.EMPTY,
-            select,
-            typeArguments,
-            name,
-            this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
-            this.mapMethodType(node)
-        )
+        if (name instanceof J.Identifier) {
+            return new J.MethodInvocation(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                select,
+                typeArguments,
+                name,
+                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
+                this.mapMethodType(node)
+            )
+        } else {
+            return new JS.JSMethodInvocation(
+                randomId(),
+                prefix,
+                Markers.EMPTY,
+                select,
+                typeArguments,
+                name,
+                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
+                this.mapMethodType(node)
+            )
+        }
+
     }
 
     visitNewExpression(node: ts.NewExpression) {
@@ -1666,12 +1680,12 @@ export class JavaScriptParserVisitor {
             node.typeParameters ? this.mapTypeParametersAsObject(node) : null,
             new Lambda.Parameters(
                 randomId(),
-                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken) ?? node),
                 Markers.EMPTY,
-                true,
+                this.findChildNode(node, ts.SyntaxKind.OpenParenToken) ? true : false,
                 node.parameters.length > 0 ?
                     node.parameters.map(p => this.rightPadded(this.convert(p), this.suffix(p)))
-                        .concat(node.parameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!)) : []) :
+                        .concat(node.parameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken) ?? node.equalsGreaterThanToken)) : []) :
                     [this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!))] // to handle the case: (/*no*/) => ...
             ),
             this.mapTypeInfo(node),
@@ -2428,7 +2442,7 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.mapModifiers(node),
-            this.visit(node.name!),
+            node.name ? this.visit(node.name) : null,
             this.mapTypeParametersAsObject(node),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
             this.mapTypeInfo(node),
