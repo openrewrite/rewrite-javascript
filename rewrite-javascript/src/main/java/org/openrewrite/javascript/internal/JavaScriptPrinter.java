@@ -612,17 +612,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
-    public J visitJSMethodInvocation(JS.JSMethodInvocation method, PrintOutputCapture<P> p) {
-        beforeSyntax(method, Space.Location.METHOD_INVOCATION_PREFIX, p);
-        visitRightPadded(method.getPadding().getSelect(), JsRightPadded.Location.JSMETHOD_SELECT, p);
-        visit(method.getName(), p);
-        visitContainer("<", method.getPadding().getTypeParameters(), JsContainer.Location.JSMETHOD_DECLARATION_PARAMETERS, ",", ">", p);
-        visitContainer("(", method.getPadding().getArguments(), JsContainer.Location.JSMETHOD_INVOCATION_ARGUMENTS, ",", ")", p);
-        afterSyntax(method, p);
-        return method;
-    }
-
-    @Override
     public J visitFunctionDeclaration(JS.FunctionDeclaration functionDeclaration, PrintOutputCapture<P> p) {
         beforeSyntax(functionDeclaration, JsSpace.Location.FUNCTION_DECLARATION_PREFIX, p);
         functionDeclaration.getModifiers().forEach(m -> delegate.visitModifier(m, p));

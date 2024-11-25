@@ -278,15 +278,6 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
-    public JS.JSMethodInvocation visitJSMethodInvocation(JS.JSMethodInvocation jSMethodInvocation, P p) {
-        visitAndValidate(jSMethodInvocation.getSelect(), Expression.class, p);
-        visitAndValidate(jSMethodInvocation.getTypeParameters(), Expression.class, p);
-        visitAndValidate(jSMethodInvocation.getName(), Expression.class, p);
-        visitAndValidate(jSMethodInvocation.getArguments(), Expression.class, p);
-        return jSMethodInvocation;
-    }
-
-    @Override
     public JS.JSForOfLoop visitJSForOfLoop(JS.JSForOfLoop jSForOfLoop, P p) {
         visitAndValidate(jSForOfLoop.getControl(), JS.JSForInOfLoopControl.class, p);
         visitAndValidate(jSForOfLoop.getBody(), Statement.class, p);
