@@ -45,6 +45,8 @@ describe('call mapping', () => {
             typeScript(`
                 const func = (message: string) => message;
                 const result1 = func/*a*/?./*b*/("TS"); // Invokes the function
+                const result2 = func/*a*/?./*b*/call("TS"); // Invokes the function
+
             `)
         );
     });
@@ -121,6 +123,23 @@ describe('call mapping', () => {
         );
     });
 
+    test('call expression with mapping and ?.', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Operation = (a: number, b: number) => number;
+
+                // Define an object with methods accessed by string keys
+                const operations: { [key: string]: Operation } = {
+                    add: (a, b) => a + b,
+                    multiply: (a, b) => a * b,
+                };
+
+                // Access and call the "add" method using bracket notation
+                const result1 = operations["add"]?.(3, 4); // 3 + 4 = 7
+            `)
+        );
+    });
 
     test('call expression with mapping adv', () => {
         rewriteRun(

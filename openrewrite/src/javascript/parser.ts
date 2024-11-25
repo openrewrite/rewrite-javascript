@@ -1526,42 +1526,13 @@ export class JavaScriptParserVisitor {
         const prefix = this.prefix(node);
         const typeArguments = node.typeArguments ? this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments) : null;
 
-        if (ts.isParenthesizedExpression(node.expression)) {
-            return new JS.JSMethodInvocation(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                null,
-                typeArguments,
-                this.convert(node.expression),
-                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
-                this.mapMethodType(node)
-            );
-        }
-
-        if (node.questionDotToken) {
-            return new JS.JSMethodInvocation(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                null,
-                typeArguments,
-                new JS.Unary(
-                    randomId(),
-                    Space.EMPTY,
-                    Markers.EMPTY,
-                    this.leftPadded(this.suffix(node.expression), JS.Unary.Type.QuestionDotWithDot),
-                    this.visit(node.expression),
-                    this.mapType(node)
-                ),
-                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
-                this.mapMethodType(node)
-            );
-        }
-
         let select: JRightPadded<J.Expression> | null;
-        let name: J.Identifier;
-        if (ts.isPropertyAccessExpression(node.expression)) {
+        let name: J.Identifier = new J.Identifier( randomId(), Space.EMPTY, Markers.EMPTY, [], "", null, null);
+
+        if (ts.isIdentifier(node.expression) && !node.questionDotToken) {
+            select = null;
+            name = this.convert(node.expression);
+        } else if (ts.isPropertyAccessExpression(node.expression)) {
             select = this.rightPadded(
                 node.expression.questionDotToken ?
                     new JS.Unary(
@@ -1577,34 +1548,32 @@ export class JavaScriptParserVisitor {
             );
             name = this.convert(node.expression.name);
         } else {
-            select = null;
-            name = this.convert(node.expression);
+            if (node.questionDotToken) {
+                select = this.rightPadded(new JS.Unary(
+                        randomId(),
+                        Space.EMPTY,
+                        Markers.EMPTY,
+                        this.leftPadded(this.suffix(node.expression), JS.Unary.Type.QuestionDotWithDot),
+                        this.visit(node.expression),
+                        this.mapType(node)
+                    ),
+                    Space.EMPTY
+                )
+            } else {
+                select = this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
+            }
         }
 
-        if (name instanceof J.Identifier) {
-            return new J.MethodInvocation(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                select,
-                typeArguments,
-                name,
-                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
-                this.mapMethodType(node)
-            )
-        } else {
-            return new JS.JSMethodInvocation(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                select,
-                typeArguments,
-                name,
-                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
-                this.mapMethodType(node)
-            )
-        }
-
+        return new J.MethodInvocation(
+            randomId(),
+            prefix,
+            Markers.EMPTY,
+            select,
+            typeArguments,
+            name,
+            this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
+            this.mapMethodType(node)
+        )
     }
 
     visitNewExpression(node: ts.NewExpression) {

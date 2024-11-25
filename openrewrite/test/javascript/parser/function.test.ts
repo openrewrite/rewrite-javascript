@@ -176,7 +176,18 @@ describe('function mapping', () => {
             typeScript(`
                 (function() {
                     console.log('IIFE');
-                })();
+                })/*a*/();
+            `)
+        );
+    });
+
+    test('immediately invoked anonymous function with ?.', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                (function() {
+                    console.log('IIFE');
+                })/*a*/?./*b*/();
             `)
         );
     });
