@@ -1526,42 +1526,13 @@ export class JavaScriptParserVisitor {
         const prefix = this.prefix(node);
         const typeArguments = node.typeArguments ? this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments) : null;
 
-        if (ts.isParenthesizedExpression(node.expression)) {
-            return new JS.JSMethodInvocation(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                null,
-                typeArguments,
-                this.convert(node.expression),
-                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
-                this.mapMethodType(node)
-            );
-        }
-
-        if (node.questionDotToken) {
-            return new JS.JSMethodInvocation(
-                randomId(),
-                prefix,
-                Markers.EMPTY,
-                null,
-                typeArguments,
-                new JS.Unary(
-                    randomId(),
-                    Space.EMPTY,
-                    Markers.EMPTY,
-                    this.leftPadded(this.suffix(node.expression), JS.Unary.Type.QuestionDotWithDot),
-                    this.visit(node.expression),
-                    this.mapType(node)
-                ),
-                this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(-3)),
-                this.mapMethodType(node)
-            );
-        }
-
         let select: JRightPadded<J.Expression> | null;
-        let name: J.Identifier;
-        if (ts.isPropertyAccessExpression(node.expression)) {
+        let name: J.Identifier = new J.Identifier( randomId(), Space.EMPTY, Markers.EMPTY, [], "", null, null);
+
+        if (ts.isIdentifier(node.expression) && !node.questionDotToken) {
+            select = null;
+            name = this.convert(node.expression);
+        } else if (ts.isPropertyAccessExpression(node.expression)) {
             select = this.rightPadded(
                 node.expression.questionDotToken ?
                     new JS.Unary(
@@ -1577,8 +1548,20 @@ export class JavaScriptParserVisitor {
             );
             name = this.convert(node.expression.name);
         } else {
-            select = null;
-            name = this.convert(node.expression);
+            if (node.questionDotToken) {
+                select = this.rightPadded(new JS.Unary(
+                        randomId(),
+                        Space.EMPTY,
+                        Markers.EMPTY,
+                        this.leftPadded(this.suffix(node.expression), JS.Unary.Type.QuestionDotWithDot),
+                        this.visit(node.expression),
+                        this.mapType(node)
+                    ),
+                    Space.EMPTY
+                )
+            } else {
+                select = this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
+            }
         }
 
         return new J.MethodInvocation(
@@ -1657,6 +1640,8 @@ export class JavaScriptParserVisitor {
     }
 
     visitArrowFunction(node: ts.ArrowFunction) {
+        const openParenToken = this.findChildNode(node, ts.SyntaxKind.OpenParenToken);
+        const isParenthesized = openParenToken != undefined;
         return new JS.ArrowFunction(
             randomId(),
             this.prefix(node),
@@ -1666,13 +1651,13 @@ export class JavaScriptParserVisitor {
             node.typeParameters ? this.mapTypeParametersAsObject(node) : null,
             new Lambda.Parameters(
                 randomId(),
-                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
+                isParenthesized ? this.prefix(openParenToken) : Space.EMPTY,
                 Markers.EMPTY,
-                true,
+                isParenthesized,
                 node.parameters.length > 0 ?
                     node.parameters.map(p => this.rightPadded(this.convert(p), this.suffix(p)))
                         .concat(node.parameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!)) : []) :
-                    [this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!))] // to handle the case: (/*no*/) => ...
+                    isParenthesized ? [this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!))] : [] // to handle the case: (/*no*/) => ...
             ),
             this.mapTypeInfo(node),
             this.prefix(node.equalsGreaterThanToken),
@@ -2428,7 +2413,7 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.mapModifiers(node),
-            this.visit(node.name!),
+            node.name ? this.visit(node.name) : null,
             this.mapTypeParametersAsObject(node),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
             this.mapTypeInfo(node),

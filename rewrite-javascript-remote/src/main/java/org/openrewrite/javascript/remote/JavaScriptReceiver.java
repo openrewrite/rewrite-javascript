@@ -437,19 +437,6 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
-        public JS.JSMethodInvocation visitJSMethodInvocation(JS.JSMethodInvocation jSMethodInvocation, ReceiverContext ctx) {
-            jSMethodInvocation = jSMethodInvocation.withId(ctx.receiveNonNullValue(jSMethodInvocation.getId(), UUID.class));
-            jSMethodInvocation = jSMethodInvocation.withPrefix(ctx.receiveNonNullNode(jSMethodInvocation.getPrefix(), JavaScriptReceiver::receiveSpace));
-            jSMethodInvocation = jSMethodInvocation.withMarkers(ctx.receiveNonNullNode(jSMethodInvocation.getMarkers(), ctx::receiveMarkers));
-            jSMethodInvocation = jSMethodInvocation.getPadding().withSelect(ctx.receiveNode(jSMethodInvocation.getPadding().getSelect(), JavaScriptReceiver::receiveRightPaddedTree));
-            jSMethodInvocation = jSMethodInvocation.getPadding().withTypeParameters(ctx.receiveNode(jSMethodInvocation.getPadding().getTypeParameters(), JavaScriptReceiver::receiveContainer));
-            jSMethodInvocation = jSMethodInvocation.withName(ctx.receiveNonNullNode(jSMethodInvocation.getName(), ctx::receiveTree));
-            jSMethodInvocation = jSMethodInvocation.getPadding().withArguments(ctx.receiveNonNullNode(jSMethodInvocation.getPadding().getArguments(), JavaScriptReceiver::receiveContainer));
-            jSMethodInvocation = jSMethodInvocation.withMethodType(ctx.receiveValue(jSMethodInvocation.getMethodType(), JavaType.Method.class));
-            return jSMethodInvocation;
-        }
-
-        @Override
         public JS.JSForOfLoop visitJSForOfLoop(JS.JSForOfLoop jSForOfLoop, ReceiverContext ctx) {
             jSForOfLoop = jSForOfLoop.withId(ctx.receiveNonNullValue(jSForOfLoop.getId(), UUID.class));
             jSForOfLoop = jSForOfLoop.withPrefix(ctx.receiveNonNullNode(jSForOfLoop.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1610,19 +1597,6 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
-                    ctx.receiveValue(null, JavaType.Method.class)
-                );
-            }
-
-            if (type == JS.JSMethodInvocation.class) {
-                return (T) new JS.JSMethodInvocation(
-                    ctx.receiveNonNullValue(null, UUID.class),
-                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
-                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
-                    ctx.receiveNode(null, JavaScriptReceiver::receiveRightPaddedTree),
-                    ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
-                    ctx.receiveNonNullNode(null, ctx::receiveTree),
-                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.Method.class)
                 );
             }

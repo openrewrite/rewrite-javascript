@@ -420,19 +420,6 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
-        public JS.JSMethodInvocation visitJSMethodInvocation(JS.JSMethodInvocation jSMethodInvocation, SenderContext ctx) {
-            ctx.sendValue(jSMethodInvocation, JS.JSMethodInvocation::getId);
-            ctx.sendNode(jSMethodInvocation, JS.JSMethodInvocation::getPrefix, JavaScriptSender::sendSpace);
-            ctx.sendNode(jSMethodInvocation, JS.JSMethodInvocation::getMarkers, ctx::sendMarkers);
-            ctx.sendNode(jSMethodInvocation, e -> e.getPadding().getSelect(), JavaScriptSender::sendRightPadded);
-            ctx.sendNode(jSMethodInvocation, e -> e.getPadding().getTypeParameters(), JavaScriptSender::sendContainer);
-            ctx.sendNode(jSMethodInvocation, JS.JSMethodInvocation::getName, ctx::sendTree);
-            ctx.sendNode(jSMethodInvocation, e -> e.getPadding().getArguments(), JavaScriptSender::sendContainer);
-            ctx.sendTypedValue(jSMethodInvocation, JS.JSMethodInvocation::getMethodType);
-            return jSMethodInvocation;
-        }
-
-        @Override
         public JS.JSForOfLoop visitJSForOfLoop(JS.JSForOfLoop jSForOfLoop, SenderContext ctx) {
             ctx.sendValue(jSForOfLoop, JS.JSForOfLoop::getId);
             ctx.sendNode(jSForOfLoop, JS.JSForOfLoop::getPrefix, JavaScriptSender::sendSpace);

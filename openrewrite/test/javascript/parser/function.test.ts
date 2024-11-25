@@ -66,6 +66,13 @@ describe('function mapping', () => {
         );
     });
 
+    test('function with modifiers and without name', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('export default function(hljs) {}')
+        );
+    });
+
     test('function with modifiers and comments', () => {
         rewriteRun(
             //language=typescript
@@ -169,7 +176,18 @@ describe('function mapping', () => {
             typeScript(`
                 (function() {
                     console.log('IIFE');
-                })();
+                })/*a*/();
+            `)
+        );
+    });
+
+    test('immediately invoked anonymous function with ?.', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                (function() {
+                    console.log('IIFE');
+                })/*a*/?./*b*/();
             `)
         );
     });

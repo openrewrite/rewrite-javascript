@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSMethodInvocation, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -356,18 +356,6 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         jSMethodDeclaration = jSMethodDeclaration.padding.withDefaultValue(ctx.receiveNode(jSMethodDeclaration.padding.defaultValue, receiveLeftPaddedTree));
         jSMethodDeclaration = jSMethodDeclaration.withMethodType(ctx.receiveValue(jSMethodDeclaration.methodType, ValueType.Object));
         return jSMethodDeclaration;
-    }
-
-    public visitJSMethodInvocation(jSMethodInvocation: JSMethodInvocation, ctx: ReceiverContext): J {
-        jSMethodInvocation = jSMethodInvocation.withId(ctx.receiveValue(jSMethodInvocation.id, ValueType.UUID)!);
-        jSMethodInvocation = jSMethodInvocation.withPrefix(ctx.receiveNode(jSMethodInvocation.prefix, receiveSpace)!);
-        jSMethodInvocation = jSMethodInvocation.withMarkers(ctx.receiveNode(jSMethodInvocation.markers, ctx.receiveMarkers)!);
-        jSMethodInvocation = jSMethodInvocation.padding.withSelect(ctx.receiveNode(jSMethodInvocation.padding.select, receiveRightPaddedTree));
-        jSMethodInvocation = jSMethodInvocation.padding.withTypeParameters(ctx.receiveNode(jSMethodInvocation.padding.typeParameters, receiveContainer));
-        jSMethodInvocation = jSMethodInvocation.withName(ctx.receiveNode(jSMethodInvocation.name, ctx.receiveTree)!);
-        jSMethodInvocation = jSMethodInvocation.padding.withArguments(ctx.receiveNode(jSMethodInvocation.padding.arguments, receiveContainer)!);
-        jSMethodInvocation = jSMethodInvocation.withMethodType(ctx.receiveValue(jSMethodInvocation.methodType, ValueType.Object));
-        return jSMethodInvocation;
     }
 
     public visitJSForOfLoop(jSForOfLoop: JSForOfLoop, ctx: ReceiverContext): J {
@@ -1492,19 +1480,6 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<JContainer<NameTree>>(null, receiveContainer),
                 ctx.receiveNode<Java.Block>(null, ctx.receiveTree),
                 ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree),
-                ctx.receiveValue(null, ValueType.Object)
-            );
-        }
-
-        if (type === "org.openrewrite.javascript.tree.JS$JSMethodInvocation") {
-            return new JSMethodInvocation(
-                ctx.receiveValue(null, ValueType.UUID)!,
-                ctx.receiveNode(null, receiveSpace)!,
-                ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree),
-                ctx.receiveNode<JContainer<Expression>>(null, receiveContainer),
-                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
-                ctx.receiveNode<JContainer<Expression>>(null, receiveContainer)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }
