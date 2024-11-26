@@ -109,6 +109,17 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.ConditionalType visitConditionalType(JS.ConditionalType conditionalType, SenderContext ctx) {
+            ctx.sendValue(conditionalType, JS.ConditionalType::getId);
+            ctx.sendNode(conditionalType, JS.ConditionalType::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(conditionalType, JS.ConditionalType::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(conditionalType, JS.ConditionalType::getCheckType, ctx::sendTree);
+            ctx.sendNode(conditionalType, e -> e.getPadding().getCondition(), JavaScriptSender::sendContainer);
+            ctx.sendTypedValue(conditionalType, JS.ConditionalType::getType);
+            return conditionalType;
+        }
+
+        @Override
         public JS.DefaultType visitDefaultType(JS.DefaultType defaultType, SenderContext ctx) {
             ctx.sendValue(defaultType, JS.DefaultType::getId);
             ctx.sendNode(defaultType, JS.DefaultType::getPrefix, JavaScriptSender::sendSpace);

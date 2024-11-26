@@ -480,6 +480,85 @@ public interface JS extends J {
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class ConditionalType implements JS, TypeTree, Expression {
+        @Nullable
+        @NonFinal
+        transient WeakReference<ConditionalType.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        Expression checkType;
+
+        JContainer<TypedTree> condition;
+
+        public List<TypedTree> getCondition() {
+            return condition.getElements();
+        }
+
+        public ConditionalType withCondition(@Nullable List<TypedTree> bounds) {
+            return getPadding().withCondition(JContainer.withElementsNullable(this.condition, bounds));
+        }
+
+        @With
+        @Getter
+        @Nullable
+        JavaType type;
+
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitConditionalType(this, p);
+        }
+
+        public ConditionalType.Padding getPadding() {
+            ConditionalType.Padding p;
+            if (this.padding == null) {
+                p = new ConditionalType.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new ConditionalType.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ConditionalType t;
+
+            public @Nullable JContainer<TypedTree> getCondition() {
+                return t.condition;
+            }
+
+            public ConditionalType withCondition(@Nullable JContainer<TypedTree> condition) {
+                return t.condition == condition ? t : new ConditionalType(t.id, t.prefix, t.markers, t.checkType, condition, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @Data
     @With
     final class DefaultType implements JS, Expression, TypedTree, NameTree {

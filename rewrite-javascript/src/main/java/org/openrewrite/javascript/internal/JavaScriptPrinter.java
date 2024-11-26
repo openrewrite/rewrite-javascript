@@ -132,6 +132,15 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitConditionalType(JS.ConditionalType conditionalType, PrintOutputCapture<P> p) {
+        beforeSyntax(conditionalType, JsSpace.Location.CONDITIONAL_TYPE_PREFIX, p);
+        visit(conditionalType.getCheckType(), p);
+        visitContainer("extends", conditionalType.getPadding().getCondition(), JsContainer.Location.CONDITIONAL_TYPE_CONDITION, "", "", p);
+        afterSyntax(conditionalType, p);
+        return conditionalType;
+    }
+
+    @Override
     public J visitDefaultType(JS.DefaultType defaultType, PrintOutputCapture<P> p) {
         beforeSyntax(defaultType, JsSpace.Location.DEFAULT_TYPE_PREFIX, p);
         visit(defaultType.getLeft(), p);

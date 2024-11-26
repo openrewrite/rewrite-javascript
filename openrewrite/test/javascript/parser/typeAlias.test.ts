@@ -175,16 +175,25 @@ describe('type alias mapping', () => {
         );
     });
 
-    test.skip('basic conditional type', () => {
+    test('basic conditional type', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
-                type IsString<T> = T extends string ? "Yes" : "No";
+                type IsString<T> = T extends string ? 'Yes' : 'No';
             `)
         );
     });
 
-    test.skip('conditional type', () => {
+    test('basic conditional type with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type IsString<T> = /*a*/T/*b*/ extends /*c*/string /*d*/? /*e*/'Yes' /*f*/:/*g*/ 'No'/*h*/;
+            `)
+        );
+    });
+
+    test.skip('conditional type with parenthesized type', () => {
         rewriteRun(
             //language=typescript
             typeScript(`

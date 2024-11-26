@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -68,6 +68,16 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(await, v => v.expression, ctx.sendTree);
         ctx.sendTypedValue(await, v => v.type, ValueType.Object);
         return await;
+    }
+
+    public visitConditionalType(conditionalType: ConditionalType, ctx: SenderContext): J {
+        ctx.sendValue(conditionalType, v => v.id, ValueType.UUID);
+        ctx.sendNode(conditionalType, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(conditionalType, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(conditionalType, v => v.checkType, ctx.sendTree);
+        ctx.sendNode(conditionalType, v => v.padding.condition, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendTypedValue(conditionalType, v => v.type, ValueType.Object);
+        return conditionalType;
     }
 
     public visitDefaultType(defaultType: DefaultType, ctx: SenderContext): J {

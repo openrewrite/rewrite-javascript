@@ -80,6 +80,13 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.ConditionalType visitConditionalType(JS.ConditionalType conditionalType, P p) {
+        visitAndValidate(conditionalType.getCheckType(), Expression.class, p);
+        visitAndValidate(conditionalType.getCondition(), TypedTree.class, p);
+        return conditionalType;
+    }
+
+    @Override
     public JS.DefaultType visitDefaultType(JS.DefaultType defaultType, P p) {
         visitAndValidate(defaultType.getLeft(), Expression.class, p);
         visitAndValidate(defaultType.getRight(), Expression.class, p);

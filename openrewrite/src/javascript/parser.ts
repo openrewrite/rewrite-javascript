@@ -1329,7 +1329,28 @@ export class JavaScriptParserVisitor {
     }
 
     visitConditionalType(node: ts.ConditionalTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.ConditionalType(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.visit(node.checkType),
+            new JContainer(
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.ExtendsKeyword)!),
+                [this.rightPadded(
+                    new J.Ternary(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    this.convert(node.extendsType),
+                    this.leftPadded(this.suffix(node.extendsType), this.convert(node.trueType)),
+                    this.leftPadded(this.suffix(node.trueType), this.convert(node.falseType)),
+                    this.mapType(node)),
+                    Space.EMPTY
+                )],
+                Markers.EMPTY
+            ),
+            this.mapType(node)
+        );
     }
 
     visitInferType(node: ts.InferTypeNode) {

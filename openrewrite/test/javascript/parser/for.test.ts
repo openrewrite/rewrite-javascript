@@ -143,7 +143,7 @@ describe('for mapping', () => {
         );
     });
 
-    test.skip('for-in with keyof typeof TypeOperator', () => {
+    test('for-in with keyof typeof TypeOperator', () => {
         rewriteRun(
             //language=typescript
             typeScript(`

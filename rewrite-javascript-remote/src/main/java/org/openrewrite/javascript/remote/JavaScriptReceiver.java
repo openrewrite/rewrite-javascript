@@ -126,6 +126,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.ConditionalType visitConditionalType(JS.ConditionalType conditionalType, ReceiverContext ctx) {
+            conditionalType = conditionalType.withId(ctx.receiveNonNullValue(conditionalType.getId(), UUID.class));
+            conditionalType = conditionalType.withPrefix(ctx.receiveNonNullNode(conditionalType.getPrefix(), JavaScriptReceiver::receiveSpace));
+            conditionalType = conditionalType.withMarkers(ctx.receiveNonNullNode(conditionalType.getMarkers(), ctx::receiveMarkers));
+            conditionalType = conditionalType.withCheckType(ctx.receiveNonNullNode(conditionalType.getCheckType(), ctx::receiveTree));
+            conditionalType = conditionalType.getPadding().withCondition(ctx.receiveNonNullNode(conditionalType.getPadding().getCondition(), JavaScriptReceiver::receiveContainer));
+            conditionalType = conditionalType.withType(ctx.receiveValue(conditionalType.getType(), JavaType.class));
+            return conditionalType;
+        }
+
+        @Override
         public JS.DefaultType visitDefaultType(JS.DefaultType defaultType, ReceiverContext ctx) {
             defaultType = defaultType.withId(ctx.receiveNonNullValue(defaultType.getId(), UUID.class));
             defaultType = defaultType.withPrefix(ctx.receiveNonNullNode(defaultType.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1307,6 +1318,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.ConditionalType.class) {
+                return (T) new JS.ConditionalType(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
                 );
             }

@@ -141,7 +141,7 @@ describe('template expression mapping', () => {
         );
     });
 
-    test.skip('template LiteralType with conditional', () => {
+    test('template LiteralType with conditional', () => {
         rewriteRun(
             //language=typescript
             typeScript(`

@@ -449,6 +449,96 @@ export class Await extends JSMixin(Object) implements Expression {
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$ConditionalType")
+export class ConditionalType extends JSMixin(Object) implements TypeTree, Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, checkType: Expression, condition: JContainer<TypedTree>, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._checkType = checkType;
+        this._condition = condition;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): ConditionalType {
+            return id === this._id ? this : new ConditionalType(id, this._prefix, this._markers, this._checkType, this._condition, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): ConditionalType {
+            return prefix === this._prefix ? this : new ConditionalType(this._id, prefix, this._markers, this._checkType, this._condition, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): ConditionalType {
+            return markers === this._markers ? this : new ConditionalType(this._id, this._prefix, markers, this._checkType, this._condition, this._type);
+        }
+
+        private readonly _checkType: Expression;
+
+        public get checkType(): Expression {
+            return this._checkType;
+        }
+
+        public withCheckType(checkType: Expression): ConditionalType {
+            return checkType === this._checkType ? this : new ConditionalType(this._id, this._prefix, this._markers, checkType, this._condition, this._type);
+        }
+
+        private readonly _condition: JContainer<TypedTree>;
+
+        public get condition(): TypedTree[] {
+            return this._condition.elements;
+        }
+
+        public withCondition(condition: TypedTree[]): ConditionalType {
+            return this.padding.withCondition(JContainer.withElements(this._condition, condition));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): ConditionalType {
+            return _type === this._type ? this : new ConditionalType(this._id, this._prefix, this._markers, this._checkType, this._condition, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitConditionalType(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get condition(): JContainer<TypedTree> {
+                return t._condition;
+            }
+            public withCondition(condition: JContainer<TypedTree>): ConditionalType {
+                return t._condition === condition ? t : new ConditionalType(t._id, t._prefix, t._markers, t._checkType, condition, t._type);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$DefaultType")
 export class DefaultType extends JSMixin(Object) implements Expression, TypedTree, NameTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression, beforeEquals: Space, right: Expression, _type: JavaType | null) {

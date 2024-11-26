@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -73,6 +73,16 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         await = await.withExpression(ctx.receiveNode(await.expression, ctx.receiveTree)!);
         await = await.withType(ctx.receiveValue(await.type, ValueType.Object));
         return await;
+    }
+
+    public visitConditionalType(conditionalType: ConditionalType, ctx: ReceiverContext): J {
+        conditionalType = conditionalType.withId(ctx.receiveValue(conditionalType.id, ValueType.UUID)!);
+        conditionalType = conditionalType.withPrefix(ctx.receiveNode(conditionalType.prefix, receiveSpace)!);
+        conditionalType = conditionalType.withMarkers(ctx.receiveNode(conditionalType.markers, ctx.receiveMarkers)!);
+        conditionalType = conditionalType.withCheckType(ctx.receiveNode(conditionalType.checkType, ctx.receiveTree)!);
+        conditionalType = conditionalType.padding.withCondition(ctx.receiveNode(conditionalType.padding.condition, receiveContainer)!);
+        conditionalType = conditionalType.withType(ctx.receiveValue(conditionalType.type, ValueType.Object));
+        return conditionalType;
     }
 
     public visitDefaultType(defaultType: DefaultType, ctx: ReceiverContext): J {
@@ -1188,6 +1198,17 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$ConditionalType") {
+            return new ConditionalType(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JContainer<TypedTree>>(null, receiveContainer)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }

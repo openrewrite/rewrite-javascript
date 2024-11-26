@@ -138,6 +138,19 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return b;
     }
 
+    public J visitConditionalType(JS.ConditionalType conditionalType, P p) {
+         JS.ConditionalType t = conditionalType;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.CONDITIONAL_TYPE_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+        t = t.withCheckType(visitAndCast(t.getCheckType(), p));
+        if (t.getCheckType() instanceof NameTree) {
+            t = t.withCheckType((Expression) visitTypeName((NameTree) t.getCheckType(), p));
+        }
+        t = t.getPadding().withCondition(visitContainer(t.getPadding().getCondition(), JsContainer.Location.CONDITIONAL_TYPE_CONDITION, p));
+        t = t.withType(visitType(t.getType(), p));
+        return t;
+    }
+
     public J visitDefaultType(JS.DefaultType defaultType, P p) {
         JS.DefaultType d = defaultType;
         d = d.withPrefix(visitSpace(d.getPrefix(), Space.Location.ASSIGNMENT_PREFIX, p));

@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -70,6 +70,20 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         await = await.withMarkers(this.visitMarkers(await.markers, p));
         await = await.withExpression(this.visitAndCast(await.expression, p)!);
         return await;
+    }
+
+    public visitConditionalType(conditionalType: ConditionalType, p: P): J | null {
+        conditionalType = conditionalType.withPrefix(this.visitJsSpace(conditionalType.prefix, JsSpace.Location.CONDITIONAL_TYPE_PREFIX, p)!);
+        let tempExpression = this.visitExpression(conditionalType, p) as Expression;
+        if (!(tempExpression instanceof ConditionalType))
+        {
+            return tempExpression;
+        }
+        conditionalType = tempExpression as ConditionalType;
+        conditionalType = conditionalType.withMarkers(this.visitMarkers(conditionalType.markers, p));
+        conditionalType = conditionalType.withCheckType(this.visitAndCast(conditionalType.checkType, p)!);
+        conditionalType = conditionalType.padding.withCondition(this.visitJsContainer(conditionalType.padding.condition, JsContainer.Location.CONDITIONAL_TYPE_CONDITION, p)!);
+        return conditionalType;
     }
 
     public visitDefaultType(defaultType: DefaultType, p: P): J | null {
