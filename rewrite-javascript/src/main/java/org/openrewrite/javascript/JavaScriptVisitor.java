@@ -210,6 +210,25 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return es;
     }
 
+    public J visitExpressionWithTypeArguments(JS.ExpressionWithTypeArguments expressionWithTypeArguments, P p) {
+        JS.ExpressionWithTypeArguments ta = expressionWithTypeArguments;
+        ta = ta.withPrefix(visitSpace(ta.getPrefix(), JsSpace.Location.EXPR_WITH_TYPE_ARG_PREFIX, p));
+        ta = ta.withMarkers(visitMarkers(ta.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(ta, p);
+        if (!(temp instanceof JS.ExpressionWithTypeArguments)) {
+            return temp;
+        } else {
+            ta = (JS.ExpressionWithTypeArguments) temp;
+        }
+        ta = ta.withClazz(visitAndCast(ta.getClazz(), p));
+        if (ta.getPadding().getTypeArguments() != null) {
+            ta = ta.getPadding().withTypeArguments(visitContainer(ta.getPadding().getTypeArguments(), JsContainer.Location.EXPR_WITH_TYPE_ARG_PARAMETERS, p));
+        }
+        ta = ta.getPadding().withTypeArguments(visitTypeNames(ta.getPadding().getTypeArguments(), p));
+        ta = ta.withType(visitType(ta.getType(), p));
+        return ta;
+    }
+
     public J visitFunctionType(JS.FunctionType functionType, P p) {
         JS.FunctionType f = functionType;
         f = f.withPrefix(visitSpace(f.getPrefix(), JsSpace.Location.FUNCTION_TYPE_PREFIX, p));
@@ -362,28 +381,47 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return se;
     }
 
+    public J visitTaggedTemplateExpression (JS.TaggedTemplateExpression taggedTemplateExpression, P p) {
+        JS.TaggedTemplateExpression ta = taggedTemplateExpression;
+        ta = ta.withPrefix(visitSpace(ta.getPrefix(), JsSpace.Location.TAGGED_TEMPLATE_EXPRESSION_PREFIX, p));
+        ta = ta.withMarkers(visitMarkers(ta.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(ta, p);
+        if (!(temp instanceof JS.TaggedTemplateExpression)) {
+            return temp;
+        } else {
+            ta = (JS.TaggedTemplateExpression) temp;
+        }
+        ta = ta.getPadding().withTag(visitRightPadded(ta.getPadding().getTag(), JsRightPadded.Location.TEMPLATE_EXPRESSION_TAG, p));
+        if (ta.getPadding().getTypeArguments() != null) {
+            ta = ta.getPadding().withTypeArguments(visitContainer(ta.getPadding().getTypeArguments(), JsContainer.Location.TEMPLATE_EXPRESSION_TYPE_ARG_PARAMETERS, p));
+        }
+        ta = ta.withTemplateExpression(visitAndCast(ta.getTemplateExpression(), p));
+        return ta;
+    }
+
     public J visitTemplateExpression(JS.TemplateExpression templateExpression, P p) {
-        JS.TemplateExpression s = templateExpression;
-        s = s.withPrefix(visitSpace(s.getPrefix(), JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p));
-        s = s.withMarkers(visitMarkers(s.getMarkers(), p));
-        Expression temp = (Expression) visitExpression(s, p);
+        JS.TemplateExpression te = templateExpression;
+        te = te.withPrefix(visitSpace(te.getPrefix(), JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p));
+        te = te.withMarkers(visitMarkers(te.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(te, p);
         if (!(temp instanceof JS.TemplateExpression)) {
             return temp;
         } else {
-            s = (JS.TemplateExpression) temp;
+            te = (JS.TemplateExpression) temp;
         }
-        s = s.getPadding().withTag(visitRightPadded(s.getPadding().getTag(), JsRightPadded.Location.ALIAS_PROPERTY_NAME, p));
-        s = s.withStrings(ListUtils.map(s.getStrings(), e -> visitAndCast(e, p)));
-        s = s.withType(visitType(s.getType(), p));
-        return s;
+        te = te.withHead(visitAndCast(te.getHead(), p));
+        te = te.getPadding().withTemplateSpans(ListUtils.map(te.getPadding().getTemplateSpans(), (t) -> this.visitRightPadded(t, JsRightPadded.Location.TEMPLATE_EXPRESSION_TEMPLATE_SPAN, p)));
+        te = te.withType(visitType(te.getType(), p));
+        return te;
     }
 
-    public J visitTemplateExpressionValue(JS.TemplateExpression.Value value, P p) {
-        JS.TemplateExpression.Value s = value;
-        s = s.withPrefix(visitSpace(s.getPrefix(), JsSpace.Location.TEMPLATE_EXPRESSION_VALUE_PREFIX, p));
+    public J visitTemplateExpressionTemplateSpan(JS.TemplateExpression.TemplateSpan span, P p) {
+        JS.TemplateExpression.TemplateSpan s = span;
+        s = s.withPrefix(visitSpace(s.getPrefix(), JsSpace.Location.TEMPLATE_EXPRESSION_SPAN_PREFIX, p));
         s = s.withMarkers(visitMarkers(s.getMarkers(), p));
-        s = s.withTree(visit(s.getTree(), p));
-        s = s.withAfter(visitSpace(s.getAfter(), JsSpace.Location.TEMPLATE_EXPRESSION_VALUE_SUFFIX, p));
+        s = s.withExpression(visitAndCast(s.getExpression(), p));
+        s = s.withTail(visitAndCast(s.getTail(), p));
+        s = s.withTail(s.getTail());
         return s;
     }
 

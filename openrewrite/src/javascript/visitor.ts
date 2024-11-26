@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -127,6 +127,20 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return expressionStatement;
     }
 
+    public visitExpressionWithTypeArguments(expressionWithTypeArguments: ExpressionWithTypeArguments, p: P): J | null {
+        expressionWithTypeArguments = expressionWithTypeArguments.withPrefix(this.visitJsSpace(expressionWithTypeArguments.prefix, JsSpace.Location.EXPRESSION_WITH_TYPE_ARGUMENTS_PREFIX, p)!);
+        let tempExpression = this.visitExpression(expressionWithTypeArguments, p) as Expression;
+        if (!(tempExpression instanceof ExpressionWithTypeArguments))
+        {
+            return tempExpression;
+        }
+        expressionWithTypeArguments = tempExpression as ExpressionWithTypeArguments;
+        expressionWithTypeArguments = expressionWithTypeArguments.withMarkers(this.visitMarkers(expressionWithTypeArguments.markers, p));
+        expressionWithTypeArguments = expressionWithTypeArguments.withClazz(this.visitAndCast(expressionWithTypeArguments.clazz, p)!);
+        expressionWithTypeArguments = expressionWithTypeArguments.padding.withTypeArguments(this.visitJsContainer(expressionWithTypeArguments.padding.typeArguments, JsContainer.Location.EXPRESSION_WITH_TYPE_ARGUMENTS_TYPE_ARGUMENTS, p));
+        return expressionWithTypeArguments;
+    }
+
     public visitFunctionType(functionType: FunctionType, p: P): J | null {
         functionType = functionType.withPrefix(this.visitJsSpace(functionType.prefix, JsSpace.Location.FUNCTION_TYPE_PREFIX, p)!);
         let tempExpression = this.visitExpression(functionType, p) as Expression;
@@ -241,6 +255,27 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return statementExpression;
     }
 
+    public visitTaggedTemplateExpression(taggedTemplateExpression: TaggedTemplateExpression, p: P): J | null {
+        taggedTemplateExpression = taggedTemplateExpression.withPrefix(this.visitJsSpace(taggedTemplateExpression.prefix, JsSpace.Location.TAGGED_TEMPLATE_EXPRESSION_PREFIX, p)!);
+        let tempStatement = this.visitStatement(taggedTemplateExpression, p) as Statement;
+        if (!(tempStatement instanceof TaggedTemplateExpression))
+        {
+            return tempStatement;
+        }
+        taggedTemplateExpression = tempStatement as TaggedTemplateExpression;
+        let tempExpression = this.visitExpression(taggedTemplateExpression, p) as Expression;
+        if (!(tempExpression instanceof TaggedTemplateExpression))
+        {
+            return tempExpression;
+        }
+        taggedTemplateExpression = tempExpression as TaggedTemplateExpression;
+        taggedTemplateExpression = taggedTemplateExpression.withMarkers(this.visitMarkers(taggedTemplateExpression.markers, p));
+        taggedTemplateExpression = taggedTemplateExpression.padding.withTag(this.visitJsRightPadded(taggedTemplateExpression.padding.tag, JsRightPadded.Location.TAGGED_TEMPLATE_EXPRESSION_TAG, p));
+        taggedTemplateExpression = taggedTemplateExpression.padding.withTypeArguments(this.visitJsContainer(taggedTemplateExpression.padding.typeArguments, JsContainer.Location.TAGGED_TEMPLATE_EXPRESSION_TYPE_ARGUMENTS, p));
+        taggedTemplateExpression = taggedTemplateExpression.withTemplateExpression(this.visitAndCast(taggedTemplateExpression.templateExpression, p)!);
+        return taggedTemplateExpression;
+    }
+
     public visitTemplateExpression(templateExpression: TemplateExpression, p: P): J | null {
         templateExpression = templateExpression.withPrefix(this.visitJsSpace(templateExpression.prefix, JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p)!);
         let tempStatement = this.visitStatement(templateExpression, p) as Statement;
@@ -256,17 +291,17 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         }
         templateExpression = tempExpression as TemplateExpression;
         templateExpression = templateExpression.withMarkers(this.visitMarkers(templateExpression.markers, p));
-        templateExpression = templateExpression.padding.withTag(this.visitJsRightPadded(templateExpression.padding.tag, JsRightPadded.Location.TEMPLATE_EXPRESSION_TAG, p));
-        templateExpression = templateExpression.withStrings(ListUtils.map(templateExpression.strings, el => this.visitAndCast(el, p)));
+        templateExpression = templateExpression.withHead(this.visitAndCast(templateExpression.head, p)!);
+        templateExpression = templateExpression.padding.withTemplateSpans(ListUtils.map(templateExpression.padding.templateSpans, el => this.visitJsRightPadded(el, JsRightPadded.Location.TEMPLATE_EXPRESSION_TEMPLATE_SPANS, p)));
         return templateExpression;
     }
 
-    public visitTemplateExpressionValue(value: TemplateExpression.Value, p: P): J | null {
-        value = value.withPrefix(this.visitJsSpace(value.prefix, JsSpace.Location.TEMPLATE_EXPRESSION_VALUE_PREFIX, p)!);
-        value = value.withMarkers(this.visitMarkers(value.markers, p));
-        value = value.withTree(this.visitAndCast(value.tree, p)!);
-        value = value.withAfter(this.visitJsSpace(value.after, JsSpace.Location.TEMPLATE_EXPRESSION_VALUE_AFTER, p)!);
-        return value;
+    public visitTemplateExpressionTemplateSpan(templateSpan: TemplateExpression.TemplateSpan, p: P): J | null {
+        templateSpan = templateSpan.withPrefix(this.visitJsSpace(templateSpan.prefix, JsSpace.Location.TEMPLATE_EXPRESSION_TEMPLATE_SPAN_PREFIX, p)!);
+        templateSpan = templateSpan.withMarkers(this.visitMarkers(templateSpan.markers, p));
+        templateSpan = templateSpan.withExpression(this.visitAndCast(templateSpan.expression, p)!);
+        templateSpan = templateSpan.withTail(this.visitAndCast(templateSpan.tail, p)!);
+        return templateSpan;
     }
 
     public visitTuple(tuple: Tuple, p: P): J | null {

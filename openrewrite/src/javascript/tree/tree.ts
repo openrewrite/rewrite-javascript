@@ -712,6 +712,96 @@ export class Export extends JSMixin(Object) implements Statement {
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$ExpressionWithTypeArguments")
+export class ExpressionWithTypeArguments extends JSMixin(Object) implements TypeTree, Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, clazz: NameTree, typeArguments: JContainer<Expression> | null, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._clazz = clazz;
+        this._typeArguments = typeArguments;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): ExpressionWithTypeArguments {
+            return id === this._id ? this : new ExpressionWithTypeArguments(id, this._prefix, this._markers, this._clazz, this._typeArguments, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): ExpressionWithTypeArguments {
+            return prefix === this._prefix ? this : new ExpressionWithTypeArguments(this._id, prefix, this._markers, this._clazz, this._typeArguments, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): ExpressionWithTypeArguments {
+            return markers === this._markers ? this : new ExpressionWithTypeArguments(this._id, this._prefix, markers, this._clazz, this._typeArguments, this._type);
+        }
+
+        private readonly _clazz: NameTree;
+
+        public get clazz(): NameTree {
+            return this._clazz;
+        }
+
+        public withClazz(clazz: NameTree): ExpressionWithTypeArguments {
+            return clazz === this._clazz ? this : new ExpressionWithTypeArguments(this._id, this._prefix, this._markers, clazz, this._typeArguments, this._type);
+        }
+
+        private readonly _typeArguments: JContainer<Expression> | null;
+
+        public get typeArguments(): Expression[] | null {
+            return this._typeArguments === null ? null : this._typeArguments.elements;
+        }
+
+        public withTypeArguments(typeArguments: Expression[] | null): ExpressionWithTypeArguments {
+            return this.padding.withTypeArguments(JContainer.withElementsNullable(this._typeArguments, typeArguments));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): ExpressionWithTypeArguments {
+            return _type === this._type ? this : new ExpressionWithTypeArguments(this._id, this._prefix, this._markers, this._clazz, this._typeArguments, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitExpressionWithTypeArguments(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get typeArguments(): JContainer<Expression> | null {
+                return t._typeArguments;
+            }
+            public withTypeArguments(typeArguments: JContainer<Expression> | null): ExpressionWithTypeArguments {
+                return t._typeArguments === typeArguments ? t : new ExpressionWithTypeArguments(t._id, t._prefix, t._markers, t._clazz, typeArguments, t._type);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$FunctionType")
 export class FunctionType extends JSMixin(Object) implements Expression, TypeTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, constructorType: JRightPadded<boolean>, parameters: JContainer<Statement>, arrow: Space, returnType: Expression, _type: JavaType | null) {
@@ -1493,16 +1583,122 @@ export namespace ScopedVariableDeclarations {
 
 }
 
-@LstType("org.openrewrite.javascript.tree.JS$TemplateExpression")
-export class TemplateExpression extends JSMixin(Object) implements Statement, Expression {
-    public constructor(id: UUID, prefix: Space, markers: Markers, delimiter: string, tag: JRightPadded<Expression> | null, strings: J[], _type: JavaType | null) {
+@LstType("org.openrewrite.javascript.tree.JS$TaggedTemplateExpression")
+export class TaggedTemplateExpression extends JSMixin(Object) implements Statement, Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, tag: JRightPadded<Expression> | null, typeArguments: JContainer<Expression> | null, templateExpression: TemplateExpression, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
-        this._delimiter = delimiter;
         this._tag = tag;
-        this._strings = strings;
+        this._typeArguments = typeArguments;
+        this._templateExpression = templateExpression;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): TaggedTemplateExpression {
+            return id === this._id ? this : new TaggedTemplateExpression(id, this._prefix, this._markers, this._tag, this._typeArguments, this._templateExpression, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): TaggedTemplateExpression {
+            return prefix === this._prefix ? this : new TaggedTemplateExpression(this._id, prefix, this._markers, this._tag, this._typeArguments, this._templateExpression, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): TaggedTemplateExpression {
+            return markers === this._markers ? this : new TaggedTemplateExpression(this._id, this._prefix, markers, this._tag, this._typeArguments, this._templateExpression, this._type);
+        }
+
+        private readonly _tag: JRightPadded<Expression> | null;
+
+        public get tag(): Expression | null {
+            return this._tag === null ? null : this._tag.element;
+        }
+
+        public withTag(tag: Expression | null): TaggedTemplateExpression {
+            return this.padding.withTag(JRightPadded.withElement(this._tag, tag));
+        }
+
+        private readonly _typeArguments: JContainer<Expression> | null;
+
+        public get typeArguments(): Expression[] | null {
+            return this._typeArguments === null ? null : this._typeArguments.elements;
+        }
+
+        public withTypeArguments(typeArguments: Expression[] | null): TaggedTemplateExpression {
+            return this.padding.withTypeArguments(JContainer.withElementsNullable(this._typeArguments, typeArguments));
+        }
+
+        private readonly _templateExpression: TemplateExpression;
+
+        public get templateExpression(): TemplateExpression {
+            return this._templateExpression;
+        }
+
+        public withTemplateExpression(templateExpression: TemplateExpression): TaggedTemplateExpression {
+            return templateExpression === this._templateExpression ? this : new TaggedTemplateExpression(this._id, this._prefix, this._markers, this._tag, this._typeArguments, templateExpression, this._type);
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): TaggedTemplateExpression {
+            return _type === this._type ? this : new TaggedTemplateExpression(this._id, this._prefix, this._markers, this._tag, this._typeArguments, this._templateExpression, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTaggedTemplateExpression(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get tag(): JRightPadded<Expression> | null {
+                return t._tag;
+            }
+            public withTag(tag: JRightPadded<Expression> | null): TaggedTemplateExpression {
+                return t._tag === tag ? t : new TaggedTemplateExpression(t._id, t._prefix, t._markers, tag, t._typeArguments, t._templateExpression, t._type);
+            }
+            public get typeArguments(): JContainer<Expression> | null {
+                return t._typeArguments;
+            }
+            public withTypeArguments(typeArguments: JContainer<Expression> | null): TaggedTemplateExpression {
+                return t._typeArguments === typeArguments ? t : new TaggedTemplateExpression(t._id, t._prefix, t._markers, t._tag, typeArguments, t._templateExpression, t._type);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$TemplateExpression")
+export class TemplateExpression extends JSMixin(Object) implements Statement, Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, head: Java.Literal, templateSpans: JRightPadded<TemplateExpression.TemplateSpan>[], _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._head = head;
+        this._templateSpans = templateSpans;
         this._type = _type;
     }
 
@@ -1513,7 +1709,7 @@ export class TemplateExpression extends JSMixin(Object) implements Statement, Ex
         }
 
         public withId(id: UUID): TemplateExpression {
-            return id === this._id ? this : new TemplateExpression(id, this._prefix, this._markers, this._delimiter, this._tag, this._strings, this._type);
+            return id === this._id ? this : new TemplateExpression(id, this._prefix, this._markers, this._head, this._templateSpans, this._type);
         }
 
         private readonly _prefix: Space;
@@ -1523,7 +1719,7 @@ export class TemplateExpression extends JSMixin(Object) implements Statement, Ex
         }
 
         public withPrefix(prefix: Space): TemplateExpression {
-            return prefix === this._prefix ? this : new TemplateExpression(this._id, prefix, this._markers, this._delimiter, this._tag, this._strings, this._type);
+            return prefix === this._prefix ? this : new TemplateExpression(this._id, prefix, this._markers, this._head, this._templateSpans, this._type);
         }
 
         private readonly _markers: Markers;
@@ -1533,37 +1729,27 @@ export class TemplateExpression extends JSMixin(Object) implements Statement, Ex
         }
 
         public withMarkers(markers: Markers): TemplateExpression {
-            return markers === this._markers ? this : new TemplateExpression(this._id, this._prefix, markers, this._delimiter, this._tag, this._strings, this._type);
+            return markers === this._markers ? this : new TemplateExpression(this._id, this._prefix, markers, this._head, this._templateSpans, this._type);
         }
 
-        private readonly _delimiter: string;
+        private readonly _head: Java.Literal;
 
-        public get delimiter(): string {
-            return this._delimiter;
+        public get head(): Java.Literal {
+            return this._head;
         }
 
-        public withDelimiter(delimiter: string): TemplateExpression {
-            return delimiter === this._delimiter ? this : new TemplateExpression(this._id, this._prefix, this._markers, delimiter, this._tag, this._strings, this._type);
+        public withHead(head: Java.Literal): TemplateExpression {
+            return head === this._head ? this : new TemplateExpression(this._id, this._prefix, this._markers, head, this._templateSpans, this._type);
         }
 
-        private readonly _tag: JRightPadded<Expression> | null;
+        private readonly _templateSpans: JRightPadded<TemplateExpression.TemplateSpan>[];
 
-        public get tag(): Expression | null {
-            return this._tag === null ? null : this._tag.element;
+        public get templateSpans(): TemplateExpression.TemplateSpan[] {
+            return JRightPadded.getElements(this._templateSpans);
         }
 
-        public withTag(tag: Expression | null): TemplateExpression {
-            return this.padding.withTag(JRightPadded.withElement(this._tag, tag));
-        }
-
-        private readonly _strings: J[];
-
-        public get strings(): J[] {
-            return this._strings;
-        }
-
-        public withStrings(strings: J[]): TemplateExpression {
-            return strings === this._strings ? this : new TemplateExpression(this._id, this._prefix, this._markers, this._delimiter, this._tag, strings, this._type);
+        public withTemplateSpans(templateSpans: TemplateExpression.TemplateSpan[]): TemplateExpression {
+            return this.padding.withTemplateSpans(JRightPadded.withElements(this._templateSpans, templateSpans));
         }
 
         private readonly _type: JavaType | null;
@@ -1573,7 +1759,7 @@ export class TemplateExpression extends JSMixin(Object) implements Statement, Ex
         }
 
         public withType(_type: JavaType | null): TemplateExpression {
-            return _type === this._type ? this : new TemplateExpression(this._id, this._prefix, this._markers, this._delimiter, this._tag, this._strings, _type);
+            return _type === this._type ? this : new TemplateExpression(this._id, this._prefix, this._markers, this._head, this._templateSpans, _type);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
@@ -1583,11 +1769,11 @@ export class TemplateExpression extends JSMixin(Object) implements Statement, Ex
     get padding() {
         const t = this;
         return new class {
-            public get tag(): JRightPadded<Expression> | null {
-                return t._tag;
+            public get templateSpans(): JRightPadded<TemplateExpression.TemplateSpan>[] {
+                return t._templateSpans;
             }
-            public withTag(tag: JRightPadded<Expression> | null): TemplateExpression {
-                return t._tag === tag ? t : new TemplateExpression(t._id, t._prefix, t._markers, t._delimiter, tag, t._strings, t._type);
+            public withTemplateSpans(templateSpans: JRightPadded<TemplateExpression.TemplateSpan>[]): TemplateExpression {
+                return t._templateSpans === templateSpans ? t : new TemplateExpression(t._id, t._prefix, t._markers, t._head, templateSpans, t._type);
             }
         }
     }
@@ -1595,16 +1781,15 @@ export class TemplateExpression extends JSMixin(Object) implements Statement, Ex
 }
 
 export namespace TemplateExpression {
-    @LstType("org.openrewrite.javascript.tree.JS$TemplateExpression$Value")
-    export class Value extends JSMixin(Object) {
-        public constructor(id: UUID, prefix: Space, markers: Markers, tree: J, after: Space, enclosedInBraces: boolean) {
+    @LstType("org.openrewrite.javascript.tree.JS$TemplateExpression$TemplateSpan")
+    export class TemplateSpan extends JSMixin(Object) {
+        public constructor(id: UUID, prefix: Space, markers: Markers, expression: J, tail: Java.Literal) {
             super();
             this._id = id;
             this._prefix = prefix;
             this._markers = markers;
-            this._tree = tree;
-            this._after = after;
-            this._enclosedInBraces = enclosedInBraces;
+            this._expression = expression;
+            this._tail = tail;
         }
 
             private readonly _id: UUID;
@@ -1613,8 +1798,8 @@ export namespace TemplateExpression {
                 return this._id;
             }
 
-            public withId(id: UUID): TemplateExpression.Value {
-                return id === this._id ? this : new TemplateExpression.Value(id, this._prefix, this._markers, this._tree, this._after, this._enclosedInBraces);
+            public withId(id: UUID): TemplateExpression.TemplateSpan {
+                return id === this._id ? this : new TemplateExpression.TemplateSpan(id, this._prefix, this._markers, this._expression, this._tail);
             }
 
             private readonly _prefix: Space;
@@ -1623,8 +1808,8 @@ export namespace TemplateExpression {
                 return this._prefix;
             }
 
-            public withPrefix(prefix: Space): TemplateExpression.Value {
-                return prefix === this._prefix ? this : new TemplateExpression.Value(this._id, prefix, this._markers, this._tree, this._after, this._enclosedInBraces);
+            public withPrefix(prefix: Space): TemplateExpression.TemplateSpan {
+                return prefix === this._prefix ? this : new TemplateExpression.TemplateSpan(this._id, prefix, this._markers, this._expression, this._tail);
             }
 
             private readonly _markers: Markers;
@@ -1633,42 +1818,32 @@ export namespace TemplateExpression {
                 return this._markers;
             }
 
-            public withMarkers(markers: Markers): TemplateExpression.Value {
-                return markers === this._markers ? this : new TemplateExpression.Value(this._id, this._prefix, markers, this._tree, this._after, this._enclosedInBraces);
+            public withMarkers(markers: Markers): TemplateExpression.TemplateSpan {
+                return markers === this._markers ? this : new TemplateExpression.TemplateSpan(this._id, this._prefix, markers, this._expression, this._tail);
             }
 
-            private readonly _tree: J;
+            private readonly _expression: J;
 
-            public get tree(): J {
-                return this._tree;
+            public get expression(): J {
+                return this._expression;
             }
 
-            public withTree(tree: J): TemplateExpression.Value {
-                return tree === this._tree ? this : new TemplateExpression.Value(this._id, this._prefix, this._markers, tree, this._after, this._enclosedInBraces);
+            public withExpression(expression: J): TemplateExpression.TemplateSpan {
+                return expression === this._expression ? this : new TemplateExpression.TemplateSpan(this._id, this._prefix, this._markers, expression, this._tail);
             }
 
-            private readonly _after: Space;
+            private readonly _tail: Java.Literal;
 
-            public get after(): Space {
-                return this._after;
+            public get tail(): Java.Literal {
+                return this._tail;
             }
 
-            public withAfter(after: Space): TemplateExpression.Value {
-                return after === this._after ? this : new TemplateExpression.Value(this._id, this._prefix, this._markers, this._tree, after, this._enclosedInBraces);
-            }
-
-            private readonly _enclosedInBraces: boolean;
-
-            public get enclosedInBraces(): boolean {
-                return this._enclosedInBraces;
-            }
-
-            public withEnclosedInBraces(enclosedInBraces: boolean): TemplateExpression.Value {
-                return enclosedInBraces === this._enclosedInBraces ? this : new TemplateExpression.Value(this._id, this._prefix, this._markers, this._tree, this._after, enclosedInBraces);
+            public withTail(tail: Java.Literal): TemplateExpression.TemplateSpan {
+                return tail === this._tail ? this : new TemplateExpression.TemplateSpan(this._id, this._prefix, this._markers, this._expression, tail);
             }
 
         public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-            return v.visitTemplateExpressionValue(this, p);
+            return v.visitTemplateExpressionTemplateSpan(this, p);
         }
 
     }

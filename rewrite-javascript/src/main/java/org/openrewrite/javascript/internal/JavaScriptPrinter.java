@@ -152,6 +152,15 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitExpressionWithTypeArguments(JS.ExpressionWithTypeArguments type, PrintOutputCapture<P> p) {
+        beforeSyntax(type, JsSpace.Location.EXPR_WITH_TYPE_ARG_PREFIX, p);
+        visit(type.getClazz(), p);
+        visitContainer("<", type.getPadding().getTypeArguments(), JsContainer.Location.EXPR_WITH_TYPE_ARG_PARAMETERS, ",", ">", p);
+        afterSyntax(type, p);
+        return type;
+    }
+
+    @Override
     public J visitExport(JS.Export export, PrintOutputCapture<P> p) {
         beforeSyntax(export, JsSpace.Location.EXPORT_PREFIX, p);
         p.append("export");
@@ -339,35 +348,29 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitTaggedTemplateExpression(JS.TaggedTemplateExpression taggedTemplateExpression, PrintOutputCapture<P> p) {
+        beforeSyntax(taggedTemplateExpression, JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p);
+        visitRightPadded(taggedTemplateExpression.getPadding().getTag(), JsRightPadded.Location.TEMPLATE_EXPRESSION_TAG, p);
+        visitContainer("<", taggedTemplateExpression.getPadding().getTypeArguments(), JsContainer.Location.TEMPLATE_EXPRESSION_TYPE_ARG_PARAMETERS, ",", ">", p);
+        visit(taggedTemplateExpression.getTemplateExpression(), p);
+        afterSyntax(taggedTemplateExpression, p);
+        return taggedTemplateExpression;
+    }
+
+    @Override
     public J visitTemplateExpression(JS.TemplateExpression templateExpression, PrintOutputCapture<P> p) {
         beforeSyntax(templateExpression, JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p);
-        String delimiter = templateExpression.getDelimiter();
-        visitRightPadded(templateExpression.getPadding().getTag(), JsRightPadded.Location.TAG, p);
-        PostFixOperator postFixOperator = templateExpression.getMarkers().findFirst(PostFixOperator.class).orElse(null);
-        if (postFixOperator != null) {
-            visitSpace(postFixOperator.getPrefix(), Space.Location.LAMBDA_PARAMETERS_PREFIX, p);
-            p.append(postFixOperator.getOperator().getValue());
-        }
-        p.append(delimiter);
-        visit(templateExpression.getStrings(), p);
-        p.append(delimiter);
+        visit(templateExpression.getHead(), p);
+        visitRightPadded(templateExpression.getPadding().getTemplateSpans(), JsRightPadded.Location.TEMPLATE_EXPRESSION_TEMPLATE_SPAN, "", p);
         afterSyntax(templateExpression, p);
         return templateExpression;
     }
 
     @Override
-    public J visitTemplateExpressionValue(JS.TemplateExpression.Value value, PrintOutputCapture<P> p) {
-        beforeSyntax(value, JsSpace.Location.TEMPLATE_EXPRESSION_VALUE_PREFIX, p);
-        if (value.isEnclosedInBraces()) {
-            p.append("${");
-        } else {
-            p.append("$");
-        }
-        visit(value.getTree(), p);
-        visitSpace(value.getAfter(), JsSpace.Location.TEMPLATE_EXPRESSION_VALUE_SUFFIX, p);
-        if (value.isEnclosedInBraces()) {
-            p.append('}');
-        }
+    public J visitTemplateExpressionTemplateSpan(JS.TemplateExpression.TemplateSpan value, PrintOutputCapture<P> p) {
+        beforeSyntax(value, JsSpace.Location.TEMPLATE_EXPRESSION_SPAN_PREFIX, p);
+        visit(value.getExpression(), p);
+        visit(value.getTail(), p);
         afterSyntax(value, p);
         return value;
     }

@@ -696,6 +696,93 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class ExpressionWithTypeArguments implements JS, TypeTree, Expression {
+        @Nullable
+        @NonFinal
+        transient WeakReference<ExpressionWithTypeArguments.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        NameTree clazz;
+
+        @Nullable
+        JContainer<Expression> typeArguments;
+
+        public @Nullable List<Expression> getTypeArguments() {
+            return typeArguments == null ? null : typeArguments.getElements();
+        }
+
+        public ExpressionWithTypeArguments withTypeArguments(@Nullable List<Expression> typeParameters) {
+            return getPadding().withTypeArguments(JContainer.withElementsNullable(this.typeArguments, typeParameters));
+        }
+
+        @With
+        @Getter
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitExpressionWithTypeArguments(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public ExpressionWithTypeArguments.Padding getPadding() {
+            ExpressionWithTypeArguments.Padding p;
+            if (this.padding == null) {
+                p = new ExpressionWithTypeArguments.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new ExpressionWithTypeArguments.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @Override
+        public String toString() {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ExpressionWithTypeArguments t;
+
+            public @Nullable JContainer<Expression> getTypeArguments() {
+                return t.typeArguments;
+            }
+
+            public ExpressionWithTypeArguments withTypeArguments(@Nullable JContainer<Expression> typeArguments) {
+                return t.typeArguments == typeArguments ? t : new ExpressionWithTypeArguments(t.id, t.prefix, t.markers, t.clazz, typeArguments, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     class FunctionType implements JS, Expression, TypeTree {
 
         @Nullable
@@ -1486,11 +1573,109 @@ public interface JS extends J {
         }
     }
 
+    @Getter
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @Data
+    final class TaggedTemplateExpression implements JS, Statement, Expression {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<TaggedTemplateExpression.Padding> padding;
+
+        @EqualsAndHashCode.Include
+        @With
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        @Nullable
+        JRightPadded<Expression> tag;
+
+        public @Nullable Expression getTag() {
+            return tag == null ? null : tag.getElement();
+        }
+
+        public TaggedTemplateExpression withTag(@Nullable Expression tag) {
+            return getPadding().withTag(JRightPadded.withElement(this.tag, tag));
+        }
+
+        @Nullable
+        JContainer<Expression> typeArguments;
+
+        public @Nullable List<Expression> getTypeArguments() {
+            return typeArguments == null ? null : typeArguments.getElements();
+        }
+
+        public TaggedTemplateExpression withTypeArguments(@Nullable List<Expression> typeParameters) {
+            return getPadding().withTypeArguments(JContainer.withElementsNullable(this.typeArguments, typeParameters));
+        }
+
+        @With
+        TemplateExpression templateExpression;
+
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTaggedTemplateExpression(this, p);
+        }
+
+        @Transient
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public TaggedTemplateExpression.Padding getPadding() {
+            TaggedTemplateExpression.Padding p;
+            if (this.padding == null) {
+                p = new TaggedTemplateExpression.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new TaggedTemplateExpression.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final TaggedTemplateExpression t;
+
+            public @Nullable JRightPadded<Expression> getTag() {
+                return t.tag;
+            }
+
+            public TaggedTemplateExpression withTag(@Nullable JRightPadded<Expression> tag) {
+                return t.tag == tag ? t : new TaggedTemplateExpression(t.id, t.prefix, t.markers, tag, t.typeArguments, t.templateExpression, t.type);
+            }
+
+            public @Nullable JContainer<Expression> getTypeArguments() {
+                return t.typeArguments;
+            }
+
+            public TaggedTemplateExpression withTypeArguments(@Nullable JContainer<Expression> typeArguments) {
+                return t.typeArguments == typeArguments ? t : new TaggedTemplateExpression(t.id, t.prefix, t.markers, t.tag, typeArguments,  t.templateExpression, t.type);
+            }
+        }
+    }
+
+    @Getter
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class TemplateExpression implements JS, Statement, Expression {
 
         @Nullable
@@ -1508,21 +1693,17 @@ public interface JS extends J {
         Markers markers;
 
         @With
-        String delimiter;
+        J.Literal head;
 
-        @Nullable
-        JRightPadded<Expression> tag;
+        List<JRightPadded<TemplateSpan>> templateSpans;
 
-        public @Nullable Expression getTag() {
-            return tag == null ? null : tag.getElement();
+        public List<TemplateSpan> getTemplateSpans() {
+            return JRightPadded.getElements(templateSpans);
         }
 
-        public TemplateExpression withTag(@Nullable Expression tag) {
-            return getPadding().withTag(JRightPadded.withElement(this.tag, tag));
+        public TemplateExpression withTemplateSpans(List<TemplateSpan> spans) {
+            return getPadding().withTemplateSpans(JRightPadded.withElements(this.templateSpans, spans));
         }
-
-        @With
-        List<J> strings;
 
         @With
         @Nullable
@@ -1541,19 +1722,32 @@ public interface JS extends J {
 
         @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
         @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
-        @Data
-        @With
-        public static final class Value implements JS {
+        @RequiredArgsConstructor
+        public static final class TemplateSpan implements JS {
+            @With
+            @EqualsAndHashCode.Include
+            @Getter
             UUID id;
+
+            @With
+            @Getter
             Space prefix;
+
+            @With
+            @Getter
             Markers markers;
-            J tree;
-            Space after;
-            boolean enclosedInBraces;
+
+            @With
+            @Getter
+            J expression;
+
+            @With
+            @Getter
+            J.Literal tail;
 
             @Override
             public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
-                return v.visitTemplateExpressionValue(this, p);
+                return v.visitTemplateExpressionTemplateSpan(this, p);
             }
         }
 
@@ -1576,12 +1770,12 @@ public interface JS extends J {
         public static class Padding {
             private final TemplateExpression t;
 
-            public @Nullable JRightPadded<Expression> getTag() {
-                return t.tag;
+            public List<JRightPadded<TemplateSpan>> getTemplateSpans() {
+                return t.templateSpans;
             }
 
-            public TemplateExpression withTag(@Nullable JRightPadded<Expression> tag) {
-                return t.tag == tag ? t : new TemplateExpression(t.id, t.prefix, t.markers, t.delimiter, tag, t.strings, t.type);
+            public TemplateExpression withTemplateSpans(List<JRightPadded<TemplateSpan>> templateSpans) {
+                return t.templateSpans == templateSpans ? t : new TemplateExpression(t.id, t.prefix, t.markers,  t.head, templateSpans, t.type);
             }
         }
     }

@@ -150,6 +150,17 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.ExpressionWithTypeArguments visitExpressionWithTypeArguments(JS.ExpressionWithTypeArguments expressionWithTypeArguments, SenderContext ctx) {
+            ctx.sendValue(expressionWithTypeArguments, JS.ExpressionWithTypeArguments::getId);
+            ctx.sendNode(expressionWithTypeArguments, JS.ExpressionWithTypeArguments::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(expressionWithTypeArguments, JS.ExpressionWithTypeArguments::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(expressionWithTypeArguments, JS.ExpressionWithTypeArguments::getClazz, ctx::sendTree);
+            ctx.sendNode(expressionWithTypeArguments, e -> e.getPadding().getTypeArguments(), JavaScriptSender::sendContainer);
+            ctx.sendTypedValue(expressionWithTypeArguments, JS.ExpressionWithTypeArguments::getType);
+            return expressionWithTypeArguments;
+        }
+
+        @Override
         public JS.FunctionType visitFunctionType(JS.FunctionType functionType, SenderContext ctx) {
             ctx.sendValue(functionType, JS.FunctionType::getId);
             ctx.sendNode(functionType, JS.FunctionType::getPrefix, JavaScriptSender::sendSpace);
@@ -241,26 +252,36 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.TaggedTemplateExpression visitTaggedTemplateExpression(JS.TaggedTemplateExpression taggedTemplateExpression, SenderContext ctx) {
+            ctx.sendValue(taggedTemplateExpression, JS.TaggedTemplateExpression::getId);
+            ctx.sendNode(taggedTemplateExpression, JS.TaggedTemplateExpression::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(taggedTemplateExpression, JS.TaggedTemplateExpression::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(taggedTemplateExpression, e -> e.getPadding().getTag(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(taggedTemplateExpression, e -> e.getPadding().getTypeArguments(), JavaScriptSender::sendContainer);
+            ctx.sendNode(taggedTemplateExpression, JS.TaggedTemplateExpression::getTemplateExpression, ctx::sendTree);
+            ctx.sendTypedValue(taggedTemplateExpression, JS.TaggedTemplateExpression::getType);
+            return taggedTemplateExpression;
+        }
+
+        @Override
         public JS.TemplateExpression visitTemplateExpression(JS.TemplateExpression templateExpression, SenderContext ctx) {
             ctx.sendValue(templateExpression, JS.TemplateExpression::getId);
             ctx.sendNode(templateExpression, JS.TemplateExpression::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(templateExpression, JS.TemplateExpression::getMarkers, ctx::sendMarkers);
-            ctx.sendValue(templateExpression, JS.TemplateExpression::getDelimiter);
-            ctx.sendNode(templateExpression, e -> e.getPadding().getTag(), JavaScriptSender::sendRightPadded);
-            ctx.sendNodes(templateExpression, JS.TemplateExpression::getStrings, ctx::sendTree, Tree::getId);
+            ctx.sendNode(templateExpression, JS.TemplateExpression::getHead, ctx::sendTree);
+            ctx.sendNodes(templateExpression, e -> e.getPadding().getTemplateSpans(), JavaScriptSender::sendRightPadded, e -> e.getElement().getId());
             ctx.sendTypedValue(templateExpression, JS.TemplateExpression::getType);
             return templateExpression;
         }
 
         @Override
-        public JS.TemplateExpression.Value visitTemplateExpressionValue(JS.TemplateExpression.Value value, SenderContext ctx) {
-            ctx.sendValue(value, JS.TemplateExpression.Value::getId);
-            ctx.sendNode(value, JS.TemplateExpression.Value::getPrefix, JavaScriptSender::sendSpace);
-            ctx.sendNode(value, JS.TemplateExpression.Value::getMarkers, ctx::sendMarkers);
-            ctx.sendNode(value, JS.TemplateExpression.Value::getTree, ctx::sendTree);
-            ctx.sendNode(value, JS.TemplateExpression.Value::getAfter, JavaScriptSender::sendSpace);
-            ctx.sendValue(value, JS.TemplateExpression.Value::isEnclosedInBraces);
-            return value;
+        public JS.TemplateExpression.TemplateSpan visitTemplateExpressionTemplateSpan(JS.TemplateExpression.TemplateSpan templateSpan, SenderContext ctx) {
+            ctx.sendValue(templateSpan, JS.TemplateExpression.TemplateSpan::getId);
+            ctx.sendNode(templateSpan, JS.TemplateExpression.TemplateSpan::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(templateSpan, JS.TemplateExpression.TemplateSpan::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(templateSpan, JS.TemplateExpression.TemplateSpan::getExpression, ctx::sendTree);
+            ctx.sendNode(templateSpan, JS.TemplateExpression.TemplateSpan::getTail, ctx::sendTree);
+            return templateSpan;
         }
 
         @Override

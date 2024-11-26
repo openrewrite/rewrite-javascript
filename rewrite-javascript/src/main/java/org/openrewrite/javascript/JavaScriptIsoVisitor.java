@@ -109,8 +109,8 @@ public class JavaScriptIsoVisitor<P> extends JavaScriptVisitor<P> {
     }
 
     @Override
-    public JS.TemplateExpression.Value visitTemplateExpressionValue(JS.TemplateExpression.Value value, P p) {
-        return (JS.TemplateExpression.Value) super.visitTemplateExpressionValue(value, p);
+    public JS.TemplateExpression.TemplateSpan visitTemplateExpressionTemplateSpan(JS.TemplateExpression.TemplateSpan value, P p) {
+        return (JS.TemplateExpression.TemplateSpan) super.visitTemplateExpressionTemplateSpan(value, p);
     }
 
     @Override
