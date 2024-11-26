@@ -1380,11 +1380,24 @@ export class JavaScriptParserVisitor {
     }
 
     visitTemplateLiteralType(node: ts.TemplateLiteralTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.TemplateExpression(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.visit(node.head),
+            node.templateSpans.map(s => this.rightPadded(this.visit(s), this.suffix(s))),
+            this.mapType(node)
+        )
     }
 
     visitTemplateLiteralTypeSpan(node: ts.TemplateLiteralTypeSpan) {
-        return this.visitUnknown(node);
+        return new JS.TemplateExpression.TemplateSpan(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.type),
+            this.visit(node.literal)
+        )
     }
 
     visitImportType(node: ts.ImportTypeNode) {

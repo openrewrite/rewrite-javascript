@@ -117,4 +117,46 @@ describe('template expression mapping', () => {
             `)
         );
     });
+
+    test('template LiteralType ', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Name = "Alice";
+                type Greeting = \`Hello, \${Name}!\`;
+            `)
+        );
+    });
+
+    test('template LiteralType union', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Action = "create" | "update";
+                type Entity = "user" | "post";
+                type APIEndpoint = \`\${Action}_\${Entity}\`;
+
+                const endpoint: APIEndpoint = "create_user";
+            `)
+        );
+    });
+
+    test.skip('template LiteralType with conditional', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Role = "admin" | "editor" | "viewer";
+                type Permissions<RoleType extends Role> = RoleType extends "admin"
+                    ? \`can_manage_\${string}\`
+                    : \`can_read_\${string}\`;
+
+                // Valid permissions:
+                const adminPermission: Permissions<"admin"> = "can_manage_users";
+                const viewerPermission: Permissions<"viewer"> = "can_read_posts";
+
+                // Invalid permission:
+                const invalidPermission: Permissions<"editor"> = "can_delete_posts"; // Error
+            `)
+        );
+    });
 });
