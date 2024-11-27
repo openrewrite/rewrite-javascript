@@ -80,6 +80,13 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.ConditionalType visitConditionalType(JS.ConditionalType conditionalType, P p) {
+        visitAndValidate(conditionalType.getCheckType(), Expression.class, p);
+        visitAndValidate(conditionalType.getCondition(), TypedTree.class, p);
+        return conditionalType;
+    }
+
+    @Override
     public JS.DefaultType visitDefaultType(JS.DefaultType defaultType, P p) {
         visitAndValidate(defaultType.getLeft(), Expression.class, p);
         visitAndValidate(defaultType.getRight(), Expression.class, p);
@@ -104,6 +111,13 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     public JS.ExpressionStatement visitExpressionStatement(JS.ExpressionStatement expressionStatement, P p) {
         visitAndValidate(expressionStatement.getExpression(), Expression.class, p);
         return expressionStatement;
+    }
+
+    @Override
+    public JS.ExpressionWithTypeArguments visitExpressionWithTypeArguments(JS.ExpressionWithTypeArguments expressionWithTypeArguments, P p) {
+        visitAndValidate(expressionWithTypeArguments.getClazz(), NameTree.class, p);
+        visitAndValidate(expressionWithTypeArguments.getTypeArguments(), Expression.class, p);
+        return expressionWithTypeArguments;
     }
 
     @Override
@@ -166,16 +180,25 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.TaggedTemplateExpression visitTaggedTemplateExpression(JS.TaggedTemplateExpression taggedTemplateExpression, P p) {
+        visitAndValidate(taggedTemplateExpression.getTag(), Expression.class, p);
+        visitAndValidate(taggedTemplateExpression.getTypeArguments(), Expression.class, p);
+        visitAndValidate(taggedTemplateExpression.getTemplateExpression(), JS.TemplateExpression.class, p);
+        return taggedTemplateExpression;
+    }
+
+    @Override
     public JS.TemplateExpression visitTemplateExpression(JS.TemplateExpression templateExpression, P p) {
-        visitAndValidate(templateExpression.getTag(), Expression.class, p);
-        ListUtils.map(templateExpression.getStrings(), el -> visitAndValidate(el, J.class, p));
+        visitAndValidate(templateExpression.getHead(), J.Literal.class, p);
+        ListUtils.map(templateExpression.getTemplateSpans(), el -> visitAndValidate(el, JS.TemplateExpression.TemplateSpan.class, p));
         return templateExpression;
     }
 
     @Override
-    public JS.TemplateExpression.Value visitTemplateExpressionValue(JS.TemplateExpression.Value value, P p) {
-        visitAndValidate(value.getTree(), J.class, p);
-        return value;
+    public JS.TemplateExpression.TemplateSpan visitTemplateExpressionTemplateSpan(JS.TemplateExpression.TemplateSpan templateSpan, P p) {
+        visitAndValidate(templateSpan.getExpression(), J.class, p);
+        visitAndValidate(templateSpan.getTail(), J.Literal.class, p);
+        return templateSpan;
     }
 
     @Override

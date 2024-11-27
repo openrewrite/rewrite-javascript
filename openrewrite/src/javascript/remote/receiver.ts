@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -75,6 +75,16 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         return await;
     }
 
+    public visitConditionalType(conditionalType: ConditionalType, ctx: ReceiverContext): J {
+        conditionalType = conditionalType.withId(ctx.receiveValue(conditionalType.id, ValueType.UUID)!);
+        conditionalType = conditionalType.withPrefix(ctx.receiveNode(conditionalType.prefix, receiveSpace)!);
+        conditionalType = conditionalType.withMarkers(ctx.receiveNode(conditionalType.markers, ctx.receiveMarkers)!);
+        conditionalType = conditionalType.withCheckType(ctx.receiveNode(conditionalType.checkType, ctx.receiveTree)!);
+        conditionalType = conditionalType.padding.withCondition(ctx.receiveNode(conditionalType.padding.condition, receiveContainer)!);
+        conditionalType = conditionalType.withType(ctx.receiveValue(conditionalType.type, ValueType.Object));
+        return conditionalType;
+    }
+
     public visitDefaultType(defaultType: DefaultType, ctx: ReceiverContext): J {
         defaultType = defaultType.withId(ctx.receiveValue(defaultType.id, ValueType.UUID)!);
         defaultType = defaultType.withPrefix(ctx.receiveNode(defaultType.prefix, receiveSpace)!);
@@ -110,6 +120,16 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         expressionStatement = expressionStatement.withId(ctx.receiveValue(expressionStatement.id, ValueType.UUID)!);
         expressionStatement = expressionStatement.withExpression(ctx.receiveNode(expressionStatement.expression, ctx.receiveTree)!);
         return expressionStatement;
+    }
+
+    public visitExpressionWithTypeArguments(expressionWithTypeArguments: ExpressionWithTypeArguments, ctx: ReceiverContext): J {
+        expressionWithTypeArguments = expressionWithTypeArguments.withId(ctx.receiveValue(expressionWithTypeArguments.id, ValueType.UUID)!);
+        expressionWithTypeArguments = expressionWithTypeArguments.withPrefix(ctx.receiveNode(expressionWithTypeArguments.prefix, receiveSpace)!);
+        expressionWithTypeArguments = expressionWithTypeArguments.withMarkers(ctx.receiveNode(expressionWithTypeArguments.markers, ctx.receiveMarkers)!);
+        expressionWithTypeArguments = expressionWithTypeArguments.withClazz(ctx.receiveNode(expressionWithTypeArguments.clazz, ctx.receiveTree)!);
+        expressionWithTypeArguments = expressionWithTypeArguments.padding.withTypeArguments(ctx.receiveNode(expressionWithTypeArguments.padding.typeArguments, receiveContainer));
+        expressionWithTypeArguments = expressionWithTypeArguments.withType(ctx.receiveValue(expressionWithTypeArguments.type, ValueType.Object));
+        return expressionWithTypeArguments;
     }
 
     public visitFunctionType(functionType: FunctionType, ctx: ReceiverContext): J {
@@ -195,25 +215,34 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         return statementExpression;
     }
 
+    public visitTaggedTemplateExpression(taggedTemplateExpression: TaggedTemplateExpression, ctx: ReceiverContext): J {
+        taggedTemplateExpression = taggedTemplateExpression.withId(ctx.receiveValue(taggedTemplateExpression.id, ValueType.UUID)!);
+        taggedTemplateExpression = taggedTemplateExpression.withPrefix(ctx.receiveNode(taggedTemplateExpression.prefix, receiveSpace)!);
+        taggedTemplateExpression = taggedTemplateExpression.withMarkers(ctx.receiveNode(taggedTemplateExpression.markers, ctx.receiveMarkers)!);
+        taggedTemplateExpression = taggedTemplateExpression.padding.withTag(ctx.receiveNode(taggedTemplateExpression.padding.tag, receiveRightPaddedTree));
+        taggedTemplateExpression = taggedTemplateExpression.padding.withTypeArguments(ctx.receiveNode(taggedTemplateExpression.padding.typeArguments, receiveContainer));
+        taggedTemplateExpression = taggedTemplateExpression.withTemplateExpression(ctx.receiveNode(taggedTemplateExpression.templateExpression, ctx.receiveTree)!);
+        taggedTemplateExpression = taggedTemplateExpression.withType(ctx.receiveValue(taggedTemplateExpression.type, ValueType.Object));
+        return taggedTemplateExpression;
+    }
+
     public visitTemplateExpression(templateExpression: TemplateExpression, ctx: ReceiverContext): J {
         templateExpression = templateExpression.withId(ctx.receiveValue(templateExpression.id, ValueType.UUID)!);
         templateExpression = templateExpression.withPrefix(ctx.receiveNode(templateExpression.prefix, receiveSpace)!);
         templateExpression = templateExpression.withMarkers(ctx.receiveNode(templateExpression.markers, ctx.receiveMarkers)!);
-        templateExpression = templateExpression.withDelimiter(ctx.receiveValue(templateExpression.delimiter, ValueType.Primitive)!);
-        templateExpression = templateExpression.padding.withTag(ctx.receiveNode(templateExpression.padding.tag, receiveRightPaddedTree));
-        templateExpression = templateExpression.withStrings(ctx.receiveNodes(templateExpression.strings, ctx.receiveTree)!);
+        templateExpression = templateExpression.withHead(ctx.receiveNode(templateExpression.head, ctx.receiveTree)!);
+        templateExpression = templateExpression.padding.withTemplateSpans(ctx.receiveNodes(templateExpression.padding.templateSpans, receiveRightPaddedTree)!);
         templateExpression = templateExpression.withType(ctx.receiveValue(templateExpression.type, ValueType.Object));
         return templateExpression;
     }
 
-    public visitTemplateExpressionValue(value: TemplateExpression.Value, ctx: ReceiverContext): J {
-        value = value.withId(ctx.receiveValue(value.id, ValueType.UUID)!);
-        value = value.withPrefix(ctx.receiveNode(value.prefix, receiveSpace)!);
-        value = value.withMarkers(ctx.receiveNode(value.markers, ctx.receiveMarkers)!);
-        value = value.withTree(ctx.receiveNode(value.tree, ctx.receiveTree)!);
-        value = value.withAfter(ctx.receiveNode(value.after, receiveSpace)!);
-        value = value.withEnclosedInBraces(ctx.receiveValue(value.enclosedInBraces, ValueType.Primitive)!);
-        return value;
+    public visitTemplateExpressionTemplateSpan(templateSpan: TemplateExpression.TemplateSpan, ctx: ReceiverContext): J {
+        templateSpan = templateSpan.withId(ctx.receiveValue(templateSpan.id, ValueType.UUID)!);
+        templateSpan = templateSpan.withPrefix(ctx.receiveNode(templateSpan.prefix, receiveSpace)!);
+        templateSpan = templateSpan.withMarkers(ctx.receiveNode(templateSpan.markers, ctx.receiveMarkers)!);
+        templateSpan = templateSpan.withExpression(ctx.receiveNode(templateSpan.expression, ctx.receiveTree)!);
+        templateSpan = templateSpan.withTail(ctx.receiveNode(templateSpan.tail, ctx.receiveTree)!);
+        return templateSpan;
     }
 
     public visitTuple(tuple: Tuple, ctx: ReceiverContext): J {
@@ -1173,6 +1202,17 @@ class Factory implements ReceiverFactory {
             );
         }
 
+        if (type === "org.openrewrite.javascript.tree.JS$ConditionalType") {
+            return new ConditionalType(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JContainer<TypedTree>>(null, receiveContainer)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
         if (type === "org.openrewrite.javascript.tree.JS$DefaultType") {
             return new DefaultType(
                 ctx.receiveValue(null, ValueType.UUID)!,
@@ -1211,6 +1251,17 @@ class Factory implements ReceiverFactory {
             return new ExpressionStatement(
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$ExpressionWithTypeArguments") {
+            return new ExpressionWithTypeArguments(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<NameTree>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JContainer<Expression>>(null, receiveContainer),
+                ctx.receiveValue(null, ValueType.Object)
             );
         }
 
@@ -1305,26 +1356,36 @@ class Factory implements ReceiverFactory {
             );
         }
 
+        if (type === "org.openrewrite.javascript.tree.JS$TaggedTemplateExpression") {
+            return new TaggedTemplateExpression(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree),
+                ctx.receiveNode<JContainer<Expression>>(null, receiveContainer),
+                ctx.receiveNode<TemplateExpression>(null, ctx.receiveTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
         if (type === "org.openrewrite.javascript.tree.JS$TemplateExpression") {
             return new TemplateExpression(
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveValue(null, ValueType.Primitive)!,
-                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree),
-                ctx.receiveNodes<J>(null, ctx.receiveTree)!,
+                ctx.receiveNode<Java.Literal>(null, ctx.receiveTree)!,
+                ctx.receiveNodes(null, receiveRightPaddedTree)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }
 
-        if (type === "org.openrewrite.javascript.tree.JS$TemplateExpression$Value") {
-            return new TemplateExpression.Value(
+        if (type === "org.openrewrite.javascript.tree.JS$TemplateExpression$TemplateSpan") {
+            return new TemplateExpression.TemplateSpan(
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<J>(null, ctx.receiveTree)!,
-                ctx.receiveNode(null, receiveSpace)!,
-                ctx.receiveValue(null, ValueType.Primitive)!
+                ctx.receiveNode<Java.Literal>(null, ctx.receiveTree)!
             );
         }
 

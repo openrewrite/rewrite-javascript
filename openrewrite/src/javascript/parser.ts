@@ -534,7 +534,8 @@ export class JavaScriptParserVisitor {
         return this.mapLiteral(node, null);
     }
 
-    private mapLiteral(node: ts.LiteralExpression | ts.TrueLiteral | ts.FalseLiteral | ts.NullLiteral | ts.Identifier, value: any): J.Literal {
+    private mapLiteral(node: ts.LiteralExpression | ts.TrueLiteral | ts.FalseLiteral | ts.NullLiteral | ts.Identifier
+        | ts.TemplateHead | ts.TemplateMiddle | ts.TemplateTail, value: any): J.Literal {
         return new J.Literal(
             randomId(),
             this.prefix(node),
@@ -567,15 +568,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitTemplateHead(node: ts.TemplateHead) {
-        return this.visitUnknown(node);
+        return this.mapLiteral(node, node.text);
     }
 
     visitTemplateMiddle(node: ts.TemplateMiddle) {
-        return this.visitUnknown(node);
+        return this.mapLiteral(node, node.text);
     }
 
     visitTemplateTail(node: ts.TemplateTail) {
-        return this.visitUnknown(node);
+        return this.mapLiteral(node, node.text);
     }
 
     visitIdentifier(node: ts.Identifier) {
@@ -1328,7 +1329,28 @@ export class JavaScriptParserVisitor {
     }
 
     visitConditionalType(node: ts.ConditionalTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.ConditionalType(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.visit(node.checkType),
+            new JContainer(
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.ExtendsKeyword)!),
+                [this.rightPadded(
+                    new J.Ternary(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    this.convert(node.extendsType),
+                    this.leftPadded(this.suffix(node.extendsType), this.convert(node.trueType)),
+                    this.leftPadded(this.suffix(node.trueType), this.convert(node.falseType)),
+                    this.mapType(node)),
+                    Space.EMPTY
+                )],
+                Markers.EMPTY
+            ),
+            this.mapType(node)
+        );
     }
 
     visitInferType(node: ts.InferTypeNode) {
@@ -1379,11 +1401,24 @@ export class JavaScriptParserVisitor {
     }
 
     visitTemplateLiteralType(node: ts.TemplateLiteralTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.TemplateExpression(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.visit(node.head),
+            node.templateSpans.map(s => this.rightPadded(this.visit(s), this.suffix(s))),
+            this.mapType(node)
+        )
     }
 
     visitTemplateLiteralTypeSpan(node: ts.TemplateLiteralTypeSpan) {
-        return this.visitUnknown(node);
+        return new JS.TemplateExpression.TemplateSpan(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.type),
+            this.visit(node.literal)
+        )
     }
 
     visitImportType(node: ts.ImportTypeNode) {
@@ -1591,7 +1626,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitTaggedTemplateExpression(node: ts.TaggedTemplateExpression) {
-        return this.visitUnknown(node);
+        return new JS.TaggedTemplateExpression(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.rightPadded(this.visit(node.tag), this.suffix(node.tag)),
+            node.typeArguments ? this.mapTypeArguments(Space.EMPTY, node.typeArguments) : null,
+            this.visit(node.template),
+            this.mapType(node)
+        )
     }
 
     visitTypeAssertionExpression(node: ts.TypeAssertion) {
@@ -1959,7 +2002,14 @@ export class JavaScriptParserVisitor {
     }
 
     visitTemplateExpression(node: ts.TemplateExpression) {
-        return this.visitUnknown(node);
+        return new JS.TemplateExpression(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.visit(node.head),
+            node.templateSpans.map(s => this.rightPadded(this.visit(s), this.suffix(s))),
+            this.mapType(node)
+        )
     }
 
     visitYieldExpression(node: ts.YieldExpression) {
@@ -2029,16 +2079,14 @@ export class JavaScriptParserVisitor {
 
     visitExpressionWithTypeArguments(node: ts.ExpressionWithTypeArguments) {
         if (node.typeArguments) {
-            if (node.typeArguments) {
-                return new J.ParameterizedType(
-                    randomId(),
-                    this.prefix(node),
-                    Markers.EMPTY,
-                    this.visit(node.expression),
-                    this.mapTypeArguments(this.suffix(node.expression), node.typeArguments),
-                    this.mapType(node)
-                )
-            }
+            return new JS.ExpressionWithTypeArguments(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.visit(node.expression),
+                this.mapTypeArguments(this.suffix(node.expression), node.typeArguments),
+                this.mapType(node)
+            )
         }
         return this.visit(node.expression);
     }
@@ -2079,7 +2127,13 @@ export class JavaScriptParserVisitor {
     }
 
     visitTemplateSpan(node: ts.TemplateSpan) {
-        return this.visitUnknown(node);
+        return new JS.TemplateExpression.TemplateSpan(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.convert(node.expression),
+            this.visit(node.literal)
+        )
     }
 
     visitSemicolonClassElement(node: ts.SemicolonClassElement) {

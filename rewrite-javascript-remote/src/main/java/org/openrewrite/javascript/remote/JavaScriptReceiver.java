@@ -126,6 +126,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.ConditionalType visitConditionalType(JS.ConditionalType conditionalType, ReceiverContext ctx) {
+            conditionalType = conditionalType.withId(ctx.receiveNonNullValue(conditionalType.getId(), UUID.class));
+            conditionalType = conditionalType.withPrefix(ctx.receiveNonNullNode(conditionalType.getPrefix(), JavaScriptReceiver::receiveSpace));
+            conditionalType = conditionalType.withMarkers(ctx.receiveNonNullNode(conditionalType.getMarkers(), ctx::receiveMarkers));
+            conditionalType = conditionalType.withCheckType(ctx.receiveNonNullNode(conditionalType.getCheckType(), ctx::receiveTree));
+            conditionalType = conditionalType.getPadding().withCondition(ctx.receiveNonNullNode(conditionalType.getPadding().getCondition(), JavaScriptReceiver::receiveContainer));
+            conditionalType = conditionalType.withType(ctx.receiveValue(conditionalType.getType(), JavaType.class));
+            return conditionalType;
+        }
+
+        @Override
         public JS.DefaultType visitDefaultType(JS.DefaultType defaultType, ReceiverContext ctx) {
             defaultType = defaultType.withId(ctx.receiveNonNullValue(defaultType.getId(), UUID.class));
             defaultType = defaultType.withPrefix(ctx.receiveNonNullNode(defaultType.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -164,6 +175,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
             expressionStatement = expressionStatement.withId(ctx.receiveNonNullValue(expressionStatement.getId(), UUID.class));
             expressionStatement = expressionStatement.withExpression(ctx.receiveNonNullNode(expressionStatement.getExpression(), ctx::receiveTree));
             return expressionStatement;
+        }
+
+        @Override
+        public JS.ExpressionWithTypeArguments visitExpressionWithTypeArguments(JS.ExpressionWithTypeArguments expressionWithTypeArguments, ReceiverContext ctx) {
+            expressionWithTypeArguments = expressionWithTypeArguments.withId(ctx.receiveNonNullValue(expressionWithTypeArguments.getId(), UUID.class));
+            expressionWithTypeArguments = expressionWithTypeArguments.withPrefix(ctx.receiveNonNullNode(expressionWithTypeArguments.getPrefix(), JavaScriptReceiver::receiveSpace));
+            expressionWithTypeArguments = expressionWithTypeArguments.withMarkers(ctx.receiveNonNullNode(expressionWithTypeArguments.getMarkers(), ctx::receiveMarkers));
+            expressionWithTypeArguments = expressionWithTypeArguments.withClazz(ctx.receiveNonNullNode(expressionWithTypeArguments.getClazz(), ctx::receiveTree));
+            expressionWithTypeArguments = expressionWithTypeArguments.getPadding().withTypeArguments(ctx.receiveNode(expressionWithTypeArguments.getPadding().getTypeArguments(), JavaScriptReceiver::receiveContainer));
+            expressionWithTypeArguments = expressionWithTypeArguments.withType(ctx.receiveValue(expressionWithTypeArguments.getType(), JavaType.class));
+            return expressionWithTypeArguments;
         }
 
         @Override
@@ -258,26 +280,36 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.TaggedTemplateExpression visitTaggedTemplateExpression(JS.TaggedTemplateExpression taggedTemplateExpression, ReceiverContext ctx) {
+            taggedTemplateExpression = taggedTemplateExpression.withId(ctx.receiveNonNullValue(taggedTemplateExpression.getId(), UUID.class));
+            taggedTemplateExpression = taggedTemplateExpression.withPrefix(ctx.receiveNonNullNode(taggedTemplateExpression.getPrefix(), JavaScriptReceiver::receiveSpace));
+            taggedTemplateExpression = taggedTemplateExpression.withMarkers(ctx.receiveNonNullNode(taggedTemplateExpression.getMarkers(), ctx::receiveMarkers));
+            taggedTemplateExpression = taggedTemplateExpression.getPadding().withTag(ctx.receiveNode(taggedTemplateExpression.getPadding().getTag(), JavaScriptReceiver::receiveRightPaddedTree));
+            taggedTemplateExpression = taggedTemplateExpression.getPadding().withTypeArguments(ctx.receiveNode(taggedTemplateExpression.getPadding().getTypeArguments(), JavaScriptReceiver::receiveContainer));
+            taggedTemplateExpression = taggedTemplateExpression.withTemplateExpression(ctx.receiveNonNullNode(taggedTemplateExpression.getTemplateExpression(), ctx::receiveTree));
+            taggedTemplateExpression = taggedTemplateExpression.withType(ctx.receiveValue(taggedTemplateExpression.getType(), JavaType.class));
+            return taggedTemplateExpression;
+        }
+
+        @Override
         public JS.TemplateExpression visitTemplateExpression(JS.TemplateExpression templateExpression, ReceiverContext ctx) {
             templateExpression = templateExpression.withId(ctx.receiveNonNullValue(templateExpression.getId(), UUID.class));
             templateExpression = templateExpression.withPrefix(ctx.receiveNonNullNode(templateExpression.getPrefix(), JavaScriptReceiver::receiveSpace));
             templateExpression = templateExpression.withMarkers(ctx.receiveNonNullNode(templateExpression.getMarkers(), ctx::receiveMarkers));
-            templateExpression = templateExpression.withDelimiter(ctx.receiveNonNullValue(templateExpression.getDelimiter(), String.class));
-            templateExpression = templateExpression.getPadding().withTag(ctx.receiveNode(templateExpression.getPadding().getTag(), JavaScriptReceiver::receiveRightPaddedTree));
-            templateExpression = templateExpression.withStrings(ctx.receiveNonNullNodes(templateExpression.getStrings(), ctx::receiveTree));
+            templateExpression = templateExpression.withHead(ctx.receiveNonNullNode(templateExpression.getHead(), ctx::receiveTree));
+            templateExpression = templateExpression.getPadding().withTemplateSpans(ctx.receiveNonNullNodes(templateExpression.getPadding().getTemplateSpans(), JavaScriptReceiver::receiveRightPaddedTree));
             templateExpression = templateExpression.withType(ctx.receiveValue(templateExpression.getType(), JavaType.class));
             return templateExpression;
         }
 
         @Override
-        public JS.TemplateExpression.Value visitTemplateExpressionValue(JS.TemplateExpression.Value value, ReceiverContext ctx) {
-            value = value.withId(ctx.receiveNonNullValue(value.getId(), UUID.class));
-            value = value.withPrefix(ctx.receiveNonNullNode(value.getPrefix(), JavaScriptReceiver::receiveSpace));
-            value = value.withMarkers(ctx.receiveNonNullNode(value.getMarkers(), ctx::receiveMarkers));
-            value = value.withTree(ctx.receiveNonNullNode(value.getTree(), ctx::receiveTree));
-            value = value.withAfter(ctx.receiveNonNullNode(value.getAfter(), JavaScriptReceiver::receiveSpace));
-            value = value.withEnclosedInBraces(ctx.receiveNonNullValue(value.isEnclosedInBraces(), boolean.class));
-            return value;
+        public JS.TemplateExpression.TemplateSpan visitTemplateExpressionTemplateSpan(JS.TemplateExpression.TemplateSpan templateSpan, ReceiverContext ctx) {
+            templateSpan = templateSpan.withId(ctx.receiveNonNullValue(templateSpan.getId(), UUID.class));
+            templateSpan = templateSpan.withPrefix(ctx.receiveNonNullNode(templateSpan.getPrefix(), JavaScriptReceiver::receiveSpace));
+            templateSpan = templateSpan.withMarkers(ctx.receiveNonNullNode(templateSpan.getMarkers(), ctx::receiveMarkers));
+            templateSpan = templateSpan.withExpression(ctx.receiveNonNullNode(templateSpan.getExpression(), ctx::receiveTree));
+            templateSpan = templateSpan.withTail(ctx.receiveNonNullNode(templateSpan.getTail(), ctx::receiveTree));
+            return templateSpan;
         }
 
         @Override
@@ -1290,6 +1322,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 );
             }
 
+            if (type == JS.ConditionalType.class) {
+                return (T) new JS.ConditionalType(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
             if (type == JS.DefaultType.class) {
                 return (T) new JS.DefaultType(
                     ctx.receiveNonNullValue(null, UUID.class),
@@ -1328,6 +1371,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 return (T) new JS.ExpressionStatement(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
+                );
+            }
+
+            if (type == JS.ExpressionWithTypeArguments.class) {
+                return (T) new JS.ExpressionWithTypeArguments(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
+                    ctx.receiveValue(null, JavaType.class)
                 );
             }
 
@@ -1422,26 +1476,36 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 );
             }
 
+            if (type == JS.TaggedTemplateExpression.class) {
+                return (T) new JS.TaggedTemplateExpression(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveRightPaddedTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
             if (type == JS.TemplateExpression.class) {
                 return (T) new JS.TemplateExpression(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
-                    ctx.receiveNonNullValue(null, String.class),
-                    ctx.receiveNode(null, JavaScriptReceiver::receiveRightPaddedTree),
-                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
                 );
             }
 
-            if (type == JS.TemplateExpression.Value.class) {
-                return (T) new JS.TemplateExpression.Value(
+            if (type == JS.TemplateExpression.TemplateSpan.class) {
+                return (T) new JS.TemplateExpression.TemplateSpan(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
-                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
-                    ctx.receiveNonNullValue(null, boolean.class)
+                    ctx.receiveNonNullNode(null, ctx::receiveTree)
                 );
             }
 

@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, DefaultType, Delete, Export, ExpressionStatement, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -70,6 +70,16 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         return await;
     }
 
+    public visitConditionalType(conditionalType: ConditionalType, ctx: SenderContext): J {
+        ctx.sendValue(conditionalType, v => v.id, ValueType.UUID);
+        ctx.sendNode(conditionalType, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(conditionalType, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(conditionalType, v => v.checkType, ctx.sendTree);
+        ctx.sendNode(conditionalType, v => v.padding.condition, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendTypedValue(conditionalType, v => v.type, ValueType.Object);
+        return conditionalType;
+    }
+
     public visitDefaultType(defaultType: DefaultType, ctx: SenderContext): J {
         ctx.sendValue(defaultType, v => v.id, ValueType.UUID);
         ctx.sendNode(defaultType, v => v.prefix, Visitor.sendSpace);
@@ -105,6 +115,16 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendValue(expressionStatement, v => v.id, ValueType.UUID);
         ctx.sendNode(expressionStatement, v => v.expression, ctx.sendTree);
         return expressionStatement;
+    }
+
+    public visitExpressionWithTypeArguments(expressionWithTypeArguments: ExpressionWithTypeArguments, ctx: SenderContext): J {
+        ctx.sendValue(expressionWithTypeArguments, v => v.id, ValueType.UUID);
+        ctx.sendNode(expressionWithTypeArguments, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(expressionWithTypeArguments, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(expressionWithTypeArguments, v => v.clazz, ctx.sendTree);
+        ctx.sendNode(expressionWithTypeArguments, v => v.padding.typeArguments, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendTypedValue(expressionWithTypeArguments, v => v.type, ValueType.Object);
+        return expressionWithTypeArguments;
     }
 
     public visitFunctionType(functionType: FunctionType, ctx: SenderContext): J {
@@ -190,25 +210,34 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         return statementExpression;
     }
 
+    public visitTaggedTemplateExpression(taggedTemplateExpression: TaggedTemplateExpression, ctx: SenderContext): J {
+        ctx.sendValue(taggedTemplateExpression, v => v.id, ValueType.UUID);
+        ctx.sendNode(taggedTemplateExpression, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(taggedTemplateExpression, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(taggedTemplateExpression, v => v.padding.tag, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(taggedTemplateExpression, v => v.padding.typeArguments, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendNode(taggedTemplateExpression, v => v.templateExpression, ctx.sendTree);
+        ctx.sendTypedValue(taggedTemplateExpression, v => v.type, ValueType.Object);
+        return taggedTemplateExpression;
+    }
+
     public visitTemplateExpression(templateExpression: TemplateExpression, ctx: SenderContext): J {
         ctx.sendValue(templateExpression, v => v.id, ValueType.UUID);
         ctx.sendNode(templateExpression, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(templateExpression, v => v.markers, ctx.sendMarkers);
-        ctx.sendValue(templateExpression, v => v.delimiter, ValueType.Primitive);
-        ctx.sendNode(templateExpression, v => v.padding.tag, Visitor.sendRightPadded(ValueType.Tree));
-        ctx.sendNodes(templateExpression, v => v.strings, ctx.sendTree, t => t.id);
+        ctx.sendNode(templateExpression, v => v.head, ctx.sendTree);
+        ctx.sendNodes(templateExpression, v => v.padding.templateSpans, Visitor.sendRightPadded(ValueType.Tree), t => t.element.id);
         ctx.sendTypedValue(templateExpression, v => v.type, ValueType.Object);
         return templateExpression;
     }
 
-    public visitTemplateExpressionValue(value: TemplateExpression.Value, ctx: SenderContext): J {
-        ctx.sendValue(value, v => v.id, ValueType.UUID);
-        ctx.sendNode(value, v => v.prefix, Visitor.sendSpace);
-        ctx.sendNode(value, v => v.markers, ctx.sendMarkers);
-        ctx.sendNode(value, v => v.tree, ctx.sendTree);
-        ctx.sendNode(value, v => v.after, Visitor.sendSpace);
-        ctx.sendValue(value, v => v.enclosedInBraces, ValueType.Primitive);
-        return value;
+    public visitTemplateExpressionTemplateSpan(templateSpan: TemplateExpression.TemplateSpan, ctx: SenderContext): J {
+        ctx.sendValue(templateSpan, v => v.id, ValueType.UUID);
+        ctx.sendNode(templateSpan, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(templateSpan, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(templateSpan, v => v.expression, ctx.sendTree);
+        ctx.sendNode(templateSpan, v => v.tail, ctx.sendTree);
+        return templateSpan;
     }
 
     public visitTuple(tuple: Tuple, ctx: SenderContext): J {
