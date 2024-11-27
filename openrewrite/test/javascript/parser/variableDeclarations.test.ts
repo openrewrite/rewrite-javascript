@@ -78,6 +78,16 @@ describe('variable declaration mapping', () => {
           typeScript('  /*0.1*/  let  /*0.2*/    a   /*1*/ :      /*2*/  number =2    /*3*/ , /*4*/   b   /*5*/:/*6*/    /*7*/string  /*8*/   =/*9*/    "2" /*10*/  ; //11')
         );
     });
+    test('a b c', () => {
+        rewriteRun(
+          //language=typescript
+
+            typeScript(`
+               const obj : any | undefined = {}
+               obj ?. a ?. b ?. c
+            `)
+        );
+    });
     test('exported variables', () => {
         rewriteRun(
           //language=typescript
@@ -130,7 +140,7 @@ describe('variable declaration mapping', () => {
             //language=typescript
             typeScript(`
                 /*1*/ const /*2*/  {  /*3*/ a/*4*/  :/*5*/  aa /*6*/  = /*7*/  10 /*8*/ , /*9*/  b /*10*/ :  /*11*/ bb = {  } /*12*/ ,  /*13*/ } = { a: 3 };
-            `)
+            `),
         );
     });
 });

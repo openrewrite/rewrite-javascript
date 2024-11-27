@@ -259,7 +259,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         typeDeclaration = typeDeclaration.withPrefix(ctx.receiveNode(typeDeclaration.prefix, receiveSpace)!);
         typeDeclaration = typeDeclaration.withMarkers(ctx.receiveNode(typeDeclaration.markers, ctx.receiveMarkers)!);
         typeDeclaration = typeDeclaration.withModifiers(ctx.receiveNodes(typeDeclaration.modifiers, ctx.receiveTree)!);
-        typeDeclaration = typeDeclaration.withName(ctx.receiveNode(typeDeclaration.name, ctx.receiveTree)!);
+        typeDeclaration = typeDeclaration.padding.withName(ctx.receiveNode(typeDeclaration.padding.name, receiveLeftPaddedTree)!);
         typeDeclaration = typeDeclaration.withTypeParameters(ctx.receiveNode(typeDeclaration.typeParameters, ctx.receiveTree));
         typeDeclaration = typeDeclaration.padding.withInitializer(ctx.receiveNode(typeDeclaration.padding.initializer, receiveLeftPaddedTree)!);
         typeDeclaration = typeDeclaration.withType(ctx.receiveValue(typeDeclaration.type, ValueType.Object));
@@ -1405,7 +1405,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
-                ctx.receiveNode<Java.Identifier>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<Java.Identifier>>(null, receiveLeftPaddedTree)!,
                 ctx.receiveNode<Java.TypeParameters>(null, ctx.receiveTree),
                 ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)!,
                 ctx.receiveValue(null, ValueType.Object)

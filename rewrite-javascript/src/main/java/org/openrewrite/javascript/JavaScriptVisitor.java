@@ -466,7 +466,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         t = t.withModifiers(ListUtils.map(t.getModifiers(),
                 mod -> mod.withPrefix(visitSpace(mod.getPrefix(), Space.Location.MODIFIER_PREFIX, p))));
         t = t.withModifiers(Objects.requireNonNull(ListUtils.map(t.getModifiers(), e -> visitAndCast(e, p))));
-        t = t.withName(visitAndCast(t.getName(), p));
+        t = t.getPadding().withName(visitLeftPadded(t.getPadding().getName(), JsLeftPadded.Location.TYPE_DECLARATION_NAME, p));
         t = t.withTypeParameters(visitAndCast(t.getTypeParameters(), p));
         t = t.getPadding().withInitializer(visitLeftPadded(t.getPadding().getInitializer(),
                 JsLeftPadded.Location.TYPE_DECLARATION_INITIALIZER, p));

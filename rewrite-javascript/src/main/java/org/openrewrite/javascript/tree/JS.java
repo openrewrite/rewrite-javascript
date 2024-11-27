@@ -1958,8 +1958,15 @@ public interface JS extends J {
         @With
         List<Modifier> modifiers;
 
-        @With
-        J.Identifier name;
+        JLeftPadded<J.Identifier> name;
+
+        public J.Identifier getName() {
+            return name.getElement();
+        }
+
+        public TypeDeclaration withName(J.Identifier name) {
+            return getPadding().withName(JLeftPadded.withElement(this.name, name));
+        }
 
         @With
         J.@Nullable TypeParameters typeParameters;
@@ -2024,6 +2031,14 @@ public interface JS extends J {
 
             public TypeDeclaration withInitializer(JLeftPadded<Expression> initializer) {
                 return t.initializer == initializer ? t : new TypeDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.name, t.typeParameters, initializer, t.type);
+            }
+
+            public JLeftPadded<J.Identifier> getName() {
+                return t.name;
+            }
+
+            public TypeDeclaration withName(JLeftPadded<J.Identifier> name) {
+                return t.name == name ? t : new TypeDeclaration(t.id, t.prefix, t.markers, t.modifiers, name, t.typeParameters, t.initializer, t.type);
             }
         }
     }

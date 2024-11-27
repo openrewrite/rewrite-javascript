@@ -23,7 +23,7 @@ import {
     randomId,
     SourceFile
 } from "../core";
-import {binarySearch, compareTextSpans, getNextSibling, TextSpan} from "./parserUtils";
+import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
 
 export class JavaScriptParser extends Parser {
@@ -260,10 +260,10 @@ export class JavaScriptParserVisitor {
     private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration
         | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration
         | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration
-        | ts.ArrowFunction | ts.IndexSignatureDeclaration) {
+        | ts.ArrowFunction | ts.IndexSignatureDeclaration | ts.TypeAliasDeclaration) {
         if (ts.isVariableStatement(node) || ts.isModuleDeclaration(node)  || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node)
             || ts.isInterfaceDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node) || ts.isParameter(node)
-            || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node) || ts.isIndexSignatureDeclaration(node)) {
+            || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node) || ts.isIndexSignatureDeclaration(node) || ts.isTypeAliasDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         }  else if (ts.isFunctionDeclaration(node)) {
             return [...node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [],
@@ -393,8 +393,8 @@ export class JavaScriptParserVisitor {
         return last?.kind == ts.SyntaxKind.SemicolonToken ? this.prefix(last) : Space.EMPTY;
     }
 
-    private keywordPrefix = (token: ts.PunctuationSyntaxKind) => (node: ts.Node): Space => {
-        const last = getNextSibling(node);
+    private keywordPrefix = (token: ts.PunctuationSyntaxKind, findSibling : (node: ts.Node) => ts.Node | null) => (node: ts.Node): Space => {
+        const last = findSibling(node);
         return last?.kind == token ? this.prefix(last) : Space.EMPTY;
     }
 
@@ -1309,21 +1309,29 @@ export class JavaScriptParserVisitor {
     }
 
     visitUnionType(node: ts.UnionTypeNode) {
+        const initialBar = getPreviousSibling(node.types[0]);
         return new JS.Union(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.rightPaddedList([...node.types], (n) => this.keywordPrefix(ts.SyntaxKind.BarToken)(n)),
+            [
+                ...(initialBar?.kind == ts.SyntaxKind.BarToken ? [this.rightPadded<J.Expression>(this.newJEmpty(), this.prefix(initialBar))] : []),
+                ...this.rightPaddedList<ts.Node, J.Expression>([...node.types], (n) => this.keywordPrefix(ts.SyntaxKind.BarToken, getNextSibling)(n))
+            ],
             this.mapType(node),
         );
     }
 
     visitIntersectionType(node: ts.IntersectionTypeNode) {
+        const initialAmpersand = getPreviousSibling(node.types[0]);
         return new JS.Intersection(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.rightPaddedList([...node.types], (n) => this.keywordPrefix(ts.SyntaxKind.AmpersandToken)(n)),
+            [
+                ...(initialAmpersand?.kind == ts.SyntaxKind.AmpersandToken ? [this.rightPadded<J.Expression>(this.newJEmpty(), this.prefix(initialAmpersand))] : []),
+                ...this.rightPaddedList<ts.Node, J.Expression>([...node.types], (n) => this.keywordPrefix(ts.SyntaxKind.AmpersandToken, getNextSibling)(n))
+            ],
             this.mapType(node),
         );
     }
@@ -2527,8 +2535,8 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            [],
-            this.visit(node.name),
+            this.mapModifiers(node),
+            this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.TypeKeyword)!), this.visit(node.name)),
             node.typeParameters ? this.mapTypeParametersAsObject(node) : null,
             this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsToken)!), this.convert(node.type)),
             this.mapType(node)

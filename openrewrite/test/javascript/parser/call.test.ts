@@ -86,6 +86,7 @@ describe('call mapping', () => {
 
                 const result1 = identity<string>?.("Hello TypeScript");
                 const result2 = identity?.<string>("Hello TypeScript");
+                const result3 = identity?.call("Hello TypeScript");
             `)
         );
     });

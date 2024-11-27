@@ -2021,7 +2021,7 @@ export class Tuple extends JSMixin(Object) implements Expression, TypeTree {
 
 @LstType("org.openrewrite.javascript.tree.JS$TypeDeclaration")
 export class TypeDeclaration extends JSMixin(Object) implements Statement, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], name: Java.Identifier, typeParameters: Java.TypeParameters | null, initializer: JLeftPadded<Expression>, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], name: JLeftPadded<Java.Identifier>, typeParameters: Java.TypeParameters | null, initializer: JLeftPadded<Expression>, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -2073,14 +2073,14 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
             return modifiers === this._modifiers ? this : new TypeDeclaration(this._id, this._prefix, this._markers, modifiers, this._name, this._typeParameters, this._initializer, this._type);
         }
 
-        private readonly _name: Java.Identifier;
+        private readonly _name: JLeftPadded<Java.Identifier>;
 
         public get name(): Java.Identifier {
-            return this._name;
+            return this._name.element;
         }
 
         public withName(name: Java.Identifier): TypeDeclaration {
-            return name === this._name ? this : new TypeDeclaration(this._id, this._prefix, this._markers, this._modifiers, name, this._typeParameters, this._initializer, this._type);
+            return this.padding.withName(this._name.withElement(name));
         }
 
         private readonly _typeParameters: Java.TypeParameters | null;
@@ -2120,6 +2120,12 @@ export class TypeDeclaration extends JSMixin(Object) implements Statement, Typed
     get padding() {
         const t = this;
         return new class {
+            public get name(): JLeftPadded<Java.Identifier> {
+                return t._name;
+            }
+            public withName(name: JLeftPadded<Java.Identifier>): TypeDeclaration {
+                return t._name === name ? t : new TypeDeclaration(t._id, t._prefix, t._markers, t._modifiers, name, t._typeParameters, t._initializer, t._type);
+            }
             public get initializer(): JLeftPadded<Expression> {
                 return t._initializer;
             }

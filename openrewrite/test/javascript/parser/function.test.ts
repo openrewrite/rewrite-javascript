@@ -337,4 +337,15 @@ describe('function mapping', () => {
             `)
         );
     });
+
+    test('unnamed function', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                /*1*/ export /*2*/ default /*3*/ function /*4*/(/*5*/hljs/*6*/) /*7*/ {
+
+                }
+            `)
+        );
+    });
 });
