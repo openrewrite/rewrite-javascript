@@ -25,6 +25,7 @@ import {
 } from "../core";
 import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
+import path from "node:path";
 
 export class JavaScriptParser extends Parser {
 
@@ -56,7 +57,7 @@ export class JavaScriptParser extends Parser {
             const input = new ParserInput(filePath, null, false, () => Buffer.from(ts.sys.readFile(filePath)!));
             try {
                 const parsed = new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile;
-                result.push(parsed);
+                result.push(parsed.withSourcePath(relativeTo != null ? path.relative(relativeTo, input.path) : input.path));
             } catch (error) {
                 result.push(ParseError.build(this, input, relativeTo, ctx, error instanceof Error ? error : new Error('Parser threw unknown error: ' + error), null));
             }

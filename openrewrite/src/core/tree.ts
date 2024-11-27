@@ -530,7 +530,7 @@ export class ParseError implements SourceFile {
         return new ParseError(
             randomId(),
             new Markers(randomId(), [ParseExceptionResult.build(parser, exception)]),
-            relativeTo ? path.resolve(input.path, relativeTo) : input.path,
+            relativeTo ? path.relative(relativeTo, input.path) : input.path,
             input.fileAttributes,
             parser.getCharset(ctx),
             false,
