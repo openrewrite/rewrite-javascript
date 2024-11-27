@@ -202,6 +202,16 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.InferType visitInferType(JS.InferType inferType, ReceiverContext ctx) {
+            inferType = inferType.withId(ctx.receiveNonNullValue(inferType.getId(), UUID.class));
+            inferType = inferType.withPrefix(ctx.receiveNonNullNode(inferType.getPrefix(), JavaScriptReceiver::receiveSpace));
+            inferType = inferType.withMarkers(ctx.receiveNonNullNode(inferType.getMarkers(), ctx::receiveMarkers));
+            inferType = inferType.getPadding().withTypeParameter(ctx.receiveNonNullNode(inferType.getPadding().getTypeParameter(), JavaScriptReceiver::receiveLeftPaddedTree));
+            inferType = inferType.withType(ctx.receiveValue(inferType.getType(), JavaType.class));
+            return inferType;
+        }
+
+        @Override
         public JS.JsImport visitJsImport(JS.JsImport jsImport, ReceiverContext ctx) {
             jsImport = jsImport.withId(ctx.receiveNonNullValue(jsImport.getId(), UUID.class));
             jsImport = jsImport.withPrefix(ctx.receiveNonNullNode(jsImport.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1394,6 +1404,16 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.InferType.class) {
+                return (T) new JS.InferType(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
                 );
             }

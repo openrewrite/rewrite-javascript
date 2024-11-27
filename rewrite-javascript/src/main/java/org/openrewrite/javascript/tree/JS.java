@@ -965,6 +965,82 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class InferType implements JS, TypeTree, Expression {
+        @Nullable
+        @NonFinal
+        transient WeakReference<InferType.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JLeftPadded<J> typeParameter;
+
+        public J getTypeParameter() {
+            return typeParameter.getElement();
+        }
+
+        public InferType withTypeParameter(J typeParameter) {
+            return getPadding().withTypeParameter(JLeftPadded.withElement(this.typeParameter, typeParameter));
+        }
+
+        @Getter
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitInferType(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public InferType.Padding getPadding() {
+            InferType.Padding p;
+            if (this.padding == null) {
+                p = new InferType.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new InferType.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final InferType t;
+
+            public JLeftPadded<J> getTypeParameter() {
+                return t.typeParameter;
+            }
+
+            public InferType withTypeParameter(JLeftPadded<J> typeParameter) {
+                return t.typeParameter == typeParameter ? t : new InferType(t.id, t.prefix, t.markers, typeParameter, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     class JsImport implements JS, Statement {
 
         @Nullable

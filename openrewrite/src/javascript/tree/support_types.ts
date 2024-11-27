@@ -241,6 +241,7 @@ export namespace JsSpace {
         TEMPLATE_EXPRESSION_TEMPLATE_SPAN_PREFIX,
         TAGGED_TEMPLATE_EXPRESSION_PREFIX,
         CONDITIONAL_TYPE_PREFIX,
+        INFER_TYPE_PREFIX,
     }
 }
 export namespace JsLeftPadded {
@@ -266,6 +267,7 @@ export namespace JsLeftPadded {
         INDEX_SIGNATURE_DECLARATION_TYPE_EXPRESSION,
         JSFOR_OF_LOOP_AWAIT,
         BINDING_ELEMENT_INITIALIZER,
+        INFER_TYPE_TYPE_PARAMETER,
     }
 }
 export namespace JsRightPadded {

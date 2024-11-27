@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -169,6 +169,19 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         functionType = functionType.withArrow(this.visitJsSpace(functionType.arrow, JsSpace.Location.FUNCTION_TYPE_ARROW, p)!);
         functionType = functionType.withReturnType(this.visitAndCast(functionType.returnType, p)!);
         return functionType;
+    }
+
+    public visitInferType(inferType: InferType, p: P): J | null {
+        inferType = inferType.withPrefix(this.visitJsSpace(inferType.prefix, JsSpace.Location.INFER_TYPE_PREFIX, p)!);
+        let tempExpression = this.visitExpression(inferType, p) as Expression;
+        if (!(tempExpression instanceof InferType))
+        {
+            return tempExpression;
+        }
+        inferType = tempExpression as InferType;
+        inferType = inferType.withMarkers(this.visitMarkers(inferType.markers, p));
+        inferType = inferType.padding.withTypeParameter(this.visitJsLeftPadded(inferType.padding.typeParameter, JsLeftPadded.Location.INFER_TYPE_TYPE_PARAMETER, p)!);
+        return inferType;
     }
 
     public visitJsImport(jsImport: JsImport, p: P): J | null {

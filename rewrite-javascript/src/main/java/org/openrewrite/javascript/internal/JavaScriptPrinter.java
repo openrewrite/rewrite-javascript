@@ -204,6 +204,14 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitInferType(JS.InferType inferType, PrintOutputCapture<P> p) {
+        beforeSyntax(inferType, JsSpace.Location.INFER_TYPE_PREFIX, p);
+        visitLeftPadded("infer", inferType.getPadding().getTypeParameter(), JsLeftPadded.Location.INFER_TYPE_PARAMETER, p);
+        afterSyntax(inferType, p);
+        return inferType;
+    }
+
+    @Override
     public J visitJsImport(JS.JsImport jsImport, PrintOutputCapture<P> p) {
         beforeSyntax(jsImport, JsSpace.Location.EXPORT_PREFIX, p);
         p.append("import");

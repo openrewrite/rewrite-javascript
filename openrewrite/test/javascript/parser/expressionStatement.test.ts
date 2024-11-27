@@ -145,7 +145,7 @@ describe('expression statement mapping', () => {
         );
     });
 
-    test.skip('optional chaining operator with ?. and custom type', () => {
+    test('optional chaining operator with ?. and custom type', () => {
         rewriteRun(
             //language=typescript
             typeScript(`

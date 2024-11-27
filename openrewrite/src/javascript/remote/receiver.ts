@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -142,6 +142,15 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         functionType = functionType.withReturnType(ctx.receiveNode(functionType.returnType, ctx.receiveTree)!);
         functionType = functionType.withType(ctx.receiveValue(functionType.type, ValueType.Object));
         return functionType;
+    }
+
+    public visitInferType(inferType: InferType, ctx: ReceiverContext): J {
+        inferType = inferType.withId(ctx.receiveValue(inferType.id, ValueType.UUID)!);
+        inferType = inferType.withPrefix(ctx.receiveNode(inferType.prefix, receiveSpace)!);
+        inferType = inferType.withMarkers(ctx.receiveNode(inferType.markers, ctx.receiveMarkers)!);
+        inferType = inferType.padding.withTypeParameter(ctx.receiveNode(inferType.padding.typeParameter, receiveLeftPaddedTree)!);
+        inferType = inferType.withType(ctx.receiveValue(inferType.type, ValueType.Object));
+        return inferType;
     }
 
     public visitJsImport(jsImport: JsImport, ctx: ReceiverContext): J {
@@ -1274,6 +1283,16 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<JContainer<Statement>>(null, receiveContainer)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$InferType") {
+            return new InferType(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JLeftPadded<J>>(null, receiveLeftPaddedTree)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }

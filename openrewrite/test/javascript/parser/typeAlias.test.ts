@@ -193,7 +193,7 @@ describe('type alias mapping', () => {
         );
     });
 
-    test.skip('conditional type with parenthesized type', () => {
+    test('conditional type with parenthesized type', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
@@ -202,4 +202,31 @@ describe('type alias mapping', () => {
         );
     });
 
+    test('conditional type with parenthesized type and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Flatten<T> = T extends /*a*/(/*b*/infer/*c*/ R/*d*/)/*e*/[] ? Flatten<R> : T;
+            `)
+        );
+    });
+
+    test('conditional type with parenthesized type and never', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type GetReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+            `)
+        );
+    });
+
+    test('named tuple member type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Coordinate = [x: number, y: number, z?: number];
+                type VariableArgs = [name: string, ...args: number[]];
+            `)
+        );
+    });
 });

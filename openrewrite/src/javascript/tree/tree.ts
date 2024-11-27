@@ -1010,6 +1010,85 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$InferType")
+export class InferType extends JSMixin(Object) implements TypeTree, Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, typeParameter: JLeftPadded<J>, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._typeParameter = typeParameter;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): InferType {
+            return id === this._id ? this : new InferType(id, this._prefix, this._markers, this._typeParameter, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): InferType {
+            return prefix === this._prefix ? this : new InferType(this._id, prefix, this._markers, this._typeParameter, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): InferType {
+            return markers === this._markers ? this : new InferType(this._id, this._prefix, markers, this._typeParameter, this._type);
+        }
+
+        private readonly _typeParameter: JLeftPadded<J>;
+
+        public get typeParameter(): J {
+            return this._typeParameter.element;
+        }
+
+        public withTypeParameter(typeParameter: J): InferType {
+            return this.padding.withTypeParameter(this._typeParameter.withElement(typeParameter));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): InferType {
+            return _type === this._type ? this : new InferType(this._id, this._prefix, this._markers, this._typeParameter, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitInferType(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get typeParameter(): JLeftPadded<J> {
+                return t._typeParameter;
+            }
+            public withTypeParameter(typeParameter: JLeftPadded<J>): InferType {
+                return t._typeParameter === typeParameter ? t : new InferType(t._id, t._prefix, t._markers, typeParameter, t._type);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$JsImport")
 export class JsImport extends JSMixin(Object) implements Statement {
     public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<Java.Identifier> | null, importType: JLeftPadded<boolean>, imports: JContainer<Expression> | null, _from: Space | null, target: Java.Literal | null, initializer: JLeftPadded<Expression> | null) {

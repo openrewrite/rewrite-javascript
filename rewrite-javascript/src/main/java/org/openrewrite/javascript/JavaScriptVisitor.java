@@ -261,6 +261,22 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return f;
     }
 
+
+    public J visitInferType(JS.InferType inferType, P p) {
+        JS.InferType t = inferType;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.INFER_TYPE_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(t, p);
+        if (!(temp instanceof JS.InferType)) {
+            return temp;
+        } else {
+            t = (JS.InferType) temp;
+        }
+        t = t.getPadding().withTypeParameter(visitLeftPadded(t.getPadding().getTypeParameter(), JsLeftPadded.Location.INFER_TYPE_PARAMETER, p));
+        t = t.withType(visitType(t.getType(), p));
+        return t;
+    }
+
     public J visitJsBinary(JS.JsBinary binary, P p) {
         JS.JsBinary b = binary;
         b = b.withPrefix(visitSpace(b.getPrefix(), JsSpace.Location.BINARY_PREFIX, p));
