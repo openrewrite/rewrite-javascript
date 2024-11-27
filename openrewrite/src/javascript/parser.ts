@@ -143,7 +143,7 @@ export class JavaScriptParser extends Parser {
             if (sourceFile) {
                 try {
                     const parsed = new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile;
-                    result.push(parsed);
+                    result.push(parsed.withSourcePath(relativeTo != null ? path.relative(relativeTo, input.path) : input.path));
                 } catch (error) {
                     result.push(ParseError.build(this, input, relativeTo, ctx, error instanceof Error ? error : new Error('Parser threw unknown error: ' + error), null));
                 }
