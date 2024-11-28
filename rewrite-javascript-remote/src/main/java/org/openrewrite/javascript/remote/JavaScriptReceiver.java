@@ -282,6 +282,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.SatisfiesExpression visitSatisfiesExpression(JS.SatisfiesExpression satisfiesExpression, ReceiverContext ctx) {
+            satisfiesExpression = satisfiesExpression.withId(ctx.receiveNonNullValue(satisfiesExpression.getId(), UUID.class));
+            satisfiesExpression = satisfiesExpression.withPrefix(ctx.receiveNonNullNode(satisfiesExpression.getPrefix(), JavaScriptReceiver::receiveSpace));
+            satisfiesExpression = satisfiesExpression.withMarkers(ctx.receiveNonNullNode(satisfiesExpression.getMarkers(), ctx::receiveMarkers));
+            satisfiesExpression = satisfiesExpression.withExpression(ctx.receiveNonNullNode(satisfiesExpression.getExpression(), ctx::receiveTree));
+            satisfiesExpression = satisfiesExpression.getPadding().withSatisfiesType(ctx.receiveNonNullNode(satisfiesExpression.getPadding().getSatisfiesType(), JavaScriptReceiver::receiveLeftPaddedTree));
+            satisfiesExpression = satisfiesExpression.withType(ctx.receiveValue(satisfiesExpression.getType(), JavaType.class));
+            return satisfiesExpression;
+        }
+
+        @Override
         public JS.ScopedVariableDeclarations visitScopedVariableDeclarations(JS.ScopedVariableDeclarations scopedVariableDeclarations, ReceiverContext ctx) {
             scopedVariableDeclarations = scopedVariableDeclarations.withId(ctx.receiveNonNullValue(scopedVariableDeclarations.getId(), UUID.class));
             scopedVariableDeclarations = scopedVariableDeclarations.withPrefix(ctx.receiveNonNullNode(scopedVariableDeclarations.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1507,6 +1518,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNode(null, ctx::receiveTree)
+                );
+            }
+
+            if (type == JS.SatisfiesExpression.class) {
+                return (T) new JS.SatisfiesExpression(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
+                    ctx.receiveValue(null, JavaType.class)
                 );
             }
 

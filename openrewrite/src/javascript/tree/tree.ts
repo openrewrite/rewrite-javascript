@@ -1713,6 +1713,96 @@ export class PropertyAssignment extends JSMixin(Object) implements Statement, Ty
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$SatisfiesExpression")
+export class SatisfiesExpression extends JSMixin(Object) implements Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, expression: J, satisfiesType: JLeftPadded<Expression>, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._expression = expression;
+        this._satisfiesType = satisfiesType;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): SatisfiesExpression {
+            return id === this._id ? this : new SatisfiesExpression(id, this._prefix, this._markers, this._expression, this._satisfiesType, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): SatisfiesExpression {
+            return prefix === this._prefix ? this : new SatisfiesExpression(this._id, prefix, this._markers, this._expression, this._satisfiesType, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): SatisfiesExpression {
+            return markers === this._markers ? this : new SatisfiesExpression(this._id, this._prefix, markers, this._expression, this._satisfiesType, this._type);
+        }
+
+        private readonly _expression: J;
+
+        public get expression(): J {
+            return this._expression;
+        }
+
+        public withExpression(expression: J): SatisfiesExpression {
+            return expression === this._expression ? this : new SatisfiesExpression(this._id, this._prefix, this._markers, expression, this._satisfiesType, this._type);
+        }
+
+        private readonly _satisfiesType: JLeftPadded<Expression>;
+
+        public get satisfiesType(): Expression {
+            return this._satisfiesType.element;
+        }
+
+        public withSatisfiesType(satisfiesType: Expression): SatisfiesExpression {
+            return this.padding.withSatisfiesType(this._satisfiesType.withElement(satisfiesType));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): SatisfiesExpression {
+            return _type === this._type ? this : new SatisfiesExpression(this._id, this._prefix, this._markers, this._expression, this._satisfiesType, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitSatisfiesExpression(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get satisfiesType(): JLeftPadded<Expression> {
+                return t._satisfiesType;
+            }
+            public withSatisfiesType(satisfiesType: JLeftPadded<Expression>): SatisfiesExpression {
+                return t._satisfiesType === satisfiesType ? t : new SatisfiesExpression(t._id, t._prefix, t._markers, t._expression, satisfiesType, t._type);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$ScopedVariableDeclarations")
 export class ScopedVariableDeclarations extends JSMixin(Object) implements Statement {
     public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], scope: JLeftPadded<ScopedVariableDeclarations.Scope> | null, variables: JRightPadded<J>[]) {

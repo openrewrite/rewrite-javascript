@@ -244,6 +244,7 @@ export namespace JsSpace {
         INFER_TYPE_PREFIX,
         TYPE_PREDICATE_PREFIX,
         LITERAL_TYPE_PREFIX,
+        SATISFIES_EXPRESSION_PREFIX,
     }
 }
 export namespace JsLeftPadded {
@@ -272,6 +273,7 @@ export namespace JsLeftPadded {
         INFER_TYPE_TYPE_PARAMETER,
         TYPE_PREDICATE_ASSERTS,
         TYPE_PREDICATE_EXPRESSION,
+        SATISFIES_EXPRESSION_SATISFIES_TYPE,
     }
 }
 export namespace JsRightPadded {

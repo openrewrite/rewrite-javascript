@@ -2254,7 +2254,14 @@ export class JavaScriptParserVisitor {
     }
 
     visitSatisfiesExpression(node: ts.SatisfiesExpression) {
-        return this.visitUnknown(node);
+        return new JS.SatisfiesExpression(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.visit(node.expression),
+            this.leftPadded(this.suffix(node.expression), this.visit(node.type)),
+            this.mapType(node)
+        );
     }
 
     visitTemplateSpan(node: ts.TemplateSpan) {

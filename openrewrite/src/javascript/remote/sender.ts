@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -210,6 +210,16 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(propertyAssignment, v => v.padding.name, Visitor.sendRightPadded(ValueType.Tree));
         ctx.sendNode(propertyAssignment, v => v.initializer, ctx.sendTree);
         return propertyAssignment;
+    }
+
+    public visitSatisfiesExpression(satisfiesExpression: SatisfiesExpression, ctx: SenderContext): J {
+        ctx.sendValue(satisfiesExpression, v => v.id, ValueType.UUID);
+        ctx.sendNode(satisfiesExpression, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(satisfiesExpression, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(satisfiesExpression, v => v.expression, ctx.sendTree);
+        ctx.sendNode(satisfiesExpression, v => v.padding.satisfiesType, Visitor.sendLeftPadded(ValueType.Tree));
+        ctx.sendTypedValue(satisfiesExpression, v => v.type, ValueType.Object);
+        return satisfiesExpression;
     }
 
     public visitScopedVariableDeclarations(scopedVariableDeclarations: ScopedVariableDeclarations, ctx: SenderContext): J {

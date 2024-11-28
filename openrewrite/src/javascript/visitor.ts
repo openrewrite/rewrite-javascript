@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -273,6 +273,20 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         propertyAssignment = propertyAssignment.padding.withName(this.visitJsRightPadded(propertyAssignment.padding.name, JsRightPadded.Location.PROPERTY_ASSIGNMENT_NAME, p)!);
         propertyAssignment = propertyAssignment.withInitializer(this.visitAndCast(propertyAssignment.initializer, p));
         return propertyAssignment;
+    }
+
+    public visitSatisfiesExpression(satisfiesExpression: SatisfiesExpression, p: P): J | null {
+        satisfiesExpression = satisfiesExpression.withPrefix(this.visitJsSpace(satisfiesExpression.prefix, JsSpace.Location.SATISFIES_EXPRESSION_PREFIX, p)!);
+        let tempExpression = this.visitExpression(satisfiesExpression, p) as Expression;
+        if (!(tempExpression instanceof SatisfiesExpression))
+        {
+            return tempExpression;
+        }
+        satisfiesExpression = tempExpression as SatisfiesExpression;
+        satisfiesExpression = satisfiesExpression.withMarkers(this.visitMarkers(satisfiesExpression.markers, p));
+        satisfiesExpression = satisfiesExpression.withExpression(this.visitAndCast(satisfiesExpression.expression, p)!);
+        satisfiesExpression = satisfiesExpression.padding.withSatisfiesType(this.visitJsLeftPadded(satisfiesExpression.padding.satisfiesType, JsLeftPadded.Location.SATISFIES_EXPRESSION_SATISFIES_TYPE, p)!);
+        return satisfiesExpression;
     }
 
     public visitScopedVariableDeclarations(scopedVariableDeclarations: ScopedVariableDeclarations, p: P): J | null {

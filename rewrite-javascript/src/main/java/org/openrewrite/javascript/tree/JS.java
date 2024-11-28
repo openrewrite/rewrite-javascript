@@ -1607,6 +1607,86 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class SatisfiesExpression implements JS, Expression {
+        @Nullable
+        @NonFinal
+        transient WeakReference<SatisfiesExpression.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        J expression;
+
+        JLeftPadded<Expression> satisfiesType;
+
+        public Expression getSatisfiesType() {
+            return satisfiesType.getElement();
+        }
+
+        public SatisfiesExpression withSatisfiesType(Expression expression) {
+            return getPadding().withSatisfiesType(this.satisfiesType.withElement(expression));
+        }
+
+        @Getter
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitSatisfiesExpression(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public SatisfiesExpression.Padding getPadding() {
+            SatisfiesExpression.Padding p;
+            if (this.padding == null) {
+                p = new SatisfiesExpression.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new SatisfiesExpression.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final SatisfiesExpression t;
+
+            public @Nullable JLeftPadded<Expression> getSatisfiesType() {
+                return t.satisfiesType;
+            }
+
+            public SatisfiesExpression withSatisfiesType(@Nullable JLeftPadded<Expression> satisfiesType) {
+                return t.satisfiesType == satisfiesType ? t : new SatisfiesExpression(t.id, t.prefix, t.markers, t.expression, satisfiesType, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     class ScopedVariableDeclarations implements JS, Statement {
 
         @Nullable

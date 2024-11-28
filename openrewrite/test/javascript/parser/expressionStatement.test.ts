@@ -155,4 +155,39 @@ describe('expression statement mapping', () => {
         );
     });
 
+    test('satisfies expression', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Person = {
+                    name: string;
+                    age: number;
+                };
+
+                const user = /*o*/ {
+                    name: "Alice",
+                    age: 25,
+                    occupation: "Engineer"
+                } /*a*/ satisfies /*b*/ Person /*c*/;
+            `)
+        );
+    });
+
+    test('atisfies expression with complex type ', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type ApiResponse<T> = {
+                    data: T;
+                    status: "success" | "error";
+                };
+
+                const response = {
+                    data: { userId: 1 },
+                    status: "success",
+                } satisfies ApiResponse<{ userId: number }>;
+            `)
+        );
+    });
+
 });

@@ -385,6 +385,21 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return pa;
     }
 
+    public J visitSatisfiesExpression(JS.SatisfiesExpression satisfiesExpression, P p) {
+        JS.SatisfiesExpression sa = satisfiesExpression;
+        sa = sa.withPrefix(visitSpace(sa.getPrefix(), JsSpace.Location.SATISFIES_EXPRESSION_PREFIX, p));
+        sa = sa.withMarkers(visitMarkers(sa.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(sa, p);
+        if (!(temp instanceof JS.SatisfiesExpression)) {
+            return temp;
+        } else {
+            sa = (JS.SatisfiesExpression) temp;
+        }
+        sa = sa.withExpression(visitAndCast(sa.getExpression(), p));
+        sa = sa.getPadding().withSatisfiesType(visitLeftPadded(sa.getPadding().getSatisfiesType(), JsLeftPadded.Location.SATISFIES_EXPRESSION_TYPE, p));
+        return sa;
+    }
+
     public J visitScopedVariableDeclarations(JS.ScopedVariableDeclarations scopedVariableDeclarations, P p) {
         JS.ScopedVariableDeclarations vd = scopedVariableDeclarations;
         vd = vd.withPrefix(visitSpace(vd.getPrefix(), JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_PREFIX, p));

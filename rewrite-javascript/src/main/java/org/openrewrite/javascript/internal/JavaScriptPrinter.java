@@ -373,6 +373,15 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitSatisfiesExpression(JS.SatisfiesExpression satisfiesExpression, PrintOutputCapture<P> p) {
+        beforeSyntax(satisfiesExpression, JsSpace.Location.SATISFIES_EXPRESSION_PREFIX, p);
+        visit(satisfiesExpression.getExpression(), p);
+        visitLeftPadded("satisfies", satisfiesExpression.getPadding().getSatisfiesType(), JsLeftPadded.Location.SATISFIES_EXPRESSION_TYPE, p);
+        afterSyntax(satisfiesExpression, p);
+        return satisfiesExpression;
+    }
+
+    @Override
     public J visitTaggedTemplateExpression(JS.TaggedTemplateExpression taggedTemplateExpression, PrintOutputCapture<P> p) {
         beforeSyntax(taggedTemplateExpression, JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p);
         visitRightPadded(taggedTemplateExpression.getPadding().getTag(), JsRightPadded.Location.TEMPLATE_EXPRESSION_TAG, p);

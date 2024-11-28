@@ -265,6 +265,17 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.SatisfiesExpression visitSatisfiesExpression(JS.SatisfiesExpression satisfiesExpression, SenderContext ctx) {
+            ctx.sendValue(satisfiesExpression, JS.SatisfiesExpression::getId);
+            ctx.sendNode(satisfiesExpression, JS.SatisfiesExpression::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(satisfiesExpression, JS.SatisfiesExpression::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(satisfiesExpression, JS.SatisfiesExpression::getExpression, ctx::sendTree);
+            ctx.sendNode(satisfiesExpression, e -> e.getPadding().getSatisfiesType(), JavaScriptSender::sendLeftPadded);
+            ctx.sendTypedValue(satisfiesExpression, JS.SatisfiesExpression::getType);
+            return satisfiesExpression;
+        }
+
+        @Override
         public JS.ScopedVariableDeclarations visitScopedVariableDeclarations(JS.ScopedVariableDeclarations scopedVariableDeclarations, SenderContext ctx) {
             ctx.sendValue(scopedVariableDeclarations, JS.ScopedVariableDeclarations::getId);
             ctx.sendNode(scopedVariableDeclarations, JS.ScopedVariableDeclarations::getPrefix, JavaScriptSender::sendSpace);

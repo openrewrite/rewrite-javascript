@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -215,6 +215,16 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         propertyAssignment = propertyAssignment.padding.withName(ctx.receiveNode(propertyAssignment.padding.name, receiveRightPaddedTree)!);
         propertyAssignment = propertyAssignment.withInitializer(ctx.receiveNode(propertyAssignment.initializer, ctx.receiveTree));
         return propertyAssignment;
+    }
+
+    public visitSatisfiesExpression(satisfiesExpression: SatisfiesExpression, ctx: ReceiverContext): J {
+        satisfiesExpression = satisfiesExpression.withId(ctx.receiveValue(satisfiesExpression.id, ValueType.UUID)!);
+        satisfiesExpression = satisfiesExpression.withPrefix(ctx.receiveNode(satisfiesExpression.prefix, receiveSpace)!);
+        satisfiesExpression = satisfiesExpression.withMarkers(ctx.receiveNode(satisfiesExpression.markers, ctx.receiveMarkers)!);
+        satisfiesExpression = satisfiesExpression.withExpression(ctx.receiveNode(satisfiesExpression.expression, ctx.receiveTree)!);
+        satisfiesExpression = satisfiesExpression.padding.withSatisfiesType(ctx.receiveNode(satisfiesExpression.padding.satisfiesType, receiveLeftPaddedTree)!);
+        satisfiesExpression = satisfiesExpression.withType(ctx.receiveValue(satisfiesExpression.type, ValueType.Object));
+        return satisfiesExpression;
     }
 
     public visitScopedVariableDeclarations(scopedVariableDeclarations: ScopedVariableDeclarations, ctx: ReceiverContext): J {
@@ -1384,6 +1394,17 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$SatisfiesExpression") {
+            return new SatisfiesExpression(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<J>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)!,
+                ctx.receiveValue(null, ValueType.Object)
             );
         }
 
