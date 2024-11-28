@@ -1343,6 +1343,39 @@ public interface JS extends J {
     }
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false)
+    @Data
+    @RequiredArgsConstructor
+    final class LiteralType implements JS, Expression, TypeTree {
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        // Not `J.Literal` so that also literals like `-1` are captured
+        @With
+        Expression literal;
+
+        @With
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitLiteralType(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -2263,6 +2296,106 @@ public interface JS extends J {
 
             public JS.TypeOperator withExpression(JLeftPadded<Expression> expression) {
                 return t.expression == expression ? t : new JS.TypeOperator(t.id, t.prefix, t.markers, t.operator, expression);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class TypePredicate implements JS, Expression, TypeTree {
+        @Nullable
+        @NonFinal
+        transient WeakReference<TypePredicate.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JLeftPadded<Boolean> asserts;
+
+        public boolean isAsserts() {
+            return asserts.getElement();
+        }
+
+        public TypePredicate withAsserts(boolean asserts) {
+            return getPadding().withAsserts(this.asserts.withElement(asserts));
+        }
+
+        @With
+        @Getter
+        J.Identifier parameterName;
+
+        @Nullable
+        JLeftPadded<Expression> expression;
+
+        @Nullable
+        public Expression getExpression() {
+            return expression != null ? expression.getElement() : null;
+        }
+
+        public TypePredicate withExpression(@Nullable Expression expression) {
+            return getPadding().withExpression(this.expression.withElement(expression));
+        }
+
+        @Getter
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTypePredicate(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public TypePredicate.Padding getPadding() {
+            TypePredicate.Padding p;
+            if (this.padding == null) {
+                p = new TypePredicate.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new TypePredicate.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final TypePredicate t;
+
+            public JLeftPadded<Boolean> getAsserts() {
+                return t.asserts;
+            }
+
+            public TypePredicate withAsserts(JLeftPadded<Boolean> asserts) {
+                return t.asserts == asserts ? t : new TypePredicate(t.id, t.prefix, t.markers, asserts, t.parameterName, t.expression, t.type);
+            }
+
+            public @Nullable JLeftPadded<Expression> getExpression() {
+                return t.expression;
+            }
+
+            public TypePredicate withExpression(@Nullable JLeftPadded<Expression> expression) {
+                return t.expression == expression ? t : new TypePredicate(t.id, t.prefix, t.markers, t.asserts, t.parameterName, expression, t.type);
             }
         }
     }

@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -187,6 +187,15 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         return jsBinary;
     }
 
+    public visitLiteralType(literalType: LiteralType, ctx: ReceiverContext): J {
+        literalType = literalType.withId(ctx.receiveValue(literalType.id, ValueType.UUID)!);
+        literalType = literalType.withPrefix(ctx.receiveNode(literalType.prefix, receiveSpace)!);
+        literalType = literalType.withMarkers(ctx.receiveNode(literalType.markers, ctx.receiveMarkers)!);
+        literalType = literalType.withLiteral(ctx.receiveNode(literalType.literal, ctx.receiveTree)!);
+        literalType = literalType.withType(ctx.receiveValue(literalType.type, ValueType.Object)!);
+        return literalType;
+    }
+
     public visitObjectBindingDeclarations(objectBindingDeclarations: ObjectBindingDeclarations, ctx: ReceiverContext): J {
         objectBindingDeclarations = objectBindingDeclarations.withId(ctx.receiveValue(objectBindingDeclarations.id, ValueType.UUID)!);
         objectBindingDeclarations = objectBindingDeclarations.withPrefix(ctx.receiveNode(objectBindingDeclarations.prefix, receiveSpace)!);
@@ -300,6 +309,17 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         typeOperator = typeOperator.withOperator(ctx.receiveValue(typeOperator.operator, ValueType.Enum)!);
         typeOperator = typeOperator.padding.withExpression(ctx.receiveNode(typeOperator.padding.expression, receiveLeftPaddedTree)!);
         return typeOperator;
+    }
+
+    public visitTypePredicate(typePredicate: TypePredicate, ctx: ReceiverContext): J {
+        typePredicate = typePredicate.withId(ctx.receiveValue(typePredicate.id, ValueType.UUID)!);
+        typePredicate = typePredicate.withPrefix(ctx.receiveNode(typePredicate.prefix, receiveSpace)!);
+        typePredicate = typePredicate.withMarkers(ctx.receiveNode(typePredicate.markers, ctx.receiveMarkers)!);
+        typePredicate = typePredicate.padding.withAsserts(ctx.receiveNode(typePredicate.padding.asserts, leftPaddedValueReceiver(ValueType.Primitive))!);
+        typePredicate = typePredicate.withParameterName(ctx.receiveNode(typePredicate.parameterName, ctx.receiveTree)!);
+        typePredicate = typePredicate.padding.withExpression(ctx.receiveNode(typePredicate.padding.expression, receiveLeftPaddedTree));
+        typePredicate = typePredicate.withType(ctx.receiveValue(typePredicate.type, ValueType.Object));
+        return typePredicate;
     }
 
     public visitJsUnary(unary: Unary, ctx: ReceiverContext): J {
@@ -1334,6 +1354,16 @@ class Factory implements ReceiverFactory {
             );
         }
 
+        if (type === "org.openrewrite.javascript.tree.JS$LiteralType") {
+            return new LiteralType(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveValue(null, ValueType.Object)!
+            );
+        }
+
         if (type === "org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations") {
             return new ObjectBindingDeclarations(
                 ctx.receiveValue(null, ValueType.UUID)!,
@@ -1458,6 +1488,18 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveValue(null, ValueType.Enum)!,
                 ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)!
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$TypePredicate") {
+            return new TypePredicate(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JLeftPadded<boolean>>(null, leftPaddedValueReceiver(ValueType.Primitive))!,
+                ctx.receiveNode<Java.Identifier>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree),
+                ctx.receiveValue(null, ValueType.Object)
             );
         }
 

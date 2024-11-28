@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -182,6 +182,15 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         return jsBinary;
     }
 
+    public visitLiteralType(literalType: LiteralType, ctx: SenderContext): J {
+        ctx.sendValue(literalType, v => v.id, ValueType.UUID);
+        ctx.sendNode(literalType, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(literalType, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(literalType, v => v.literal, ctx.sendTree);
+        ctx.sendTypedValue(literalType, v => v.type, ValueType.Object);
+        return literalType;
+    }
+
     public visitObjectBindingDeclarations(objectBindingDeclarations: ObjectBindingDeclarations, ctx: SenderContext): J {
         ctx.sendValue(objectBindingDeclarations, v => v.id, ValueType.UUID);
         ctx.sendNode(objectBindingDeclarations, v => v.prefix, Visitor.sendSpace);
@@ -295,6 +304,17 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendValue(typeOperator, v => v.operator, ValueType.Enum);
         ctx.sendNode(typeOperator, v => v.padding.expression, Visitor.sendLeftPadded(ValueType.Tree));
         return typeOperator;
+    }
+
+    public visitTypePredicate(typePredicate: TypePredicate, ctx: SenderContext): J {
+        ctx.sendValue(typePredicate, v => v.id, ValueType.UUID);
+        ctx.sendNode(typePredicate, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(typePredicate, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(typePredicate, v => v.padding.asserts, Visitor.sendLeftPadded(ValueType.Primitive));
+        ctx.sendNode(typePredicate, v => v.parameterName, ctx.sendTree);
+        ctx.sendNode(typePredicate, v => v.padding.expression, Visitor.sendLeftPadded(ValueType.Tree));
+        ctx.sendTypedValue(typePredicate, v => v.type, ValueType.Object);
+        return typePredicate;
     }
 
     public visitJsUnary(unary: Unary, ctx: SenderContext): J {

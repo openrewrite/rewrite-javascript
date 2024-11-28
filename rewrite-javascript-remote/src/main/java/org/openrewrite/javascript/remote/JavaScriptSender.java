@@ -232,6 +232,16 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.LiteralType visitLiteralType(JS.LiteralType literalType, SenderContext ctx) {
+            ctx.sendValue(literalType, JS.LiteralType::getId);
+            ctx.sendNode(literalType, JS.LiteralType::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(literalType, JS.LiteralType::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(literalType, JS.LiteralType::getLiteral, ctx::sendTree);
+            ctx.sendTypedValue(literalType, JS.LiteralType::getType);
+            return literalType;
+        }
+
+        @Override
         public JS.ObjectBindingDeclarations visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, SenderContext ctx) {
             ctx.sendValue(objectBindingDeclarations, JS.ObjectBindingDeclarations::getId);
             ctx.sendNode(objectBindingDeclarations, JS.ObjectBindingDeclarations::getPrefix, JavaScriptSender::sendSpace);
@@ -356,6 +366,18 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendValue(typeOperator, JS.TypeOperator::getOperator);
             ctx.sendNode(typeOperator, e -> e.getPadding().getExpression(), JavaScriptSender::sendLeftPadded);
             return typeOperator;
+        }
+
+        @Override
+        public JS.TypePredicate visitTypePredicate(JS.TypePredicate typePredicate, SenderContext ctx) {
+            ctx.sendValue(typePredicate, JS.TypePredicate::getId);
+            ctx.sendNode(typePredicate, JS.TypePredicate::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(typePredicate, JS.TypePredicate::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(typePredicate, e -> e.getPadding().getAsserts(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(typePredicate, JS.TypePredicate::getParameterName, ctx::sendTree);
+            ctx.sendNode(typePredicate, e -> e.getPadding().getExpression(), JavaScriptSender::sendLeftPadded);
+            ctx.sendTypedValue(typePredicate, JS.TypePredicate::getType);
+            return typePredicate;
         }
 
         @Override

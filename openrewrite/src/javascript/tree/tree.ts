@@ -1433,6 +1433,73 @@ export namespace JsBinary {
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$LiteralType")
+export class LiteralType extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, literal: Expression, _type: JavaType) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._literal = literal;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): LiteralType {
+            return id === this._id ? this : new LiteralType(id, this._prefix, this._markers, this._literal, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): LiteralType {
+            return prefix === this._prefix ? this : new LiteralType(this._id, prefix, this._markers, this._literal, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): LiteralType {
+            return markers === this._markers ? this : new LiteralType(this._id, this._prefix, markers, this._literal, this._type);
+        }
+
+        private readonly _literal: Expression;
+
+        public get literal(): Expression {
+            return this._literal;
+        }
+
+        public withLiteral(literal: Expression): LiteralType {
+            return literal === this._literal ? this : new LiteralType(this._id, this._prefix, this._markers, literal, this._type);
+        }
+
+        private readonly _type: JavaType;
+
+        public get type(): JavaType {
+            return this._type;
+        }
+
+        public withType(_type: JavaType): LiteralType {
+            return _type === this._type ? this : new LiteralType(this._id, this._prefix, this._markers, this._literal, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitLiteralType(this, p);
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations")
 export class ObjectBindingDeclarations extends JSMixin(Object) implements Expression, TypedTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<BindingElement>, initializer: JLeftPadded<Expression> | null) {
@@ -2442,6 +2509,113 @@ export namespace TypeOperator {
             ReadOnly = 0,
             KeyOf = 1,
 
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$TypePredicate")
+export class TypePredicate extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, asserts: JLeftPadded<boolean>, parameterName: Java.Identifier, expression: JLeftPadded<Expression> | null, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._asserts = asserts;
+        this._parameterName = parameterName;
+        this._expression = expression;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): TypePredicate {
+            return id === this._id ? this : new TypePredicate(id, this._prefix, this._markers, this._asserts, this._parameterName, this._expression, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): TypePredicate {
+            return prefix === this._prefix ? this : new TypePredicate(this._id, prefix, this._markers, this._asserts, this._parameterName, this._expression, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): TypePredicate {
+            return markers === this._markers ? this : new TypePredicate(this._id, this._prefix, markers, this._asserts, this._parameterName, this._expression, this._type);
+        }
+
+        private readonly _asserts: JLeftPadded<boolean>;
+
+        public get asserts(): boolean {
+            return this._asserts.element;
+        }
+
+        public withAsserts(asserts: boolean): TypePredicate {
+            return this.padding.withAsserts(this._asserts.withElement(asserts));
+        }
+
+        private readonly _parameterName: Java.Identifier;
+
+        public get parameterName(): Java.Identifier {
+            return this._parameterName;
+        }
+
+        public withParameterName(parameterName: Java.Identifier): TypePredicate {
+            return parameterName === this._parameterName ? this : new TypePredicate(this._id, this._prefix, this._markers, this._asserts, parameterName, this._expression, this._type);
+        }
+
+        private readonly _expression: JLeftPadded<Expression> | null;
+
+        public get expression(): Expression | null {
+            return this._expression === null ? null : this._expression.element;
+        }
+
+        public withExpression(expression: Expression | null): TypePredicate {
+            return this.padding.withExpression(JLeftPadded.withElement(this._expression, expression));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): TypePredicate {
+            return _type === this._type ? this : new TypePredicate(this._id, this._prefix, this._markers, this._asserts, this._parameterName, this._expression, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTypePredicate(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get asserts(): JLeftPadded<boolean> {
+                return t._asserts;
+            }
+            public withAsserts(asserts: JLeftPadded<boolean>): TypePredicate {
+                return t._asserts === asserts ? t : new TypePredicate(t._id, t._prefix, t._markers, asserts, t._parameterName, t._expression, t._type);
+            }
+            public get expression(): JLeftPadded<Expression> | null {
+                return t._expression;
+            }
+            public withExpression(expression: JLeftPadded<Expression> | null): TypePredicate {
+                return t._expression === expression ? t : new TypePredicate(t._id, t._prefix, t._markers, t._asserts, t._parameterName, expression, t._type);
+            }
+        }
     }
 
 }

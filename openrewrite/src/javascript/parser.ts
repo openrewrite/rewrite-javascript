@@ -1184,7 +1184,15 @@ export class JavaScriptParserVisitor {
     }
 
     visitTypePredicate(node: ts.TypePredicateNode) {
-        return this.visitUnknown(node);
+        return new JS.TypePredicate(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            node.assertsModifier ? this.leftPadded(this.prefix(node.assertsModifier), true) : this.leftPadded(Space.EMPTY, false),
+            this.visit(node.parameterName),
+            node.type ? this.leftPadded(this.suffix(node.parameterName), this.convert(node.type)) : null,
+            this.mapType(node)
+        );
     }
 
     visitTypeReference(node: ts.TypeReferenceNode) {
@@ -1434,7 +1442,13 @@ export class JavaScriptParserVisitor {
     }
 
     visitLiteralType(node: ts.LiteralTypeNode) {
-        return this.visit(node.literal);
+        return new JS.LiteralType(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.visit(node.literal),
+            this.mapType(node)!
+        );
     }
 
     visitNamedTupleMember(node: ts.NamedTupleMember) {

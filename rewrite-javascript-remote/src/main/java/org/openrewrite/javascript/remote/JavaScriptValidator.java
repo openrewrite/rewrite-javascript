@@ -156,6 +156,12 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.LiteralType visitLiteralType(JS.LiteralType literalType, P p) {
+        visitAndValidate(literalType.getLiteral(), Expression.class, p);
+        return literalType;
+    }
+
+    @Override
     public JS.ObjectBindingDeclarations visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, P p) {
         ListUtils.map(objectBindingDeclarations.getLeadingAnnotations(), el -> visitAndValidate(el, J.Annotation.class, p));
         ListUtils.map(objectBindingDeclarations.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
@@ -238,6 +244,13 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     public JS.TypeOperator visitTypeOperator(JS.TypeOperator typeOperator, P p) {
         visitAndValidate(typeOperator.getExpression(), Expression.class, p);
         return typeOperator;
+    }
+
+    @Override
+    public JS.TypePredicate visitTypePredicate(JS.TypePredicate typePredicate, P p) {
+        visitAndValidate(typePredicate.getParameterName(), J.Identifier.class, p);
+        visitAndValidate(typePredicate.getExpression(), Expression.class, p);
+        return typePredicate;
     }
 
     @Override

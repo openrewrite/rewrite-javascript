@@ -32,4 +32,13 @@ describe('type literal mapping', () => {
           `)
         );
     });
+
+    test('type literal', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Animal = { kind: "dog"; bark(): void };
+            `)
+        );
+    });
 });

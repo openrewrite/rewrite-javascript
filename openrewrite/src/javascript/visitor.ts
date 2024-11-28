@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -231,6 +231,19 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return jsBinary;
     }
 
+    public visitLiteralType(literalType: LiteralType, p: P): J | null {
+        literalType = literalType.withPrefix(this.visitJsSpace(literalType.prefix, JsSpace.Location.LITERAL_TYPE_PREFIX, p)!);
+        let tempExpression = this.visitExpression(literalType, p) as Expression;
+        if (!(tempExpression instanceof LiteralType))
+        {
+            return tempExpression;
+        }
+        literalType = tempExpression as LiteralType;
+        literalType = literalType.withMarkers(this.visitMarkers(literalType.markers, p));
+        literalType = literalType.withLiteral(this.visitAndCast(literalType.literal, p)!);
+        return literalType;
+    }
+
     public visitObjectBindingDeclarations(objectBindingDeclarations: ObjectBindingDeclarations, p: P): J | null {
         objectBindingDeclarations = objectBindingDeclarations.withPrefix(this.visitJsSpace(objectBindingDeclarations.prefix, JsSpace.Location.OBJECT_BINDING_DECLARATIONS_PREFIX, p)!);
         let tempExpression = this.visitExpression(objectBindingDeclarations, p) as Expression;
@@ -397,6 +410,21 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         typeOperator = typeOperator.withMarkers(this.visitMarkers(typeOperator.markers, p));
         typeOperator = typeOperator.padding.withExpression(this.visitJsLeftPadded(typeOperator.padding.expression, JsLeftPadded.Location.TYPE_OPERATOR_EXPRESSION, p)!);
         return typeOperator;
+    }
+
+    public visitTypePredicate(typePredicate: TypePredicate, p: P): J | null {
+        typePredicate = typePredicate.withPrefix(this.visitJsSpace(typePredicate.prefix, JsSpace.Location.TYPE_PREDICATE_PREFIX, p)!);
+        let tempExpression = this.visitExpression(typePredicate, p) as Expression;
+        if (!(tempExpression instanceof TypePredicate))
+        {
+            return tempExpression;
+        }
+        typePredicate = tempExpression as TypePredicate;
+        typePredicate = typePredicate.withMarkers(this.visitMarkers(typePredicate.markers, p));
+        typePredicate = typePredicate.padding.withAsserts(this.visitJsLeftPadded(typePredicate.padding.asserts, JsLeftPadded.Location.TYPE_PREDICATE_ASSERTS, p)!);
+        typePredicate = typePredicate.withParameterName(this.visitAndCast(typePredicate.parameterName, p)!);
+        typePredicate = typePredicate.padding.withExpression(this.visitJsLeftPadded(typePredicate.padding.expression, JsLeftPadded.Location.TYPE_PREDICATE_EXPRESSION, p));
+        return typePredicate;
     }
 
     public visitJsUnary(unary: Unary, p: P): J | null {

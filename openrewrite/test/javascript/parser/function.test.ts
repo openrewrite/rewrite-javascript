@@ -343,7 +343,80 @@ describe('function mapping', () => {
             //language=typescript
             typeScript(`
                 /*1*/ export /*2*/ default /*3*/ function /*4*/(/*5*/hljs/*6*/) /*7*/ {
+                }
+            `)
+        );
+    });
 
+    test('function with type predicate simple', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function isString(value: unknown): value is string {
+                    return typeof value === 'string';
+                }
+            `)
+        );
+    });
+
+    test('function with type predicate simple with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function isString(value: unknown): /*a*/value /*b*/is/*c*/ string/*d*/ {
+                    return typeof value === 'string';
+                }
+            `)
+        );
+    });
+
+    test('function with type predicate and asserts', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function assertIsString(value: unknown): asserts value is string {
+                    if (typeof value !== "string") {
+                        throw new Error("Value is not a string");
+                    }
+                }
+            `)
+        );
+    });
+
+    test('function with type predicate and asserts with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function assertIsString(value: unknown): /*a*/asserts/*b*/ value /*c*/is/*d*/ string /*e*/{
+                    if (typeof value !== "string") {
+                        throw new Error("Value is not a string");
+                    }
+                }
+            `)
+        );
+    });
+
+    test('function with type predicate, asserts and without type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                function assert(value: unknown, message: string): asserts /*a*/value/*b*/ {
+                    if (!value) {
+                        throw new Error(message);
+                    }
+                }
+            `)
+        );
+    });
+
+    test('function with type predicate, asserts and complex type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Animal = { kind: "dog"; bark(): void } | { kind: "cat"; purr(): void };
+
+                function isDog(animal: Animal): animal is { kind: "dog"; bark(): void } {
+                    return animal.kind === "dog";
                 }
             `)
         );
