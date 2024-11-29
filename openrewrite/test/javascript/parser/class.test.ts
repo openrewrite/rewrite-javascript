@@ -265,6 +265,20 @@ describe('class mapping', () => {
         );
     });
 
+    test('class extends expression with constructor', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class OuterClass extends (class extends Number {
+                }) {
+                    constructor() {
+                        /*1*/ super /*2*/ () /*3*/;
+                    }
+                }
+            `)
+        );
+    });
+
     test('class expressions inline', () => {
         rewriteRun(
             //language=typescript

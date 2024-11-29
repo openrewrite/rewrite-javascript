@@ -1760,6 +1760,10 @@ export class JavaScriptParserVisitor {
         )
     }
 
+    visitSuperKeyword(node: ts.KeywordToken<ts.SyntaxKind.SuperKeyword>) {
+        return this.mapIdentifier(node, node.getText());
+    }
+
     visitNewExpression(node: ts.NewExpression) {
         return new J.NewClass(
             randomId(),
