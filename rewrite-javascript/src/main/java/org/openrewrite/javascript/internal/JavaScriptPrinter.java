@@ -646,7 +646,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         beforeSyntax(method, JsSpace.Location.JSMETHOD_DECLARATION_PREFIX, p);
         visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
         visit(method.getLeadingAnnotations(), p);
-        method.getModifiers().forEach(it -> visitModifier(it, p));
+        method.getModifiers().forEach(it -> delegate.visitModifier(it, p));
 
         Asterisk asterisk = method.getMarkers().findFirst(Asterisk.class).orElse(null);
         if (asterisk != null) {
@@ -679,9 +679,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     public J visitFunctionDeclaration(JS.FunctionDeclaration functionDeclaration, PrintOutputCapture<P> p) {
         beforeSyntax(functionDeclaration, JsSpace.Location.FUNCTION_DECLARATION_PREFIX, p);
         functionDeclaration.getModifiers().forEach(m -> delegate.visitModifier(m, p));
-        p.append("function");
 
-        visit(functionDeclaration.getName(), p);
+        visitLeftPaddedBoolean("function", functionDeclaration.getPadding().getAsteriskToken(), JsLeftPadded.Location.FUNCTION_DECLARATION_ASTERISK_TOKEN, p);
+
+        visitLeftPadded(functionDeclaration.hasAsteriskToken() ? "*" : "", functionDeclaration.getPadding().getName(), JsLeftPadded.Location.FUNCTION_DECLARATION_NAME, p);
 
         J.TypeParameters typeParameters = functionDeclaration.getTypeParameters();
         if (typeParameters != null) {
@@ -772,6 +773,54 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         afterSyntax(abp, p);
         return abp;
+    }
+
+    @Override
+    public J visitExportDeclaration(JS.ExportDeclaration ed, PrintOutputCapture<P> p) {
+        beforeSyntax(ed, JsSpace.Location.EXPORT_DECLARATION_PREFIX, p);
+        p.append("export");
+        ed.getModifiers().forEach(it -> delegate.visitModifier(it, p));
+        if (ed.isTypeOnly()) {
+            visitLeftPaddedBoolean("type", ed.getPadding().getTypeOnly(), JsLeftPadded.Location.EXPORT_DECLARATION_TYPE_ONLY, p);
+        }
+        visit(ed.getExportClause(), p);
+        visitLeftPadded("from", ed.getPadding().getModuleSpecifier(), JsLeftPadded.Location.EXPORT_DECLARATION_MODULE_SPECIFIER, p);
+        afterSyntax(ed, p);
+        return ed;
+    }
+
+    @Override
+    public J visitExportAssignment(JS.ExportAssignment es, PrintOutputCapture<P> p) {
+        beforeSyntax(es, JsSpace.Location.EXPORT_ASSIGNMENT_PREFIX, p);
+        p.append("export");
+        es.getModifiers().forEach(it -> delegate.visitModifier(it, p));
+        if (es.isExportEquals()) {
+            visitLeftPaddedBoolean("=", es.getPadding().getExportEquals(), JsLeftPadded.Location.EXPORT_ASSIGNMENT_EXPORT_EQUALS, p);
+        }
+        visit(es.getExpression(), p);
+        afterSyntax(es, p);
+        return es;
+    }
+
+    @Override
+    public J visitNamedExports(JS.NamedExports ne, PrintOutputCapture<P> p) {
+        beforeSyntax(ne, JsSpace.Location.NAMED_EXPORTS_PREFIX, p);
+        visitContainer("{", ne.getPadding().getElements(), JsContainer.Location.NAMED_EXPORTS_ELEMENTS, ",", "}", p);
+        afterSyntax(ne, p);
+        return ne;
+    }
+
+    @Override
+    public J visitExportSpecifier(JS.ExportSpecifier es, PrintOutputCapture<P> p) {
+        beforeSyntax(es, JsSpace.Location.EXPORT_SPECIFIER_PREFIX, p);
+        if (es.isTypeOnly()) {
+            visitLeftPaddedBoolean("type", es.getPadding().getTypeOnly(), JsLeftPadded.Location.EXPORT_SPECIFIER_TYPE_ONLY, p);
+        }
+
+        visit(es.getSpecifier(), p);
+
+        afterSyntax(es, p);
+        return es;
     }
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
@@ -939,7 +988,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             beforeSyntax(method, Space.Location.METHOD_DECLARATION_PREFIX, p);
             visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
             visit(method.getLeadingAnnotations(), p);
-            method.getModifiers().forEach(it -> visitModifier(it, p));
+            method.getModifiers().forEach(it -> delegate.visitModifier(it, p));
 
             Asterisk asterisk = method.getMarkers().findFirst(Asterisk.class).orElse(null);
             if (asterisk != null) {
@@ -1135,7 +1184,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         public J visitVariableDeclarations(J.VariableDeclarations multiVariable, PrintOutputCapture<P> p) {
             beforeSyntax(multiVariable, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
             visit(multiVariable.getLeadingAnnotations(), p);
-            multiVariable.getModifiers().forEach(it -> visitModifier(it, p));
+            multiVariable.getModifiers().forEach(it -> delegate.visitModifier(it, p));
 
             List<JRightPadded<J.VariableDeclarations.NamedVariable>> variables = multiVariable.getPadding().getVariables();
             for (int i = 0; i < variables.size(); i++) {

@@ -573,7 +573,8 @@ public class JavaScriptReceiver implements Receiver<JS> {
             functionDeclaration = functionDeclaration.withPrefix(ctx.receiveNonNullNode(functionDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
             functionDeclaration = functionDeclaration.withMarkers(ctx.receiveNonNullNode(functionDeclaration.getMarkers(), ctx::receiveMarkers));
             functionDeclaration = functionDeclaration.withModifiers(ctx.receiveNonNullNodes(functionDeclaration.getModifiers(), ctx::receiveTree));
-            functionDeclaration = functionDeclaration.withName(ctx.receiveNode(functionDeclaration.getName(), ctx::receiveTree));
+            functionDeclaration = functionDeclaration.getPadding().withAsteriskToken(ctx.receiveNonNullNode(functionDeclaration.getPadding().getAsteriskToken(), leftPaddedValueReceiver(java.lang.Boolean.class)));
+            functionDeclaration = functionDeclaration.getPadding().withName(ctx.receiveNonNullNode(functionDeclaration.getPadding().getName(), JavaScriptReceiver::receiveLeftPaddedTree));
             functionDeclaration = functionDeclaration.withTypeParameters(ctx.receiveNode(functionDeclaration.getTypeParameters(), ctx::receiveTree));
             functionDeclaration = functionDeclaration.getPadding().withParameters(ctx.receiveNonNullNode(functionDeclaration.getPadding().getParameters(), JavaScriptReceiver::receiveContainer));
             functionDeclaration = functionDeclaration.withReturnTypeExpression(ctx.receiveNode(functionDeclaration.getReturnTypeExpression(), ctx::receiveTree));
@@ -624,6 +625,50 @@ public class JavaScriptReceiver implements Receiver<JS> {
             bindingElement = bindingElement.getPadding().withInitializer(ctx.receiveNode(bindingElement.getPadding().getInitializer(), JavaScriptReceiver::receiveLeftPaddedTree));
             bindingElement = bindingElement.withVariableType(ctx.receiveValue(bindingElement.getVariableType(), JavaType.Variable.class));
             return bindingElement;
+        }
+
+        @Override
+        public JS.ExportDeclaration visitExportDeclaration(JS.ExportDeclaration exportDeclaration, ReceiverContext ctx) {
+            exportDeclaration = exportDeclaration.withId(ctx.receiveNonNullValue(exportDeclaration.getId(), UUID.class));
+            exportDeclaration = exportDeclaration.withPrefix(ctx.receiveNonNullNode(exportDeclaration.getPrefix(), JavaScriptReceiver::receiveSpace));
+            exportDeclaration = exportDeclaration.withMarkers(ctx.receiveNonNullNode(exportDeclaration.getMarkers(), ctx::receiveMarkers));
+            exportDeclaration = exportDeclaration.withModifiers(ctx.receiveNonNullNodes(exportDeclaration.getModifiers(), ctx::receiveTree));
+            exportDeclaration = exportDeclaration.getPadding().withTypeOnly(ctx.receiveNonNullNode(exportDeclaration.getPadding().getTypeOnly(), leftPaddedValueReceiver(java.lang.Boolean.class)));
+            exportDeclaration = exportDeclaration.withExportClause(ctx.receiveNode(exportDeclaration.getExportClause(), ctx::receiveTree));
+            exportDeclaration = exportDeclaration.getPadding().withModuleSpecifier(ctx.receiveNode(exportDeclaration.getPadding().getModuleSpecifier(), JavaScriptReceiver::receiveLeftPaddedTree));
+            return exportDeclaration;
+        }
+
+        @Override
+        public JS.ExportAssignment visitExportAssignment(JS.ExportAssignment exportAssignment, ReceiverContext ctx) {
+            exportAssignment = exportAssignment.withId(ctx.receiveNonNullValue(exportAssignment.getId(), UUID.class));
+            exportAssignment = exportAssignment.withPrefix(ctx.receiveNonNullNode(exportAssignment.getPrefix(), JavaScriptReceiver::receiveSpace));
+            exportAssignment = exportAssignment.withMarkers(ctx.receiveNonNullNode(exportAssignment.getMarkers(), ctx::receiveMarkers));
+            exportAssignment = exportAssignment.withModifiers(ctx.receiveNonNullNodes(exportAssignment.getModifiers(), ctx::receiveTree));
+            exportAssignment = exportAssignment.getPadding().withExportEquals(ctx.receiveNonNullNode(exportAssignment.getPadding().getExportEquals(), leftPaddedValueReceiver(java.lang.Boolean.class)));
+            exportAssignment = exportAssignment.withExpression(ctx.receiveNode(exportAssignment.getExpression(), ctx::receiveTree));
+            return exportAssignment;
+        }
+
+        @Override
+        public JS.NamedExports visitNamedExports(JS.NamedExports namedExports, ReceiverContext ctx) {
+            namedExports = namedExports.withId(ctx.receiveNonNullValue(namedExports.getId(), UUID.class));
+            namedExports = namedExports.withPrefix(ctx.receiveNonNullNode(namedExports.getPrefix(), JavaScriptReceiver::receiveSpace));
+            namedExports = namedExports.withMarkers(ctx.receiveNonNullNode(namedExports.getMarkers(), ctx::receiveMarkers));
+            namedExports = namedExports.getPadding().withElements(ctx.receiveNonNullNode(namedExports.getPadding().getElements(), JavaScriptReceiver::receiveContainer));
+            namedExports = namedExports.withType(ctx.receiveValue(namedExports.getType(), JavaType.class));
+            return namedExports;
+        }
+
+        @Override
+        public JS.ExportSpecifier visitExportSpecifier(JS.ExportSpecifier exportSpecifier, ReceiverContext ctx) {
+            exportSpecifier = exportSpecifier.withId(ctx.receiveNonNullValue(exportSpecifier.getId(), UUID.class));
+            exportSpecifier = exportSpecifier.withPrefix(ctx.receiveNonNullNode(exportSpecifier.getPrefix(), JavaScriptReceiver::receiveSpace));
+            exportSpecifier = exportSpecifier.withMarkers(ctx.receiveNonNullNode(exportSpecifier.getMarkers(), ctx::receiveMarkers));
+            exportSpecifier = exportSpecifier.getPadding().withTypeOnly(ctx.receiveNonNullNode(exportSpecifier.getPadding().getTypeOnly(), leftPaddedValueReceiver(java.lang.Boolean.class)));
+            exportSpecifier = exportSpecifier.withSpecifier(ctx.receiveNonNullNode(exportSpecifier.getSpecifier(), ctx::receiveTree));
+            exportSpecifier = exportSpecifier.withType(ctx.receiveValue(exportSpecifier.getType(), JavaType.class));
+            return exportSpecifier;
         }
 
         @Override
@@ -1826,7 +1871,8 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
-                    ctx.receiveNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNode(null, ctx::receiveTree),
@@ -1876,6 +1922,50 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.Variable.class)
+                );
+            }
+
+            if (type == JS.ExportDeclaration.class) {
+                return (T) new JS.ExportDeclaration(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
+                    ctx.receiveNode(null, ctx::receiveTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
+                );
+            }
+
+            if (type == JS.ExportAssignment.class) {
+                return (T) new JS.ExportAssignment(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNodes(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
+                    ctx.receiveNode(null, ctx::receiveTree)
+                );
+            }
+
+            if (type == JS.NamedExports.class) {
+                return (T) new JS.NamedExports(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.ExportSpecifier.class) {
+                return (T) new JS.ExportSpecifier(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveValue(null, JavaType.class)
                 );
             }
 

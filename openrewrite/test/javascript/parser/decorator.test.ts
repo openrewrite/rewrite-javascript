@@ -28,6 +28,38 @@ describe('class decorator mapping', () => {
           typeScript('@foo . bar ( ) class A {}')
         );
     });
+    test('class / method / params / properties decorators', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              @UseGuards(WorkspaceAuthGuard)
+              @Resolver()
+              export class RelationMetadataResolver {
+                  constructor(
+                      @Args('input')
+                      private readonly relationMetadataService: RelationMetadataService,
+                  ) {}
+
+                  @Args('input') input: DeleteOneRelationInput;
+
+                  @Mutation(() => RelationMetadataDTO)
+                  async deleteOneRelation(
+                      @Args('input') input: DeleteOneRelationInput,
+                      @AuthWorkspace() { id: workspaceId }: Workspace,
+                  ) {
+                      try {
+                          return await this.relationMetadataService.deleteOneRelation(
+                              input.id,
+                              workspaceId,
+                          );
+                      } catch (error) {
+                          relationMetadataGraphqlApiExceptionHandler(error);
+                      }
+                  }
+              }
+          `)
+        );
+    });
 });
 
 // according to TypeScript documentation decorators are not allowed with

@@ -3,7 +3,8 @@ plugins {
 }
 
 
-val latest = if (System.getenv("RELEASE_PUBLICATION") != null) "latest.release" else "latest.integration"
+//val latest = if (System.getenv("RELEASE_PUBLICATION") != null) "latest.release" else "latest.integration"
+val latest = "latest.release";
 dependencies {
 
     compileOnly("com.google.auto.service:auto-service-annotations:1.1.1")

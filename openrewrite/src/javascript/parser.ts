@@ -261,22 +261,19 @@ export class JavaScriptParserVisitor {
     private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration
         | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration
         | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration
-        | ts.ArrowFunction | ts.IndexSignatureDeclaration | ts.TypeAliasDeclaration) {
+        | ts.ArrowFunction | ts.IndexSignatureDeclaration | ts.TypeAliasDeclaration | ts.ExportDeclaration | ts.ExportAssignment) {
         if (ts.isVariableStatement(node) || ts.isModuleDeclaration(node)  || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node)
             || ts.isInterfaceDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node) || ts.isParameter(node)
-            || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node) || ts.isIndexSignatureDeclaration(node) || ts.isTypeAliasDeclaration(node)) {
+            || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node)
+            || ts.isIndexSignatureDeclaration(node) || ts.isTypeAliasDeclaration(node) || ts.isExportDeclaration(node) || ts.isFunctionDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
-        }  else if (ts.isFunctionDeclaration(node)) {
-            return [...node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [],
-                // empty modifier is used to capture spaces before FunctionKeyword
-                new J.Modifier(
-                randomId(),
-                this.prefix(this.findChildNode(node, ts.SyntaxKind.FunctionKeyword)!),
-                Markers.EMPTY,
-                null,
-                J.Modifier.Type.LanguageExtension,
-                []
-            )]
+        }
+        else if (ts.isExportAssignment(node)) {
+            const defaultModifier = this.findChildNode(node, ts.SyntaxKind.DefaultKeyword);
+            return [
+                ...node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [],
+                ...defaultModifier && ts.isModifier(defaultModifier) ? [this.mapModifier(defaultModifier)] : []
+            ]
         }
         else if (ts.isVariableDeclarationList(node)) {
             let modifier: string | undefined;
@@ -661,7 +658,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 this.prefix(node),
                 Markers.EMPTY,
-                [],
+                this.mapDecorators(node),
                 this.mapModifiers(node),
                 this.mapTypeInfo(node),
                 null,
@@ -685,7 +682,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 this.prefix(node),
                 Markers.EMPTY,
-                [],
+                this.mapDecorators(node),
                 this.mapModifiers(node),
                 this.mapTypeInfo(node),
                 null,
@@ -718,7 +715,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 this.prefix(node),
                 Markers.EMPTY,
-                [],
+                this.mapDecorators(node),
                 this.mapModifiers(node),
                 this.mapTypeInfo(node),
                 null,
@@ -742,7 +739,7 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            [],
+            this.mapDecorators(node),
             this.mapModifiers(node),
             this.mapTypeInfo(node),
             null,
@@ -849,7 +846,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 this.prefix(node),
                 Markers.EMPTY,
-                [],
+                this.mapDecorators(node),
                 this.mapModifiers(node),
                 this.mapTypeInfo(node),
                 null,
@@ -875,7 +872,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 this.prefix(node),
                 Markers.EMPTY,
-                [],
+                this.mapDecorators(node),
                 this.mapModifiers(node),
                 this.mapTypeInfo(node),
                 null,
@@ -899,7 +896,7 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            [],
+            this.mapDecorators(node),
             this.mapModifiers(node),
             this.mapTypeInfo(node),
             null,
@@ -1714,7 +1711,7 @@ export class JavaScriptParserVisitor {
         const typeArguments = node.typeArguments ? this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments) : null;
 
         let select: JRightPadded<J.Expression> | null;
-        let name: J.Identifier = new J.Identifier( randomId(), Space.EMPTY, Markers.EMPTY, [], "", null, null);
+        let name: J.Identifier = new J.Identifier(randomId(), Space.EMPTY, Markers.EMPTY, [], "", null, null);
 
         if (ts.isIdentifier(node.expression) && !node.questionDotToken) {
             select = null;
@@ -1825,7 +1822,8 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             [],
-            node.name ? this.visit(node.name) : null,
+            this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.FunctionKeyword)!), !!node.asteriskToken),
+            this.leftPadded(node.asteriskToken ? this.prefix(node.asteriskToken) : Space.EMPTY, node.name ? this.visit(node.name) : new J.Identifier(randomId(), Space.EMPTY, Markers.EMPTY, [], "", null, null)),
             this.mapTypeParametersAsObject(node),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
             this.mapTypeInfo(node),
@@ -2626,7 +2624,8 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.mapModifiers(node),
-            node.name ? this.visit(node.name) : null,
+            this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.FunctionKeyword)!), !!node.asteriskToken),
+            this.leftPadded(node.asteriskToken ? this.prefix(node.asteriskToken) : Space.EMPTY, node.name ? this.visit(node.name) : new J.Identifier(randomId(), Space.EMPTY, Markers.EMPTY, [], "", null, null)),
             this.mapTypeParametersAsObject(node),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
             this.mapTypeInfo(node),
@@ -2921,23 +2920,65 @@ export class JavaScriptParserVisitor {
     }
 
     visitExportAssignment(node: ts.ExportAssignment) {
-        return this.visitUnknown(node);
+        return new JS.ExportAssignment(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.mapModifiers(node),
+            this.leftPadded(node.isExportEquals ? this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsToken)!) : Space.EMPTY, (!!node.isExportEquals)),
+            this.visit(node.expression)
+        );
     }
 
     visitExportDeclaration(node: ts.ExportDeclaration) {
-        return this.visitUnknown(node);
+        return new JS.ExportDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.mapModifiers(node),
+            this.leftPadded(node.isTypeOnly ? this.prefix(this.findChildNode(node, ts.SyntaxKind.TypeKeyword)!) : Space.EMPTY, node.isTypeOnly),
+            node.exportClause ? this.visit(node.exportClause) : this.mapIdentifier(this.findChildNode(node, ts.SyntaxKind.AsteriskToken)!, "*"),
+            node.moduleSpecifier ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.FromKeyword)!), this.visit(node.moduleSpecifier)) : null
+        );
     }
 
     visitNamedExports(node: ts.NamedExports) {
-        return this.visitUnknown(node);
+        return new JS.NamedExports(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.mapCommaSeparatedList(node.getChildren()),
+            this.mapType(node)
+        );
     }
 
     visitNamespaceExport(node: ts.NamespaceExport) {
-        return this.visitUnknown(node);
+        return new JS.Alias(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.rightPadded(this.mapIdentifier(this.findChildNode(node, ts.SyntaxKind.AsteriskToken)!, "*"), this.prefix(this.findChildNode(node, ts.SyntaxKind.AsKeyword)!)),
+            this.visit(node.name)
+        )
     }
 
     visitExportSpecifier(node: ts.ExportSpecifier) {
-        return this.visitUnknown(node);
+        return new JS.ExportSpecifier(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.leftPadded(node.isTypeOnly ? this.prefix(this.findChildNode(node, ts.SyntaxKind.TypeKeyword)!) : Space.EMPTY, node.isTypeOnly),
+            node.propertyName
+                ? new JS.Alias(
+                    randomId(),
+                    this.prefix(node.propertyName),
+                    Markers.EMPTY,
+                    this.rightPadded(this.convert(node.propertyName), this.suffix(node.propertyName)),
+                    this.convert(node.name)
+                )
+                : this.convert(node.name),
+            this.mapType(node)
+        );
     }
 
     visitMissingDeclaration(node: ts.MissingDeclaration) {
@@ -3464,7 +3505,7 @@ export class JavaScriptParserVisitor {
         return args;
     }
 
-    private mapDecorators(node: ts.ClassDeclaration | ts.FunctionDeclaration | ts.MethodDeclaration | ts.ConstructorDeclaration): J.Annotation[] {
+    private mapDecorators(node: ts.ClassDeclaration | ts.FunctionDeclaration | ts.MethodDeclaration | ts.ConstructorDeclaration | ts.ParameterDeclaration | ts.PropertyDeclaration): J.Annotation[] {
         return node.modifiers?.filter(ts.isDecorator)?.map(this.convert<J.Annotation>) ?? [];
     }
 

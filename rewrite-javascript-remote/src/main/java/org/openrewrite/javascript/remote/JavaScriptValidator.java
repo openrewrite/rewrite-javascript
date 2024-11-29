@@ -58,7 +58,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public JS.Alias visitAlias(JS.Alias alias, P p) {
         visitAndValidate(alias.getPropertyName(), J.Identifier.class, p);
-        visitAndValidate(alias.getAlias(), J.Identifier.class, p);
+        visitAndValidate(alias.getAlias(), Expression.class, p);
         return alias;
     }
 
@@ -400,6 +400,33 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         visitAndValidate(bindingElement.getName(), TypedTree.class, p);
         visitAndValidate(bindingElement.getInitializer(), Expression.class, p);
         return bindingElement;
+    }
+
+    @Override
+    public JS.ExportDeclaration visitExportDeclaration(JS.ExportDeclaration exportDeclaration, P p) {
+        ListUtils.map(exportDeclaration.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
+        visitAndValidate(exportDeclaration.getExportClause(), Expression.class, p);
+        visitAndValidate(exportDeclaration.getModuleSpecifier(), Expression.class, p);
+        return exportDeclaration;
+    }
+
+    @Override
+    public JS.ExportAssignment visitExportAssignment(JS.ExportAssignment exportAssignment, P p) {
+        ListUtils.map(exportAssignment.getModifiers(), el -> visitAndValidate(el, J.Modifier.class, p));
+        visitAndValidate(exportAssignment.getExpression(), Expression.class, p);
+        return exportAssignment;
+    }
+
+    @Override
+    public JS.NamedExports visitNamedExports(JS.NamedExports namedExports, P p) {
+        visitAndValidate(namedExports.getElements(), JS.ExportSpecifier.class, p);
+        return namedExports;
+    }
+
+    @Override
+    public JS.ExportSpecifier visitExportSpecifier(JS.ExportSpecifier exportSpecifier, P p) {
+        visitAndValidate(exportSpecifier.getSpecifier(), Expression.class, p);
+        return exportSpecifier;
     }
 
     @Override
