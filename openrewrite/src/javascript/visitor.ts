@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -664,7 +664,8 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         functionDeclaration = tempExpression as FunctionDeclaration;
         functionDeclaration = functionDeclaration.withMarkers(this.visitMarkers(functionDeclaration.markers, p));
         functionDeclaration = functionDeclaration.withModifiers(ListUtils.map(functionDeclaration.modifiers, el => this.visitAndCast(el, p)));
-        functionDeclaration = functionDeclaration.withName(this.visitAndCast(functionDeclaration.name, p));
+        functionDeclaration = functionDeclaration.padding.withAsteriskToken(this.visitJsLeftPadded(functionDeclaration.padding.asteriskToken, JsLeftPadded.Location.FUNCTION_DECLARATION_ASTERISK_TOKEN, p)!);
+        functionDeclaration = functionDeclaration.padding.withName(this.visitJsLeftPadded(functionDeclaration.padding.name, JsLeftPadded.Location.FUNCTION_DECLARATION_NAME, p)!);
         functionDeclaration = functionDeclaration.withTypeParameters(this.visitAndCast(functionDeclaration.typeParameters, p));
         functionDeclaration = functionDeclaration.padding.withParameters(this.visitJsContainer(functionDeclaration.padding.parameters, JsContainer.Location.FUNCTION_DECLARATION_PARAMETERS, p)!);
         functionDeclaration = functionDeclaration.withReturnTypeExpression(this.visitAndCast(functionDeclaration.returnTypeExpression, p));
@@ -732,6 +733,64 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         bindingElement = bindingElement.withName(this.visitAndCast(bindingElement.name, p)!);
         bindingElement = bindingElement.padding.withInitializer(this.visitJsLeftPadded(bindingElement.padding.initializer, JsLeftPadded.Location.BINDING_ELEMENT_INITIALIZER, p));
         return bindingElement;
+    }
+
+    public visitExportDeclaration(exportDeclaration: ExportDeclaration, p: P): J | null {
+        exportDeclaration = exportDeclaration.withPrefix(this.visitJsSpace(exportDeclaration.prefix, JsSpace.Location.EXPORT_DECLARATION_PREFIX, p)!);
+        let tempStatement = this.visitStatement(exportDeclaration, p) as Statement;
+        if (!(tempStatement instanceof ExportDeclaration))
+        {
+            return tempStatement;
+        }
+        exportDeclaration = tempStatement as ExportDeclaration;
+        exportDeclaration = exportDeclaration.withMarkers(this.visitMarkers(exportDeclaration.markers, p));
+        exportDeclaration = exportDeclaration.withModifiers(ListUtils.map(exportDeclaration.modifiers, el => this.visitAndCast(el, p)));
+        exportDeclaration = exportDeclaration.padding.withTypeOnly(this.visitJsLeftPadded(exportDeclaration.padding.typeOnly, JsLeftPadded.Location.EXPORT_DECLARATION_TYPE_ONLY, p)!);
+        exportDeclaration = exportDeclaration.withExportClause(this.visitAndCast(exportDeclaration.exportClause, p));
+        exportDeclaration = exportDeclaration.padding.withModuleSpecifier(this.visitJsLeftPadded(exportDeclaration.padding.moduleSpecifier, JsLeftPadded.Location.EXPORT_DECLARATION_MODULE_SPECIFIER, p));
+        return exportDeclaration;
+    }
+
+    public visitExportAssignment(exportAssignment: ExportAssignment, p: P): J | null {
+        exportAssignment = exportAssignment.withPrefix(this.visitJsSpace(exportAssignment.prefix, JsSpace.Location.EXPORT_ASSIGNMENT_PREFIX, p)!);
+        let tempStatement = this.visitStatement(exportAssignment, p) as Statement;
+        if (!(tempStatement instanceof ExportAssignment))
+        {
+            return tempStatement;
+        }
+        exportAssignment = tempStatement as ExportAssignment;
+        exportAssignment = exportAssignment.withMarkers(this.visitMarkers(exportAssignment.markers, p));
+        exportAssignment = exportAssignment.withModifiers(ListUtils.map(exportAssignment.modifiers, el => this.visitAndCast(el, p)));
+        exportAssignment = exportAssignment.padding.withExportEquals(this.visitJsLeftPadded(exportAssignment.padding.exportEquals, JsLeftPadded.Location.EXPORT_ASSIGNMENT_EXPORT_EQUALS, p)!);
+        exportAssignment = exportAssignment.withExpression(this.visitAndCast(exportAssignment.expression, p));
+        return exportAssignment;
+    }
+
+    public visitNamedExports(namedExports: NamedExports, p: P): J | null {
+        namedExports = namedExports.withPrefix(this.visitJsSpace(namedExports.prefix, JsSpace.Location.NAMED_EXPORTS_PREFIX, p)!);
+        let tempExpression = this.visitExpression(namedExports, p) as Expression;
+        if (!(tempExpression instanceof NamedExports))
+        {
+            return tempExpression;
+        }
+        namedExports = tempExpression as NamedExports;
+        namedExports = namedExports.withMarkers(this.visitMarkers(namedExports.markers, p));
+        namedExports = namedExports.padding.withElements(this.visitJsContainer(namedExports.padding.elements, JsContainer.Location.NAMED_EXPORTS_ELEMENTS, p)!);
+        return namedExports;
+    }
+
+    public visitExportSpecifier(exportSpecifier: ExportSpecifier, p: P): J | null {
+        exportSpecifier = exportSpecifier.withPrefix(this.visitJsSpace(exportSpecifier.prefix, JsSpace.Location.EXPORT_SPECIFIER_PREFIX, p)!);
+        let tempExpression = this.visitExpression(exportSpecifier, p) as Expression;
+        if (!(tempExpression instanceof ExportSpecifier))
+        {
+            return tempExpression;
+        }
+        exportSpecifier = tempExpression as ExportSpecifier;
+        exportSpecifier = exportSpecifier.withMarkers(this.visitMarkers(exportSpecifier.markers, p));
+        exportSpecifier = exportSpecifier.padding.withTypeOnly(this.visitJsLeftPadded(exportSpecifier.padding.typeOnly, JsLeftPadded.Location.EXPORT_SPECIFIER_TYPE_ONLY, p)!);
+        exportSpecifier = exportSpecifier.withSpecifier(this.visitAndCast(exportSpecifier.specifier, p)!);
+        return exportSpecifier;
     }
 
     public visitJsLeftPadded<T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P): JLeftPadded<T> {

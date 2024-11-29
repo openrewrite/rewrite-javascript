@@ -170,4 +170,16 @@ describe('arrow mapping', () => {
         );
     });
 
+    test('typed with dimond cast', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export const addTodo3 = (text: string) => <AddTodoAction>({
+                    type: "ADD_TODO",
+                    text
+                })
+            `)
+        );
+    });
+
 });

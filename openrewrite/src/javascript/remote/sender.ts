@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -477,7 +477,8 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(functionDeclaration, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(functionDeclaration, v => v.markers, ctx.sendMarkers);
         ctx.sendNodes(functionDeclaration, v => v.modifiers, ctx.sendTree, t => t.id);
-        ctx.sendNode(functionDeclaration, v => v.name, ctx.sendTree);
+        ctx.sendNode(functionDeclaration, v => v.padding.asteriskToken, Visitor.sendLeftPadded(ValueType.Primitive));
+        ctx.sendNode(functionDeclaration, v => v.padding.name, Visitor.sendLeftPadded(ValueType.Tree));
         ctx.sendNode(functionDeclaration, v => v.typeParameters, ctx.sendTree);
         ctx.sendNode(functionDeclaration, v => v.padding.parameters, Visitor.sendContainer(ValueType.Tree));
         ctx.sendNode(functionDeclaration, v => v.returnTypeExpression, ctx.sendTree);
@@ -524,6 +525,46 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(bindingElement, v => v.padding.initializer, Visitor.sendLeftPadded(ValueType.Tree));
         ctx.sendTypedValue(bindingElement, v => v.variableType, ValueType.Object);
         return bindingElement;
+    }
+
+    public visitExportDeclaration(exportDeclaration: ExportDeclaration, ctx: SenderContext): J {
+        ctx.sendValue(exportDeclaration, v => v.id, ValueType.UUID);
+        ctx.sendNode(exportDeclaration, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(exportDeclaration, v => v.markers, ctx.sendMarkers);
+        ctx.sendNodes(exportDeclaration, v => v.modifiers, ctx.sendTree, t => t.id);
+        ctx.sendNode(exportDeclaration, v => v.padding.typeOnly, Visitor.sendLeftPadded(ValueType.Primitive));
+        ctx.sendNode(exportDeclaration, v => v.exportClause, ctx.sendTree);
+        ctx.sendNode(exportDeclaration, v => v.padding.moduleSpecifier, Visitor.sendLeftPadded(ValueType.Tree));
+        return exportDeclaration;
+    }
+
+    public visitExportAssignment(exportAssignment: ExportAssignment, ctx: SenderContext): J {
+        ctx.sendValue(exportAssignment, v => v.id, ValueType.UUID);
+        ctx.sendNode(exportAssignment, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(exportAssignment, v => v.markers, ctx.sendMarkers);
+        ctx.sendNodes(exportAssignment, v => v.modifiers, ctx.sendTree, t => t.id);
+        ctx.sendNode(exportAssignment, v => v.padding.exportEquals, Visitor.sendLeftPadded(ValueType.Primitive));
+        ctx.sendNode(exportAssignment, v => v.expression, ctx.sendTree);
+        return exportAssignment;
+    }
+
+    public visitNamedExports(namedExports: NamedExports, ctx: SenderContext): J {
+        ctx.sendValue(namedExports, v => v.id, ValueType.UUID);
+        ctx.sendNode(namedExports, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(namedExports, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(namedExports, v => v.padding.elements, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendTypedValue(namedExports, v => v.type, ValueType.Object);
+        return namedExports;
+    }
+
+    public visitExportSpecifier(exportSpecifier: ExportSpecifier, ctx: SenderContext): J {
+        ctx.sendValue(exportSpecifier, v => v.id, ValueType.UUID);
+        ctx.sendNode(exportSpecifier, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(exportSpecifier, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(exportSpecifier, v => v.padding.typeOnly, Visitor.sendLeftPadded(ValueType.Primitive));
+        ctx.sendNode(exportSpecifier, v => v.specifier, ctx.sendTree);
+        ctx.sendTypedValue(exportSpecifier, v => v.type, ValueType.Object);
+        return exportSpecifier;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: SenderContext): J {

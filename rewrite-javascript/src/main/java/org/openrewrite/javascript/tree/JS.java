@@ -328,7 +328,7 @@ public interface JS extends J {
         JRightPadded<J.Identifier> propertyName;
 
         @With
-        J.Identifier alias;
+        Expression alias;
 
         public J.Identifier getPropertyName() {
             return propertyName.getElement();
@@ -3777,9 +3777,25 @@ public interface JS extends J {
         @With
         List<J.Modifier> modifiers;
 
-        @Getter
-        @With
-        J.@Nullable Identifier name;
+        JLeftPadded<Boolean> asteriskToken;
+
+        public boolean hasAsteriskToken() {
+            return asteriskToken.getElement();
+        }
+
+        public FunctionDeclaration withAsteriskToken(boolean hasAsteriskToken) {
+            return getPadding().withAsteriskToken(JLeftPadded.withElement(this.asteriskToken, hasAsteriskToken));
+        }
+
+        JLeftPadded<J.Identifier> name;
+
+        public J.Identifier getName() {
+            return name.getElement();
+        }
+
+        public FunctionDeclaration withName(J.Identifier name) {
+            return getPadding().withName(JLeftPadded.withElement(this.name, name));
+        }
 
         @Getter
         @With
@@ -3844,7 +3860,23 @@ public interface JS extends J {
             }
 
             public FunctionDeclaration withParameters(JContainer<Statement> parameters) {
-                return t.parameters == parameters ? t : new FunctionDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.name, t.typeParameters, parameters, t.returnTypeExpression, t.body, t.type);
+                return t.parameters == parameters ? t : new FunctionDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.asteriskToken, t.name, t.typeParameters, parameters, t.returnTypeExpression, t.body, t.type);
+            }
+
+            public JLeftPadded<Boolean> getAsteriskToken() {
+                return t.asteriskToken;
+            }
+
+            public FunctionDeclaration withAsteriskToken(JLeftPadded<Boolean> asteriskToken) {
+                return t.asteriskToken == asteriskToken ? t : new FunctionDeclaration(t.id, t.prefix, t.markers, t.modifiers, asteriskToken, t.name, t.typeParameters, t.parameters, t.returnTypeExpression, t.body, t.type);
+            }
+
+            public JLeftPadded<J.Identifier> getName() {
+                return t.name;
+            }
+
+            public FunctionDeclaration withName(JLeftPadded<J.Identifier> name) {
+                return t.name == name ? t : new FunctionDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.asteriskToken, name, t.typeParameters, t.parameters, t.returnTypeExpression, t.body, t.type);
             }
         }
     }
@@ -4174,5 +4206,346 @@ public interface JS extends J {
                 return t.initializer == initializer ? t : new BindingElement(t.id, t.prefix, t.markers, t.propertyName, t.name, initializer, t.variableType);
             }
         }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class ExportDeclaration implements JS, Statement {
+        @Nullable
+        @NonFinal
+        transient WeakReference<Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        List<J.Modifier> modifiers;
+
+        JLeftPadded<Boolean> typeOnly;
+
+        public boolean isTypeOnly() {
+            return typeOnly.getElement();
+        }
+
+        public ExportDeclaration withTypeOnly(boolean importType) {
+            return getPadding().withTypeOnly(JLeftPadded.withElement(this.typeOnly, importType));
+        }
+
+        @With
+        @Getter
+        @Nullable
+        Expression exportClause;
+
+
+        @Nullable
+        JLeftPadded<Expression> moduleSpecifier;
+
+        @Nullable
+        public Expression getModuleSpecifier() {
+            return moduleSpecifier != null ? moduleSpecifier.getElement() : null;
+        }
+
+        public ExportDeclaration withModuleSpecifier(@Nullable Expression moduleSpecifier) {
+            return getPadding().withModuleSpecifier(JLeftPadded.withElement(this.moduleSpecifier, moduleSpecifier));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitExportDeclaration(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ExportDeclaration t;
+
+            public JLeftPadded<Boolean> getTypeOnly() {
+                return t.typeOnly;
+            }
+
+            public ExportDeclaration withTypeOnly(JLeftPadded<Boolean> typeOnly) {
+                return t.typeOnly == typeOnly ? t : new ExportDeclaration(t.id, t.prefix, t.markers, t.modifiers, typeOnly, t.exportClause, t.moduleSpecifier);
+            }
+
+            @Nullable
+            public JLeftPadded<Expression> getModuleSpecifier() {
+                return t.moduleSpecifier;
+            }
+
+            public ExportDeclaration withModuleSpecifier(@Nullable JLeftPadded<Expression> moduleSpecifier) {
+                return t.moduleSpecifier == moduleSpecifier ? t : new ExportDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.typeOnly, t.exportClause, moduleSpecifier);
+            }
+        }
+
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class ExportAssignment implements JS, Statement {
+        @Nullable
+        @NonFinal
+        transient WeakReference<Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        List<J.Modifier> modifiers;
+
+        JLeftPadded<Boolean> exportEquals;
+
+        public boolean isExportEquals() {
+            return exportEquals.getElement();
+        }
+
+        public ExportAssignment withExportEquals(boolean isExportEquals) {
+            return getPadding().withExportEquals(JLeftPadded.withElement(this.exportEquals, isExportEquals));
+        }
+
+        @With
+        @Getter
+        @Nullable
+        Expression expression;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitExportAssignment(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ExportAssignment t;
+
+            public JLeftPadded<Boolean> getExportEquals() {
+                return t.exportEquals;
+            }
+
+            public ExportAssignment withExportEquals(JLeftPadded<Boolean> exportEquals) {
+                return t.exportEquals == exportEquals ? t : new ExportAssignment(t.id, t.prefix, t.markers, t.modifiers, exportEquals, t.expression);
+            }
+        }
+
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class NamedExports implements JS, Expression {
+        @Nullable
+        @NonFinal
+        transient WeakReference<NamedExports.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JContainer<ExportSpecifier> elements;
+
+        public List<ExportSpecifier> getElements() {
+            return elements.getElements();
+        }
+
+        public NamedExports withElements(List<ExportSpecifier> elements) {
+            return getPadding().withElements(JContainer.withElements(this.elements, elements));
+        }
+
+        @Nullable
+        @With
+        @Getter
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitNamedExports(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public NamedExports.Padding getPadding() {
+            NamedExports.Padding p;
+            if (this.padding == null) {
+                p = new NamedExports.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new NamedExports.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final NamedExports t;
+
+            public JContainer<ExportSpecifier> getElements() {
+                return t.elements;
+            }
+
+            public NamedExports withElements(JContainer<ExportSpecifier> elements) {
+                return t.elements == elements ? t : new NamedExports(t.id, t.prefix, t.markers, elements, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class ExportSpecifier implements JS, Expression, TypedTree {
+        @Nullable
+        @NonFinal
+        transient WeakReference<ExportSpecifier.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JLeftPadded<Boolean> typeOnly;
+
+        public boolean isTypeOnly() {
+            return typeOnly.getElement();
+        }
+
+        public ExportSpecifier withTypeOnly(boolean isTypeOnly) {
+            return getPadding().withTypeOnly(JLeftPadded.withElement(this.typeOnly, isTypeOnly));
+        }
+
+        @With
+        @Getter
+        Expression specifier;
+
+        @With
+        @Nullable
+        @Getter
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitExportSpecifier(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public ExportSpecifier.Padding getPadding() {
+            ExportSpecifier.Padding p;
+            if (this.padding == null) {
+                p = new ExportSpecifier.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new ExportSpecifier.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ExportSpecifier t;
+
+            public JLeftPadded<Boolean> getTypeOnly() {
+                return t.typeOnly;
+            }
+
+            public ExportSpecifier withTypeOnly(JLeftPadded<Boolean> typeOnly) {
+                return t.typeOnly == typeOnly ? t : new ExportSpecifier(t.id, t.prefix, t.markers, t.typeOnly, t.specifier, t.type);
+            }
+        }
+
     }
 }

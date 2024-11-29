@@ -556,7 +556,8 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getMarkers, ctx::sendMarkers);
             ctx.sendNodes(functionDeclaration, JS.FunctionDeclaration::getModifiers, ctx::sendTree, Tree::getId);
-            ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getName, ctx::sendTree);
+            ctx.sendNode(functionDeclaration, e -> e.getPadding().getAsteriskToken(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(functionDeclaration, e -> e.getPadding().getName(), JavaScriptSender::sendLeftPadded);
             ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getTypeParameters, ctx::sendTree);
             ctx.sendNode(functionDeclaration, e -> e.getPadding().getParameters(), JavaScriptSender::sendContainer);
             ctx.sendNode(functionDeclaration, JS.FunctionDeclaration::getReturnTypeExpression, ctx::sendTree);
@@ -607,6 +608,50 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(bindingElement, e -> e.getPadding().getInitializer(), JavaScriptSender::sendLeftPadded);
             ctx.sendTypedValue(bindingElement, JS.BindingElement::getVariableType);
             return bindingElement;
+        }
+
+        @Override
+        public JS.ExportDeclaration visitExportDeclaration(JS.ExportDeclaration exportDeclaration, SenderContext ctx) {
+            ctx.sendValue(exportDeclaration, JS.ExportDeclaration::getId);
+            ctx.sendNode(exportDeclaration, JS.ExportDeclaration::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(exportDeclaration, JS.ExportDeclaration::getMarkers, ctx::sendMarkers);
+            ctx.sendNodes(exportDeclaration, JS.ExportDeclaration::getModifiers, ctx::sendTree, Tree::getId);
+            ctx.sendNode(exportDeclaration, e -> e.getPadding().getTypeOnly(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(exportDeclaration, JS.ExportDeclaration::getExportClause, ctx::sendTree);
+            ctx.sendNode(exportDeclaration, e -> e.getPadding().getModuleSpecifier(), JavaScriptSender::sendLeftPadded);
+            return exportDeclaration;
+        }
+
+        @Override
+        public JS.ExportAssignment visitExportAssignment(JS.ExportAssignment exportAssignment, SenderContext ctx) {
+            ctx.sendValue(exportAssignment, JS.ExportAssignment::getId);
+            ctx.sendNode(exportAssignment, JS.ExportAssignment::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(exportAssignment, JS.ExportAssignment::getMarkers, ctx::sendMarkers);
+            ctx.sendNodes(exportAssignment, JS.ExportAssignment::getModifiers, ctx::sendTree, Tree::getId);
+            ctx.sendNode(exportAssignment, e -> e.getPadding().getExportEquals(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(exportAssignment, JS.ExportAssignment::getExpression, ctx::sendTree);
+            return exportAssignment;
+        }
+
+        @Override
+        public JS.NamedExports visitNamedExports(JS.NamedExports namedExports, SenderContext ctx) {
+            ctx.sendValue(namedExports, JS.NamedExports::getId);
+            ctx.sendNode(namedExports, JS.NamedExports::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(namedExports, JS.NamedExports::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(namedExports, e -> e.getPadding().getElements(), JavaScriptSender::sendContainer);
+            ctx.sendTypedValue(namedExports, JS.NamedExports::getType);
+            return namedExports;
+        }
+
+        @Override
+        public JS.ExportSpecifier visitExportSpecifier(JS.ExportSpecifier exportSpecifier, SenderContext ctx) {
+            ctx.sendValue(exportSpecifier, JS.ExportSpecifier::getId);
+            ctx.sendNode(exportSpecifier, JS.ExportSpecifier::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(exportSpecifier, JS.ExportSpecifier::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(exportSpecifier, e -> e.getPadding().getTypeOnly(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(exportSpecifier, JS.ExportSpecifier::getSpecifier, ctx::sendTree);
+            ctx.sendTypedValue(exportSpecifier, JS.ExportSpecifier::getType);
+            return exportSpecifier;
         }
 
         @Override
