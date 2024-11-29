@@ -439,4 +439,17 @@ describe('class mapping', () => {
         );
     });
 
+    test('this type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class FluentAPI {
+                    use_this(): this {
+                        return this; // \`this\` refers to the current instance
+                    }
+                }
+            `)
+        );
+    });
+
 });

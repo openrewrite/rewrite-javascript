@@ -965,6 +965,201 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class InferType implements JS, TypeTree, Expression {
+        @Nullable
+        @NonFinal
+        transient WeakReference<InferType.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JLeftPadded<J> typeParameter;
+
+        public J getTypeParameter() {
+            return typeParameter.getElement();
+        }
+
+        public InferType withTypeParameter(J typeParameter) {
+            return getPadding().withTypeParameter(JLeftPadded.withElement(this.typeParameter, typeParameter));
+        }
+
+        @Getter
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitInferType(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public InferType.Padding getPadding() {
+            InferType.Padding p;
+            if (this.padding == null) {
+                p = new InferType.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new InferType.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final InferType t;
+
+            public JLeftPadded<J> getTypeParameter() {
+                return t.typeParameter;
+            }
+
+            public InferType withTypeParameter(JLeftPadded<J> typeParameter) {
+                return t.typeParameter == typeParameter ? t : new InferType(t.id, t.prefix, t.markers, typeParameter, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    class ImportType implements JS, Expression, TypeTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<ImportType.Padding> padding;
+
+        @Getter
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @Getter
+        @With
+        Space prefix;
+
+        @Getter
+        @With
+        Markers markers;
+
+        JRightPadded<Boolean> hasTypeof;
+
+        public boolean isHasTypeof() {
+            return hasTypeof.getElement();
+        }
+
+        public ImportType withHasTypeof(boolean hasTypeof) {
+            return getPadding().withHasTypeof(this.hasTypeof.withElement(hasTypeof));
+        }
+
+        @Getter
+        @With
+        J.ParenthesizedTypeTree importArgument;
+
+        @Nullable
+        JLeftPadded<Expression> qualifier;
+
+        public @Nullable Expression getQualifier() {
+            return qualifier == null ? null : qualifier.getElement();
+        }
+
+        public ImportType withQualifier(@Nullable Expression qualifier) {
+            return getPadding().withQualifier(JLeftPadded.withElement(this.qualifier, qualifier));
+        }
+
+        @Nullable
+        JContainer<Expression> typeArguments;
+
+        public @Nullable List<Expression> getTypeArguments() {
+            return typeArguments == null ? null : typeArguments.getElements();
+        }
+
+        public ImportType withTypeArguments(@Nullable List<Expression> typeArguments) {
+            return getPadding().withTypeArguments(JContainer.withElementsNullable(this.typeArguments, typeArguments));
+        }
+
+        @Getter
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitImportType(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public ImportType.Padding getPadding() {
+            ImportType.Padding p;
+            if (this.padding == null) {
+                p = new ImportType.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new ImportType.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ImportType t;
+
+            public JRightPadded<Boolean> getHasTypeof() {
+                return t.hasTypeof;
+            }
+
+            public ImportType withHasTypeof(JRightPadded<Boolean> hasTypeof) {
+                return t.hasTypeof == hasTypeof ? t : new ImportType(t.id, t.prefix, t.markers, hasTypeof, t.importArgument, t.qualifier, t.typeArguments, t.type);
+            }
+
+            public @Nullable JLeftPadded<Expression> getQualifier() {
+                return t.qualifier;
+            }
+
+            public ImportType withQualifier(@Nullable JLeftPadded<Expression> qualifier) {
+                return t.qualifier == qualifier ? t : new ImportType(t.id, t.prefix, t.markers, t.hasTypeof, t.importArgument, qualifier, t.typeArguments, t.type);
+            }
+
+            public @Nullable JContainer<Expression> getTypeArguments() {
+                return t.typeArguments;
+            }
+
+            public ImportType withTypeArguments(@Nullable JContainer<Expression> typeArguments) {
+                return t.typeArguments == typeArguments ? t : new ImportType(t.id, t.prefix, t.markers, t.hasTypeof, t.importArgument, t.qualifier, typeArguments, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     class JsImport implements JS, Statement {
 
         @Nullable
@@ -1267,6 +1462,39 @@ public interface JS extends J {
     }
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false)
+    @Data
+    @RequiredArgsConstructor
+    final class LiteralType implements JS, Expression, TypeTree {
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        // Not `J.Literal` so that also literals like `-1` are captured
+        @With
+        Expression literal;
+
+        @With
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitLiteralType(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -1491,6 +1719,86 @@ public interface JS extends J {
                 return t.name == target ? t : new PropertyAssignment(t.id, t.prefix, t.markers, target, t.initializer);
             }
 
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class SatisfiesExpression implements JS, Expression {
+        @Nullable
+        @NonFinal
+        transient WeakReference<SatisfiesExpression.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        J expression;
+
+        JLeftPadded<Expression> satisfiesType;
+
+        public Expression getSatisfiesType() {
+            return satisfiesType.getElement();
+        }
+
+        public SatisfiesExpression withSatisfiesType(Expression expression) {
+            return getPadding().withSatisfiesType(this.satisfiesType.withElement(expression));
+        }
+
+        @Getter
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitSatisfiesExpression(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public SatisfiesExpression.Padding getPadding() {
+            SatisfiesExpression.Padding p;
+            if (this.padding == null) {
+                p = new SatisfiesExpression.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new SatisfiesExpression.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final SatisfiesExpression t;
+
+            public @Nullable JLeftPadded<Expression> getSatisfiesType() {
+                return t.satisfiesType;
+            }
+
+            public SatisfiesExpression withSatisfiesType(@Nullable JLeftPadded<Expression> satisfiesType) {
+                return t.satisfiesType == satisfiesType ? t : new SatisfiesExpression(t.id, t.prefix, t.markers, t.expression, satisfiesType, t.type);
+            }
         }
     }
 
@@ -2187,6 +2495,106 @@ public interface JS extends J {
 
             public JS.TypeOperator withExpression(JLeftPadded<Expression> expression) {
                 return t.expression == expression ? t : new JS.TypeOperator(t.id, t.prefix, t.markers, t.operator, expression);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class TypePredicate implements JS, Expression, TypeTree {
+        @Nullable
+        @NonFinal
+        transient WeakReference<TypePredicate.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JLeftPadded<Boolean> asserts;
+
+        public boolean isAsserts() {
+            return asserts.getElement();
+        }
+
+        public TypePredicate withAsserts(boolean asserts) {
+            return getPadding().withAsserts(this.asserts.withElement(asserts));
+        }
+
+        @With
+        @Getter
+        J.Identifier parameterName;
+
+        @Nullable
+        JLeftPadded<Expression> expression;
+
+        @Nullable
+        public Expression getExpression() {
+            return expression != null ? expression.getElement() : null;
+        }
+
+        public TypePredicate withExpression(@Nullable Expression expression) {
+            return getPadding().withExpression(this.expression.withElement(expression));
+        }
+
+        @Getter
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTypePredicate(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public TypePredicate.Padding getPadding() {
+            TypePredicate.Padding p;
+            if (this.padding == null) {
+                p = new TypePredicate.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new TypePredicate.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final TypePredicate t;
+
+            public JLeftPadded<Boolean> getAsserts() {
+                return t.asserts;
+            }
+
+            public TypePredicate withAsserts(JLeftPadded<Boolean> asserts) {
+                return t.asserts == asserts ? t : new TypePredicate(t.id, t.prefix, t.markers, asserts, t.parameterName, t.expression, t.type);
+            }
+
+            public @Nullable JLeftPadded<Expression> getExpression() {
+                return t.expression;
+            }
+
+            public TypePredicate withExpression(@Nullable JLeftPadded<Expression> expression) {
+                return t.expression == expression ? t : new TypePredicate(t.id, t.prefix, t.markers, t.asserts, t.parameterName, expression, t.type);
             }
         }
     }

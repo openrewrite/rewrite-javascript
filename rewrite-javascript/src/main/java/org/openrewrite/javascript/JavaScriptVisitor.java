@@ -237,7 +237,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         if (ta.getPadding().getTypeArguments() != null) {
             ta = ta.getPadding().withTypeArguments(visitContainer(ta.getPadding().getTypeArguments(), JsContainer.Location.EXPR_WITH_TYPE_ARG_PARAMETERS, p));
         }
-        ta = ta.getPadding().withTypeArguments(visitTypeNames(ta.getPadding().getTypeArguments(), p));
         ta = ta.withType(visitType(ta.getType(), p));
         return ta;
     }
@@ -259,6 +258,22 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         f = f.withReturnType(visitAndCast(f.getReturnType(), p));
         f = f.withType(visitType(f.getType(), p));
         return f;
+    }
+
+
+    public J visitInferType(JS.InferType inferType, P p) {
+        JS.InferType t = inferType;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.INFER_TYPE_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(t, p);
+        if (!(temp instanceof JS.InferType)) {
+            return temp;
+        } else {
+            t = (JS.InferType) temp;
+        }
+        t = t.getPadding().withTypeParameter(visitLeftPadded(t.getPadding().getTypeParameter(), JsLeftPadded.Location.INFER_TYPE_PARAMETER, p));
+        t = t.withType(visitType(t.getType(), p));
+        return t;
     }
 
     public J visitJsBinary(JS.JsBinary binary, P p) {
@@ -320,6 +335,14 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return i;
     }
 
+    public J visitLiteralType(JS.LiteralType literalType, P p) {
+        JS.LiteralType type = literalType;
+        type = type.withPrefix(visitSpace(type.getPrefix(), JsSpace.Location.LITERAL_TYPE_PREFIX, p));
+        type = type.withMarkers(visitMarkers(type.getMarkers(), p));
+        type = type.withLiteral(visitAndCast(type.getLiteral(), p));
+        return type;
+    }
+
     public J visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, P p) {
         JS.ObjectBindingDeclarations o = objectBindingDeclarations;
         o = o.withPrefix(visitSpace(o.getPrefix(), JsSpace.Location.OBJECT_BINDING_DECLARATIONS_PREFIX, p));
@@ -359,6 +382,21 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         pa = pa.getPadding().withName(visitRightPadded(pa.getPadding().getName(), JsRightPadded.Location.PROPERTY_ASSIGNMENT_NAME, p));
         pa = pa.withInitializer(visitAndCast(pa.getInitializer(), p));
         return pa;
+    }
+
+    public J visitSatisfiesExpression(JS.SatisfiesExpression satisfiesExpression, P p) {
+        JS.SatisfiesExpression sa = satisfiesExpression;
+        sa = sa.withPrefix(visitSpace(sa.getPrefix(), JsSpace.Location.SATISFIES_EXPRESSION_PREFIX, p));
+        sa = sa.withMarkers(visitMarkers(sa.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(sa, p);
+        if (!(temp instanceof JS.SatisfiesExpression)) {
+            return temp;
+        } else {
+            sa = (JS.SatisfiesExpression) temp;
+        }
+        sa = sa.withExpression(visitAndCast(sa.getExpression(), p));
+        sa = sa.getPadding().withSatisfiesType(visitLeftPadded(sa.getPadding().getSatisfiesType(), JsLeftPadded.Location.SATISFIES_EXPRESSION_TYPE, p));
+        return sa;
     }
 
     public J visitScopedVariableDeclarations(JS.ScopedVariableDeclarations scopedVariableDeclarations, P p) {
@@ -485,6 +523,22 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
             t = (JS.TypeOperator) temp;
         }
         t = t.getPadding().withExpression(visitLeftPadded(t.getPadding().getExpression(), JsLeftPadded.Location.TYPE_OPERATOR, p));
+        return t;
+    }
+
+    public J visitTypePredicate(JS.TypePredicate typePredicate, P p) {
+        JS.TypePredicate t = typePredicate;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.TYPE_PREDICATE_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(t, p);
+        if (!(temp instanceof JS.TypePredicate)) {
+            return temp;
+        } else {
+            t = (JS.TypePredicate) temp;
+        }
+        t = t.getPadding().withAsserts(visitLeftPadded(t.getPadding().getAsserts(), JsLeftPadded.Location.TYPE_PREDICATE_ASSERTS, p));
+        t = t.withParameterName(visitAndCast(t.getParameterName(), p));
+        t = t.getPadding().withExpression(visitLeftPadded(t.getPadding().getExpression(), JsLeftPadded.Location.TYPE_PREDICATE_EXPRESSION, p));
         return t;
     }
 
@@ -806,6 +860,25 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
         t = t.withMembers(Objects.requireNonNull(visitAndCast(t.getMembers(), p)));
         t = t.withType(visitType(t.getType(), p));
+        return t;
+    }
+
+    public J visitImportType(JS.ImportType importType, P p) {
+        JS.ImportType t = importType;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.IMPORT_TYPE_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(t, p);
+        if (!(temp instanceof JS.ImportType)) {
+            return temp;
+        } else {
+            t = (JS.ImportType) temp;
+        }
+        t = t.getPadding().withHasTypeof(visitRightPadded(t.getPadding().getHasTypeof(), JsRightPadded.Location.IMPORT_TYPE_TYPEOF, p));
+        t = t.withImportArgument(visitAndCast(t.getImportArgument(), p));
+        t = t.getPadding().withQualifier(visitLeftPadded(t.getPadding().getQualifier(), JsLeftPadded.Location.IMPORT_TYPE_QUALIFIER, p));
+        if (t.getPadding().getTypeArguments() != null) {
+            t = t.getPadding().withTypeArguments(visitContainer(t.getPadding().getTypeArguments(), JsContainer.Location.IMPORT_TYPE_TYPE_ARGUMENTS, p));
+        }
         return t;
     }
 

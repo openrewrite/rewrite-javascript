@@ -204,6 +204,29 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitInferType(JS.InferType inferType, PrintOutputCapture<P> p) {
+        beforeSyntax(inferType, JsSpace.Location.INFER_TYPE_PREFIX, p);
+        visitLeftPadded("infer", inferType.getPadding().getTypeParameter(), JsLeftPadded.Location.INFER_TYPE_PARAMETER, p);
+        afterSyntax(inferType, p);
+        return inferType;
+    }
+
+    @Override
+    public J visitImportType(JS.ImportType importType, PrintOutputCapture<P> p) {
+        beforeSyntax(importType, JsSpace.Location.IMPORT_TYPE_PREFIX, p);
+        if (importType.isHasTypeof()) {
+            p.append("typeof");
+            visitRightPadded(importType.getPadding().getHasTypeof(), JsRightPadded.Location.IMPORT_TYPE_TYPEOF, p);
+        }
+        p.append("import");
+        visit(importType.getImportArgument(), p);
+        visitLeftPadded(".", importType.getPadding().getQualifier(), JsLeftPadded.Location.IMPORT_TYPE_QUALIFIER, p);
+        visitContainer("<", importType.getPadding().getTypeArguments(), JsContainer.Location.IMPORT_TYPE_TYPE_ARGUMENTS, ",", ">", p);
+        afterSyntax(importType, p);
+        return importType;
+    }
+
+    @Override
     public J visitJsImport(JS.JsImport jsImport, PrintOutputCapture<P> p) {
         beforeSyntax(jsImport, JsSpace.Location.EXPORT_PREFIX, p);
         p.append("import");
@@ -344,6 +367,14 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitLiteralType(JS.LiteralType literalType, PrintOutputCapture<P> p) {
+        beforeSyntax(literalType, JsSpace.Location.LITERAL_TYPE_PREFIX, p);
+        visit(literalType.getLiteral(), p);
+        afterSyntax(literalType, p);
+        return literalType;
+    }
+
+    @Override
     public J visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, PrintOutputCapture<P> p) {
         beforeSyntax(objectBindingDeclarations, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
         visit(objectBindingDeclarations.getLeadingAnnotations(), p);
@@ -354,6 +385,15 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visitLeftPadded("=", objectBindingDeclarations.getPadding().getInitializer(), JsLeftPadded.Location.BINDING_ELEMENT_INITIALIZER, p);
         afterSyntax(objectBindingDeclarations, p);
         return objectBindingDeclarations;
+    }
+
+    @Override
+    public J visitSatisfiesExpression(JS.SatisfiesExpression satisfiesExpression, PrintOutputCapture<P> p) {
+        beforeSyntax(satisfiesExpression, JsSpace.Location.SATISFIES_EXPRESSION_PREFIX, p);
+        visit(satisfiesExpression.getExpression(), p);
+        visitLeftPadded("satisfies", satisfiesExpression.getPadding().getSatisfiesType(), JsLeftPadded.Location.SATISFIES_EXPRESSION_TYPE, p);
+        afterSyntax(satisfiesExpression, p);
+        return satisfiesExpression;
     }
 
     @Override
@@ -447,6 +487,18 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         afterSyntax(typeOperator, p);
         return typeOperator;
+    }
+
+    @Override
+    public J visitTypePredicate(JS.TypePredicate typePredicate, PrintOutputCapture<P> p) {
+        beforeSyntax(typePredicate, JsSpace.Location.TYPE_PREDICATE_PREFIX, p);
+        if (typePredicate.isAsserts()) {
+            visitLeftPaddedBoolean("asserts", typePredicate.getPadding().getAsserts(), JsLeftPadded.Location.TYPE_PREDICATE_ASSERTS, p);
+        }
+        visit(typePredicate.getParameterName(), p);
+        visitLeftPadded("is", typePredicate.getPadding().getExpression(), JsLeftPadded.Location.TYPE_PREDICATE_EXPRESSION, p);
+        afterSyntax(typePredicate, p);
+        return typePredicate;
     }
 
     @Override

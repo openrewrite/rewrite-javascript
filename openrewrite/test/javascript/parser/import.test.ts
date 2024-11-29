@@ -93,4 +93,13 @@ describe('import mapping', () => {
             typeScript(`import type { Component } from "react";`)
         );
     });
+
+    test.skip('experimental: import with import attributes', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                import foo from 'module-name' with { type: "json" };
+            `)
+        );
+    });
 });

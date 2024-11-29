@@ -78,12 +78,38 @@ describe('type-query operator mapping', () => {
         );
     });
 
-    test.skip('index access type', () => {
+    test('index access type', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
                 type DatabaseConfig = typeof config["database"];
           `)
+        );
+    });
+
+    test('index access type with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type DatabaseConfig = /*a*/typeof /*b*/ config/*c*/[/*d*/"database"/*e*/]/*f*/;
+          `)
+        );
+    });
+
+
+    test('index access type nested', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                interface Company {
+                    employees: {
+                        name: string;
+                        age: number;
+                    }[];
+                }
+
+                type EmployeeNameType = Company["employees"][number]["name"]; // Result: string
+            `)
         );
     });
 });

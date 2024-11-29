@@ -185,6 +185,29 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.InferType visitInferType(JS.InferType inferType, SenderContext ctx) {
+            ctx.sendValue(inferType, JS.InferType::getId);
+            ctx.sendNode(inferType, JS.InferType::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(inferType, JS.InferType::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(inferType, e -> e.getPadding().getTypeParameter(), JavaScriptSender::sendLeftPadded);
+            ctx.sendTypedValue(inferType, JS.InferType::getType);
+            return inferType;
+        }
+
+        @Override
+        public JS.ImportType visitImportType(JS.ImportType importType, SenderContext ctx) {
+            ctx.sendValue(importType, JS.ImportType::getId);
+            ctx.sendNode(importType, JS.ImportType::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(importType, JS.ImportType::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(importType, e -> e.getPadding().getHasTypeof(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(importType, JS.ImportType::getImportArgument, ctx::sendTree);
+            ctx.sendNode(importType, e -> e.getPadding().getQualifier(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(importType, e -> e.getPadding().getTypeArguments(), JavaScriptSender::sendContainer);
+            ctx.sendTypedValue(importType, JS.ImportType::getType);
+            return importType;
+        }
+
+        @Override
         public JS.JsImport visitJsImport(JS.JsImport jsImport, SenderContext ctx) {
             ctx.sendValue(jsImport, JS.JsImport::getId);
             ctx.sendNode(jsImport, JS.JsImport::getPrefix, JavaScriptSender::sendSpace);
@@ -222,6 +245,16 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.LiteralType visitLiteralType(JS.LiteralType literalType, SenderContext ctx) {
+            ctx.sendValue(literalType, JS.LiteralType::getId);
+            ctx.sendNode(literalType, JS.LiteralType::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(literalType, JS.LiteralType::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(literalType, JS.LiteralType::getLiteral, ctx::sendTree);
+            ctx.sendTypedValue(literalType, JS.LiteralType::getType);
+            return literalType;
+        }
+
+        @Override
         public JS.ObjectBindingDeclarations visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, SenderContext ctx) {
             ctx.sendValue(objectBindingDeclarations, JS.ObjectBindingDeclarations::getId);
             ctx.sendNode(objectBindingDeclarations, JS.ObjectBindingDeclarations::getPrefix, JavaScriptSender::sendSpace);
@@ -242,6 +275,17 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(propertyAssignment, e -> e.getPadding().getName(), JavaScriptSender::sendRightPadded);
             ctx.sendNode(propertyAssignment, JS.PropertyAssignment::getInitializer, ctx::sendTree);
             return propertyAssignment;
+        }
+
+        @Override
+        public JS.SatisfiesExpression visitSatisfiesExpression(JS.SatisfiesExpression satisfiesExpression, SenderContext ctx) {
+            ctx.sendValue(satisfiesExpression, JS.SatisfiesExpression::getId);
+            ctx.sendNode(satisfiesExpression, JS.SatisfiesExpression::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(satisfiesExpression, JS.SatisfiesExpression::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(satisfiesExpression, JS.SatisfiesExpression::getExpression, ctx::sendTree);
+            ctx.sendNode(satisfiesExpression, e -> e.getPadding().getSatisfiesType(), JavaScriptSender::sendLeftPadded);
+            ctx.sendTypedValue(satisfiesExpression, JS.SatisfiesExpression::getType);
+            return satisfiesExpression;
         }
 
         @Override
@@ -346,6 +390,18 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendValue(typeOperator, JS.TypeOperator::getOperator);
             ctx.sendNode(typeOperator, e -> e.getPadding().getExpression(), JavaScriptSender::sendLeftPadded);
             return typeOperator;
+        }
+
+        @Override
+        public JS.TypePredicate visitTypePredicate(JS.TypePredicate typePredicate, SenderContext ctx) {
+            ctx.sendValue(typePredicate, JS.TypePredicate::getId);
+            ctx.sendNode(typePredicate, JS.TypePredicate::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(typePredicate, JS.TypePredicate::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(typePredicate, e -> e.getPadding().getAsserts(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(typePredicate, JS.TypePredicate::getParameterName, ctx::sendTree);
+            ctx.sendNode(typePredicate, e -> e.getPadding().getExpression(), JavaScriptSender::sendLeftPadded);
+            ctx.sendTypedValue(typePredicate, JS.TypePredicate::getType);
+            return typePredicate;
         }
 
         @Override

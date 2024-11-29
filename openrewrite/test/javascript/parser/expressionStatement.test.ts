@@ -145,12 +145,47 @@ describe('expression statement mapping', () => {
         );
     });
 
-    test.skip('optional chaining operator with ?. and custom type', () => {
+    test('optional chaining operator with ?. and custom type', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
                 const func1: ((msg: string) => { func2: (greeting: string) => string }) | undefined = undefined;
                 const result2 = func1?.("Test")?.func2("Hi"); // Does not invoke and returns \`undefined\`.
+            `)
+        );
+    });
+
+    test('satisfies expression', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Person = {
+                    name: string;
+                    age: number;
+                };
+
+                const user = /*o*/ {
+                    name: "Alice",
+                    age: 25,
+                    occupation: "Engineer"
+                } /*a*/ satisfies /*b*/ Person /*c*/;
+            `)
+        );
+    });
+
+    test('atisfies expression with complex type ', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type ApiResponse<T> = {
+                    data: T;
+                    status: "success" | "error";
+                };
+
+                const response = {
+                    data: { userId: 1 },
+                    status: "success",
+                } satisfies ApiResponse<{ userId: number }>;
             `)
         );
     });
