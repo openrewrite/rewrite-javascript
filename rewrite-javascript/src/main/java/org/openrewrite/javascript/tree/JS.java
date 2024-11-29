@@ -1041,6 +1041,125 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    class ImportType implements JS, Expression, TypeTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<ImportType.Padding> padding;
+
+        @Getter
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @Getter
+        @With
+        Space prefix;
+
+        @Getter
+        @With
+        Markers markers;
+
+        JRightPadded<Boolean> hasTypeof;
+
+        public boolean isHasTypeof() {
+            return hasTypeof.getElement();
+        }
+
+        public ImportType withHasTypeof(boolean hasTypeof) {
+            return getPadding().withHasTypeof(this.hasTypeof.withElement(hasTypeof));
+        }
+
+        @Getter
+        @With
+        J.ParenthesizedTypeTree importArgument;
+
+        @Nullable
+        JLeftPadded<Expression> qualifier;
+
+        public @Nullable Expression getQualifier() {
+            return qualifier == null ? null : qualifier.getElement();
+        }
+
+        public ImportType withQualifier(@Nullable Expression qualifier) {
+            return getPadding().withQualifier(JLeftPadded.withElement(this.qualifier, qualifier));
+        }
+
+        @Nullable
+        JContainer<Expression> typeArguments;
+
+        public @Nullable List<Expression> getTypeArguments() {
+            return typeArguments == null ? null : typeArguments.getElements();
+        }
+
+        public ImportType withTypeArguments(@Nullable List<Expression> typeArguments) {
+            return getPadding().withTypeArguments(JContainer.withElementsNullable(this.typeArguments, typeArguments));
+        }
+
+        @Getter
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitImportType(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public ImportType.Padding getPadding() {
+            ImportType.Padding p;
+            if (this.padding == null) {
+                p = new ImportType.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new ImportType.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ImportType t;
+
+            public JRightPadded<Boolean> getHasTypeof() {
+                return t.hasTypeof;
+            }
+
+            public ImportType withHasTypeof(JRightPadded<Boolean> hasTypeof) {
+                return t.hasTypeof == hasTypeof ? t : new ImportType(t.id, t.prefix, t.markers, hasTypeof, t.importArgument, t.qualifier, t.typeArguments, t.type);
+            }
+
+            public @Nullable JLeftPadded<Expression> getQualifier() {
+                return t.qualifier;
+            }
+
+            public ImportType withQualifier(@Nullable JLeftPadded<Expression> qualifier) {
+                return t.qualifier == qualifier ? t : new ImportType(t.id, t.prefix, t.markers, t.hasTypeof, t.importArgument, qualifier, t.typeArguments, t.type);
+            }
+
+            public @Nullable JContainer<Expression> getTypeArguments() {
+                return t.typeArguments;
+            }
+
+            public ImportType withTypeArguments(@Nullable JContainer<Expression> typeArguments) {
+                return t.typeArguments == typeArguments ? t : new ImportType(t.id, t.prefix, t.markers, t.hasTypeof, t.importArgument, t.qualifier, typeArguments, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     class JsImport implements JS, Statement {
 
         @Nullable

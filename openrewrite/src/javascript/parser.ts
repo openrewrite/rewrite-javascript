@@ -1553,7 +1553,27 @@ export class JavaScriptParserVisitor {
     }
 
     visitImportType(node: ts.ImportTypeNode) {
-        return this.visitUnknown(node);
+        return new JS.ImportType(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            node.isTypeOf ? this.rightPadded(true, this.suffix(this.findChildNode(node, ts.SyntaxKind.TypeOfKeyword)!)) : this.rightPadded(false, Space.EMPTY),
+            new J.ParenthesizedTypeTree(
+                randomId(),
+                this.suffix(this.findChildNode(node, ts.SyntaxKind.ImportKeyword)!),
+                Markers.EMPTY,
+                [],
+                new J.Parentheses(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    this.rightPadded(this.visit(node.argument), this.suffix(node.argument))
+                )
+            ),
+            node.qualifier ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.DotToken)!), this.visit(node.qualifier)): null,
+            node.typeArguments ? this.mapTypeArguments(this.suffix(node.qualifier!), node.typeArguments) : null,
+            this.mapType(node)
+        );
     }
 
     visitObjectBindingPattern(node: ts.ObjectBindingPattern) {

@@ -134,6 +134,14 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.ImportType visitImportType(JS.ImportType importType, P p) {
+        visitAndValidate(importType.getImportArgument(), J.ParenthesizedTypeTree.class, p);
+        visitAndValidate(importType.getQualifier(), Expression.class, p);
+        visitAndValidate(importType.getTypeArguments(), Expression.class, p);
+        return importType;
+    }
+
+    @Override
     public JS.JsImport visitJsImport(JS.JsImport jsImport, P p) {
         visitAndValidate(jsImport.getName(), J.Identifier.class, p);
         visitAndValidate(jsImport.getImports(), Expression.class, p);

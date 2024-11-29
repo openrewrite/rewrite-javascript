@@ -212,6 +212,21 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitImportType(JS.ImportType importType, PrintOutputCapture<P> p) {
+        beforeSyntax(importType, JsSpace.Location.IMPORT_TYPE_PREFIX, p);
+        if (importType.isHasTypeof()) {
+            p.append("typeof");
+            visitRightPadded(importType.getPadding().getHasTypeof(), JsRightPadded.Location.IMPORT_TYPE_TYPEOF, p);
+        }
+        p.append("import");
+        visit(importType.getImportArgument(), p);
+        visitLeftPadded(".", importType.getPadding().getQualifier(), JsLeftPadded.Location.IMPORT_TYPE_QUALIFIER, p);
+        visitContainer("<", importType.getPadding().getTypeArguments(), JsContainer.Location.IMPORT_TYPE_TYPE_ARGUMENTS, ",", ">", p);
+        afterSyntax(importType, p);
+        return importType;
+    }
+
+    @Override
     public J visitJsImport(JS.JsImport jsImport, PrintOutputCapture<P> p) {
         beforeSyntax(jsImport, JsSpace.Location.EXPORT_PREFIX, p);
         p.append("import");

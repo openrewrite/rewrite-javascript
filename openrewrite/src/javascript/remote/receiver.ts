@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -151,6 +151,18 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         inferType = inferType.padding.withTypeParameter(ctx.receiveNode(inferType.padding.typeParameter, receiveLeftPaddedTree)!);
         inferType = inferType.withType(ctx.receiveValue(inferType.type, ValueType.Object));
         return inferType;
+    }
+
+    public visitImportType(importType: ImportType, ctx: ReceiverContext): J {
+        importType = importType.withId(ctx.receiveValue(importType.id, ValueType.UUID)!);
+        importType = importType.withPrefix(ctx.receiveNode(importType.prefix, receiveSpace)!);
+        importType = importType.withMarkers(ctx.receiveNode(importType.markers, ctx.receiveMarkers)!);
+        importType = importType.padding.withHasTypeof(ctx.receiveNode(importType.padding.hasTypeof, rightPaddedValueReceiver(ValueType.Primitive))!);
+        importType = importType.withImportArgument(ctx.receiveNode(importType.importArgument, ctx.receiveTree)!);
+        importType = importType.padding.withQualifier(ctx.receiveNode(importType.padding.qualifier, receiveLeftPaddedTree));
+        importType = importType.padding.withTypeArguments(ctx.receiveNode(importType.padding.typeArguments, receiveContainer));
+        importType = importType.withType(ctx.receiveValue(importType.type, ValueType.Object));
+        return importType;
     }
 
     public visitJsImport(jsImport: JsImport, ctx: ReceiverContext): J {
@@ -1323,6 +1335,19 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<JLeftPadded<J>>(null, receiveLeftPaddedTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$ImportType") {
+            return new ImportType(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JRightPadded<boolean>>(null, rightPaddedValueReceiver(ValueType.Primitive))!,
+                ctx.receiveNode<Java.ParenthesizedTypeTree>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree),
+                ctx.receiveNode<JContainer<Expression>>(null, receiveContainer),
                 ctx.receiveValue(null, ValueType.Object)
             );
         }

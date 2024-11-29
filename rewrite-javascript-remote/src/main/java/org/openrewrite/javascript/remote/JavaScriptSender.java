@@ -195,6 +195,19 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.ImportType visitImportType(JS.ImportType importType, SenderContext ctx) {
+            ctx.sendValue(importType, JS.ImportType::getId);
+            ctx.sendNode(importType, JS.ImportType::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(importType, JS.ImportType::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(importType, e -> e.getPadding().getHasTypeof(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(importType, JS.ImportType::getImportArgument, ctx::sendTree);
+            ctx.sendNode(importType, e -> e.getPadding().getQualifier(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(importType, e -> e.getPadding().getTypeArguments(), JavaScriptSender::sendContainer);
+            ctx.sendTypedValue(importType, JS.ImportType::getType);
+            return importType;
+        }
+
+        @Override
         public JS.JsImport visitJsImport(JS.JsImport jsImport, SenderContext ctx) {
             ctx.sendValue(jsImport, JS.JsImport::getId);
             ctx.sendNode(jsImport, JS.JsImport::getPrefix, JavaScriptSender::sendSpace);

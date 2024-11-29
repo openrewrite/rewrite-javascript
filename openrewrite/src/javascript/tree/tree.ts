@@ -1089,6 +1089,130 @@ export class InferType extends JSMixin(Object) implements TypeTree, Expression {
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$ImportType")
+export class ImportType extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, hasTypeof: JRightPadded<boolean>, importArgument: Java.ParenthesizedTypeTree, qualifier: JLeftPadded<Expression> | null, typeArguments: JContainer<Expression> | null, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._hasTypeof = hasTypeof;
+        this._importArgument = importArgument;
+        this._qualifier = qualifier;
+        this._typeArguments = typeArguments;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): ImportType {
+            return id === this._id ? this : new ImportType(id, this._prefix, this._markers, this._hasTypeof, this._importArgument, this._qualifier, this._typeArguments, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): ImportType {
+            return prefix === this._prefix ? this : new ImportType(this._id, prefix, this._markers, this._hasTypeof, this._importArgument, this._qualifier, this._typeArguments, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): ImportType {
+            return markers === this._markers ? this : new ImportType(this._id, this._prefix, markers, this._hasTypeof, this._importArgument, this._qualifier, this._typeArguments, this._type);
+        }
+
+        private readonly _hasTypeof: JRightPadded<boolean>;
+
+        public get hasTypeof(): boolean {
+            return this._hasTypeof.element;
+        }
+
+        public withHasTypeof(hasTypeof: boolean): ImportType {
+            return this.padding.withHasTypeof(this._hasTypeof.withElement(hasTypeof));
+        }
+
+        private readonly _importArgument: Java.ParenthesizedTypeTree;
+
+        public get importArgument(): Java.ParenthesizedTypeTree {
+            return this._importArgument;
+        }
+
+        public withImportArgument(importArgument: Java.ParenthesizedTypeTree): ImportType {
+            return importArgument === this._importArgument ? this : new ImportType(this._id, this._prefix, this._markers, this._hasTypeof, importArgument, this._qualifier, this._typeArguments, this._type);
+        }
+
+        private readonly _qualifier: JLeftPadded<Expression> | null;
+
+        public get qualifier(): Expression | null {
+            return this._qualifier === null ? null : this._qualifier.element;
+        }
+
+        public withQualifier(qualifier: Expression | null): ImportType {
+            return this.padding.withQualifier(JLeftPadded.withElement(this._qualifier, qualifier));
+        }
+
+        private readonly _typeArguments: JContainer<Expression> | null;
+
+        public get typeArguments(): Expression[] | null {
+            return this._typeArguments === null ? null : this._typeArguments.elements;
+        }
+
+        public withTypeArguments(typeArguments: Expression[] | null): ImportType {
+            return this.padding.withTypeArguments(JContainer.withElementsNullable(this._typeArguments, typeArguments));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): ImportType {
+            return _type === this._type ? this : new ImportType(this._id, this._prefix, this._markers, this._hasTypeof, this._importArgument, this._qualifier, this._typeArguments, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitImportType(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get hasTypeof(): JRightPadded<boolean> {
+                return t._hasTypeof;
+            }
+            public withHasTypeof(hasTypeof: JRightPadded<boolean>): ImportType {
+                return t._hasTypeof === hasTypeof ? t : new ImportType(t._id, t._prefix, t._markers, hasTypeof, t._importArgument, t._qualifier, t._typeArguments, t._type);
+            }
+            public get qualifier(): JLeftPadded<Expression> | null {
+                return t._qualifier;
+            }
+            public withQualifier(qualifier: JLeftPadded<Expression> | null): ImportType {
+                return t._qualifier === qualifier ? t : new ImportType(t._id, t._prefix, t._markers, t._hasTypeof, t._importArgument, qualifier, t._typeArguments, t._type);
+            }
+            public get typeArguments(): JContainer<Expression> | null {
+                return t._typeArguments;
+            }
+            public withTypeArguments(typeArguments: JContainer<Expression> | null): ImportType {
+                return t._typeArguments === typeArguments ? t : new ImportType(t._id, t._prefix, t._markers, t._hasTypeof, t._importArgument, t._qualifier, typeArguments, t._type);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$JsImport")
 export class JsImport extends JSMixin(Object) implements Statement {
     public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<Java.Identifier> | null, importType: JLeftPadded<boolean>, imports: JContainer<Expression> | null, _from: Space | null, target: Java.Literal | null, initializer: JLeftPadded<Expression> | null) {

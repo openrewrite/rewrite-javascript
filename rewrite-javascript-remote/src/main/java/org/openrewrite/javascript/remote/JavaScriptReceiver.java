@@ -212,6 +212,19 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.ImportType visitImportType(JS.ImportType importType, ReceiverContext ctx) {
+            importType = importType.withId(ctx.receiveNonNullValue(importType.getId(), UUID.class));
+            importType = importType.withPrefix(ctx.receiveNonNullNode(importType.getPrefix(), JavaScriptReceiver::receiveSpace));
+            importType = importType.withMarkers(ctx.receiveNonNullNode(importType.getMarkers(), ctx::receiveMarkers));
+            importType = importType.getPadding().withHasTypeof(ctx.receiveNonNullNode(importType.getPadding().getHasTypeof(), rightPaddedValueReceiver(java.lang.Boolean.class)));
+            importType = importType.withImportArgument(ctx.receiveNonNullNode(importType.getImportArgument(), ctx::receiveTree));
+            importType = importType.getPadding().withQualifier(ctx.receiveNode(importType.getPadding().getQualifier(), JavaScriptReceiver::receiveLeftPaddedTree));
+            importType = importType.getPadding().withTypeArguments(ctx.receiveNode(importType.getPadding().getTypeArguments(), JavaScriptReceiver::receiveContainer));
+            importType = importType.withType(ctx.receiveValue(importType.getType(), JavaType.class));
+            return importType;
+        }
+
+        @Override
         public JS.JsImport visitJsImport(JS.JsImport jsImport, ReceiverContext ctx) {
             jsImport = jsImport.withId(ctx.receiveNonNullValue(jsImport.getId(), UUID.class));
             jsImport = jsImport.withPrefix(ctx.receiveNonNullNode(jsImport.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1447,6 +1460,19 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.ImportType.class) {
+                return (T) new JS.ImportType(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, rightPaddedValueReceiver(java.lang.Boolean.class)),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
                 );
             }

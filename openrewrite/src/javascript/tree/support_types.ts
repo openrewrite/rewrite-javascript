@@ -245,6 +245,7 @@ export namespace JsSpace {
         TYPE_PREDICATE_PREFIX,
         LITERAL_TYPE_PREFIX,
         SATISFIES_EXPRESSION_PREFIX,
+        IMPORT_TYPE_PREFIX,
     }
 }
 export namespace JsLeftPadded {
@@ -274,6 +275,7 @@ export namespace JsLeftPadded {
         TYPE_PREDICATE_ASSERTS,
         TYPE_PREDICATE_EXPRESSION,
         SATISFIES_EXPRESSION_SATISFIES_TYPE,
+        IMPORT_TYPE_QUALIFIER,
     }
 }
 export namespace JsRightPadded {
@@ -297,6 +299,7 @@ export namespace JsRightPadded {
         FUNCTION_TYPE_CONSTRUCTOR_TYPE,
         TEMPLATE_EXPRESSION_TEMPLATE_SPANS,
         TAGGED_TEMPLATE_EXPRESSION_TAG,
+        IMPORT_TYPE_HAS_TYPEOF,
     }
 }
 export namespace JsContainer {
@@ -315,5 +318,6 @@ export namespace JsContainer {
         EXPRESSION_WITH_TYPE_ARGUMENTS_TYPE_ARGUMENTS,
         TAGGED_TEMPLATE_EXPRESSION_TYPE_ARGUMENTS,
         CONDITIONAL_TYPE_CONDITION,
+        IMPORT_TYPE_TYPE_ARGUMENTS,
     }
 }
