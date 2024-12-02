@@ -2632,7 +2632,7 @@ export class TypeQuery extends JSMixin(Object) implements Expression, TypeTree {
 }
 
 @LstType("org.openrewrite.javascript.tree.JS$TypeOperator")
-export class TypeOperator extends JSMixin(Object) implements Expression, TypedTree, NameTree {
+export class TypeOperator extends JSMixin(Object) implements Expression, TypeTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, operator: TypeOperator.Type, expression: JLeftPadded<Expression>) {
         super();
         this._id = id;
@@ -4988,6 +4988,178 @@ export class ExportSpecifier extends JSMixin(Object) implements Expression, Type
                 return t._typeOnly === typeOnly ? t : new ExportSpecifier(t._id, t._prefix, t._markers, typeOnly, t._specifier, t._type);
             }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$IndexedAccessType")
+export class IndexedAccessType extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, objectType: TypeTree, indexType: JRightPadded<TypeTree>, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._objectType = objectType;
+        this._indexType = indexType;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): IndexedAccessType {
+            return id === this._id ? this : new IndexedAccessType(id, this._prefix, this._markers, this._objectType, this._indexType, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): IndexedAccessType {
+            return prefix === this._prefix ? this : new IndexedAccessType(this._id, prefix, this._markers, this._objectType, this._indexType, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): IndexedAccessType {
+            return markers === this._markers ? this : new IndexedAccessType(this._id, this._prefix, markers, this._objectType, this._indexType, this._type);
+        }
+
+        private readonly _objectType: TypeTree;
+
+        public get objectType(): TypeTree {
+            return this._objectType;
+        }
+
+        public withObjectType(objectType: TypeTree): IndexedAccessType {
+            return objectType === this._objectType ? this : new IndexedAccessType(this._id, this._prefix, this._markers, objectType, this._indexType, this._type);
+        }
+
+        private readonly _indexType: JRightPadded<TypeTree>;
+
+        public get indexType(): TypeTree {
+            return this._indexType.element;
+        }
+
+        public withIndexType(indexType: TypeTree): IndexedAccessType {
+            return this.padding.withIndexType(this._indexType.withElement(indexType));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): IndexedAccessType {
+            return _type === this._type ? this : new IndexedAccessType(this._id, this._prefix, this._markers, this._objectType, this._indexType, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitIndexedAccessType(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get indexType(): JRightPadded<TypeTree> {
+                return t._indexType;
+            }
+            public withIndexType(indexType: JRightPadded<TypeTree>): IndexedAccessType {
+                return t._indexType === indexType ? t : new IndexedAccessType(t._id, t._prefix, t._markers, t._objectType, indexType, t._type);
+            }
+        }
+    }
+
+}
+
+export namespace IndexedAccessType {
+    @LstType("org.openrewrite.javascript.tree.JS$IndexedAccessType$IndexType")
+    export class IndexType extends JSMixin(Object) implements Expression, TypeTree {
+        public constructor(id: UUID, prefix: Space, markers: Markers, element: JRightPadded<TypeTree>, _type: JavaType | null) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._element = element;
+            this._type = _type;
+        }
+
+            private readonly _id: UUID;
+
+            public get id(): UUID {
+                return this._id;
+            }
+
+            public withId(id: UUID): IndexedAccessType.IndexType {
+                return id === this._id ? this : new IndexedAccessType.IndexType(id, this._prefix, this._markers, this._element, this._type);
+            }
+
+            private readonly _prefix: Space;
+
+            public get prefix(): Space {
+                return this._prefix;
+            }
+
+            public withPrefix(prefix: Space): IndexedAccessType.IndexType {
+                return prefix === this._prefix ? this : new IndexedAccessType.IndexType(this._id, prefix, this._markers, this._element, this._type);
+            }
+
+            private readonly _markers: Markers;
+
+            public get markers(): Markers {
+                return this._markers;
+            }
+
+            public withMarkers(markers: Markers): IndexedAccessType.IndexType {
+                return markers === this._markers ? this : new IndexedAccessType.IndexType(this._id, this._prefix, markers, this._element, this._type);
+            }
+
+            private readonly _element: JRightPadded<TypeTree>;
+
+            public get element(): TypeTree {
+                return this._element.element;
+            }
+
+            public withElement(element: TypeTree): IndexedAccessType.IndexType {
+                return this.padding.withElement(this._element.withElement(element));
+            }
+
+            private readonly _type: JavaType | null;
+
+            public get type(): JavaType | null {
+                return this._type;
+            }
+
+            public withType(_type: JavaType | null): IndexedAccessType.IndexType {
+                return _type === this._type ? this : new IndexedAccessType.IndexType(this._id, this._prefix, this._markers, this._element, _type);
+            }
+
+        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+            return v.visitIndexedAccessTypeIndexType(this, p);
+        }
+
+        get padding() {
+            const t = this;
+            return new class {
+                public get element(): JRightPadded<TypeTree> {
+                    return t._element;
+                }
+                public withElement(element: JRightPadded<TypeTree>): IndexedAccessType.IndexType {
+                    return t._element === element ? t : new IndexedAccessType.IndexType(t._id, t._prefix, t._markers, element, t._type);
+                }
+            }
+        }
+
     }
 
 }

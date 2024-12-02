@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -570,6 +570,25 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         exportSpecifier = exportSpecifier.withSpecifier(ctx.receiveNode(exportSpecifier.specifier, ctx.receiveTree)!);
         exportSpecifier = exportSpecifier.withType(ctx.receiveValue(exportSpecifier.type, ValueType.Object));
         return exportSpecifier;
+    }
+
+    public visitIndexedAccessType(indexedAccessType: IndexedAccessType, ctx: ReceiverContext): J {
+        indexedAccessType = indexedAccessType.withId(ctx.receiveValue(indexedAccessType.id, ValueType.UUID)!);
+        indexedAccessType = indexedAccessType.withPrefix(ctx.receiveNode(indexedAccessType.prefix, receiveSpace)!);
+        indexedAccessType = indexedAccessType.withMarkers(ctx.receiveNode(indexedAccessType.markers, ctx.receiveMarkers)!);
+        indexedAccessType = indexedAccessType.withObjectType(ctx.receiveNode(indexedAccessType.objectType, ctx.receiveTree)!);
+        indexedAccessType = indexedAccessType.padding.withIndexType(ctx.receiveNode(indexedAccessType.padding.indexType, receiveRightPaddedTree)!);
+        indexedAccessType = indexedAccessType.withType(ctx.receiveValue(indexedAccessType.type, ValueType.Object));
+        return indexedAccessType;
+    }
+
+    public visitIndexedAccessTypeIndexType(indexType: IndexedAccessType.IndexType, ctx: ReceiverContext): J {
+        indexType = indexType.withId(ctx.receiveValue(indexType.id, ValueType.UUID)!);
+        indexType = indexType.withPrefix(ctx.receiveNode(indexType.prefix, receiveSpace)!);
+        indexType = indexType.withMarkers(ctx.receiveNode(indexType.markers, ctx.receiveMarkers)!);
+        indexType = indexType.padding.withElement(ctx.receiveNode(indexType.padding.element, receiveRightPaddedTree)!);
+        indexType = indexType.withType(ctx.receiveValue(indexType.type, ValueType.Object));
+        return indexType;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: ReceiverContext): J {
@@ -1836,6 +1855,27 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<JLeftPadded<boolean>>(null, leftPaddedValueReceiver(ValueType.Primitive))!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$IndexedAccessType") {
+            return new IndexedAccessType(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<TypeTree>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JRightPadded<TypeTree>>(null, receiveRightPaddedTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$IndexedAccessType$IndexType") {
+            return new IndexedAccessType.IndexType(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JRightPadded<TypeTree>>(null, receiveRightPaddedTree)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }
