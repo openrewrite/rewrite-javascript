@@ -823,6 +823,35 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return es;
     }
 
+    @Override
+    public J visitIndexedAccessType(JS.IndexedAccessType iat, PrintOutputCapture<P> p) {
+        beforeSyntax(iat, JsSpace.Location.INDEXED_ACCESS_TYPE_PREFIX, p);
+
+        visit(iat.getObjectType(), p);
+        // expect that this element is printed accordingly
+        // <space_before>[<inner_space_before>index<inner_right_padded_suffix_space>]<right_padded_suffix_space>
+        visitRightPadded(iat.getPadding().getIndexType(), JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE, "", p);
+
+        afterSyntax(iat, p);
+
+        return iat;
+    }
+
+    @Override
+    public J visitIndexedAccessTypeIndexType(JS.IndexedAccessType.IndexType iatit, PrintOutputCapture<P> p) {
+        beforeSyntax(iatit, JsSpace.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE_PREFIX, p);
+
+        p.append("[");
+
+        visitRightPadded(iatit.getPadding().getElement(), JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE_ELEMENT, p);
+
+        p.append("]");
+
+        afterSyntax(iatit, p);
+
+        return iatit;
+    }
+
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {
 
         @Override
@@ -1315,6 +1344,13 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         p.append(before);
         visitRightPadded(container.getPadding().getElements(), location.getElementLocation(), suffixBetween, p);
         p.append(after == null ? "" : after);
+    }
+
+    protected void visitRightPadded(JRightPadded<? extends J> node, JsRightPadded.Location location, String suffixBetween, PrintOutputCapture<P> p) {
+        visit(node.getElement(), p);
+        p.append(suffixBetween);
+        visitSpace(node.getAfter(), location.getAfterLocation(), p);
+        afterSyntax(node.getMarkers(), p);
     }
 
     protected void visitLeftPadded(@Nullable String prefix, @Nullable JLeftPadded<? extends J> leftPadded, JsLeftPadded.Location location, PrintOutputCapture<P> p) {

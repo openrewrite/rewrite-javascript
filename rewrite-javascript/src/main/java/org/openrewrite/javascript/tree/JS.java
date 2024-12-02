@@ -36,9 +36,7 @@ import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -2414,7 +2412,7 @@ public interface JS extends J {
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Data
-    final class TypeOperator implements JS, Expression, TypedTree, NameTree {
+    final class TypeOperator implements JS, Expression, TypeTree {
 
         @Nullable
         @NonFinal
@@ -4544,6 +4542,165 @@ public interface JS extends J {
 
             public ExportSpecifier withTypeOnly(JLeftPadded<Boolean> typeOnly) {
                 return t.typeOnly == typeOnly ? t : new ExportSpecifier(t.id, t.prefix, t.markers, t.typeOnly, t.specifier, t.type);
+            }
+        }
+
+    }
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class IndexedAccessType implements JS, Expression, TypeTree {
+        @Nullable
+        @NonFinal
+        transient WeakReference<IndexedAccessType.Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        /**
+         * (prefix)objectType(rightPaddedSuffix)[(prefix)indexType(suffix)](rightPaddedSuffix)
+         */
+        @With
+        @Getter
+        TypeTree objectType;
+
+        JRightPadded<TypeTree> indexType;
+
+        public TypeTree getIndexType() {
+            return indexType.getElement();
+        }
+
+        public TypeTree withIndexType(IndexType indexType) {
+            return getPadding().withIndexType(JRightPadded.withElement(this.indexType, indexType));
+        }
+
+        @With
+        @Nullable
+        @Getter
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitIndexedAccessType(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public IndexedAccessType.Padding getPadding() {
+            IndexedAccessType.Padding p;
+            if (this.padding == null) {
+                p = new IndexedAccessType.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new IndexedAccessType.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final IndexedAccessType t;
+
+            public JRightPadded<TypeTree> getIndexType() {
+                return t.indexType;
+            }
+
+            public IndexedAccessType withIndexType(JRightPadded<TypeTree> indexType) {
+                return t.indexType == indexType ? t : new IndexedAccessType(t.id, t.prefix, t.markers, t.objectType, indexType, t.type);
+            }
+        }
+
+        @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+        @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+        @RequiredArgsConstructor
+        @AllArgsConstructor(access = AccessLevel.PRIVATE)
+        public static final class IndexType implements JS, Expression, TypeTree {
+            @Nullable
+            @NonFinal
+            transient WeakReference<IndexType.Padding> padding;
+
+            @With
+            @EqualsAndHashCode.Include
+            @Getter
+            UUID id;
+
+            @With
+            @Getter
+            Space prefix;
+
+            @With
+            @Getter
+            Markers markers;
+
+            JRightPadded<TypeTree> element;
+
+            public TypeTree getElement() {
+                return element.getElement();
+            }
+
+            public IndexType withElement(TypeTree element) {
+                return getPadding().withElement(JRightPadded.withElement(this.element, element));
+            }
+
+            @With
+            @Getter
+            @Nullable
+            JavaType type;
+
+            @Override
+            public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+                return v.visitIndexedAccessTypeIndexType(this, p);
+            }
+
+            @Override
+            public CoordinateBuilder.Expression getCoordinates() {
+                return new CoordinateBuilder.Expression(this);
+            }
+
+            public IndexType.Padding getPadding() {
+                IndexType.Padding p;
+                if (this.padding == null) {
+                    p = new IndexType.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                } else {
+                    p = this.padding.get();
+                    if (p == null || p.t != this) {
+                        p = new IndexType.Padding(this);
+                        this.padding = new WeakReference<>(p);
+                    }
+                }
+                return p;
+            }
+
+            @RequiredArgsConstructor
+            public static class Padding {
+                private final IndexType t;
+
+                public JRightPadded<TypeTree> getElement() {
+                    return t.element;
+                }
+
+                public IndexType withElement(JRightPadded<TypeTree> element) {
+                    return t.element == element ? t : new IndexType(t.id, t.prefix, t.markers, element, t.type);
+                }
             }
         }
 

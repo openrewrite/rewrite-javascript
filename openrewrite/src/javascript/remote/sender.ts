@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -565,6 +565,25 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(exportSpecifier, v => v.specifier, ctx.sendTree);
         ctx.sendTypedValue(exportSpecifier, v => v.type, ValueType.Object);
         return exportSpecifier;
+    }
+
+    public visitIndexedAccessType(indexedAccessType: IndexedAccessType, ctx: SenderContext): J {
+        ctx.sendValue(indexedAccessType, v => v.id, ValueType.UUID);
+        ctx.sendNode(indexedAccessType, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(indexedAccessType, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(indexedAccessType, v => v.objectType, ctx.sendTree);
+        ctx.sendNode(indexedAccessType, v => v.padding.indexType, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendTypedValue(indexedAccessType, v => v.type, ValueType.Object);
+        return indexedAccessType;
+    }
+
+    public visitIndexedAccessTypeIndexType(indexType: IndexedAccessType.IndexType, ctx: SenderContext): J {
+        ctx.sendValue(indexType, v => v.id, ValueType.UUID);
+        ctx.sendNode(indexType, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(indexType, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(indexType, v => v.padding.element, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendTypedValue(indexType, v => v.type, ValueType.Object);
+        return indexType;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: SenderContext): J {

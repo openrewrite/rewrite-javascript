@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -791,6 +791,33 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         exportSpecifier = exportSpecifier.padding.withTypeOnly(this.visitJsLeftPadded(exportSpecifier.padding.typeOnly, JsLeftPadded.Location.EXPORT_SPECIFIER_TYPE_ONLY, p)!);
         exportSpecifier = exportSpecifier.withSpecifier(this.visitAndCast(exportSpecifier.specifier, p)!);
         return exportSpecifier;
+    }
+
+    public visitIndexedAccessType(indexedAccessType: IndexedAccessType, p: P): J | null {
+        indexedAccessType = indexedAccessType.withPrefix(this.visitJsSpace(indexedAccessType.prefix, JsSpace.Location.INDEXED_ACCESS_TYPE_PREFIX, p)!);
+        let tempExpression = this.visitExpression(indexedAccessType, p) as Expression;
+        if (!(tempExpression instanceof IndexedAccessType))
+        {
+            return tempExpression;
+        }
+        indexedAccessType = tempExpression as IndexedAccessType;
+        indexedAccessType = indexedAccessType.withMarkers(this.visitMarkers(indexedAccessType.markers, p));
+        indexedAccessType = indexedAccessType.withObjectType(this.visitAndCast(indexedAccessType.objectType, p)!);
+        indexedAccessType = indexedAccessType.padding.withIndexType(this.visitJsRightPadded(indexedAccessType.padding.indexType, JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE, p)!);
+        return indexedAccessType;
+    }
+
+    public visitIndexedAccessTypeIndexType(indexType: IndexedAccessType.IndexType, p: P): J | null {
+        indexType = indexType.withPrefix(this.visitJsSpace(indexType.prefix, JsSpace.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE_PREFIX, p)!);
+        let tempExpression = this.visitExpression(indexType, p) as Expression;
+        if (!(tempExpression instanceof IndexedAccessType.IndexType))
+        {
+            return tempExpression;
+        }
+        indexType = tempExpression as IndexedAccessType.IndexType;
+        indexType = indexType.withMarkers(this.visitMarkers(indexType.markers, p));
+        indexType = indexType.padding.withElement(this.visitJsRightPadded(indexType.padding.element, JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE_ELEMENT, p)!);
+        return indexType;
     }
 
     public visitJsLeftPadded<T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P): JLeftPadded<T> {

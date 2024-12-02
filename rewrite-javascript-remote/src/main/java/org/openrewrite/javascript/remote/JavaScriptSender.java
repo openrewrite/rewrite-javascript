@@ -655,6 +655,27 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.IndexedAccessType visitIndexedAccessType(JS.IndexedAccessType indexedAccessType, SenderContext ctx) {
+            ctx.sendValue(indexedAccessType, JS.IndexedAccessType::getId);
+            ctx.sendNode(indexedAccessType, JS.IndexedAccessType::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(indexedAccessType, JS.IndexedAccessType::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(indexedAccessType, JS.IndexedAccessType::getObjectType, ctx::sendTree);
+            ctx.sendNode(indexedAccessType, e -> e.getPadding().getIndexType(), JavaScriptSender::sendRightPadded);
+            ctx.sendTypedValue(indexedAccessType, JS.IndexedAccessType::getType);
+            return indexedAccessType;
+        }
+
+        @Override
+        public JS.IndexedAccessType.IndexType visitIndexedAccessTypeIndexType(JS.IndexedAccessType.IndexType indexType, SenderContext ctx) {
+            ctx.sendValue(indexType, JS.IndexedAccessType.IndexType::getId);
+            ctx.sendNode(indexType, JS.IndexedAccessType.IndexType::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(indexType, JS.IndexedAccessType.IndexType::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(indexType, e -> e.getPadding().getElement(), JavaScriptSender::sendRightPadded);
+            ctx.sendTypedValue(indexType, JS.IndexedAccessType.IndexType::getType);
+            return indexType;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, SenderContext ctx) {
             ctx.sendValue(annotatedType, J.AnnotatedType::getId);
             ctx.sendNode(annotatedType, J.AnnotatedType::getPrefix, JavaScriptSender::sendSpace);

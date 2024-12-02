@@ -672,6 +672,27 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.IndexedAccessType visitIndexedAccessType(JS.IndexedAccessType indexedAccessType, ReceiverContext ctx) {
+            indexedAccessType = indexedAccessType.withId(ctx.receiveNonNullValue(indexedAccessType.getId(), UUID.class));
+            indexedAccessType = indexedAccessType.withPrefix(ctx.receiveNonNullNode(indexedAccessType.getPrefix(), JavaScriptReceiver::receiveSpace));
+            indexedAccessType = indexedAccessType.withMarkers(ctx.receiveNonNullNode(indexedAccessType.getMarkers(), ctx::receiveMarkers));
+            indexedAccessType = indexedAccessType.withObjectType(ctx.receiveNonNullNode(indexedAccessType.getObjectType(), ctx::receiveTree));
+            indexedAccessType = indexedAccessType.getPadding().withIndexType(ctx.receiveNonNullNode(indexedAccessType.getPadding().getIndexType(), JavaScriptReceiver::receiveRightPaddedTree));
+            indexedAccessType = indexedAccessType.withType(ctx.receiveValue(indexedAccessType.getType(), JavaType.class));
+            return indexedAccessType;
+        }
+
+        @Override
+        public JS.IndexedAccessType.IndexType visitIndexedAccessTypeIndexType(JS.IndexedAccessType.IndexType indexType, ReceiverContext ctx) {
+            indexType = indexType.withId(ctx.receiveNonNullValue(indexType.getId(), UUID.class));
+            indexType = indexType.withPrefix(ctx.receiveNonNullNode(indexType.getPrefix(), JavaScriptReceiver::receiveSpace));
+            indexType = indexType.withMarkers(ctx.receiveNonNullNode(indexType.getMarkers(), ctx::receiveMarkers));
+            indexType = indexType.getPadding().withElement(ctx.receiveNonNullNode(indexType.getPadding().getElement(), JavaScriptReceiver::receiveRightPaddedTree));
+            indexType = indexType.withType(ctx.receiveValue(indexType.getType(), JavaType.class));
+            return indexType;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, ReceiverContext ctx) {
             annotatedType = annotatedType.withId(ctx.receiveNonNullValue(annotatedType.getId(), UUID.class));
             annotatedType = annotatedType.withPrefix(ctx.receiveNonNullNode(annotatedType.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1965,6 +1986,27 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.IndexedAccessType.class) {
+                return (T) new JS.IndexedAccessType(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.IndexedAccessType.IndexType.class) {
+                return (T) new JS.IndexedAccessType.IndexType(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
                 );
             }

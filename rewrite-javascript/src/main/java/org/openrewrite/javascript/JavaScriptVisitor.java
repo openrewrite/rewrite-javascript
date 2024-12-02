@@ -652,6 +652,37 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return es;
     }
 
+    public J visitIndexedAccessType(JS.IndexedAccessType indexedAccessType, P p) {
+        JS.IndexedAccessType iat = indexedAccessType;
+        iat = iat.withPrefix(visitSpace(iat.getPrefix(), JsSpace.Location.INDEXED_ACCESS_TYPE_PREFIX, p));
+        iat = iat.withMarkers(visitMarkers(iat.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(iat, p);
+        if (!(temp instanceof JS.IndexedAccessType)) {
+            return temp;
+        } else {
+            iat = (JS.IndexedAccessType) temp;
+        }
+        iat = iat.withObjectType(Objects.requireNonNull(visitAndCast(iat.getObjectType(), p)));
+        iat = iat.getPadding().withIndexType(Objects.requireNonNull(visitRightPadded(iat.getPadding().getIndexType(), JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE, p)));
+        iat = iat.withType(visitType(iat.getType(), p));
+        return iat;
+    }
+
+    public J visitIndexedAccessTypeIndexType(JS.IndexedAccessType.IndexType indexedAccessTypeIndexType, P p) {
+        JS.IndexedAccessType.IndexType iatit = indexedAccessTypeIndexType;
+        iatit = iatit.withPrefix(visitSpace(iatit.getPrefix(), JsSpace.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE_PREFIX, p));
+        iatit = iatit.withMarkers(visitMarkers(iatit.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(iatit, p);
+        if (!(temp instanceof JS.IndexedAccessType.IndexType)) {
+            return temp;
+        } else {
+            iatit = (JS.IndexedAccessType.IndexType) temp;
+        }
+        iatit = iatit.getPadding().withElement(Objects.requireNonNull(visitRightPadded(iatit.getPadding().getElement(), JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE_ELEMENT, p)));
+        iatit = iatit.withType(visitType(iatit.getType(), p));
+        return iatit;
+    }
+
     // TODO: remove me. Requires changes from rewrite-java.
     @Override
     public J visitAnnotatedType(J.AnnotatedType annotatedType, P p) {

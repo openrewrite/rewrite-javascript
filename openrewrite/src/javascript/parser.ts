@@ -1420,16 +1420,20 @@ export class JavaScriptParserVisitor {
     }
 
     visitIndexedAccessType(node: ts.IndexedAccessTypeNode) {
-        return new J.ArrayAccess(
+        return new JS.IndexedAccessType(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
             this.convert(node.objectType),
-            new J.ArrayDimension(
-                randomId(),
-                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBracketToken)!),
-                Markers.EMPTY,
-                this.rightPadded(this.convert(node.indexType), this.suffix(node.indexType))
+            this.rightPadded(
+                new JS.IndexedAccessType.IndexType(
+                    randomId(),
+                    this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBracketToken)!),
+                    Markers.EMPTY,
+                    this.rightPadded(this.convert(node.indexType), this.suffix(node.indexType)),
+                    this.mapType(node.indexType)
+                ),
+                this.suffix(this.findChildNode(node, ts.SyntaxKind.CloseBracketToken)!)
             ),
             this.mapType(node)
         );

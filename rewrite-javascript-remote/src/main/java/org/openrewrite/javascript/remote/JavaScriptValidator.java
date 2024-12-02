@@ -430,6 +430,19 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.IndexedAccessType visitIndexedAccessType(JS.IndexedAccessType indexedAccessType, P p) {
+        visitAndValidate(indexedAccessType.getObjectType(), TypeTree.class, p);
+        visitAndValidate(indexedAccessType.getIndexType(), TypeTree.class, p);
+        return indexedAccessType;
+    }
+
+    @Override
+    public JS.IndexedAccessType.IndexType visitIndexedAccessTypeIndexType(JS.IndexedAccessType.IndexType indexType, P p) {
+        visitAndValidate(indexType.getElement(), TypeTree.class, p);
+        return indexType;
+    }
+
+    @Override
     public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, P p) {
         ListUtils.map(annotatedType.getAnnotations(), el -> visitAndValidate(el, J.Annotation.class, p));
         visitAndValidate(annotatedType.getTypeExpression(), TypeTree.class, p);
