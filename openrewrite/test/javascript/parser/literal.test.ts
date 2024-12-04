@@ -35,7 +35,9 @@ describe('identifier mapping', () => {
               assertLiteralLst(sourceFile, 'null', JavaType.PrimitiveKind.Null);
           }));
     });
-    test('undefined', () => {
+    test.skip('undefined', () => {
+        //skipped since undefined is a valid identifier in some scenarios.
+        // see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined#description
         rewriteRunWithOptions(
           {normalizeIndent: false},
           typeScript('undefined', sourceFile => {

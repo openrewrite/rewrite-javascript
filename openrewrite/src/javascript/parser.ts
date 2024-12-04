@@ -26,6 +26,7 @@ import {
 import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
 import path from "node:path";
+import {ExpressionStatement} from ".";
 
 export class JavaScriptParser extends Parser {
 
@@ -582,10 +583,6 @@ export class JavaScriptParserVisitor {
     }
 
     visitIdentifier(node: ts.Identifier) {
-        if (node.text === 'undefined') {
-            // unsure why this appears as a ts.Identifier in the AST
-            return this.mapLiteral(node, undefined);
-        }
         return this.mapIdentifier(node, node.text);
     }
 
@@ -905,7 +902,7 @@ export class JavaScriptParserVisitor {
                     randomId(),
                     this.prefix(node.name),
                     Markers.EMPTY,
-                    this.visit(node.name),
+                    nameExpression,
                     [],
                     node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
                     this.mapVariableType(node)
@@ -2416,7 +2413,7 @@ export class JavaScriptParserVisitor {
                 Markers.EMPTY,
                 [node.initializer ?
                     (ts.isVariableDeclarationList(node.initializer) ? this.rightPadded(this.visit(node.initializer), Space.EMPTY) :
-                        this.rightPadded(this.convert(node.initializer), this.suffix(node.initializer.getLastToken()!))) :
+                        this.rightPadded(new ExpressionStatement(randomId(), this.visit(node.initializer)), this.suffix(node.initializer.getLastToken()!))) :
                     this.rightPadded(this.newJEmpty(), this.suffix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!))],  // to handle for (/*_*/; ; );
                 node.condition ? this.rightPadded(this.convert(node.condition), this.suffix(node.condition.getLastToken()!)) :
                     this.rightPadded(this.newJEmpty(), this.suffix(this.findChildNode(node, ts.SyntaxKind.SemicolonToken)!)),  // to handle for ( ;/*_*/; );
@@ -2440,7 +2437,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
                 Markers.EMPTY,
-                this.rightPadded(this.visit(node.initializer), this.prefix(node.initializer)),
+                this.rightPadded(this.visit(node.initializer), this.suffix(node.initializer)),
                 this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
             ),
             this.rightPadded(
@@ -2461,7 +2458,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
                 Markers.EMPTY,
-                this.rightPadded(this.visit(node.initializer), this.prefix(node.initializer)),
+                this.rightPadded(this.visit(node.initializer), this.suffix(node.initializer)),
                 this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
             ),
             this.rightPadded(

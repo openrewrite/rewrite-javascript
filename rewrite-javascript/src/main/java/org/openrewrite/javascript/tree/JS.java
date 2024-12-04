@@ -3577,9 +3577,9 @@ public interface JS extends J {
         @Getter
         Markers markers;
 
-        JRightPadded<Statement> variable;
+        JRightPadded<J> variable;
 
-        public Statement getVariable() {
+        public J getVariable() {
             return variable.getElement();
         }
 
@@ -3626,11 +3626,11 @@ public interface JS extends J {
         public static class Padding {
             private final JSForInOfLoopControl t;
 
-            public JRightPadded<Statement> getVariable() {
+            public JRightPadded<J> getVariable() {
                 return t.variable;
             }
 
-            public JSForInOfLoopControl withVariable(JRightPadded<Statement> variable) {
+            public JSForInOfLoopControl withVariable(JRightPadded<J> variable) {
                 return t.variable == variable ? t : new JSForInOfLoopControl(t.id, t.prefix, t.markers, variable, t.iterable);
             }
 

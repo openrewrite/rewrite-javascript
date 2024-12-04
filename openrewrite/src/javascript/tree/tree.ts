@@ -3902,7 +3902,7 @@ export class JSForInLoop extends JSMixin(Object) implements Loop {
 
 @LstType("org.openrewrite.javascript.tree.JS$JSForInOfLoopControl")
 export class JSForInOfLoopControl extends JSMixin(Object) {
-    public constructor(id: UUID, prefix: Space, markers: Markers, variable: JRightPadded<Statement>, iterable: JRightPadded<Expression>) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, variable: JRightPadded<J>, iterable: JRightPadded<Expression>) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -3941,13 +3941,13 @@ export class JSForInOfLoopControl extends JSMixin(Object) {
             return markers === this._markers ? this : new JSForInOfLoopControl(this._id, this._prefix, markers, this._variable, this._iterable);
         }
 
-        private readonly _variable: JRightPadded<Statement>;
+        private readonly _variable: JRightPadded<J>;
 
-        public get variable(): Statement {
+        public get variable(): J {
             return this._variable.element;
         }
 
-        public withVariable(variable: Statement): JSForInOfLoopControl {
+        public withVariable(variable: J): JSForInOfLoopControl {
             return this.padding.withVariable(this._variable.withElement(variable));
         }
 
@@ -3968,10 +3968,10 @@ export class JSForInOfLoopControl extends JSMixin(Object) {
     get padding() {
         const t = this;
         return new class {
-            public get variable(): JRightPadded<Statement> {
+            public get variable(): JRightPadded<J> {
                 return t._variable;
             }
-            public withVariable(variable: JRightPadded<Statement>): JSForInOfLoopControl {
+            public withVariable(variable: JRightPadded<J>): JSForInOfLoopControl {
                 return t._variable === variable ? t : new JSForInOfLoopControl(t._id, t._prefix, t._markers, variable, t._iterable);
             }
             public get iterable(): JRightPadded<Expression> {

@@ -1738,7 +1738,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveNode<JRightPadded<Statement>>(null, receiveRightPaddedTree)!,
+                ctx.receiveNode<JRightPadded<J>>(null, receiveRightPaddedTree)!,
                 ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!
             );
         }

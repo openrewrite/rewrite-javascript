@@ -177,6 +177,21 @@ describe('for mapping', () => {
         );
     });
 
+    test('for with expression instead of statement', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                let b;
+                for (b in a) return !1;
+                for (b of a) return !1;
+                let i, str;
+                for (i = 0; i < 9; i++) {
+                    str = str + i;
+                }
+            `)
+        );
+    });
+
     test('for-of with await', () => {
         rewriteRun(
             //language=typescript

@@ -350,7 +350,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.JSForInOfLoopControl visitJSForInOfLoopControl(JS.JSForInOfLoopControl jSForInOfLoopControl, P p) {
-        visitAndValidate(jSForInOfLoopControl.getVariable(), Statement.class, p);
+        visitAndValidate(jSForInOfLoopControl.getVariable(), J.class, p);
         visitAndValidate(jSForInOfLoopControl.getIterable(), Expression.class, p);
         return jSForInOfLoopControl;
     }

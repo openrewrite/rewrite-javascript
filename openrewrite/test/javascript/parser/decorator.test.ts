@@ -28,6 +28,23 @@ describe('class decorator mapping', () => {
           typeScript('@foo . bar ( ) class A {}')
         );
     });
+    test('parameter decorator with params', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              export class WorkspaceMemberWorkspaceEntity extends BaseWorkspaceEntity {
+                  @WorkspaceField({
+                      standardId: WORKSPACE_MEMBER_STANDARD_FIELD_IDS.name,
+                      type: FieldMetadataType.FULL_NAME,
+                      label: 'Name',
+                      description: 'Workspace member name',
+                      icon: 'IconCircleUser',
+                  })
+                  [NAME_FIELD_NAME]: FullNameMetadata;
+              }
+          `)
+        );
+    });
     test('class / method / params / properties decorators', () => {
         rewriteRun(
           //language=typescript
