@@ -889,6 +889,10 @@ public interface JS extends J {
             return getPadding().withConstructorType(this.constructorType.withElement(constructor));
         }
 
+        @Getter
+        @With
+        J.@Nullable TypeParameters typeParameters;
+
         JContainer<Statement> parameters;
 
         public List<Statement> getParameters() {
@@ -946,7 +950,8 @@ public interface JS extends J {
             }
 
             public FunctionType withConstructorType(JRightPadded<Boolean> constructor) {
-                return t.constructorType == constructor ? t : new FunctionType(t.id, t.prefix, t.markers, constructor, t.parameters, t.arrow, t.returnType, t.type);
+                return t.constructorType == constructor ? t :
+                        new FunctionType(t.id, t.prefix, t.markers, constructor, t.typeParameters, t.parameters, t.arrow, t.returnType, t.type);
             }
 
             public JContainer<Statement> getParameters() {
@@ -954,7 +959,7 @@ public interface JS extends J {
             }
 
             public FunctionType withParameters(JContainer<Statement> parameters) {
-                return t.parameters == parameters ? t : new FunctionType(t.id, t.prefix, t.markers, t.constructorType, parameters, t.arrow, t.returnType, t.type);
+                return t.parameters == parameters ? t : new FunctionType(t.id, t.prefix, t.markers, t.constructorType, t.typeParameters, parameters, t.arrow, t.returnType, t.type);
             }
         }
     }

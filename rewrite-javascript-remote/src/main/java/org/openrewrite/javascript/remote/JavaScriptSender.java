@@ -177,6 +177,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(functionType, JS.FunctionType::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(functionType, JS.FunctionType::getMarkers, ctx::sendMarkers);
             ctx.sendNode(functionType, e -> e.getPadding().getConstructorType(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(functionType, JS.FunctionType::getTypeParameters, ctx::sendTree);
             ctx.sendNode(functionType, e -> e.getPadding().getParameters(), JavaScriptSender::sendContainer);
             ctx.sendNode(functionType, JS.FunctionType::getArrow, JavaScriptSender::sendSpace);
             ctx.sendNode(functionType, JS.FunctionType::getReturnType, ctx::sendTree);

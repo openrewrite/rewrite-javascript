@@ -195,6 +195,15 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             p.append("new");
             visitRightPadded(functionType.getPadding().getConstructorType(), JsRightPadded.Location.FUNCTION_TYPE_CONSTRUCTOR, p);
         }
+        J.TypeParameters typeParameters = functionType.getTypeParameters();
+        if (typeParameters != null) {
+            visit(typeParameters.getAnnotations(), p);
+            visitSpace(typeParameters.getPrefix(), Space.Location.TYPE_PARAMETERS, p);
+            visitMarkers(typeParameters.getMarkers(), p);
+            p.append("<");
+            visitRightPadded(typeParameters.getPadding().getTypeParameters(), JRightPadded.Location.TYPE_PARAMETER, ",", p);
+            p.append(">");
+        }
         visitContainer("(", functionType.getPadding().getParameters(), JsContainer.Location.FUNCTION_TYPE_PARAMETER, ",", ")", p);
         visitSpace(functionType.getArrow(), JsSpace.Location.FUNCTION_TYPE_ARROW_PREFIX, p);
         p.append("=>");

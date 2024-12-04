@@ -165,6 +165,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         functionType = tempExpression as FunctionType;
         functionType = functionType.withMarkers(this.visitMarkers(functionType.markers, p));
         functionType = functionType.padding.withConstructorType(this.visitJsRightPadded(functionType.padding.constructorType, JsRightPadded.Location.FUNCTION_TYPE_CONSTRUCTOR_TYPE, p)!);
+        functionType = functionType.withTypeParameters(this.visitAndCast(functionType.typeParameters, p));
         functionType = functionType.padding.withParameters(this.visitJsContainer(functionType.padding.parameters, JsContainer.Location.FUNCTION_TYPE_PARAMETERS, p)!);
         functionType = functionType.withArrow(this.visitJsSpace(functionType.arrow, JsSpace.Location.FUNCTION_TYPE_ARROW, p)!);
         functionType = functionType.withReturnType(this.visitAndCast(functionType.returnType, p)!);

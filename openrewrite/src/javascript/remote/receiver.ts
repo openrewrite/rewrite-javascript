@@ -137,6 +137,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         functionType = functionType.withPrefix(ctx.receiveNode(functionType.prefix, receiveSpace)!);
         functionType = functionType.withMarkers(ctx.receiveNode(functionType.markers, ctx.receiveMarkers)!);
         functionType = functionType.padding.withConstructorType(ctx.receiveNode(functionType.padding.constructorType, rightPaddedValueReceiver(ValueType.Primitive))!);
+        functionType = functionType.withTypeParameters(ctx.receiveNode(functionType.typeParameters, ctx.receiveTree));
         functionType = functionType.padding.withParameters(ctx.receiveNode(functionType.padding.parameters, receiveContainer)!);
         functionType = functionType.withArrow(ctx.receiveNode(functionType.arrow, receiveSpace)!);
         functionType = functionType.withReturnType(ctx.receiveNode(functionType.returnType, ctx.receiveTree)!);
@@ -1382,6 +1383,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<JRightPadded<boolean>>(null, rightPaddedValueReceiver(ValueType.Primitive))!,
+                ctx.receiveNode<Java.TypeParameters>(null, ctx.receiveTree),
                 ctx.receiveNode<JContainer<Statement>>(null, receiveContainer)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,

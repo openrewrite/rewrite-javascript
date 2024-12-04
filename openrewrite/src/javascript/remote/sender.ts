@@ -132,6 +132,7 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(functionType, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(functionType, v => v.markers, ctx.sendMarkers);
         ctx.sendNode(functionType, v => v.padding.constructorType, Visitor.sendRightPadded(ValueType.Primitive));
+        ctx.sendNode(functionType, v => v.typeParameters, ctx.sendTree);
         ctx.sendNode(functionType, v => v.padding.parameters, Visitor.sendContainer(ValueType.Tree));
         ctx.sendNode(functionType, v => v.arrow, Visitor.sendSpace);
         ctx.sendNode(functionType, v => v.returnType, ctx.sendTree);

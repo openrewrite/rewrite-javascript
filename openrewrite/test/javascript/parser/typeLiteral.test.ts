@@ -28,6 +28,10 @@ describe('type literal mapping', () => {
                   reset(): void;             // Method
                   [index: number]: string    // Indexable
                   add(): (x: number, y: number) => number; //Function signature
+                  add: <T> (x: number, y: number) => number; //Function type
+                  add1: (x: number, y: number) => number; //Function type
+                  ctroType: new < T > (x: number, y: number) => number; //Ctor type
+                  ctroType1: new  (x: number, y: number) => number; //Ctor type
               }
           `)
         );

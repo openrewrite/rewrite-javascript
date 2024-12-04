@@ -262,11 +262,12 @@ export class JavaScriptParserVisitor {
     private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration
         | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration
         | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration
-        | ts.ArrowFunction | ts.IndexSignatureDeclaration | ts.TypeAliasDeclaration | ts.ExportDeclaration | ts.ExportAssignment) {
+        | ts.ArrowFunction | ts.IndexSignatureDeclaration | ts.TypeAliasDeclaration | ts.ExportDeclaration | ts.ExportAssignment | ts.FunctionExpression) {
         if (ts.isVariableStatement(node) || ts.isModuleDeclaration(node)  || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node)
             || ts.isInterfaceDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node) || ts.isParameter(node)
             || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node)
-            || ts.isIndexSignatureDeclaration(node) || ts.isTypeAliasDeclaration(node) || ts.isExportDeclaration(node) || ts.isFunctionDeclaration(node)) {
+            || ts.isIndexSignatureDeclaration(node) || ts.isTypeAliasDeclaration(node) || ts.isExportDeclaration(node)
+            || ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         }
         else if (ts.isExportAssignment(node)) {
@@ -1210,8 +1211,9 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.rightPadded(false, Space.EMPTY),
+            this.mapTypeParametersAsObject(node),
             new JContainer(
-                this.prefix(node),
+                this.prefix(node.getChildAt(node.getChildren().findIndex(n => n.pos === node.parameters.pos) - 1)),
                 node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p))),
                 Markers.EMPTY),
             this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsGreaterThanToken)!),
@@ -1225,8 +1227,9 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.rightPadded(true, this.suffix(this.findChildNode(node, ts.SyntaxKind.NewKeyword)!)),
+            this.mapTypeParametersAsObject(node),
             new JContainer(
-                this.prefix(node),
+                this.prefix(node.getChildAt(node.getChildren().findIndex(n => n.pos === node.parameters.pos) - 1)),
                 node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p))),
                 Markers.EMPTY),
             this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsGreaterThanToken)!),
@@ -1826,7 +1829,7 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            [],
+            this.mapModifiers(node),
             this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.FunctionKeyword)!), !!node.asteriskToken),
             this.leftPadded(node.asteriskToken ? this.prefix(node.asteriskToken) : Space.EMPTY, node.name ? this.visit(node.name) : new J.Identifier(randomId(), Space.EMPTY, Markers.EMPTY, [], "", null, null)),
             this.mapTypeParametersAsObject(node),
@@ -3525,20 +3528,17 @@ export class JavaScriptParserVisitor {
     }
 
     private mapTypeParametersAsObject(node: ts.MethodDeclaration | ts.MethodSignature | ts.FunctionDeclaration
-        | ts.CallSignatureDeclaration | ts.ConstructSignatureDeclaration | ts.FunctionExpression | ts.ArrowFunction | ts.TypeAliasDeclaration) : J.TypeParameters | null {
-        if (!node.typeParameters) return null;
+        | ts.CallSignatureDeclaration | ts.ConstructSignatureDeclaration | ts.FunctionExpression | ts.ArrowFunction | ts.TypeAliasDeclaration | ts.FunctionTypeNode | ts.ConstructorTypeNode) : J.TypeParameters | null {
+        const typeParameters = node.typeParameters;
+        if (!typeParameters) return null;
 
-        let ts_prefix: Space;
-        if (ts.isConstructSignatureDeclaration(node)) {
-            ts_prefix = this.suffix(this.findChildNode(node, ts.SyntaxKind.NewKeyword)!);
-        } else if (ts.isFunctionExpression(node)) {
-            ts_prefix = this.suffix(this.findChildNode(node, ts.SyntaxKind.FunctionKeyword)!);
-        } else if (ts.isTypeAliasDeclaration(node)) {
-            ts_prefix = this.suffix(node.name);
-        } else {
-            ts_prefix = node.questionToken ? this.suffix(node.questionToken) : node.name ? this.suffix(node.name) : Space.EMPTY;
-        }
-        return new J.TypeParameters(randomId(), ts_prefix, Markers.EMPTY, [], node.typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp))));
+        return new J.TypeParameters(
+            randomId(),
+            this.prefix(node.getChildAt(node.getChildren().findIndex(n => n.pos === typeParameters[0].pos) - 1)),
+            Markers.EMPTY,
+            [],
+            typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp)))
+        );
     }
 
     private mapTypeParametersList(typeParamsNodeArray: ts.NodeArray<ts.TypeParameterDeclaration>) : JRightPadded<J.TypeParameter>[] {
