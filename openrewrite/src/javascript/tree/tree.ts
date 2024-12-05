@@ -1563,6 +1563,7 @@ export namespace JsBinary {
             IdentityNotEquals = 2,
             In = 3,
             QuestionQuestion = 4,
+            Comma = 5,
 
     }
 
@@ -5170,6 +5171,117 @@ export namespace IndexedAccessType {
                 }
             }
         }
+
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JsAssignmentOperation")
+export class JsAssignmentOperation extends JSMixin(Object) implements Statement, Expression, TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, variable: Expression, operator: JLeftPadded<JsAssignmentOperation.Type>, assignment: Expression, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._variable = variable;
+        this._operator = operator;
+        this._assignment = assignment;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JsAssignmentOperation {
+            return id === this._id ? this : new JsAssignmentOperation(id, this._prefix, this._markers, this._variable, this._operator, this._assignment, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JsAssignmentOperation {
+            return prefix === this._prefix ? this : new JsAssignmentOperation(this._id, prefix, this._markers, this._variable, this._operator, this._assignment, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JsAssignmentOperation {
+            return markers === this._markers ? this : new JsAssignmentOperation(this._id, this._prefix, markers, this._variable, this._operator, this._assignment, this._type);
+        }
+
+        private readonly _variable: Expression;
+
+        public get variable(): Expression {
+            return this._variable;
+        }
+
+        public withVariable(variable: Expression): JsAssignmentOperation {
+            return variable === this._variable ? this : new JsAssignmentOperation(this._id, this._prefix, this._markers, variable, this._operator, this._assignment, this._type);
+        }
+
+        private readonly _operator: JLeftPadded<JsAssignmentOperation.Type>;
+
+        public get operator(): JsAssignmentOperation.Type {
+            return this._operator.element;
+        }
+
+        public withOperator(operator: JsAssignmentOperation.Type): JsAssignmentOperation {
+            return this.padding.withOperator(this._operator.withElement(operator));
+        }
+
+        private readonly _assignment: Expression;
+
+        public get assignment(): Expression {
+            return this._assignment;
+        }
+
+        public withAssignment(assignment: Expression): JsAssignmentOperation {
+            return assignment === this._assignment ? this : new JsAssignmentOperation(this._id, this._prefix, this._markers, this._variable, this._operator, assignment, this._type);
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): JsAssignmentOperation {
+            return _type === this._type ? this : new JsAssignmentOperation(this._id, this._prefix, this._markers, this._variable, this._operator, this._assignment, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJsAssignmentOperation(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get operator(): JLeftPadded<JsAssignmentOperation.Type> {
+                return t._operator;
+            }
+            public withOperator(operator: JLeftPadded<JsAssignmentOperation.Type>): JsAssignmentOperation {
+                return t._operator === operator ? t : new JsAssignmentOperation(t._id, t._prefix, t._markers, t._variable, operator, t._assignment, t._type);
+            }
+        }
+    }
+
+}
+
+export namespace JsAssignmentOperation {
+    export enum Type {
+            QuestionQuestion = 0,
+            And = 1,
+            Or = 2,
 
     }
 

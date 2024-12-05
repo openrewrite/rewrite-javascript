@@ -988,8 +988,8 @@ export class JavaScriptParserVisitor {
                 this.mapMethodType(node)
             );
         }
-
-        if (ts.isComputedPropertyName(node.name)) {
+        const name = node.name ? this.visit(node.name) : this.mapIdentifier(node, "");
+        if (!(name instanceof J.Identifier)) {
             return new JS.JSMethodDeclaration(
                 randomId(),
                 this.prefix(node),
@@ -998,7 +998,7 @@ export class JavaScriptParserVisitor {
                 this.mapModifiers(node),
                 this.mapTypeParametersAsObject(node),
                 this.mapTypeInfo(node),
-                this.convert(node.name),
+                name,
                 this.mapCommaSeparatedList(this.getParameterListNodes(node)),
                 null,
                 node.body ? this.convert<J.Block>(node.body) : null,
@@ -1016,7 +1016,7 @@ export class JavaScriptParserVisitor {
             this.mapTypeParametersAsObject(node),
             this.mapTypeInfo(node),
             new J.MethodDeclaration.IdentifierWithAnnotations(
-                node.name ? this.visit(node.name) : this.mapIdentifier(node, ""),
+                name,
                 []
             ),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
@@ -1991,6 +1991,12 @@ export class JavaScriptParserVisitor {
             case ts.SyntaxKind.QuestionQuestionToken:
                 binaryOperator = JS.JsBinary.Type.QuestionQuestion;
                 break;
+            case ts.SyntaxKind.InKeyword:
+                binaryOperator = JS.JsBinary.Type.In;
+                break;
+            case ts.SyntaxKind.CommaToken:
+                binaryOperator = JS.JsBinary.Type.Comma;
+                break;
         }
 
         if (binaryOperator !== undefined) {
@@ -2019,7 +2025,33 @@ export class JavaScriptParserVisitor {
 
         binaryOperator = this.mapBinaryOperator(node);
         if (binaryOperator === undefined) {
-            const assignmentOperation = this.mapAssignmentOperation(node);
+            let assignmentOperation;
+
+            switch (node.operatorToken.kind) {
+                case ts.SyntaxKind.QuestionQuestionEqualsToken:
+                    assignmentOperation = JS.JsAssignmentOperation.Type.QuestionQuestion;
+                    break;
+                case ts.SyntaxKind.AmpersandAmpersandEqualsToken:
+                    assignmentOperation = JS.JsAssignmentOperation.Type.And;
+                    break;
+                case ts.SyntaxKind.BarBarEqualsToken:
+                    assignmentOperation = JS.JsAssignmentOperation.Type.Or;
+                    break;
+            }
+
+            if (assignmentOperation !== undefined) {
+                return new JS.JsAssignmentOperation(
+                    randomId(),
+                    this.prefix(node),
+                    Markers.EMPTY,
+                    this.convert(node.left),
+                    this.leftPadded(this.prefix(node.operatorToken), assignmentOperation),
+                    this.convert(node.right),
+                    this.mapType(node)
+                )
+            }
+
+            assignmentOperation = this.mapAssignmentOperation(node);
             if (assignmentOperation === undefined) {
                 return this.visitUnknown(node);
             }
@@ -2418,9 +2450,9 @@ export class JavaScriptParserVisitor {
                     (ts.isVariableDeclarationList(node.initializer) ? this.rightPadded(this.visit(node.initializer), Space.EMPTY) :
                         this.rightPadded(new ExpressionStatement(randomId(), this.visit(node.initializer)), this.suffix(node.initializer.getLastToken()!))) :
                     this.rightPadded(this.newJEmpty(), this.suffix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!))],  // to handle for (/*_*/; ; );
-                node.condition ? this.rightPadded(this.convert(node.condition), this.suffix(node.condition.getLastToken()!)) :
+                node.condition ? this.rightPadded(ts.isStatement(node.condition) ? this.visit(node.condition) : new ExpressionStatement(randomId(), this.visit(node.condition)), this.suffix(node.condition.getLastToken()!)) :
                     this.rightPadded(this.newJEmpty(), this.suffix(this.findChildNode(node, ts.SyntaxKind.SemicolonToken)!)),  // to handle for ( ;/*_*/; );
-                [node.incrementor ? this.rightPadded(this.convert(node.incrementor), this.suffix(node.incrementor.getLastToken()!)) :
+                [node.incrementor ? this.rightPadded(ts.isStatement(node.incrementor) ? this.visit(node.incrementor) : new ExpressionStatement(randomId(), this.visit(node.incrementor)), this.suffix(node.incrementor.getLastToken()!)) :
                     this.rightPadded(this.newJEmpty(this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!)), Space.EMPTY)],  // to handle for ( ; ;/*_*/);
             ),
             this.rightPadded(

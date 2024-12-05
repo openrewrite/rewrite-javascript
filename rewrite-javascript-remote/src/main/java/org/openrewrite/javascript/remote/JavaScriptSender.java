@@ -677,6 +677,18 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.JsAssignmentOperation visitJsAssignmentOperation(JS.JsAssignmentOperation jsAssignmentOperation, SenderContext ctx) {
+            ctx.sendValue(jsAssignmentOperation, JS.JsAssignmentOperation::getId);
+            ctx.sendNode(jsAssignmentOperation, JS.JsAssignmentOperation::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jsAssignmentOperation, JS.JsAssignmentOperation::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(jsAssignmentOperation, JS.JsAssignmentOperation::getVariable, ctx::sendTree);
+            ctx.sendNode(jsAssignmentOperation, e -> e.getPadding().getOperator(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(jsAssignmentOperation, JS.JsAssignmentOperation::getAssignment, ctx::sendTree);
+            ctx.sendTypedValue(jsAssignmentOperation, JS.JsAssignmentOperation::getType);
+            return jsAssignmentOperation;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, SenderContext ctx) {
             ctx.sendValue(annotatedType, J.AnnotatedType::getId);
             ctx.sendNode(annotatedType, J.AnnotatedType::getPrefix, JavaScriptSender::sendSpace);

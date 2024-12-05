@@ -1431,7 +1431,8 @@ public interface JS extends J {
             IdentityEquals,
             IdentityNotEquals,
             In,
-            QuestionQuestion
+            QuestionQuestion,
+            Comma
 
         }
 
@@ -4709,5 +4710,108 @@ public interface JS extends J {
             }
         }
 
+    }
+
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class JsAssignmentOperation implements JS, Statement, Expression, TypedTree {
+        @Nullable
+        @NonFinal
+        transient WeakReference<Padding> padding;
+
+        @With
+        @EqualsAndHashCode.Include
+        @Getter
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        Expression variable;
+
+        JLeftPadded<Type> operator;
+
+        public Type getOperator() {
+            return operator.getElement();
+        }
+
+        public JsAssignmentOperation withOperator(Type operator) {
+            return getPadding().withOperator(this.operator.withElement(operator));
+        }
+
+        @With
+        @Getter
+        Expression assignment;
+
+        @With
+        @Nullable
+        @Getter
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJsAssignmentOperation(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        @Override
+        @Transient
+        public List<J> getSideEffects() {
+            return singletonList(this);
+        }
+
+        public enum Type {
+            QuestionQuestion,
+            And,
+            Or,
+        }
+
+        public JsAssignmentOperation.Padding getPadding() {
+            JsAssignmentOperation.Padding p;
+            if (this.padding == null) {
+                p = new JsAssignmentOperation.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JsAssignmentOperation.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @Override
+        public String toString() {
+            return withPrefix(Space.EMPTY).printTrimmed(new JavaPrinter<>());
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JsAssignmentOperation t;
+
+            public JLeftPadded<JsAssignmentOperation.Type> getOperator() {
+                return t.operator;
+            }
+
+            public JsAssignmentOperation withOperator(JLeftPadded<JsAssignmentOperation.Type> operator) {
+                return t.operator == operator ? t : new JsAssignmentOperation(t.id, t.prefix, t.markers, t.variable, operator, t.assignment, t.type);
+            }
+        }
     }
 }

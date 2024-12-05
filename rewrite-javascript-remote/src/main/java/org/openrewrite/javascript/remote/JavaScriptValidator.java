@@ -444,6 +444,13 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.JsAssignmentOperation visitJsAssignmentOperation(JS.JsAssignmentOperation jsAssignmentOperation, P p) {
+        visitAndValidate(jsAssignmentOperation.getVariable(), Expression.class, p);
+        visitAndValidate(jsAssignmentOperation.getAssignment(), Expression.class, p);
+        return jsAssignmentOperation;
+    }
+
+    @Override
     public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, P p) {
         ListUtils.map(annotatedType.getAnnotations(), el -> visitAndValidate(el, J.Annotation.class, p));
         visitAndValidate(annotatedType.getTypeExpression(), TypeTree.class, p);

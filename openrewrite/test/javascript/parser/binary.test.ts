@@ -177,4 +177,55 @@ describe('boolean operator mapping', () => {
           typeScript('1 || 2')
         );
     });
+    test('in', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('1 in 2')
+        );
+    });
+});
+describe('comma operator mapping', () => {
+    beforeAll(() => connect());
+    afterAll(() => disconnect());
+
+    test('comma operator', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              let x = 1;
+
+              x = (x++, x);
+
+              console.log(x);
+              // Expected output: 2
+
+              x = (2, 3);
+
+              console.log(x);
+              // Expected output: 3
+          `),
+            //language=typescript
+          typeScript(`
+              const a = Array.from({length: 10}, () =>
+                  Array.from({length: 10}, Math.random),
+              ); // A 10×10 array of random numbers
+
+              for (let i = 0, j = 9; i <= 9; i++, j--) {
+                  console.log(\`a[\${i}][\${j}] = \${a[i][j]}\`);
+              }
+          `),
+            //language=typescript
+          typeScript(`
+              let a, b, c;
+
+              a = b = 3, c = 4; // Returns 4
+              console.log(a); // 3 (left-most)
+
+              let x, y, z;
+
+              x = (y = 5, z = 6); // Returns 6
+              console.log(x); // 6 (right-most)
+          `),
+        );
+    });
 });

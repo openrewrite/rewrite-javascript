@@ -694,6 +694,18 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.JsAssignmentOperation visitJsAssignmentOperation(JS.JsAssignmentOperation jsAssignmentOperation, ReceiverContext ctx) {
+            jsAssignmentOperation = jsAssignmentOperation.withId(ctx.receiveNonNullValue(jsAssignmentOperation.getId(), UUID.class));
+            jsAssignmentOperation = jsAssignmentOperation.withPrefix(ctx.receiveNonNullNode(jsAssignmentOperation.getPrefix(), JavaScriptReceiver::receiveSpace));
+            jsAssignmentOperation = jsAssignmentOperation.withMarkers(ctx.receiveNonNullNode(jsAssignmentOperation.getMarkers(), ctx::receiveMarkers));
+            jsAssignmentOperation = jsAssignmentOperation.withVariable(ctx.receiveNonNullNode(jsAssignmentOperation.getVariable(), ctx::receiveTree));
+            jsAssignmentOperation = jsAssignmentOperation.getPadding().withOperator(ctx.receiveNonNullNode(jsAssignmentOperation.getPadding().getOperator(), leftPaddedValueReceiver(org.openrewrite.javascript.tree.JS.JsAssignmentOperation.Type.class)));
+            jsAssignmentOperation = jsAssignmentOperation.withAssignment(ctx.receiveNonNullNode(jsAssignmentOperation.getAssignment(), ctx::receiveTree));
+            jsAssignmentOperation = jsAssignmentOperation.withType(ctx.receiveValue(jsAssignmentOperation.getType(), JavaType.class));
+            return jsAssignmentOperation;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, ReceiverContext ctx) {
             annotatedType = annotatedType.withId(ctx.receiveNonNullValue(annotatedType.getId(), UUID.class));
             annotatedType = annotatedType.withPrefix(ctx.receiveNonNullNode(annotatedType.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -2009,6 +2021,18 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.JsAssignmentOperation.class) {
+                return (T) new JS.JsAssignmentOperation(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, leftPaddedValueReceiver(org.openrewrite.javascript.tree.JS.JsAssignmentOperation.Type.class)),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
                 );
             }

@@ -255,6 +255,7 @@ export namespace JsSpace {
         INDEXED_ACCESS_TYPE_INDEX_TYPE_PREFIX,
         INDEXED_ACCESS_TYPE_INDEX_TYPE_SUFFIX,
         INDEXED_ACCESS_TYPE_INDEX_TYPE_ELEMENT_SUFFIX,
+        JS_ASSIGNMENT_OPERATION_PREFIX,
     }
 }
 export namespace JsLeftPadded {
@@ -291,6 +292,7 @@ export namespace JsLeftPadded {
         EXPORT_DECLARATION_MODULE_SPECIFIER,
         FUNCTION_DECLARATION_ASTERISK_TOKEN,
         FUNCTION_DECLARATION_NAME,
+        JS_ASSIGNMENT_OPERATION_OPERATOR,
     }
 }
 export namespace JsRightPadded {

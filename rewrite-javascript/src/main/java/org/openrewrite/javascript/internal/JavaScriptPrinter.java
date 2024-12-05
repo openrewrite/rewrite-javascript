@@ -302,6 +302,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             case QuestionQuestion:
                 keyword = "??";
                 break;
+            case Comma:
+                keyword = ",";
+                break;
         }
 
         visitSpace(binary.getPadding().getOperator().getBefore(), JsSpace.Location.BINARY_PREFIX, p);
@@ -311,6 +314,62 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         afterSyntax(binary, p);
         return binary;
+    }
+
+    @Override
+    public J visitJsAssignmentOperation(JS.JsAssignmentOperation assignOp, PrintOutputCapture<P> p) {
+        String keyword = "";
+        switch (assignOp.getOperator()) {
+//            case Addition:
+//                keyword = "+=";
+//                break;
+//            case Subtraction:
+//                keyword = "-=";
+//                break;
+//            case Multiplication:
+//                keyword = "*=";
+//                break;
+//            case Division:
+//                keyword = "/=";
+//                break;
+//            case Modulo:
+//                keyword = "%=";
+//                break;
+//            case BitAnd:
+//                keyword = "&=";
+//                break;
+//            case BitOr:
+//                keyword = "|=";
+//                break;
+//            case BitXor:
+//                keyword = "^=";
+//                break;
+//            case LeftShift:
+//                keyword = "<<=";
+//                break;
+//            case RightShift:
+//                keyword = ">>=";
+//                break;
+//            case UnsignedRightShift:
+//                keyword = ">>>=";
+//                break;
+            case QuestionQuestion:
+                keyword = "??=";
+                break;
+            case And:
+                keyword = "&&=";
+                break;
+            case Or:
+                keyword = "||=";
+                break;
+        }
+        beforeSyntax(assignOp, JsSpace.Location.ASSIGNMENT_OPERATION_PREFIX, p);
+        visit(assignOp.getVariable(), p);
+        visitSpace(assignOp.getPadding().getOperator().getBefore(), JsSpace.Location.ASSIGNMENT_OPERATION_OPERATOR, p);
+        p.append(keyword);
+        visit(assignOp.getAssignment(), p);
+        afterSyntax(assignOp, p);
+        return assignOp;
     }
 
     @Override

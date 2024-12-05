@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -590,6 +590,17 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         indexType = indexType.padding.withElement(ctx.receiveNode(indexType.padding.element, receiveRightPaddedTree)!);
         indexType = indexType.withType(ctx.receiveValue(indexType.type, ValueType.Object));
         return indexType;
+    }
+
+    public visitJsAssignmentOperation(jsAssignmentOperation: JsAssignmentOperation, ctx: ReceiverContext): J {
+        jsAssignmentOperation = jsAssignmentOperation.withId(ctx.receiveValue(jsAssignmentOperation.id, ValueType.UUID)!);
+        jsAssignmentOperation = jsAssignmentOperation.withPrefix(ctx.receiveNode(jsAssignmentOperation.prefix, receiveSpace)!);
+        jsAssignmentOperation = jsAssignmentOperation.withMarkers(ctx.receiveNode(jsAssignmentOperation.markers, ctx.receiveMarkers)!);
+        jsAssignmentOperation = jsAssignmentOperation.withVariable(ctx.receiveNode(jsAssignmentOperation.variable, ctx.receiveTree)!);
+        jsAssignmentOperation = jsAssignmentOperation.padding.withOperator(ctx.receiveNode(jsAssignmentOperation.padding.operator, leftPaddedValueReceiver(ValueType.Enum))!);
+        jsAssignmentOperation = jsAssignmentOperation.withAssignment(ctx.receiveNode(jsAssignmentOperation.assignment, ctx.receiveTree)!);
+        jsAssignmentOperation = jsAssignmentOperation.withType(ctx.receiveValue(jsAssignmentOperation.type, ValueType.Object));
+        return jsAssignmentOperation;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: ReceiverContext): J {
@@ -1878,6 +1889,18 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<JRightPadded<TypeTree>>(null, receiveRightPaddedTree)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$JsAssignmentOperation") {
+            return new JsAssignmentOperation(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<JsAssignmentOperation.Type>>(null, leftPaddedValueReceiver(ValueType.Enum))!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }
