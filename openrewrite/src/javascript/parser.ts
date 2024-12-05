@@ -2305,7 +2305,14 @@ export class JavaScriptParserVisitor {
     }
 
     visitMetaProperty(node: ts.MetaProperty) {
-        return this.visitUnknown(node);
+        return new J.FieldAccess(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            node.keywordToken === ts.SyntaxKind.NewKeyword ? this.mapIdentifier(node, 'new') : this.mapIdentifier(node, 'import'),
+            this.leftPadded(this.prefix(node.getChildAt(1, this.sourceFile)), this.convert(node.name)),
+            this.mapType(node)
+        );
     }
 
     visitSyntheticExpression(node: ts.SyntheticExpression) {
