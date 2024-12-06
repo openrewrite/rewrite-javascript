@@ -342,6 +342,57 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return type;
     }
 
+    public J visitMappedType(JS.MappedType mappedType, P p) {
+        JS.MappedType t = mappedType;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.MAPPED_TYPE_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(t, p);
+        if (!(temp instanceof JS.MappedType)) {
+            return temp;
+        } else {
+            t = (JS.MappedType) temp;
+        }
+        t = t.getPadding().withPrefixToken(visitLeftPadded(t.getPadding().getPrefixToken(), JsLeftPadded.Location.MAPPED_TYPE_PREFIX_TOKEN, p));
+        t = t.getPadding().withHasReadonly(visitLeftPadded(t.getPadding().getHasReadonly(), JsLeftPadded.Location.MAPPED_TYPE_READONLY, p));
+        t = t.withKeysRemapping(visitAndCast(t.getKeysRemapping(),p));
+        t = t.getPadding().withSuffixToken(visitLeftPadded(t.getPadding().getSuffixToken(), JsLeftPadded.Location.MAPPED_TYPE_SUFFIX_TOKEN, p));
+        t = t.getPadding().withHasQuestionToken(visitLeftPadded(t.getPadding().getHasQuestionToken(), JsLeftPadded.Location.MAPPED_TYPE_QUESTION_TOKEN, p));
+        t = t.getPadding().withValueType(visitContainer(t.getPadding().getValueType(), JsContainer.Location.MAPPED_TYPE_VALUE_TYPE, p));
+        return t;
+    }
+
+    public J visitMappedTypeKeysRemapping(JS.MappedType.KeysRemapping mappedTypeKeys, P p) {
+        JS.MappedType.KeysRemapping m = mappedTypeKeys;
+        m = m.withPrefix(visitSpace(m.getPrefix(), JsSpace.Location.MAPPED_TYPE_KEYS_REMAPPING_PREFIX, p));
+        m = m.withMarkers(visitMarkers(m.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(m, p);
+        if (!(temp instanceof JS.MappedType.KeysRemapping)) {
+            return temp;
+        } else {
+            m = (JS.MappedType.KeysRemapping) temp;
+        }
+        m = m.getPadding().withTypeParameter(visitRightPadded(m.getPadding().getTypeParameter(), JsRightPadded.Location.MAPPED_TYPE_KEYS_REMAPPING_TYPE_PARAMETER, p));
+        if (m.getNameType() != null) {
+            m = m.getPadding().withNameType(visitRightPadded(m.getPadding().getNameType(), JsRightPadded.Location.MAPPED_TYPE_KEYS_REMAPPING_NAME_TYPE, p));
+        }
+        return m;
+    }
+
+    public J visitMappedTypeMappedTypeParameter(JS.MappedType.MappedTypeParameter mappedTypeParameter, P p) {
+        JS.MappedType.MappedTypeParameter m = mappedTypeParameter;
+        m = m.withPrefix(visitSpace(m.getPrefix(), JsSpace.Location.MAPPED_TYPE_MAPPED_TYPE_PARAMETER_PREFIX, p));
+        m = m.withMarkers(visitMarkers(m.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(m, p);
+        if (!(temp instanceof JS.MappedType.MappedTypeParameter)) {
+            return temp;
+        } else {
+            m = (JS.MappedType.MappedTypeParameter) temp;
+        }
+        m = m.withName(visitAndCast(m.getName(), p));
+        m = m.getPadding().withIterateType(visitLeftPadded(m.getPadding().getIterateType(), JsLeftPadded.Location.MAPPED_TYPE_MAPPED_TYPE_PARAMETER_ITERATE, p));
+        return m;
+    }
+
     public J visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, P p) {
         JS.ObjectBindingDeclarations o = objectBindingDeclarations;
         o = o.withPrefix(visitSpace(o.getPrefix(), JsSpace.Location.OBJECT_BINDING_DECLARATIONS_PREFIX, p));
