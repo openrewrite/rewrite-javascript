@@ -1,6 +1,6 @@
 import {connect, disconnect, rewriteRun, rewriteRunWithOptions, typeScript} from '../testHarness';
 
-describe('highlight.js files tests', () => {
+describe('twentyhq/twenty files tests', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 

@@ -270,6 +270,9 @@ describe('class mapping', () => {
             //language=typescript
             typeScript(`
                 class OuterClass extends (class extends Number {
+                    constructor() {
+                        /*1*/ super /*2*/ () /*3*/;
+                    }
                 }) {
                     constructor() {
                         /*1*/ super /*2*/ () /*3*/;

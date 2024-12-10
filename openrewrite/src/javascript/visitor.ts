@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -886,6 +886,19 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         jsAssignmentOperation = jsAssignmentOperation.padding.withOperator(this.visitJsLeftPadded(jsAssignmentOperation.padding.operator, JsLeftPadded.Location.JS_ASSIGNMENT_OPERATION_OPERATOR, p)!);
         jsAssignmentOperation = jsAssignmentOperation.withAssignment(this.visitAndCast(jsAssignmentOperation.assignment, p)!);
         return jsAssignmentOperation;
+    }
+
+    public visitTypeTreeExpression(typeTreeExpression: TypeTreeExpression, p: P): J | null {
+        typeTreeExpression = typeTreeExpression.withPrefix(this.visitJsSpace(typeTreeExpression.prefix, JsSpace.Location.TYPE_TREE_EXPRESSION_PREFIX, p)!);
+        let tempExpression = this.visitExpression(typeTreeExpression, p) as Expression;
+        if (!(tempExpression instanceof TypeTreeExpression))
+        {
+            return tempExpression;
+        }
+        typeTreeExpression = tempExpression as TypeTreeExpression;
+        typeTreeExpression = typeTreeExpression.withMarkers(this.visitMarkers(typeTreeExpression.markers, p));
+        typeTreeExpression = typeTreeExpression.withExpression(this.visitAndCast(typeTreeExpression.expression, p)!);
+        return typeTreeExpression;
     }
 
     public visitJsLeftPadded<T>(left: JLeftPadded<T> | null, loc: JsLeftPadded.Location, p: P): JLeftPadded<T> {

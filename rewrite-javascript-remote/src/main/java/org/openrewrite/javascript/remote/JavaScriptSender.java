@@ -724,6 +724,15 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.TypeTreeExpression visitTypeTreeExpression(JS.TypeTreeExpression typeTreeExpression, SenderContext ctx) {
+            ctx.sendValue(typeTreeExpression, JS.TypeTreeExpression::getId);
+            ctx.sendNode(typeTreeExpression, JS.TypeTreeExpression::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(typeTreeExpression, JS.TypeTreeExpression::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(typeTreeExpression, JS.TypeTreeExpression::getExpression, ctx::sendTree);
+            return typeTreeExpression;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, SenderContext ctx) {
             ctx.sendValue(annotatedType, J.AnnotatedType::getId);
             ctx.sendNode(annotatedType, J.AnnotatedType::getPrefix, JavaScriptSender::sendSpace);

@@ -41,6 +41,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Value
 public class JavaScriptReceiver implements Receiver<JS> {
@@ -741,6 +742,15 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.TypeTreeExpression visitTypeTreeExpression(JS.TypeTreeExpression typeTreeExpression, ReceiverContext ctx) {
+            typeTreeExpression = typeTreeExpression.withId(ctx.receiveNonNullValue(typeTreeExpression.getId(), UUID.class));
+            typeTreeExpression = typeTreeExpression.withPrefix(ctx.receiveNonNullNode(typeTreeExpression.getPrefix(), JavaScriptReceiver::receiveSpace));
+            typeTreeExpression = typeTreeExpression.withMarkers(ctx.receiveNonNullNode(typeTreeExpression.getMarkers(), ctx::receiveMarkers));
+            typeTreeExpression = typeTreeExpression.withExpression(ctx.receiveNonNullNode(typeTreeExpression.getExpression(), ctx::receiveTree));
+            return typeTreeExpression;
+        }
+
+        @Override
         public J.AnnotatedType visitAnnotatedType(J.AnnotatedType annotatedType, ReceiverContext ctx) {
             annotatedType = annotatedType.withId(ctx.receiveNonNullValue(annotatedType.getId(), UUID.class));
             annotatedType = annotatedType.withPrefix(ctx.receiveNonNullNode(annotatedType.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1437,11 +1447,146 @@ public class JavaScriptReceiver implements Receiver<JS> {
 
     private static class Factory implements ReceiverFactory {
 
+        private final ClassValue<Function<ReceiverContext, Object>> factories = new ClassValue<Function<ReceiverContext, Object>>() {
+            @Override
+            protected Function<ReceiverContext, Object> computeValue(Class type) {
+                if (type == JS.CompilationUnit.class) return Factory::createJSCompilationUnit;
+                if (type == JS.Alias.class) return Factory::createJSAlias;
+                if (type == JS.ArrowFunction.class) return Factory::createJSArrowFunction;
+                if (type == JS.Await.class) return Factory::createJSAwait;
+                if (type == JS.ConditionalType.class) return Factory::createJSConditionalType;
+                if (type == JS.DefaultType.class) return Factory::createJSDefaultType;
+                if (type == JS.Delete.class) return Factory::createJSDelete;
+                if (type == JS.Export.class) return Factory::createJSExport;
+                if (type == JS.ExpressionStatement.class) return Factory::createJSExpressionStatement;
+                if (type == JS.ExpressionWithTypeArguments.class) return Factory::createJSExpressionWithTypeArguments;
+                if (type == JS.FunctionType.class) return Factory::createJSFunctionType;
+                if (type == JS.InferType.class) return Factory::createJSInferType;
+                if (type == JS.ImportType.class) return Factory::createJSImportType;
+                if (type == JS.JsImport.class) return Factory::createJSJsImport;
+                if (type == JS.JsImportSpecifier.class) return Factory::createJSJsImportSpecifier;
+                if (type == JS.JsBinary.class) return Factory::createJSJsBinary;
+                if (type == JS.LiteralType.class) return Factory::createJSLiteralType;
+                if (type == JS.ObjectBindingDeclarations.class) return Factory::createJSObjectBindingDeclarations;
+                if (type == JS.PropertyAssignment.class) return Factory::createJSPropertyAssignment;
+                if (type == JS.SatisfiesExpression.class) return Factory::createJSSatisfiesExpression;
+                if (type == JS.ScopedVariableDeclarations.class) return Factory::createJSScopedVariableDeclarations;
+                if (type == JS.StatementExpression.class) return Factory::createJSStatementExpression;
+                if (type == JS.TaggedTemplateExpression.class) return Factory::createJSTaggedTemplateExpression;
+                if (type == JS.TemplateExpression.class) return Factory::createJSTemplateExpression;
+                if (type == JS.TemplateExpression.TemplateSpan.class) return Factory::createJSTemplateExpressionTemplateSpan;
+                if (type == JS.Tuple.class) return Factory::createJSTuple;
+                if (type == JS.TypeDeclaration.class) return Factory::createJSTypeDeclaration;
+                if (type == JS.TypeOf.class) return Factory::createJSTypeOf;
+                if (type == JS.TypeQuery.class) return Factory::createJSTypeQuery;
+                if (type == JS.TypeOperator.class) return Factory::createJSTypeOperator;
+                if (type == JS.TypePredicate.class) return Factory::createJSTypePredicate;
+                if (type == JS.Unary.class) return Factory::createJSUnary;
+                if (type == JS.Union.class) return Factory::createJSUnion;
+                if (type == JS.Intersection.class) return Factory::createJSIntersection;
+                if (type == JS.Void.class) return Factory::createJSVoid;
+                if (type == JS.Yield.class) return Factory::createJSYield;
+                if (type == JS.TypeInfo.class) return Factory::createJSTypeInfo;
+                if (type == JS.JSVariableDeclarations.class) return Factory::createJSJSVariableDeclarations;
+                if (type == JS.JSVariableDeclarations.JSNamedVariable.class) return Factory::createJSJSVariableDeclarationsJSNamedVariable;
+                if (type == JS.JSMethodDeclaration.class) return Factory::createJSJSMethodDeclaration;
+                if (type == JS.JSForOfLoop.class) return Factory::createJSJSForOfLoop;
+                if (type == JS.JSForInLoop.class) return Factory::createJSJSForInLoop;
+                if (type == JS.JSForInOfLoopControl.class) return Factory::createJSJSForInOfLoopControl;
+                if (type == JS.NamespaceDeclaration.class) return Factory::createJSNamespaceDeclaration;
+                if (type == JS.FunctionDeclaration.class) return Factory::createJSFunctionDeclaration;
+                if (type == JS.TypeLiteral.class) return Factory::createJSTypeLiteral;
+                if (type == JS.IndexSignatureDeclaration.class) return Factory::createJSIndexSignatureDeclaration;
+                if (type == JS.ArrayBindingPattern.class) return Factory::createJSArrayBindingPattern;
+                if (type == JS.BindingElement.class) return Factory::createJSBindingElement;
+                if (type == JS.ExportDeclaration.class) return Factory::createJSExportDeclaration;
+                if (type == JS.ExportAssignment.class) return Factory::createJSExportAssignment;
+                if (type == JS.NamedExports.class) return Factory::createJSNamedExports;
+                if (type == JS.ExportSpecifier.class) return Factory::createJSExportSpecifier;
+                if (type == JS.IndexedAccessType.class) return Factory::createJSIndexedAccessType;
+                if (type == JS.IndexedAccessType.IndexType.class) return Factory::createJSIndexedAccessTypeIndexType;
+                if (type == JS.JsAssignmentOperation.class) return Factory::createJSJsAssignmentOperation;
+                if (type == JS.TypeTreeExpression.class) return Factory::createJSTypeTreeExpression;
+                if (type == J.AnnotatedType.class) return Factory::createJAnnotatedType;
+                if (type == J.Annotation.class) return Factory::createJAnnotation;
+                if (type == J.ArrayAccess.class) return Factory::createJArrayAccess;
+                if (type == J.ArrayType.class) return Factory::createJArrayType;
+                if (type == J.Assert.class) return Factory::createJAssert;
+                if (type == J.Assignment.class) return Factory::createJAssignment;
+                if (type == J.AssignmentOperation.class) return Factory::createJAssignmentOperation;
+                if (type == J.Binary.class) return Factory::createJBinary;
+                if (type == J.Block.class) return Factory::createJBlock;
+                if (type == J.Break.class) return Factory::createJBreak;
+                if (type == J.Case.class) return Factory::createJCase;
+                if (type == J.ClassDeclaration.class) return Factory::createJClassDeclaration;
+                if (type == J.ClassDeclaration.Kind.class) return Factory::createJClassDeclarationKind;
+                if (type == J.Continue.class) return Factory::createJContinue;
+                if (type == J.DoWhileLoop.class) return Factory::createJDoWhileLoop;
+                if (type == J.Empty.class) return Factory::createJEmpty;
+                if (type == J.EnumValue.class) return Factory::createJEnumValue;
+                if (type == J.EnumValueSet.class) return Factory::createJEnumValueSet;
+                if (type == J.FieldAccess.class) return Factory::createJFieldAccess;
+                if (type == J.ForEachLoop.class) return Factory::createJForEachLoop;
+                if (type == J.ForEachLoop.Control.class) return Factory::createJForEachLoopControl;
+                if (type == J.ForLoop.class) return Factory::createJForLoop;
+                if (type == J.ForLoop.Control.class) return Factory::createJForLoopControl;
+                if (type == J.ParenthesizedTypeTree.class) return Factory::createJParenthesizedTypeTree;
+                if (type == J.Identifier.class) return Factory::createJIdentifier;
+                if (type == J.If.class) return Factory::createJIf;
+                if (type == J.If.Else.class) return Factory::createJIfElse;
+                if (type == J.Import.class) return Factory::createJImport;
+                if (type == J.InstanceOf.class) return Factory::createJInstanceOf;
+                if (type == J.IntersectionType.class) return Factory::createJIntersectionType;
+                if (type == J.Label.class) return Factory::createJLabel;
+                if (type == J.Lambda.class) return Factory::createJLambda;
+                if (type == J.Lambda.Parameters.class) return Factory::createJLambdaParameters;
+                if (type == J.Literal.class) return Factory::createJLiteral;
+                if (type == J.MemberReference.class) return Factory::createJMemberReference;
+                if (type == J.MethodDeclaration.class) return Factory::createJMethodDeclaration;
+                if (type == J.MethodInvocation.class) return Factory::createJMethodInvocation;
+                if (type == J.Modifier.class) return Factory::createJModifier;
+                if (type == J.MultiCatch.class) return Factory::createJMultiCatch;
+                if (type == J.NewArray.class) return Factory::createJNewArray;
+                if (type == J.ArrayDimension.class) return Factory::createJArrayDimension;
+                if (type == J.NewClass.class) return Factory::createJNewClass;
+                if (type == J.NullableType.class) return Factory::createJNullableType;
+                if (type == J.Package.class) return Factory::createJPackage;
+                if (type == J.ParameterizedType.class) return Factory::createJParameterizedType;
+                if (type == J.Parentheses.class) return Factory::createJParentheses;
+                if (type == J.ControlParentheses.class) return Factory::createJControlParentheses;
+                if (type == J.Primitive.class) return Factory::createJPrimitive;
+                if (type == J.Return.class) return Factory::createJReturn;
+                if (type == J.Switch.class) return Factory::createJSwitch;
+                if (type == J.SwitchExpression.class) return Factory::createJSwitchExpression;
+                if (type == J.Synchronized.class) return Factory::createJSynchronized;
+                if (type == J.Ternary.class) return Factory::createJTernary;
+                if (type == J.Throw.class) return Factory::createJThrow;
+                if (type == J.Try.class) return Factory::createJTry;
+                if (type == J.Try.Resource.class) return Factory::createJTryResource;
+                if (type == J.Try.Catch.class) return Factory::createJTryCatch;
+                if (type == J.TypeCast.class) return Factory::createJTypeCast;
+                if (type == J.TypeParameter.class) return Factory::createJTypeParameter;
+                if (type == J.TypeParameters.class) return Factory::createJTypeParameters;
+                if (type == J.Unary.class) return Factory::createJUnary;
+                if (type == J.VariableDeclarations.class) return Factory::createJVariableDeclarations;
+                if (type == J.VariableDeclarations.NamedVariable.class) return Factory::createJVariableDeclarationsNamedVariable;
+                if (type == J.WhileLoop.class) return Factory::createJWhileLoop;
+                if (type == J.Wildcard.class) return Factory::createJWildcard;
+                if (type == J.Yield.class) return Factory::createJYield;
+                if (type == J.Unknown.class) return Factory::createJUnknown;
+                if (type == J.Unknown.Source.class) return Factory::createJUnknownSource;
+                throw new IllegalArgumentException("Unknown type: " + type);
+            }
+        };
+
         @Override
         @SuppressWarnings("unchecked")
         public <T> T create(Class<T> type, ReceiverContext ctx) {
-            if (type == JS.CompilationUnit.class) {
-                return (T) new JS.CompilationUnit(
+            return (T) factories.get(type).apply(ctx);
+        }
+
+        private static JS.CompilationUnit createJSCompilationUnit(ReceiverContext ctx) {
+            return new JS.CompilationUnit(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1453,21 +1598,21 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace)
-                );
-            }
+            );
+        }
 
-            if (type == JS.Alias.class) {
-                return (T) new JS.Alias(
+        private static JS.Alias createJSAlias(ReceiverContext ctx) {
+            return new JS.Alias(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.ArrowFunction.class) {
-                return (T) new JS.ArrowFunction(
+        private static JS.ArrowFunction createJSArrowFunction(ReceiverContext ctx) {
+            return new JS.ArrowFunction(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1479,32 +1624,32 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.Await.class) {
-                return (T) new JS.Await(
+        private static JS.Await createJSAwait(ReceiverContext ctx) {
+            return new JS.Await(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.ConditionalType.class) {
-                return (T) new JS.ConditionalType(
+        private static JS.ConditionalType createJSConditionalType(ReceiverContext ctx) {
+            return new JS.ConditionalType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.DefaultType.class) {
-                return (T) new JS.DefaultType(
+        private static JS.DefaultType createJSDefaultType(ReceiverContext ctx) {
+            return new JS.DefaultType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1512,21 +1657,21 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.Delete.class) {
-                return (T) new JS.Delete(
+        private static JS.Delete createJSDelete(ReceiverContext ctx) {
+            return new JS.Delete(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.Export.class) {
-                return (T) new JS.Export(
+        private static JS.Export createJSExport(ReceiverContext ctx) {
+            return new JS.Export(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1534,29 +1679,29 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.ExpressionStatement.class) {
-                return (T) new JS.ExpressionStatement(
+        private static JS.ExpressionStatement createJSExpressionStatement(ReceiverContext ctx) {
+            return new JS.ExpressionStatement(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.ExpressionWithTypeArguments.class) {
-                return (T) new JS.ExpressionWithTypeArguments(
+        private static JS.ExpressionWithTypeArguments createJSExpressionWithTypeArguments(ReceiverContext ctx) {
+            return new JS.ExpressionWithTypeArguments(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.FunctionType.class) {
-                return (T) new JS.FunctionType(
+        private static JS.FunctionType createJSFunctionType(ReceiverContext ctx) {
+            return new JS.FunctionType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1566,21 +1711,21 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.InferType.class) {
-                return (T) new JS.InferType(
+        private static JS.InferType createJSInferType(ReceiverContext ctx) {
+            return new JS.InferType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.ImportType.class) {
-                return (T) new JS.ImportType(
+        private static JS.ImportType createJSImportType(ReceiverContext ctx) {
+            return new JS.ImportType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1589,11 +1734,11 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.JsImport.class) {
-                return (T) new JS.JsImport(
+        private static JS.JsImport createJSJsImport(ReceiverContext ctx) {
+            return new JS.JsImport(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1603,22 +1748,22 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.JsImportSpecifier.class) {
-                return (T) new JS.JsImportSpecifier(
+        private static JS.JsImportSpecifier createJSJsImportSpecifier(ReceiverContext ctx) {
+            return new JS.JsImportSpecifier(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.JsBinary.class) {
-                return (T) new JS.JsBinary(
+        private static JS.JsBinary createJSJsBinary(ReceiverContext ctx) {
+            return new JS.JsBinary(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1626,18 +1771,18 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(org.openrewrite.javascript.tree.JS.JsBinary.Type.class)),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.LiteralType.class) {
-                return (T) new JS.LiteralType(
+        private static JS.LiteralType createJSLiteralType(ReceiverContext ctx) {
+            return new JS.LiteralType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
             if (type == JS.MappedType.class) {
                 return (T) new JS.MappedType(
@@ -1676,6 +1821,8 @@ public class JavaScriptReceiver implements Receiver<JS> {
 
             if (type == JS.ObjectBindingDeclarations.class) {
                 return (T) new JS.ObjectBindingDeclarations(
+        private static JS.ObjectBindingDeclarations createJSObjectBindingDeclarations(ReceiverContext ctx) {
+            return new JS.ObjectBindingDeclarations(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1684,50 +1831,50 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.PropertyAssignment.class) {
-                return (T) new JS.PropertyAssignment(
+        private static JS.PropertyAssignment createJSPropertyAssignment(ReceiverContext ctx) {
+            return new JS.PropertyAssignment(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.SatisfiesExpression.class) {
-                return (T) new JS.SatisfiesExpression(
+        private static JS.SatisfiesExpression createJSSatisfiesExpression(ReceiverContext ctx) {
+            return new JS.SatisfiesExpression(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.ScopedVariableDeclarations.class) {
-                return (T) new JS.ScopedVariableDeclarations(
+        private static JS.ScopedVariableDeclarations createJSScopedVariableDeclarations(ReceiverContext ctx) {
+            return new JS.ScopedVariableDeclarations(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNode(null, leftPaddedValueReceiver(org.openrewrite.javascript.tree.JS.ScopedVariableDeclarations.Scope.class)),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.StatementExpression.class) {
-                return (T) new JS.StatementExpression(
+        private static JS.StatementExpression createJSStatementExpression(ReceiverContext ctx) {
+            return new JS.StatementExpression(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.TaggedTemplateExpression.class) {
-                return (T) new JS.TaggedTemplateExpression(
+        private static JS.TaggedTemplateExpression createJSTaggedTemplateExpression(ReceiverContext ctx) {
+            return new JS.TaggedTemplateExpression(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1735,42 +1882,42 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.TemplateExpression.class) {
-                return (T) new JS.TemplateExpression(
+        private static JS.TemplateExpression createJSTemplateExpression(ReceiverContext ctx) {
+            return new JS.TemplateExpression(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.TemplateExpression.TemplateSpan.class) {
-                return (T) new JS.TemplateExpression.TemplateSpan(
+        private static JS.TemplateExpression.TemplateSpan createJSTemplateExpressionTemplateSpan(ReceiverContext ctx) {
+            return new JS.TemplateExpression.TemplateSpan(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.Tuple.class) {
-                return (T) new JS.Tuple(
+        private static JS.Tuple createJSTuple(ReceiverContext ctx) {
+            return new JS.Tuple(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.TypeDeclaration.class) {
-                return (T) new JS.TypeDeclaration(
+        private static JS.TypeDeclaration createJSTypeDeclaration(ReceiverContext ctx) {
+            return new JS.TypeDeclaration(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1779,41 +1926,41 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.TypeOf.class) {
-                return (T) new JS.TypeOf(
+        private static JS.TypeOf createJSTypeOf(ReceiverContext ctx) {
+            return new JS.TypeOf(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.TypeQuery.class) {
-                return (T) new JS.TypeQuery(
+        private static JS.TypeQuery createJSTypeQuery(ReceiverContext ctx) {
+            return new JS.TypeQuery(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.TypeOperator.class) {
-                return (T) new JS.TypeOperator(
+        private static JS.TypeOperator createJSTypeOperator(ReceiverContext ctx) {
+            return new JS.TypeOperator(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullValue(null, JS.TypeOperator.Type.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.TypePredicate.class) {
-                return (T) new JS.TypePredicate(
+        private static JS.TypePredicate createJSTypePredicate(ReceiverContext ctx) {
+            return new JS.TypePredicate(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1821,71 +1968,71 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.Unary.class) {
-                return (T) new JS.Unary(
+        private static JS.Unary createJSUnary(ReceiverContext ctx) {
+            return new JS.Unary(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(org.openrewrite.javascript.tree.JS.Unary.Type.class)),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.Union.class) {
-                return (T) new JS.Union(
+        private static JS.Union createJSUnion(ReceiverContext ctx) {
+            return new JS.Union(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.Intersection.class) {
-                return (T) new JS.Intersection(
+        private static JS.Intersection createJSIntersection(ReceiverContext ctx) {
+            return new JS.Intersection(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.Void.class) {
-                return (T) new JS.Void(
+        private static JS.Void createJSVoid(ReceiverContext ctx) {
+            return new JS.Void(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.Yield.class) {
-                return (T) new JS.Yield(
+        private static JS.Yield createJSYield(ReceiverContext ctx) {
+            return new JS.Yield(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullValue(null, boolean.class),
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.TypeInfo.class) {
-                return (T) new JS.TypeInfo(
+        private static JS.TypeInfo createJSTypeInfo(ReceiverContext ctx) {
+            return new JS.TypeInfo(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.JSVariableDeclarations.class) {
-                return (T) new JS.JSVariableDeclarations(
+        private static JS.JSVariableDeclarations createJSJSVariableDeclarations(ReceiverContext ctx) {
+            return new JS.JSVariableDeclarations(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1894,11 +2041,11 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.JSVariableDeclarations.JSNamedVariable.class) {
-                return (T) new JS.JSVariableDeclarations.JSNamedVariable(
+        private static JS.JSVariableDeclarations.JSNamedVariable createJSJSVariableDeclarationsJSNamedVariable(ReceiverContext ctx) {
+            return new JS.JSVariableDeclarations.JSNamedVariable(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1906,11 +2053,11 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNodes(null, leftPaddedNodeReceiver(org.openrewrite.java.tree.Space.class)),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.Variable.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.JSMethodDeclaration.class) {
-                return (T) new JS.JSMethodDeclaration(
+        private static JS.JSMethodDeclaration createJSJSMethodDeclaration(ReceiverContext ctx) {
+            return new JS.JSMethodDeclaration(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1924,42 +2071,42 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.Method.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.JSForOfLoop.class) {
-                return (T) new JS.JSForOfLoop(
+        private static JS.JSForOfLoop createJSJSForOfLoop(ReceiverContext ctx) {
+            return new JS.JSForOfLoop(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.JSForInLoop.class) {
-                return (T) new JS.JSForInLoop(
+        private static JS.JSForInLoop createJSJSForInLoop(ReceiverContext ctx) {
+            return new JS.JSForInLoop(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.JSForInOfLoopControl.class) {
-                return (T) new JS.JSForInOfLoopControl(
+        private static JS.JSForInOfLoopControl createJSJSForInOfLoopControl(ReceiverContext ctx) {
+            return new JS.JSForInOfLoopControl(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.NamespaceDeclaration.class) {
-                return (T) new JS.NamespaceDeclaration(
+        private static JS.NamespaceDeclaration createJSNamespaceDeclaration(ReceiverContext ctx) {
+            return new JS.NamespaceDeclaration(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1967,11 +2114,11 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(org.openrewrite.javascript.tree.JS.NamespaceDeclaration.KeywordType.class)),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.FunctionDeclaration.class) {
-                return (T) new JS.FunctionDeclaration(
+        private static JS.FunctionDeclaration createJSFunctionDeclaration(ReceiverContext ctx) {
+            return new JS.FunctionDeclaration(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1983,21 +2130,21 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.TypeLiteral.class) {
-                return (T) new JS.TypeLiteral(
+        private static JS.TypeLiteral createJSTypeLiteral(ReceiverContext ctx) {
+            return new JS.TypeLiteral(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.IndexSignatureDeclaration.class) {
-                return (T) new JS.IndexSignatureDeclaration(
+        private static JS.IndexSignatureDeclaration createJSIndexSignatureDeclaration(ReceiverContext ctx) {
+            return new JS.IndexSignatureDeclaration(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2005,21 +2152,21 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.ArrayBindingPattern.class) {
-                return (T) new JS.ArrayBindingPattern(
+        private static JS.ArrayBindingPattern createJSArrayBindingPattern(ReceiverContext ctx) {
+            return new JS.ArrayBindingPattern(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.BindingElement.class) {
-                return (T) new JS.BindingElement(
+        private static JS.BindingElement createJSBindingElement(ReceiverContext ctx) {
+            return new JS.BindingElement(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2027,11 +2174,11 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.Variable.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.ExportDeclaration.class) {
-                return (T) new JS.ExportDeclaration(
+        private static JS.ExportDeclaration createJSExportDeclaration(ReceiverContext ctx) {
+            return new JS.ExportDeclaration(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2039,64 +2186,64 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.ExportAssignment.class) {
-                return (T) new JS.ExportAssignment(
+        private static JS.ExportAssignment createJSExportAssignment(ReceiverContext ctx) {
+            return new JS.ExportAssignment(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.NamedExports.class) {
-                return (T) new JS.NamedExports(
+        private static JS.NamedExports createJSNamedExports(ReceiverContext ctx) {
+            return new JS.NamedExports(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.ExportSpecifier.class) {
-                return (T) new JS.ExportSpecifier(
+        private static JS.ExportSpecifier createJSExportSpecifier(ReceiverContext ctx) {
+            return new JS.ExportSpecifier(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.IndexedAccessType.class) {
-                return (T) new JS.IndexedAccessType(
+        private static JS.IndexedAccessType createJSIndexedAccessType(ReceiverContext ctx) {
+            return new JS.IndexedAccessType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.IndexedAccessType.IndexType.class) {
-                return (T) new JS.IndexedAccessType.IndexType(
+        private static JS.IndexedAccessType.IndexType createJSIndexedAccessTypeIndexType(ReceiverContext ctx) {
+            return new JS.IndexedAccessType.IndexType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.JsAssignmentOperation.class) {
-                return (T) new JS.JsAssignmentOperation(
+        private static JS.JsAssignmentOperation createJSJsAssignmentOperation(ReceiverContext ctx) {
+            return new JS.JsAssignmentOperation(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2104,42 +2251,51 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(org.openrewrite.javascript.tree.JS.JsAssignmentOperation.Type.class)),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.AnnotatedType.class) {
-                return (T) new J.AnnotatedType(
+        private static JS.TypeTreeExpression createJSTypeTreeExpression(ReceiverContext ctx) {
+            return new JS.TypeTreeExpression(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree)
+            );
+        }
+
+        private static J.AnnotatedType createJAnnotatedType(ReceiverContext ctx) {
+            return new J.AnnotatedType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Annotation.class) {
-                return (T) new J.Annotation(
+        private static J.Annotation createJAnnotation(ReceiverContext ctx) {
+            return new J.Annotation(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveContainer)
-                );
-            }
+            );
+        }
 
-            if (type == J.ArrayAccess.class) {
-                return (T) new J.ArrayAccess(
+        private static J.ArrayAccess createJArrayAccess(ReceiverContext ctx) {
+            return new J.ArrayAccess(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.ArrayType.class) {
-                return (T) new J.ArrayType(
+        private static J.ArrayType createJArrayType(ReceiverContext ctx) {
+            return new J.ArrayType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2147,32 +2303,32 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNodes(null, ctx::receiveTree),
                     ctx.receiveNode(null, leftPaddedNodeReceiver(org.openrewrite.java.tree.Space.class)),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.Assert.class) {
-                return (T) new J.Assert(
+        private static J.Assert createJAssert(ReceiverContext ctx) {
+            return new J.Assert(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Assignment.class) {
-                return (T) new J.Assignment(
+        private static J.Assignment createJAssignment(ReceiverContext ctx) {
+            return new J.Assignment(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.AssignmentOperation.class) {
-                return (T) new J.AssignmentOperation(
+        private static J.AssignmentOperation createJAssignmentOperation(ReceiverContext ctx) {
+            return new J.AssignmentOperation(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2180,11 +2336,11 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(org.openrewrite.java.tree.J.AssignmentOperation.Type.class)),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.Binary.class) {
-                return (T) new J.Binary(
+        private static J.Binary createJBinary(ReceiverContext ctx) {
+            return new J.Binary(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2192,31 +2348,31 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(org.openrewrite.java.tree.J.Binary.Type.class)),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.Block.class) {
-                return (T) new J.Block(
+        private static J.Block createJBlock(ReceiverContext ctx) {
+            return new J.Block(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, rightPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace)
-                );
-            }
+            );
+        }
 
-            if (type == J.Break.class) {
-                return (T) new J.Break(
+        private static J.Break createJBreak(ReceiverContext ctx) {
+            return new J.Break(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Case.class) {
-                return (T) new J.Case(
+        private static J.Case createJCase(ReceiverContext ctx) {
+            return new J.Case(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2224,11 +2380,11 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.ClassDeclaration.class) {
-                return (T) new J.ClassDeclaration(
+        private static J.ClassDeclaration createJClassDeclaration(ReceiverContext ctx) {
+            return new J.ClassDeclaration(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2243,131 +2399,131 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.FullyQualified.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.ClassDeclaration.Kind.class) {
-                return (T) new J.ClassDeclaration.Kind(
+        private static J.ClassDeclaration.Kind createJClassDeclarationKind(ReceiverContext ctx) {
+            return new J.ClassDeclaration.Kind(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNonNullValue(null, J.ClassDeclaration.Kind.Type.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.Continue.class) {
-                return (T) new J.Continue(
+        private static J.Continue createJContinue(ReceiverContext ctx) {
+            return new J.Continue(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.DoWhileLoop.class) {
-                return (T) new J.DoWhileLoop(
+        private static J.DoWhileLoop createJDoWhileLoop(ReceiverContext ctx) {
+            return new J.DoWhileLoop(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Empty.class) {
-                return (T) new J.Empty(
+        private static J.Empty createJEmpty(ReceiverContext ctx) {
+            return new J.Empty(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers)
-                );
-            }
+            );
+        }
 
-            if (type == J.EnumValue.class) {
-                return (T) new J.EnumValue(
+        private static J.EnumValue createJEnumValue(ReceiverContext ctx) {
+            return new J.EnumValue(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.EnumValueSet.class) {
-                return (T) new J.EnumValueSet(
+        private static J.EnumValueSet createJEnumValueSet(ReceiverContext ctx) {
+            return new J.EnumValueSet(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullValue(null, boolean.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.FieldAccess.class) {
-                return (T) new J.FieldAccess(
+        private static J.FieldAccess createJFieldAccess(ReceiverContext ctx) {
+            return new J.FieldAccess(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.ForEachLoop.class) {
-                return (T) new J.ForEachLoop(
+        private static J.ForEachLoop createJForEachLoop(ReceiverContext ctx) {
+            return new J.ForEachLoop(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.ForEachLoop.Control.class) {
-                return (T) new J.ForEachLoop.Control(
+        private static J.ForEachLoop.Control createJForEachLoopControl(ReceiverContext ctx) {
+            return new J.ForEachLoop.Control(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.ForLoop.class) {
-                return (T) new J.ForLoop(
+        private static J.ForLoop createJForLoop(ReceiverContext ctx) {
+            return new J.ForLoop(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.ForLoop.Control.class) {
-                return (T) new J.ForLoop.Control(
+        private static J.ForLoop.Control createJForLoopControl(ReceiverContext ctx) {
+            return new J.ForLoop.Control(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.ParenthesizedTypeTree.class) {
-                return (T) new J.ParenthesizedTypeTree(
+        private static J.ParenthesizedTypeTree createJParenthesizedTypeTree(ReceiverContext ctx) {
+            return new J.ParenthesizedTypeTree(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Identifier.class) {
-                return (T) new J.Identifier(
+        private static J.Identifier createJIdentifier(ReceiverContext ctx) {
+            return new J.Identifier(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2375,42 +2531,42 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullValue(null, String.class),
                     ctx.receiveValue(null, JavaType.class),
                     ctx.receiveValue(null, JavaType.Variable.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.If.class) {
-                return (T) new J.If(
+        private static J.If createJIf(ReceiverContext ctx) {
+            return new J.If(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.If.Else.class) {
-                return (T) new J.If.Else(
+        private static J.If.Else createJIfElse(ReceiverContext ctx) {
+            return new J.If.Else(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Import.class) {
-                return (T) new J.Import(
+        private static J.Import createJImport(ReceiverContext ctx) {
+            return new J.Import(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.InstanceOf.class) {
-                return (T) new J.InstanceOf(
+        private static J.InstanceOf createJInstanceOf(ReceiverContext ctx) {
+            return new J.InstanceOf(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2418,30 +2574,30 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.IntersectionType.class) {
-                return (T) new J.IntersectionType(
+        private static J.IntersectionType createJIntersectionType(ReceiverContext ctx) {
+            return new J.IntersectionType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer)
-                );
-            }
+            );
+        }
 
-            if (type == J.Label.class) {
-                return (T) new J.Label(
+        private static J.Label createJLabel(ReceiverContext ctx) {
+            return new J.Label(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Lambda.class) {
-                return (T) new J.Lambda(
+        private static J.Lambda createJLambda(ReceiverContext ctx) {
+            return new J.Lambda(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2449,21 +2605,21 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.Lambda.Parameters.class) {
-                return (T) new J.Lambda.Parameters(
+        private static J.Lambda.Parameters createJLambdaParameters(ReceiverContext ctx) {
+            return new J.Lambda.Parameters(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullValue(null, boolean.class),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Literal.class) {
-                return (T) new J.Literal(
+        private static J.Literal createJLiteral(ReceiverContext ctx) {
+            return new J.Literal(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2471,11 +2627,11 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveValue(null, String.class),
                     ctx.receiveValues(null, J.Literal.UnicodeEscape.class),
                     ctx.receiveValue(null, JavaType.Primitive.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.MemberReference.class) {
-                return (T) new J.MemberReference(
+        private static J.MemberReference createJMemberReference(ReceiverContext ctx) {
+            return new J.MemberReference(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2485,11 +2641,11 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveValue(null, JavaType.class),
                     ctx.receiveValue(null, JavaType.Method.class),
                     ctx.receiveValue(null, JavaType.Variable.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.MethodDeclaration.class) {
-                return (T) new J.MethodDeclaration(
+        private static J.MethodDeclaration createJMethodDeclaration(ReceiverContext ctx) {
+            return new J.MethodDeclaration(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2503,11 +2659,11 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.Method.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.MethodInvocation.class) {
-                return (T) new J.MethodInvocation(
+        private static J.MethodInvocation createJMethodInvocation(ReceiverContext ctx) {
+            return new J.MethodInvocation(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2516,31 +2672,31 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.Method.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.Modifier.class) {
-                return (T) new J.Modifier(
+        private static J.Modifier createJModifier(ReceiverContext ctx) {
+            return new J.Modifier(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveValue(null, String.class),
                     ctx.receiveNonNullValue(null, J.Modifier.Type.class),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.MultiCatch.class) {
-                return (T) new J.MultiCatch(
+        private static J.MultiCatch createJMultiCatch(ReceiverContext ctx) {
+            return new J.MultiCatch(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.NewArray.class) {
-                return (T) new J.NewArray(
+        private static J.NewArray createJNewArray(ReceiverContext ctx) {
+            return new J.NewArray(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2548,20 +2704,20 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.ArrayDimension.class) {
-                return (T) new J.ArrayDimension(
+        private static J.ArrayDimension createJArrayDimension(ReceiverContext ctx) {
+            return new J.ArrayDimension(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.NewClass.class) {
-                return (T) new J.NewClass(
+        private static J.NewClass createJNewClass(ReceiverContext ctx) {
+            return new J.NewClass(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2571,108 +2727,108 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.Method.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.NullableType.class) {
-                return (T) new J.NullableType(
+        private static J.NullableType createJNullableType(ReceiverContext ctx) {
+            return new J.NullableType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Package.class) {
-                return (T) new J.Package(
+        private static J.Package createJPackage(ReceiverContext ctx) {
+            return new J.Package(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.ParameterizedType.class) {
-                return (T) new J.ParameterizedType(
+        private static J.ParameterizedType createJParameterizedType(ReceiverContext ctx) {
+            return new J.ParameterizedType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.Parentheses.class) {
-                return (T) new J.Parentheses(
+        private static J.Parentheses createJParentheses(ReceiverContext ctx) {
+            return new J.Parentheses(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.ControlParentheses.class) {
-                return (T) new J.ControlParentheses(
+        private static J.ControlParentheses createJControlParentheses(ReceiverContext ctx) {
+            return new J.ControlParentheses(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Primitive.class) {
-                return (T) new J.Primitive(
+        private static J.Primitive createJPrimitive(ReceiverContext ctx) {
+            return new J.Primitive(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveValue(null, JavaType.Primitive.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.Return.class) {
-                return (T) new J.Return(
+        private static J.Return createJReturn(ReceiverContext ctx) {
+            return new J.Return(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Switch.class) {
-                return (T) new J.Switch(
+        private static J.Switch createJSwitch(ReceiverContext ctx) {
+            return new J.Switch(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.SwitchExpression.class) {
-                return (T) new J.SwitchExpression(
+        private static J.SwitchExpression createJSwitchExpression(ReceiverContext ctx) {
+            return new J.SwitchExpression(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Synchronized.class) {
-                return (T) new J.Synchronized(
+        private static J.Synchronized createJSynchronized(ReceiverContext ctx) {
+            return new J.Synchronized(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Ternary.class) {
-                return (T) new J.Ternary(
+        private static J.Ternary createJTernary(ReceiverContext ctx) {
+            return new J.Ternary(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2680,20 +2836,20 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.Throw.class) {
-                return (T) new J.Throw(
+        private static J.Throw createJThrow(ReceiverContext ctx) {
+            return new J.Throw(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Try.class) {
-                return (T) new J.Try(
+        private static J.Try createJTry(ReceiverContext ctx) {
+            return new J.Try(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2701,41 +2857,41 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Try.Resource.class) {
-                return (T) new J.Try.Resource(
+        private static J.Try.Resource createJTryResource(ReceiverContext ctx) {
+            return new J.Try.Resource(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullValue(null, boolean.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.Try.Catch.class) {
-                return (T) new J.Try.Catch(
+        private static J.Try.Catch createJTryCatch(ReceiverContext ctx) {
+            return new J.Try.Catch(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.TypeCast.class) {
-                return (T) new J.TypeCast(
+        private static J.TypeCast createJTypeCast(ReceiverContext ctx) {
+            return new J.TypeCast(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.TypeParameter.class) {
-                return (T) new J.TypeParameter(
+        private static J.TypeParameter createJTypeParameter(ReceiverContext ctx) {
+            return new J.TypeParameter(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2743,32 +2899,32 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveModifier),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveContainer)
-                );
-            }
+            );
+        }
 
-            if (type == J.TypeParameters.class) {
-                return (T) new J.TypeParameters(
+        private static J.TypeParameters createJTypeParameters(ReceiverContext ctx) {
+            return new J.TypeParameters(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Unary.class) {
-                return (T) new J.Unary(
+        private static J.Unary createJUnary(ReceiverContext ctx) {
+            return new J.Unary(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(org.openrewrite.java.tree.J.Unary.Type.class)),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.VariableDeclarations.class) {
-                return (T) new J.VariableDeclarations(
+        private static J.VariableDeclarations createJVariableDeclarations(ReceiverContext ctx) {
+            return new J.VariableDeclarations(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2778,11 +2934,11 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNodes(null, leftPaddedNodeReceiver(org.openrewrite.java.tree.Space.class)),
                     ctx.receiveNonNullNodes(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.VariableDeclarations.NamedVariable.class) {
-                return (T) new J.VariableDeclarations.NamedVariable(
+        private static J.VariableDeclarations.NamedVariable createJVariableDeclarationsNamedVariable(ReceiverContext ctx) {
+            return new J.VariableDeclarations.NamedVariable(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -2790,59 +2946,57 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNodes(null, leftPaddedNodeReceiver(org.openrewrite.java.tree.Space.class)),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.Variable.class)
-                );
-            }
+            );
+        }
 
-            if (type == J.WhileLoop.class) {
-                return (T) new J.WhileLoop(
+        private static J.WhileLoop createJWhileLoop(ReceiverContext ctx) {
+            return new J.WhileLoop(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Wildcard.class) {
-                return (T) new J.Wildcard(
+        private static J.Wildcard createJWildcard(ReceiverContext ctx) {
+            return new J.Wildcard(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNode(null, leftPaddedValueReceiver(org.openrewrite.java.tree.J.Wildcard.Bound.class)),
                     ctx.receiveNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Yield.class) {
-                return (T) new J.Yield(
+        private static J.Yield createJYield(ReceiverContext ctx) {
+            return new J.Yield(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullValue(null, boolean.class),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Unknown.class) {
-                return (T) new J.Unknown(
+        private static J.Unknown createJUnknown(ReceiverContext ctx) {
+            return new J.Unknown(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
-                );
-            }
+            );
+        }
 
-            if (type == J.Unknown.Source.class) {
-                return (T) new J.Unknown.Source(
+        private static J.Unknown.Source createJUnknownSource(ReceiverContext ctx) {
+            return new J.Unknown.Source(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullValue(null, String.class)
-                );
-            }
-
-            throw new IllegalArgumentException("Unknown type: " + type);
+            );
         }
+
     }
 
     private static J.ClassDeclaration.Kind receiveClassDeclarationKind(J.ClassDeclaration.@Nullable Kind kind, @Nullable Class<?> type, ReceiverContext ctx) {

@@ -5611,3 +5611,67 @@ export namespace JsAssignmentOperation {
     }
 
 }
+
+@LstType("org.openrewrite.javascript.tree.JS$TypeTreeExpression")
+export class TypeTreeExpression extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, expression: Expression) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._expression = expression;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): TypeTreeExpression {
+            return id === this._id ? this : new TypeTreeExpression(id, this._prefix, this._markers, this._expression);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): TypeTreeExpression {
+            return prefix === this._prefix ? this : new TypeTreeExpression(this._id, prefix, this._markers, this._expression);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): TypeTreeExpression {
+            return markers === this._markers ? this : new TypeTreeExpression(this._id, this._prefix, markers, this._expression);
+        }
+
+        private readonly _expression: Expression;
+
+        public get expression(): Expression {
+            return this._expression;
+        }
+
+        public withExpression(expression: Expression): TypeTreeExpression {
+            return expression === this._expression ? this : new TypeTreeExpression(this._id, this._prefix, this._markers, expression);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTypeTreeExpression(this, p);
+    }
+
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): TypeTreeExpression {
+        return extensions.withJavaType(this, type);
+    }
+
+}
