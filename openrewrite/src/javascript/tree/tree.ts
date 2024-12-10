@@ -1636,6 +1636,331 @@ export class LiteralType extends JSMixin(Object) implements Expression, TypeTree
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$MappedType")
+export class MappedType extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, prefixToken: JLeftPadded<Java.Literal> | null, hasReadonly: JLeftPadded<boolean>, keysRemapping: MappedType.KeysRemapping, suffixToken: JLeftPadded<Java.Literal> | null, hasQuestionToken: JLeftPadded<boolean>, valueType: JContainer<TypeTree>, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._prefixToken = prefixToken;
+        this._hasReadonly = hasReadonly;
+        this._keysRemapping = keysRemapping;
+        this._suffixToken = suffixToken;
+        this._hasQuestionToken = hasQuestionToken;
+        this._valueType = valueType;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): MappedType {
+            return id === this._id ? this : new MappedType(id, this._prefix, this._markers, this._prefixToken, this._hasReadonly, this._keysRemapping, this._suffixToken, this._hasQuestionToken, this._valueType, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): MappedType {
+            return prefix === this._prefix ? this : new MappedType(this._id, prefix, this._markers, this._prefixToken, this._hasReadonly, this._keysRemapping, this._suffixToken, this._hasQuestionToken, this._valueType, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): MappedType {
+            return markers === this._markers ? this : new MappedType(this._id, this._prefix, markers, this._prefixToken, this._hasReadonly, this._keysRemapping, this._suffixToken, this._hasQuestionToken, this._valueType, this._type);
+        }
+
+        private readonly _prefixToken: JLeftPadded<Java.Literal> | null;
+
+        public get prefixToken(): Java.Literal | null {
+            return this._prefixToken === null ? null : this._prefixToken.element;
+        }
+
+        public withPrefixToken(prefixToken: Java.Literal | null): MappedType {
+            return this.padding.withPrefixToken(JLeftPadded.withElement(this._prefixToken, prefixToken));
+        }
+
+        private readonly _hasReadonly: JLeftPadded<boolean>;
+
+        public get hasReadonly(): boolean {
+            return this._hasReadonly.element;
+        }
+
+        public withHasReadonly(hasReadonly: boolean): MappedType {
+            return this.padding.withHasReadonly(this._hasReadonly.withElement(hasReadonly));
+        }
+
+        private readonly _keysRemapping: MappedType.KeysRemapping;
+
+        public get keysRemapping(): MappedType.KeysRemapping {
+            return this._keysRemapping;
+        }
+
+        public withKeysRemapping(keysRemapping: MappedType.KeysRemapping): MappedType {
+            return keysRemapping === this._keysRemapping ? this : new MappedType(this._id, this._prefix, this._markers, this._prefixToken, this._hasReadonly, keysRemapping, this._suffixToken, this._hasQuestionToken, this._valueType, this._type);
+        }
+
+        private readonly _suffixToken: JLeftPadded<Java.Literal> | null;
+
+        public get suffixToken(): Java.Literal | null {
+            return this._suffixToken === null ? null : this._suffixToken.element;
+        }
+
+        public withSuffixToken(suffixToken: Java.Literal | null): MappedType {
+            return this.padding.withSuffixToken(JLeftPadded.withElement(this._suffixToken, suffixToken));
+        }
+
+        private readonly _hasQuestionToken: JLeftPadded<boolean>;
+
+        public get hasQuestionToken(): boolean {
+            return this._hasQuestionToken.element;
+        }
+
+        public withHasQuestionToken(hasQuestionToken: boolean): MappedType {
+            return this.padding.withHasQuestionToken(this._hasQuestionToken.withElement(hasQuestionToken));
+        }
+
+        private readonly _valueType: JContainer<TypeTree>;
+
+        public get valueType(): TypeTree[] {
+            return this._valueType.elements;
+        }
+
+        public withValueType(valueType: TypeTree[]): MappedType {
+            return this.padding.withValueType(JContainer.withElements(this._valueType, valueType));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): MappedType {
+            return _type === this._type ? this : new MappedType(this._id, this._prefix, this._markers, this._prefixToken, this._hasReadonly, this._keysRemapping, this._suffixToken, this._hasQuestionToken, this._valueType, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitMappedType(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get prefixToken(): JLeftPadded<Java.Literal> | null {
+                return t._prefixToken;
+            }
+            public withPrefixToken(prefixToken: JLeftPadded<Java.Literal> | null): MappedType {
+                return t._prefixToken === prefixToken ? t : new MappedType(t._id, t._prefix, t._markers, prefixToken, t._hasReadonly, t._keysRemapping, t._suffixToken, t._hasQuestionToken, t._valueType, t._type);
+            }
+            public get hasReadonly(): JLeftPadded<boolean> {
+                return t._hasReadonly;
+            }
+            public withHasReadonly(hasReadonly: JLeftPadded<boolean>): MappedType {
+                return t._hasReadonly === hasReadonly ? t : new MappedType(t._id, t._prefix, t._markers, t._prefixToken, hasReadonly, t._keysRemapping, t._suffixToken, t._hasQuestionToken, t._valueType, t._type);
+            }
+            public get suffixToken(): JLeftPadded<Java.Literal> | null {
+                return t._suffixToken;
+            }
+            public withSuffixToken(suffixToken: JLeftPadded<Java.Literal> | null): MappedType {
+                return t._suffixToken === suffixToken ? t : new MappedType(t._id, t._prefix, t._markers, t._prefixToken, t._hasReadonly, t._keysRemapping, suffixToken, t._hasQuestionToken, t._valueType, t._type);
+            }
+            public get hasQuestionToken(): JLeftPadded<boolean> {
+                return t._hasQuestionToken;
+            }
+            public withHasQuestionToken(hasQuestionToken: JLeftPadded<boolean>): MappedType {
+                return t._hasQuestionToken === hasQuestionToken ? t : new MappedType(t._id, t._prefix, t._markers, t._prefixToken, t._hasReadonly, t._keysRemapping, t._suffixToken, hasQuestionToken, t._valueType, t._type);
+            }
+            public get valueType(): JContainer<TypeTree> {
+                return t._valueType;
+            }
+            public withValueType(valueType: JContainer<TypeTree>): MappedType {
+                return t._valueType === valueType ? t : new MappedType(t._id, t._prefix, t._markers, t._prefixToken, t._hasReadonly, t._keysRemapping, t._suffixToken, t._hasQuestionToken, valueType, t._type);
+            }
+        }
+    }
+
+}
+
+export namespace MappedType {
+    @LstType("org.openrewrite.javascript.tree.JS$MappedType$KeysRemapping")
+    export class KeysRemapping extends JSMixin(Object) implements Statement {
+        public constructor(id: UUID, prefix: Space, markers: Markers, typeParameter: JRightPadded<MappedType.MappedTypeParameter>, nameType: JRightPadded<Expression> | null) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._typeParameter = typeParameter;
+            this._nameType = nameType;
+        }
+
+            private readonly _id: UUID;
+
+            public get id(): UUID {
+                return this._id;
+            }
+
+            public withId(id: UUID): MappedType.KeysRemapping {
+                return id === this._id ? this : new MappedType.KeysRemapping(id, this._prefix, this._markers, this._typeParameter, this._nameType);
+            }
+
+            private readonly _prefix: Space;
+
+            public get prefix(): Space {
+                return this._prefix;
+            }
+
+            public withPrefix(prefix: Space): MappedType.KeysRemapping {
+                return prefix === this._prefix ? this : new MappedType.KeysRemapping(this._id, prefix, this._markers, this._typeParameter, this._nameType);
+            }
+
+            private readonly _markers: Markers;
+
+            public get markers(): Markers {
+                return this._markers;
+            }
+
+            public withMarkers(markers: Markers): MappedType.KeysRemapping {
+                return markers === this._markers ? this : new MappedType.KeysRemapping(this._id, this._prefix, markers, this._typeParameter, this._nameType);
+            }
+
+            private readonly _typeParameter: JRightPadded<MappedType.MappedTypeParameter>;
+
+            public get typeParameter(): MappedType.MappedTypeParameter {
+                return this._typeParameter.element;
+            }
+
+            public withTypeParameter(typeParameter: MappedType.MappedTypeParameter): MappedType.KeysRemapping {
+                return this.padding.withTypeParameter(this._typeParameter.withElement(typeParameter));
+            }
+
+            private readonly _nameType: JRightPadded<Expression> | null;
+
+            public get nameType(): Expression | null {
+                return this._nameType === null ? null : this._nameType.element;
+            }
+
+            public withNameType(nameType: Expression | null): MappedType.KeysRemapping {
+                return this.padding.withNameType(JRightPadded.withElement(this._nameType, nameType));
+            }
+
+        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+            return v.visitMappedTypeKeysRemapping(this, p);
+        }
+
+        get padding() {
+            const t = this;
+            return new class {
+                public get typeParameter(): JRightPadded<MappedType.MappedTypeParameter> {
+                    return t._typeParameter;
+                }
+                public withTypeParameter(typeParameter: JRightPadded<MappedType.MappedTypeParameter>): MappedType.KeysRemapping {
+                    return t._typeParameter === typeParameter ? t : new MappedType.KeysRemapping(t._id, t._prefix, t._markers, typeParameter, t._nameType);
+                }
+                public get nameType(): JRightPadded<Expression> | null {
+                    return t._nameType;
+                }
+                public withNameType(nameType: JRightPadded<Expression> | null): MappedType.KeysRemapping {
+                    return t._nameType === nameType ? t : new MappedType.KeysRemapping(t._id, t._prefix, t._markers, t._typeParameter, nameType);
+                }
+            }
+        }
+
+    }
+
+    @LstType("org.openrewrite.javascript.tree.JS$MappedType$MappedTypeParameter")
+    export class MappedTypeParameter extends JSMixin(Object) implements Statement {
+        public constructor(id: UUID, prefix: Space, markers: Markers, name: Expression, iterateType: JLeftPadded<TypeTree>) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._name = name;
+            this._iterateType = iterateType;
+        }
+
+            private readonly _id: UUID;
+
+            public get id(): UUID {
+                return this._id;
+            }
+
+            public withId(id: UUID): MappedType.MappedTypeParameter {
+                return id === this._id ? this : new MappedType.MappedTypeParameter(id, this._prefix, this._markers, this._name, this._iterateType);
+            }
+
+            private readonly _prefix: Space;
+
+            public get prefix(): Space {
+                return this._prefix;
+            }
+
+            public withPrefix(prefix: Space): MappedType.MappedTypeParameter {
+                return prefix === this._prefix ? this : new MappedType.MappedTypeParameter(this._id, prefix, this._markers, this._name, this._iterateType);
+            }
+
+            private readonly _markers: Markers;
+
+            public get markers(): Markers {
+                return this._markers;
+            }
+
+            public withMarkers(markers: Markers): MappedType.MappedTypeParameter {
+                return markers === this._markers ? this : new MappedType.MappedTypeParameter(this._id, this._prefix, markers, this._name, this._iterateType);
+            }
+
+            private readonly _name: Expression;
+
+            public get name(): Expression {
+                return this._name;
+            }
+
+            public withName(name: Expression): MappedType.MappedTypeParameter {
+                return name === this._name ? this : new MappedType.MappedTypeParameter(this._id, this._prefix, this._markers, name, this._iterateType);
+            }
+
+            private readonly _iterateType: JLeftPadded<TypeTree>;
+
+            public get iterateType(): TypeTree {
+                return this._iterateType.element;
+            }
+
+            public withIterateType(iterateType: TypeTree): MappedType.MappedTypeParameter {
+                return this.padding.withIterateType(this._iterateType.withElement(iterateType));
+            }
+
+        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+            return v.visitMappedTypeMappedTypeParameter(this, p);
+        }
+
+        get padding() {
+            const t = this;
+            return new class {
+                public get iterateType(): JLeftPadded<TypeTree> {
+                    return t._iterateType;
+                }
+                public withIterateType(iterateType: JLeftPadded<TypeTree>): MappedType.MappedTypeParameter {
+                    return t._iterateType === iterateType ? t : new MappedType.MappedTypeParameter(t._id, t._prefix, t._markers, t._name, iterateType);
+                }
+            }
+        }
+
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations")
 export class ObjectBindingDeclarations extends JSMixin(Object) implements Expression, TypedTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<BindingElement>, initializer: JLeftPadded<Expression> | null) {

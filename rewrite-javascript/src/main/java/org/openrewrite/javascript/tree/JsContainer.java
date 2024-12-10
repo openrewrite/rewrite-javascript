@@ -35,7 +35,7 @@ public class JsContainer {
         CONDITIONAL_TYPE_CONDITION(JsSpace.Location.CONDITIONAL_TYPE_CONDITION, JsRightPadded.Location.CONDITIONAL_TYPE_CONDITION),
         IMPORT_TYPE_TYPE_ARGUMENTS(JsSpace.Location.IMPORT_TYPE_TYPE_ARGUMENTS, JsRightPadded.Location.IMPORT_TYPE_TYPE_ARGUMENTS),
         NAMED_EXPORTS_ELEMENTS(JsSpace.Location.NAMED_EXPORTS_ELEMENTS_PREFIX, JsRightPadded.Location.NAMED_EXPORTS_ELEMENTS),
-        ;
+        MAPPED_TYPE_VALUE_TYPE(JsSpace.Location.MAPPED_TYPE_VALUE_TYPE, JsRightPadded.Location.MAPPED_TYPE_VALUE_TYPE);
 
         private final JsSpace.Location beforeLocation;
         private final JsRightPadded.Location elementLocation;

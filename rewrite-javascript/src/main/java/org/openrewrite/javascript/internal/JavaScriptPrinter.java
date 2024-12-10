@@ -443,6 +443,61 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitMappedType(JS.MappedType mappedType, PrintOutputCapture<P> p) {
+        beforeSyntax(mappedType, JsSpace.Location.MAPPED_TYPE_PREFIX, p);
+        p.append("{");
+
+        if (mappedType.getPrefixToken() != null) {
+            visitLeftPadded(mappedType.getPadding().getPrefixToken(), JsLeftPadded.Location.MAPPED_TYPE_PREFIX_TOKEN, p);
+        }
+
+        if (mappedType.isHasReadonly()) {
+            visitLeftPaddedBoolean("readonly", mappedType.getPadding().getHasReadonly(), JsLeftPadded.Location.MAPPED_TYPE_READONLY, p);
+        }
+
+        visitMappedTypeKeysRemapping(mappedType.getKeysRemapping(), p);
+
+        if (mappedType.getSuffixToken() != null) {
+            visitLeftPadded(mappedType.getPadding().getSuffixToken(), JsLeftPadded.Location.MAPPED_TYPE_SUFFIX_TOKEN, p);
+        }
+
+        if (mappedType.isHasQuestionToken()) {
+            visitLeftPaddedBoolean("?", mappedType.getPadding().getHasQuestionToken(), JsLeftPadded.Location.MAPPED_TYPE_QUESTION_TOKEN, p);
+        }
+
+        visitContainer(":", mappedType.getPadding().getValueType(), JsContainer.Location.MAPPED_TYPE_VALUE_TYPE, "", "", p);
+
+        p.append("}");
+        afterSyntax(mappedType, p);
+        return mappedType;
+    }
+
+    @Override
+    public J visitMappedTypeKeysRemapping(JS.MappedType.KeysRemapping mappedTypeKeys, PrintOutputCapture<P> p) {
+        beforeSyntax(mappedTypeKeys, JsSpace.Location.MAPPED_TYPE_KEYS_REMAPPING_PREFIX, p);
+        p.append("[");
+        this.visitRightPadded(mappedTypeKeys.getPadding().getTypeParameter(), JsRightPadded.Location.MAPPED_TYPE_KEYS_REMAPPING_TYPE_PARAMETER, p);
+
+        if (mappedTypeKeys.getNameType() != null) {
+            p.append("as");
+            this.visitRightPadded(mappedTypeKeys.getPadding().getNameType(), JsRightPadded.Location.MAPPED_TYPE_KEYS_REMAPPING_NAME_TYPE, p);
+        }
+
+        p.append("]");
+        afterSyntax(mappedTypeKeys, p);
+        return mappedTypeKeys;
+    }
+
+    @Override
+    public J visitMappedTypeMappedTypeParameter(JS.MappedType.MappedTypeParameter mappedTypeParameter, PrintOutputCapture<P> p) {
+        beforeSyntax(mappedTypeParameter, JsSpace.Location.MAPPED_TYPE_MAPPED_TYPE_PARAMETER_PREFIX, p);
+        visit(mappedTypeParameter.getName(), p);
+        this.visitLeftPadded("in", mappedTypeParameter.getPadding().getIterateType(), JsLeftPadded.Location.MAPPED_TYPE_MAPPED_TYPE_PARAMETER_ITERATE, p);
+        afterSyntax(mappedTypeParameter, p);
+        return mappedTypeParameter;
+    }
+
+    @Override
     public J visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, PrintOutputCapture<P> p) {
         beforeSyntax(objectBindingDeclarations, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
         visit(objectBindingDeclarations.getLeadingAnnotations(), p);
@@ -1261,7 +1316,11 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             if (bounds != null) {
                 visitSpace(bounds.getBefore(), JContainer.Location.TYPE_BOUNDS.getBeforeLocation(), p);
                 JRightPadded<TypeTree> constraintType = bounds.getPadding().getElements().get(0);
-                if (!(constraintType.getElement() instanceof J.Empty)) {
+
+                if (getCursor().getParentTreeCursor().getValue() instanceof JS.MappedType) {
+                    p.append("in");
+                    this.visitRightPadded(constraintType, JContainer.Location.TYPE_BOUNDS.getElementLocation(), p);
+                } else if (!(constraintType.getElement() instanceof J.Empty)) {
                     p.append("extends");
                     this.visitRightPadded(constraintType, JContainer.Location.TYPE_BOUNDS.getElementLocation(), p);
                 }

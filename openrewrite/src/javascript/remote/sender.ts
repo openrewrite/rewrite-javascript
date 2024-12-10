@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -202,6 +202,38 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(literalType, v => v.literal, ctx.sendTree);
         ctx.sendTypedValue(literalType, v => v.type, ValueType.Object);
         return literalType;
+    }
+
+    public visitMappedType(mappedType: MappedType, ctx: SenderContext): J {
+        ctx.sendValue(mappedType, v => v.id, ValueType.UUID);
+        ctx.sendNode(mappedType, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(mappedType, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(mappedType, v => v.padding.prefixToken, Visitor.sendLeftPadded(ValueType.Tree));
+        ctx.sendNode(mappedType, v => v.padding.hasReadonly, Visitor.sendLeftPadded(ValueType.Primitive));
+        ctx.sendNode(mappedType, v => v.keysRemapping, ctx.sendTree);
+        ctx.sendNode(mappedType, v => v.padding.suffixToken, Visitor.sendLeftPadded(ValueType.Tree));
+        ctx.sendNode(mappedType, v => v.padding.hasQuestionToken, Visitor.sendLeftPadded(ValueType.Primitive));
+        ctx.sendNode(mappedType, v => v.padding.valueType, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendTypedValue(mappedType, v => v.type, ValueType.Object);
+        return mappedType;
+    }
+
+    public visitMappedTypeKeysRemapping(keysRemapping: MappedType.KeysRemapping, ctx: SenderContext): J {
+        ctx.sendValue(keysRemapping, v => v.id, ValueType.UUID);
+        ctx.sendNode(keysRemapping, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(keysRemapping, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(keysRemapping, v => v.padding.typeParameter, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(keysRemapping, v => v.padding.nameType, Visitor.sendRightPadded(ValueType.Tree));
+        return keysRemapping;
+    }
+
+    public visitMappedTypeMappedTypeParameter(mappedTypeParameter: MappedType.MappedTypeParameter, ctx: SenderContext): J {
+        ctx.sendValue(mappedTypeParameter, v => v.id, ValueType.UUID);
+        ctx.sendNode(mappedTypeParameter, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(mappedTypeParameter, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(mappedTypeParameter, v => v.name, ctx.sendTree);
+        ctx.sendNode(mappedTypeParameter, v => v.padding.iterateType, Visitor.sendLeftPadded(ValueType.Tree));
+        return mappedTypeParameter;
     }
 
     public visitObjectBindingDeclarations(objectBindingDeclarations: ObjectBindingDeclarations, ctx: SenderContext): J {

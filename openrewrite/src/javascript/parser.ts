@@ -1440,7 +1440,67 @@ export class JavaScriptParserVisitor {
     }
 
     visitMappedType(node: ts.MappedTypeNode) {
-        return this.visitUnknown(node);
+        function hasPrefixToken(readonlyToken?: ts.ReadonlyKeyword | ts.PlusToken | ts.MinusToken): boolean {
+            return !!(readonlyToken && (readonlyToken.kind == ts.SyntaxKind.PlusToken || readonlyToken.kind == ts.SyntaxKind.MinusToken));
+        }
+
+        function hasSuffixToken(questionToken?: ts.QuestionToken | ts.PlusToken | ts.MinusToken): boolean {
+            return !!(questionToken && (questionToken.kind == ts.SyntaxKind.PlusToken || questionToken.kind == ts.SyntaxKind.MinusToken));
+        }
+
+        return new JS.MappedType(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            hasPrefixToken(node.readonlyToken) ? this.leftPadded(this.prefix(node.readonlyToken!),
+                new J.Literal(
+                    randomId(),
+                    this.prefix(node.readonlyToken!),
+                    Markers.EMPTY,
+                    null,
+                    node.readonlyToken!.getText(),
+                    null,
+                    this.mapPrimitiveType(node.readonlyToken!)
+                )) : null,
+            node.readonlyToken ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.ReadonlyKeyword)!), true) : this.leftPadded(Space.EMPTY, false),
+            new JS.MappedType.KeysRemapping(
+                randomId(),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBracketToken)!),
+                Markers.EMPTY,
+                this.rightPadded(
+                    new JS.MappedType.MappedTypeParameter(
+                        randomId(),
+                        this.prefix(node.typeParameter),
+                        Markers.EMPTY,
+                        this.visit(node.typeParameter.name),
+                        this.leftPadded(this.suffix(node.typeParameter.name), this.visit(node.typeParameter.constraint!))
+                    ),
+                    this.suffix(node.typeParameter)),
+                node.nameType ? this.rightPadded(this.visit(node.nameType), this.suffix(node.nameType)) : null,
+            ),
+            hasSuffixToken(node.questionToken) ? this.leftPadded(this.prefix(node.questionToken!),
+                new J.Literal(
+                    randomId(),
+                    this.prefix(node.questionToken!),
+                    Markers.EMPTY,
+                    null,
+                    node.questionToken!.getText(),
+                    null,
+                    this.mapPrimitiveType(node.questionToken!)
+                )
+            ): null,
+            node.questionToken ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.QuestionToken)!), true) : this.leftPadded(Space.EMPTY, false),
+            new JContainer(
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.ColonToken)!),
+                [this.rightPadded(this.visit(node.type!), this.suffix(node.type!)),
+                    this.findChildNode(node, ts.SyntaxKind.SemicolonToken) ?
+                       this.rightPadded(this.newJEmpty(Space.EMPTY, Markers.build([new Semicolon(randomId())])), this.prefix(node.getLastToken()!))
+                       : this.rightPadded(this.newJEmpty(), this.prefix(node.getLastToken()!))
+                ],
+                Markers.EMPTY
+            ),
+            this.mapType(node)
+        );
     }
 
     visitLiteralType(node: ts.LiteralTypeNode) {

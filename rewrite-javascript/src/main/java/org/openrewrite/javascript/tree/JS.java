@@ -1502,6 +1502,326 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    class MappedType implements JS, Expression, TypeTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<MappedType.Padding> padding;
+
+        @Getter
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @Getter
+        @With
+        Space prefix;
+
+        @Getter
+        @With
+        Markers markers;
+
+        @Nullable
+        JLeftPadded<J.Literal> prefixToken;
+
+        public @Nullable Literal getPrefixToken() {
+            return prefixToken == null ? null : prefixToken.getElement();
+        }
+
+        public MappedType withPrefixToken(@Nullable Literal prefixToken) {
+            return getPadding().withPrefixToken(JLeftPadded.withElement(this.prefixToken, prefixToken));
+        }
+
+        JLeftPadded<Boolean> hasReadonly;
+
+        public boolean isHasReadonly() {
+            return hasReadonly.getElement();
+        }
+
+        public MappedType withHasReadonly(boolean hasReadonly) {
+            return getPadding().withHasReadonly(this.hasReadonly.withElement(hasReadonly));
+        }
+
+        @Getter
+        @With
+        KeysRemapping keysRemapping;
+
+        @Nullable
+        JLeftPadded<J.Literal> suffixToken;
+
+        public @Nullable Literal getSuffixToken() {
+            return suffixToken == null ? null : suffixToken.getElement();
+        }
+
+        public MappedType withSuffixToken(@Nullable Literal suffixToken) {
+            return getPadding().withSuffixToken(JLeftPadded.withElement(this.suffixToken, suffixToken));
+        }
+
+        JLeftPadded<Boolean> hasQuestionToken;
+
+        public boolean isHasQuestionToken() {
+            return hasQuestionToken.getElement();
+        }
+
+        public MappedType withHasQuestionToken(boolean hasQuestionToken) {
+            return getPadding().withHasQuestionToken(this.hasQuestionToken.withElement(hasQuestionToken));
+        }
+
+        JContainer<TypeTree> valueType;
+
+        public List<TypeTree> getValueType() {
+            return valueType.getElements();
+        }
+
+        public MappedType withValueType(List<TypeTree> valueType) {
+            return getPadding().withValueType(JContainer.withElements(this.valueType, valueType));
+        }
+
+        @Getter
+        @With
+        @Nullable
+        JavaType type;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitMappedType(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
+        }
+
+        public MappedType.Padding getPadding() {
+            MappedType.Padding p;
+            if (this.padding == null) {
+                p = new MappedType.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new MappedType.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final MappedType t;
+
+            public @Nullable JLeftPadded<Literal> getPrefixToken() {
+                return t.prefixToken;
+            }
+
+            public MappedType withPrefixToken(@Nullable JLeftPadded<Literal> prefixToken) {
+                return t.prefixToken == prefixToken ? t : new MappedType(t.id, t.prefix, t.markers, prefixToken, t.hasReadonly, t.keysRemapping, t.suffixToken, t.hasQuestionToken, t.valueType, t.type);
+            }
+
+            public JLeftPadded<Boolean> getHasReadonly() {
+                return t.hasReadonly;
+            }
+
+            public MappedType withHasReadonly(JLeftPadded<Boolean> hasReadonly) {
+                return t.hasReadonly == hasReadonly ? t : new MappedType(t.id, t.prefix, t.markers, t.prefixToken, hasReadonly, t.keysRemapping, t.suffixToken, t.hasQuestionToken, t.valueType, t.type);
+            }
+
+            public @Nullable JLeftPadded<Literal> getSuffixToken() {
+                return t.suffixToken;
+            }
+
+            public MappedType withSuffixToken(@Nullable JLeftPadded<Literal> suffixToken) {
+                return t.suffixToken == suffixToken ? t : new MappedType(t.id, t.prefix, t.markers, t.prefixToken, t.hasReadonly, t.keysRemapping, suffixToken, t.hasQuestionToken, t.valueType, t.type);
+            }
+
+            public JLeftPadded<Boolean> getHasQuestionToken() {
+                return t.hasQuestionToken;
+            }
+
+            public MappedType withHasQuestionToken(JLeftPadded<Boolean> hasQuestionToken) {
+                return t.hasQuestionToken == hasQuestionToken ? t : new MappedType(t.id, t.prefix, t.markers, t.prefixToken, t.hasReadonly, t.keysRemapping, t.suffixToken, hasQuestionToken, t.valueType, t.type);
+            }
+
+            public JContainer<TypeTree> getValueType() {
+                return t.valueType;
+            }
+
+            public MappedType withValueType(JContainer<TypeTree> valueType) {
+                return t.valueType == valueType ? t : new MappedType(t.id, t.prefix, t.markers, t.prefixToken, t.hasReadonly, t.keysRemapping, t.suffixToken, t.hasQuestionToken, valueType, t.type);
+            }
+        }
+
+        @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+        @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+        @RequiredArgsConstructor
+        @AllArgsConstructor(access = AccessLevel.PRIVATE)
+        public static final class KeysRemapping implements JS, Statement {
+            @Nullable
+            @NonFinal
+            transient WeakReference<KeysRemapping.Padding> padding;
+
+            @With
+            @EqualsAndHashCode.Include
+            @Getter
+            UUID id;
+
+            @With
+            @Getter
+            Space prefix;
+
+            @With
+            @Getter
+            Markers markers;
+
+            JRightPadded<MappedTypeParameter> typeParameter;
+
+            public MappedTypeParameter getTypeParameter() {
+                return typeParameter.getElement();
+            }
+
+            public KeysRemapping withTypeParameter(MappedTypeParameter typeParameter) {
+                return getPadding().withTypeParameter(JRightPadded.withElement(this.typeParameter, typeParameter));
+            }
+
+            @Nullable
+            JRightPadded<Expression> nameType;
+
+            public @Nullable Expression getNameType() {
+                return nameType == null ? null : nameType.getElement();
+            }
+
+            public KeysRemapping withNameType(@Nullable Expression element) {
+                return getPadding().withNameType(JRightPadded.withElement(this.nameType, element));
+            }
+
+            @Override
+            public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+                return v.visitMappedTypeKeysRemapping(this, p);
+            }
+
+            @Override
+            public CoordinateBuilder.Statement getCoordinates() {
+                return new CoordinateBuilder.Statement(this);
+            }
+
+            public KeysRemapping.Padding getPadding() {
+                KeysRemapping.Padding p;
+                if (this.padding == null) {
+                    p = new KeysRemapping.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                } else {
+                    p = this.padding.get();
+                    if (p == null || p.t != this) {
+                        p = new KeysRemapping.Padding(this);
+                        this.padding = new WeakReference<>(p);
+                    }
+                }
+                return p;
+            }
+
+            @RequiredArgsConstructor
+            public static class Padding {
+                private final KeysRemapping t;
+
+                public JRightPadded<MappedTypeParameter> getTypeParameter() {
+                    return t.typeParameter;
+                }
+
+                public KeysRemapping withTypeParameter(JRightPadded<MappedTypeParameter> typeParameter) {
+                    return t.typeParameter == typeParameter ? t : new KeysRemapping(t.id, t.prefix, t.markers, typeParameter, t.nameType);
+                }
+
+                public JRightPadded<Expression> getNameType() {
+                    return t.nameType;
+                }
+
+                public KeysRemapping withNameType(JRightPadded<Expression> nameType) {
+                    return t.nameType == nameType ? t : new KeysRemapping(t.id, t.prefix, t.markers, t.typeParameter, nameType);
+                }
+            }
+        }
+
+        @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+        @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+        @RequiredArgsConstructor
+        @AllArgsConstructor(access = AccessLevel.PRIVATE)
+        public static final class MappedTypeParameter implements JS, Statement {
+            @Nullable
+            @NonFinal
+            transient WeakReference<MappedType.MappedTypeParameter.Padding> padding;
+
+            @With
+            @EqualsAndHashCode.Include
+            @Getter
+            UUID id;
+
+            @With
+            @Getter
+            Space prefix;
+
+            @With
+            @Getter
+            Markers markers;
+
+            @With
+            @Getter
+            Expression name;
+
+            JLeftPadded<TypeTree> iterateType;
+
+            public TypeTree getIterateType() {
+                return iterateType.getElement();
+            }
+
+            public MappedTypeParameter withIterateType(TypeTree element) {
+                return getPadding().withIterateType(JLeftPadded.withElement(this.iterateType, element));
+            }
+
+            @Override
+            public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+                return v.visitMappedTypeMappedTypeParameter(this, p);
+            }
+
+            @Override
+            public CoordinateBuilder.Statement getCoordinates() {
+                return new CoordinateBuilder.Statement(this);
+            }
+
+            public MappedTypeParameter.Padding getPadding() {
+                MappedTypeParameter.Padding p;
+                if (this.padding == null) {
+                    p = new MappedTypeParameter.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                } else {
+                    p = this.padding.get();
+                    if (p == null || p.t != this) {
+                        p = new MappedTypeParameter.Padding(this);
+                        this.padding = new WeakReference<>(p);
+                    }
+                }
+                return p;
+            }
+
+            @RequiredArgsConstructor
+            public static class Padding {
+                private final MappedTypeParameter t;
+
+                public JLeftPadded<TypeTree> getIterateType() {
+                    return t.iterateType;
+                }
+
+                public MappedTypeParameter withIterateType(JLeftPadded<TypeTree> iterateType) {
+                    return t.iterateType == iterateType ? t : new MappedTypeParameter(t.id, t.prefix, t.markers, t.name, iterateType);
+                }
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class ObjectBindingDeclarations implements JS, Expression, TypedTree {
 
         @Nullable
@@ -1796,11 +2116,11 @@ public interface JS extends J {
         public static class Padding {
             private final SatisfiesExpression t;
 
-            public @Nullable JLeftPadded<Expression> getSatisfiesType() {
+            public JLeftPadded<Expression> getSatisfiesType() {
                 return t.satisfiesType;
             }
 
-            public SatisfiesExpression withSatisfiesType(@Nullable JLeftPadded<Expression> satisfiesType) {
+            public SatisfiesExpression withSatisfiesType(JLeftPadded<Expression> satisfiesType) {
                 return t.satisfiesType == satisfiesType ? t : new SatisfiesExpression(t.id, t.prefix, t.markers, t.expression, satisfiesType, t.type);
             }
         }

@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -207,6 +207,38 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         literalType = literalType.withLiteral(ctx.receiveNode(literalType.literal, ctx.receiveTree)!);
         literalType = literalType.withType(ctx.receiveValue(literalType.type, ValueType.Object)!);
         return literalType;
+    }
+
+    public visitMappedType(mappedType: MappedType, ctx: ReceiverContext): J {
+        mappedType = mappedType.withId(ctx.receiveValue(mappedType.id, ValueType.UUID)!);
+        mappedType = mappedType.withPrefix(ctx.receiveNode(mappedType.prefix, receiveSpace)!);
+        mappedType = mappedType.withMarkers(ctx.receiveNode(mappedType.markers, ctx.receiveMarkers)!);
+        mappedType = mappedType.padding.withPrefixToken(ctx.receiveNode(mappedType.padding.prefixToken, receiveLeftPaddedTree));
+        mappedType = mappedType.padding.withHasReadonly(ctx.receiveNode(mappedType.padding.hasReadonly, leftPaddedValueReceiver(ValueType.Primitive))!);
+        mappedType = mappedType.withKeysRemapping(ctx.receiveNode(mappedType.keysRemapping, ctx.receiveTree)!);
+        mappedType = mappedType.padding.withSuffixToken(ctx.receiveNode(mappedType.padding.suffixToken, receiveLeftPaddedTree));
+        mappedType = mappedType.padding.withHasQuestionToken(ctx.receiveNode(mappedType.padding.hasQuestionToken, leftPaddedValueReceiver(ValueType.Primitive))!);
+        mappedType = mappedType.padding.withValueType(ctx.receiveNode(mappedType.padding.valueType, receiveContainer)!);
+        mappedType = mappedType.withType(ctx.receiveValue(mappedType.type, ValueType.Object));
+        return mappedType;
+    }
+
+    public visitMappedTypeKeysRemapping(keysRemapping: MappedType.KeysRemapping, ctx: ReceiverContext): J {
+        keysRemapping = keysRemapping.withId(ctx.receiveValue(keysRemapping.id, ValueType.UUID)!);
+        keysRemapping = keysRemapping.withPrefix(ctx.receiveNode(keysRemapping.prefix, receiveSpace)!);
+        keysRemapping = keysRemapping.withMarkers(ctx.receiveNode(keysRemapping.markers, ctx.receiveMarkers)!);
+        keysRemapping = keysRemapping.padding.withTypeParameter(ctx.receiveNode(keysRemapping.padding.typeParameter, receiveRightPaddedTree)!);
+        keysRemapping = keysRemapping.padding.withNameType(ctx.receiveNode(keysRemapping.padding.nameType, receiveRightPaddedTree));
+        return keysRemapping;
+    }
+
+    public visitMappedTypeMappedTypeParameter(mappedTypeParameter: MappedType.MappedTypeParameter, ctx: ReceiverContext): J {
+        mappedTypeParameter = mappedTypeParameter.withId(ctx.receiveValue(mappedTypeParameter.id, ValueType.UUID)!);
+        mappedTypeParameter = mappedTypeParameter.withPrefix(ctx.receiveNode(mappedTypeParameter.prefix, receiveSpace)!);
+        mappedTypeParameter = mappedTypeParameter.withMarkers(ctx.receiveNode(mappedTypeParameter.markers, ctx.receiveMarkers)!);
+        mappedTypeParameter = mappedTypeParameter.withName(ctx.receiveNode(mappedTypeParameter.name, ctx.receiveTree)!);
+        mappedTypeParameter = mappedTypeParameter.padding.withIterateType(ctx.receiveNode(mappedTypeParameter.padding.iterateType, receiveLeftPaddedTree)!);
+        return mappedTypeParameter;
     }
 
     public visitObjectBindingDeclarations(objectBindingDeclarations: ObjectBindingDeclarations, ctx: ReceiverContext): J {
@@ -1469,6 +1501,41 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
                 ctx.receiveValue(null, ValueType.Object)!
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$MappedType") {
+            return new MappedType(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JLeftPadded<Java.Literal>>(null, receiveLeftPaddedTree),
+                ctx.receiveNode<JLeftPadded<boolean>>(null, leftPaddedValueReceiver(ValueType.Primitive))!,
+                ctx.receiveNode<MappedType.KeysRemapping>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<Java.Literal>>(null, receiveLeftPaddedTree),
+                ctx.receiveNode<JLeftPadded<boolean>>(null, leftPaddedValueReceiver(ValueType.Primitive))!,
+                ctx.receiveNode<JContainer<TypeTree>>(null, receiveContainer)!,
+                ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$MappedType$KeysRemapping") {
+            return new MappedType.KeysRemapping(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JRightPadded<MappedType.MappedTypeParameter>>(null, receiveRightPaddedTree)!,
+                ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$MappedType$MappedTypeParameter") {
+            return new MappedType.MappedTypeParameter(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<TypeTree>>(null, receiveLeftPaddedTree)!
             );
         }
 

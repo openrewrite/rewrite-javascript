@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -259,6 +259,52 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         literalType = literalType.withMarkers(this.visitMarkers(literalType.markers, p));
         literalType = literalType.withLiteral(this.visitAndCast(literalType.literal, p)!);
         return literalType;
+    }
+
+    public visitMappedType(mappedType: MappedType, p: P): J | null {
+        mappedType = mappedType.withPrefix(this.visitJsSpace(mappedType.prefix, JsSpace.Location.MAPPED_TYPE_PREFIX, p)!);
+        let tempExpression = this.visitExpression(mappedType, p) as Expression;
+        if (!(tempExpression instanceof MappedType))
+        {
+            return tempExpression;
+        }
+        mappedType = tempExpression as MappedType;
+        mappedType = mappedType.withMarkers(this.visitMarkers(mappedType.markers, p));
+        mappedType = mappedType.padding.withPrefixToken(this.visitJsLeftPadded(mappedType.padding.prefixToken, JsLeftPadded.Location.MAPPED_TYPE_PREFIX_TOKEN, p));
+        mappedType = mappedType.padding.withHasReadonly(this.visitJsLeftPadded(mappedType.padding.hasReadonly, JsLeftPadded.Location.MAPPED_TYPE_HAS_READONLY, p)!);
+        mappedType = mappedType.withKeysRemapping(this.visitAndCast(mappedType.keysRemapping, p)!);
+        mappedType = mappedType.padding.withSuffixToken(this.visitJsLeftPadded(mappedType.padding.suffixToken, JsLeftPadded.Location.MAPPED_TYPE_SUFFIX_TOKEN, p));
+        mappedType = mappedType.padding.withHasQuestionToken(this.visitJsLeftPadded(mappedType.padding.hasQuestionToken, JsLeftPadded.Location.MAPPED_TYPE_HAS_QUESTION_TOKEN, p)!);
+        mappedType = mappedType.padding.withValueType(this.visitJsContainer(mappedType.padding.valueType, JsContainer.Location.MAPPED_TYPE_VALUE_TYPE, p)!);
+        return mappedType;
+    }
+
+    public visitMappedTypeKeysRemapping(keysRemapping: MappedType.KeysRemapping, p: P): J | null {
+        keysRemapping = keysRemapping.withPrefix(this.visitJsSpace(keysRemapping.prefix, JsSpace.Location.MAPPED_TYPE_KEYS_REMAPPING_PREFIX, p)!);
+        let tempStatement = this.visitStatement(keysRemapping, p) as Statement;
+        if (!(tempStatement instanceof MappedType.KeysRemapping))
+        {
+            return tempStatement;
+        }
+        keysRemapping = tempStatement as MappedType.KeysRemapping;
+        keysRemapping = keysRemapping.withMarkers(this.visitMarkers(keysRemapping.markers, p));
+        keysRemapping = keysRemapping.padding.withTypeParameter(this.visitJsRightPadded(keysRemapping.padding.typeParameter, JsRightPadded.Location.MAPPED_TYPE_KEYS_REMAPPING_TYPE_PARAMETER, p)!);
+        keysRemapping = keysRemapping.padding.withNameType(this.visitJsRightPadded(keysRemapping.padding.nameType, JsRightPadded.Location.MAPPED_TYPE_KEYS_REMAPPING_NAME_TYPE, p));
+        return keysRemapping;
+    }
+
+    public visitMappedTypeMappedTypeParameter(mappedTypeParameter: MappedType.MappedTypeParameter, p: P): J | null {
+        mappedTypeParameter = mappedTypeParameter.withPrefix(this.visitJsSpace(mappedTypeParameter.prefix, JsSpace.Location.MAPPED_TYPE_MAPPED_TYPE_PARAMETER_PREFIX, p)!);
+        let tempStatement = this.visitStatement(mappedTypeParameter, p) as Statement;
+        if (!(tempStatement instanceof MappedType.MappedTypeParameter))
+        {
+            return tempStatement;
+        }
+        mappedTypeParameter = tempStatement as MappedType.MappedTypeParameter;
+        mappedTypeParameter = mappedTypeParameter.withMarkers(this.visitMarkers(mappedTypeParameter.markers, p));
+        mappedTypeParameter = mappedTypeParameter.withName(this.visitAndCast(mappedTypeParameter.name, p)!);
+        mappedTypeParameter = mappedTypeParameter.padding.withIterateType(this.visitJsLeftPadded(mappedTypeParameter.padding.iterateType, JsLeftPadded.Location.MAPPED_TYPE_MAPPED_TYPE_PARAMETER_ITERATE_TYPE, p)!);
+        return mappedTypeParameter;
     }
 
     public visitObjectBindingDeclarations(objectBindingDeclarations: ObjectBindingDeclarations, p: P): J | null {

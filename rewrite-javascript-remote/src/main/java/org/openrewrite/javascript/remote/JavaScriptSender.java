@@ -256,6 +256,41 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.MappedType visitMappedType(JS.MappedType mappedType, SenderContext ctx) {
+            ctx.sendValue(mappedType, JS.MappedType::getId);
+            ctx.sendNode(mappedType, JS.MappedType::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(mappedType, JS.MappedType::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(mappedType, e -> e.getPadding().getPrefixToken(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(mappedType, e -> e.getPadding().getHasReadonly(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(mappedType, JS.MappedType::getKeysRemapping, ctx::sendTree);
+            ctx.sendNode(mappedType, e -> e.getPadding().getSuffixToken(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(mappedType, e -> e.getPadding().getHasQuestionToken(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(mappedType, e -> e.getPadding().getValueType(), JavaScriptSender::sendContainer);
+            ctx.sendTypedValue(mappedType, JS.MappedType::getType);
+            return mappedType;
+        }
+
+        @Override
+        public JS.MappedType.KeysRemapping visitMappedTypeKeysRemapping(JS.MappedType.KeysRemapping keysRemapping, SenderContext ctx) {
+            ctx.sendValue(keysRemapping, JS.MappedType.KeysRemapping::getId);
+            ctx.sendNode(keysRemapping, JS.MappedType.KeysRemapping::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(keysRemapping, JS.MappedType.KeysRemapping::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(keysRemapping, e -> e.getPadding().getTypeParameter(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(keysRemapping, e -> e.getPadding().getNameType(), JavaScriptSender::sendRightPadded);
+            return keysRemapping;
+        }
+
+        @Override
+        public JS.MappedType.MappedTypeParameter visitMappedTypeMappedTypeParameter(JS.MappedType.MappedTypeParameter mappedTypeParameter, SenderContext ctx) {
+            ctx.sendValue(mappedTypeParameter, JS.MappedType.MappedTypeParameter::getId);
+            ctx.sendNode(mappedTypeParameter, JS.MappedType.MappedTypeParameter::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(mappedTypeParameter, JS.MappedType.MappedTypeParameter::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(mappedTypeParameter, JS.MappedType.MappedTypeParameter::getName, ctx::sendTree);
+            ctx.sendNode(mappedTypeParameter, e -> e.getPadding().getIterateType(), JavaScriptSender::sendLeftPadded);
+            return mappedTypeParameter;
+        }
+
+        @Override
         public JS.ObjectBindingDeclarations visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, SenderContext ctx) {
             ctx.sendValue(objectBindingDeclarations, JS.ObjectBindingDeclarations::getId);
             ctx.sendNode(objectBindingDeclarations, JS.ObjectBindingDeclarations::getPrefix, JavaScriptSender::sendSpace);

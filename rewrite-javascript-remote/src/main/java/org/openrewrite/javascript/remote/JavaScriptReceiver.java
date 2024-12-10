@@ -273,6 +273,41 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.MappedType visitMappedType(JS.MappedType mappedType, ReceiverContext ctx) {
+            mappedType = mappedType.withId(ctx.receiveNonNullValue(mappedType.getId(), UUID.class));
+            mappedType = mappedType.withPrefix(ctx.receiveNonNullNode(mappedType.getPrefix(), JavaScriptReceiver::receiveSpace));
+            mappedType = mappedType.withMarkers(ctx.receiveNonNullNode(mappedType.getMarkers(), ctx::receiveMarkers));
+            mappedType = mappedType.getPadding().withPrefixToken(ctx.receiveNode(mappedType.getPadding().getPrefixToken(), JavaScriptReceiver::receiveLeftPaddedTree));
+            mappedType = mappedType.getPadding().withHasReadonly(ctx.receiveNonNullNode(mappedType.getPadding().getHasReadonly(), leftPaddedValueReceiver(java.lang.Boolean.class)));
+            mappedType = mappedType.withKeysRemapping(ctx.receiveNonNullNode(mappedType.getKeysRemapping(), ctx::receiveTree));
+            mappedType = mappedType.getPadding().withSuffixToken(ctx.receiveNode(mappedType.getPadding().getSuffixToken(), JavaScriptReceiver::receiveLeftPaddedTree));
+            mappedType = mappedType.getPadding().withHasQuestionToken(ctx.receiveNonNullNode(mappedType.getPadding().getHasQuestionToken(), leftPaddedValueReceiver(java.lang.Boolean.class)));
+            mappedType = mappedType.getPadding().withValueType(ctx.receiveNonNullNode(mappedType.getPadding().getValueType(), JavaScriptReceiver::receiveContainer));
+            mappedType = mappedType.withType(ctx.receiveValue(mappedType.getType(), JavaType.class));
+            return mappedType;
+        }
+
+        @Override
+        public JS.MappedType.KeysRemapping visitMappedTypeKeysRemapping(JS.MappedType.KeysRemapping keysRemapping, ReceiverContext ctx) {
+            keysRemapping = keysRemapping.withId(ctx.receiveNonNullValue(keysRemapping.getId(), UUID.class));
+            keysRemapping = keysRemapping.withPrefix(ctx.receiveNonNullNode(keysRemapping.getPrefix(), JavaScriptReceiver::receiveSpace));
+            keysRemapping = keysRemapping.withMarkers(ctx.receiveNonNullNode(keysRemapping.getMarkers(), ctx::receiveMarkers));
+            keysRemapping = keysRemapping.getPadding().withTypeParameter(ctx.receiveNonNullNode(keysRemapping.getPadding().getTypeParameter(), JavaScriptReceiver::receiveRightPaddedTree));
+            keysRemapping = keysRemapping.getPadding().withNameType(ctx.receiveNode(keysRemapping.getPadding().getNameType(), JavaScriptReceiver::receiveRightPaddedTree));
+            return keysRemapping;
+        }
+
+        @Override
+        public JS.MappedType.MappedTypeParameter visitMappedTypeMappedTypeParameter(JS.MappedType.MappedTypeParameter mappedTypeParameter, ReceiverContext ctx) {
+            mappedTypeParameter = mappedTypeParameter.withId(ctx.receiveNonNullValue(mappedTypeParameter.getId(), UUID.class));
+            mappedTypeParameter = mappedTypeParameter.withPrefix(ctx.receiveNonNullNode(mappedTypeParameter.getPrefix(), JavaScriptReceiver::receiveSpace));
+            mappedTypeParameter = mappedTypeParameter.withMarkers(ctx.receiveNonNullNode(mappedTypeParameter.getMarkers(), ctx::receiveMarkers));
+            mappedTypeParameter = mappedTypeParameter.withName(ctx.receiveNonNullNode(mappedTypeParameter.getName(), ctx::receiveTree));
+            mappedTypeParameter = mappedTypeParameter.getPadding().withIterateType(ctx.receiveNonNullNode(mappedTypeParameter.getPadding().getIterateType(), JavaScriptReceiver::receiveLeftPaddedTree));
+            return mappedTypeParameter;
+        }
+
+        @Override
         public JS.ObjectBindingDeclarations visitObjectBindingDeclarations(JS.ObjectBindingDeclarations objectBindingDeclarations, ReceiverContext ctx) {
             objectBindingDeclarations = objectBindingDeclarations.withId(ctx.receiveNonNullValue(objectBindingDeclarations.getId(), UUID.class));
             objectBindingDeclarations = objectBindingDeclarations.withPrefix(ctx.receiveNonNullNode(objectBindingDeclarations.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1601,6 +1636,41 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.MappedType.class) {
+                return (T) new JS.MappedType(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
+                    ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
+                    ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
+                    ctx.receiveValue(null, JavaType.class)
+                );
+            }
+
+            if (type == JS.MappedType.KeysRemapping.class) {
+                return (T) new JS.MappedType.KeysRemapping(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveRightPaddedTree)
+                );
+            }
+
+            if (type == JS.MappedType.MappedTypeParameter.class) {
+                return (T) new JS.MappedType.MappedTypeParameter(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
                 );
             }
 
