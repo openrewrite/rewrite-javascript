@@ -1441,19 +1441,11 @@ export class JavaScriptParserVisitor {
 
     visitMappedType(node: ts.MappedTypeNode) {
         function hasPrefixToken(readonlyToken?: ts.ReadonlyKeyword | ts.PlusToken | ts.MinusToken): boolean {
-            if (readonlyToken && (readonlyToken.kind == ts.SyntaxKind.PlusToken || readonlyToken.kind == ts.SyntaxKind.MinusToken)) {
-                return true;
-            } else {
-                return false;
-            }
+            return !!(readonlyToken && (readonlyToken.kind == ts.SyntaxKind.PlusToken || readonlyToken.kind == ts.SyntaxKind.MinusToken));
         }
 
         function hasSuffixToken(questionToken?: ts.QuestionToken | ts.PlusToken | ts.MinusToken): boolean {
-            if (questionToken && (questionToken.kind == ts.SyntaxKind.PlusToken || questionToken.kind == ts.SyntaxKind.MinusToken)) {
-                return true;
-            } else {
-                return false;
-            }
+            return !!(questionToken && (questionToken.kind == ts.SyntaxKind.PlusToken || questionToken.kind == ts.SyntaxKind.MinusToken));
         }
 
         return new JS.MappedType(
