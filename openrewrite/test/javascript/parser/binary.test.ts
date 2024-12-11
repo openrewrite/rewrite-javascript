@@ -229,3 +229,31 @@ describe('comma operator mapping', () => {
         );
     });
 });
+
+
+describe('generic binary tests', () => {
+    beforeAll(() => connect());
+    afterAll(() => disconnect());
+
+    test('multiple cases', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                var _ = {} as any;
+                var PRERELEASE_CHANNEL_MAGINITUDE = 1000;
+                var PRERELEASE_CHANNELS = (({} as any).availableChannels)
+                    .without('stable')
+                    .reverse()
+                    .value();
+
+                function hashPrerelease(s) {
+                    if (_.isString(s[0])) {
+                        return (_.indexOf(PRERELEASE_CHANNELS, s[0]) + 1) * PRERELEASE_CHANNEL_MAGINITUDE + (s[1] || 0);
+                    } else {
+                        return s[0];
+                    }
+                }
+            `)
+        );
+    })
+});

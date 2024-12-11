@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -610,7 +610,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         indexedAccessType = indexedAccessType.withPrefix(ctx.receiveNode(indexedAccessType.prefix, receiveSpace)!);
         indexedAccessType = indexedAccessType.withMarkers(ctx.receiveNode(indexedAccessType.markers, ctx.receiveMarkers)!);
         indexedAccessType = indexedAccessType.withObjectType(ctx.receiveNode(indexedAccessType.objectType, ctx.receiveTree)!);
-        indexedAccessType = indexedAccessType.padding.withIndexType(ctx.receiveNode(indexedAccessType.padding.indexType, receiveRightPaddedTree)!);
+        indexedAccessType = indexedAccessType.withIndexType(ctx.receiveNode(indexedAccessType.indexType, ctx.receiveTree)!);
         indexedAccessType = indexedAccessType.withType(ctx.receiveValue(indexedAccessType.type, ValueType.Object));
         return indexedAccessType;
     }
@@ -633,6 +633,14 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         jsAssignmentOperation = jsAssignmentOperation.withAssignment(ctx.receiveNode(jsAssignmentOperation.assignment, ctx.receiveTree)!);
         jsAssignmentOperation = jsAssignmentOperation.withType(ctx.receiveValue(jsAssignmentOperation.type, ValueType.Object));
         return jsAssignmentOperation;
+    }
+
+    public visitTypeTreeExpression(typeTreeExpression: TypeTreeExpression, ctx: ReceiverContext): J {
+        typeTreeExpression = typeTreeExpression.withId(ctx.receiveValue(typeTreeExpression.id, ValueType.UUID)!);
+        typeTreeExpression = typeTreeExpression.withPrefix(ctx.receiveNode(typeTreeExpression.prefix, receiveSpace)!);
+        typeTreeExpression = typeTreeExpression.withMarkers(ctx.receiveNode(typeTreeExpression.markers, ctx.receiveMarkers)!);
+        typeTreeExpression = typeTreeExpression.withExpression(ctx.receiveNode(typeTreeExpression.expression, ctx.receiveTree)!);
+        return typeTreeExpression;
     }
 
     public visitAnnotatedType(annotatedType: Java.AnnotatedType, ctx: ReceiverContext): J {
@@ -1945,7 +1953,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<TypeTree>(null, ctx.receiveTree)!,
-                ctx.receiveNode<JRightPadded<TypeTree>>(null, receiveRightPaddedTree)!,
+                ctx.receiveNode<TypeTree>(null, ctx.receiveTree)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }
@@ -1969,6 +1977,15 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<JLeftPadded<JsAssignmentOperation.Type>>(null, leftPaddedValueReceiver(ValueType.Enum))!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
                 ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$TypeTreeExpression") {
+            return new TypeTreeExpression(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!
             );
         }
 

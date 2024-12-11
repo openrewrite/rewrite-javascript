@@ -26,7 +26,7 @@ import {
 import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
 import path from "node:path";
-import {ExpressionStatement} from ".";
+import {ExpressionStatement, TypeTreeExpression} from ".";
 
 export class JavaScriptParser extends Parser {
 
@@ -440,7 +440,8 @@ export class JavaScriptParserVisitor {
         }
         for (let heritageClause of node.heritageClauses) {
             if (heritageClause.token == ts.SyntaxKind.ExtendsKeyword) {
-                return this.leftPadded(this.prefix(heritageClause.getFirstToken()!), this.visit(heritageClause.types[0]));
+                const expression = this.visit(heritageClause.types[0]);
+                return this.leftPadded(this.prefix(heritageClause.getFirstToken()!), new TypeTreeExpression(randomId(), Space.EMPTY, Markers.EMPTY, expression));
             }
         }
         return null;
@@ -1425,15 +1426,12 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.convert(node.objectType),
-            this.rightPadded(
-                new JS.IndexedAccessType.IndexType(
-                    randomId(),
-                    this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBracketToken)!),
-                    Markers.EMPTY,
-                    this.rightPadded(this.convert(node.indexType), this.suffix(node.indexType)),
-                    this.mapType(node.indexType)
-                ),
-                this.suffix(this.findChildNode(node, ts.SyntaxKind.CloseBracketToken)!)
+            new JS.IndexedAccessType.IndexType(
+                randomId(),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBracketToken)!),
+                Markers.EMPTY,
+                this.rightPadded(this.convert(node.indexType), this.suffix(node.indexType)),
+                this.mapType(node.indexType)
             ),
             this.mapType(node)
         );
@@ -1870,18 +1868,12 @@ export class JavaScriptParserVisitor {
     }
 
     visitParenthesizedExpression(node: ts.ParenthesizedExpression) {
-        return new J.ParenthesizedTypeTree(
+        return new J.Parentheses(
             randomId(),
-            Space.EMPTY,
+            this.prefix(node),
             Markers.EMPTY,
-            [],
-            new J.Parentheses(
-                randomId(),
-                this.prefix(node),
-                Markers.EMPTY,
-                this.rightPadded(this.convert(node.expression), this.prefix(node.getLastToken()!))
-            )
-        );
+            this.rightPadded(this.convert(node.expression), this.prefix(node.getLastToken()!))
+        )
     }
 
     visitFunctionExpression(node: ts.FunctionExpression) {

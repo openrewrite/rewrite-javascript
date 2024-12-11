@@ -83,8 +83,8 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
             a = (JS.ArrowFunction) temp;
         }
 
-        a = a.withLeadingAnnotations(ListUtils.map(a.getLeadingAnnotations(), ann -> visitAndCast(ann, p)));
-        a = a.withModifiers(ListUtils.map(a.getModifiers(), m -> visitAndCast(m, p)));
+        a = a.withLeadingAnnotations(Objects.requireNonNull(ListUtils.map(a.getLeadingAnnotations(), ann -> visitAndCast(ann, p))));
+        a = a.withModifiers(Objects.requireNonNull(ListUtils.map(a.getModifiers(), m -> visitAndCast(m, p))));
         a = a.withTypeParameters(visitAndCast(a.getTypeParameters(), p));
 
         a = a.withParameters(
@@ -94,9 +94,9 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         );
         a = a.withParameters(
                 a.getParameters().getPadding().withParams(
-                        ListUtils.map(a.getParameters().getPadding().getParams(),
+                        Objects.requireNonNull(ListUtils.map(a.getParameters().getPadding().getParams(),
                                 param -> visitRightPadded(param, JRightPadded.Location.LAMBDA_PARAM, p)
-                        )
+                        ))
                 )
         );
         a = a.withParameters(Objects.requireNonNull(visitAndCast(a.getParameters(), p)));
@@ -715,7 +715,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
             iat = (JS.IndexedAccessType) temp;
         }
         iat = iat.withObjectType(Objects.requireNonNull(visitAndCast(iat.getObjectType(), p)));
-        iat = iat.getPadding().withIndexType(Objects.requireNonNull(visitRightPadded(iat.getPadding().getIndexType(), JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE, p)));
+        iat = iat.withIndexType(Objects.requireNonNull(visitAndCast(iat.getIndexType(), p)));
         iat = iat.withType(visitType(iat.getType(), p));
         return iat;
     }
@@ -1114,6 +1114,22 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         a = a.withVariable(Objects.requireNonNull(visitAndCast(a.getVariable(), p)));
         a = a.getPadding().withOperator(Objects.requireNonNull(visitLeftPadded(a.getPadding().getOperator(), JsLeftPadded.Location.ASSIGNMENT_OPERATION_OPERATOR, p)));
         a = a.withAssignment(Objects.requireNonNull(visitAndCast(a.getAssignment(), p)));
+        a = a.withType(visitType(a.getType(), p));
+        return a;
+    }
+
+    public J visitTypeTreeExpression(JS.TypeTreeExpression typeTreeExpression, P p) {
+        JS.TypeTreeExpression a = typeTreeExpression;
+        a = a.withPrefix(visitSpace(a.getPrefix(), JsSpace.Location.TYPE_TREE_EXPRESSION_PREFIX, p));
+        a = a.withMarkers(visitMarkers(a.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(a, p);
+        if (!(temp instanceof JS.TypeTreeExpression)) {
+            return temp;
+        } else {
+            a = (JS.TypeTreeExpression) temp;
+        }
+
+        a = a.withExpression(Objects.requireNonNull(visitAndCast(a.getExpression(), p)));
         a = a.withType(visitType(a.getType(), p));
         return a;
     }

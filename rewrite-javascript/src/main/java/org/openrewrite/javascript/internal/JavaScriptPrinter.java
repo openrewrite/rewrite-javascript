@@ -320,39 +320,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     public J visitJsAssignmentOperation(JS.JsAssignmentOperation assignOp, PrintOutputCapture<P> p) {
         String keyword = "";
         switch (assignOp.getOperator()) {
-//            case Addition:
-//                keyword = "+=";
-//                break;
-//            case Subtraction:
-//                keyword = "-=";
-//                break;
-//            case Multiplication:
-//                keyword = "*=";
-//                break;
-//            case Division:
-//                keyword = "/=";
-//                break;
-//            case Modulo:
-//                keyword = "%=";
-//                break;
-//            case BitAnd:
-//                keyword = "&=";
-//                break;
-//            case BitOr:
-//                keyword = "|=";
-//                break;
-//            case BitXor:
-//                keyword = "^=";
-//                break;
-//            case LeftShift:
-//                keyword = "<<=";
-//                break;
-//            case RightShift:
-//                keyword = ">>=";
-//                break;
-//            case UnsignedRightShift:
-//                keyword = ">>>=";
-//                break;
             case QuestionQuestion:
                 keyword = "??=";
                 break;
@@ -370,6 +337,14 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(assignOp.getAssignment(), p);
         afterSyntax(assignOp, p);
         return assignOp;
+    }
+
+    @Override
+    public J visitTypeTreeExpression(JS.TypeTreeExpression typeTreeExpression, PrintOutputCapture<P> p) {
+        beforeSyntax(typeTreeExpression, JsSpace.Location.TYPE_TREE_EXPRESSION_PREFIX, p);
+        visit(typeTreeExpression.getExpression(), p);
+        afterSyntax(typeTreeExpression, p);
+        return typeTreeExpression;
     }
 
     @Override
@@ -953,7 +928,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(iat.getObjectType(), p);
         // expect that this element is printed accordingly
         // <space_before>[<inner_space_before>index<inner_right_padded_suffix_space>]<right_padded_suffix_space>
-        visitRightPadded(iat.getPadding().getIndexType(), JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE, "", p);
+        visit(iat.getIndexType(), p);
 
         afterSyntax(iat, p);
 

@@ -5331,7 +5331,7 @@ export class ExportSpecifier extends JSMixin(Object) implements Expression, Type
 
 @LstType("org.openrewrite.javascript.tree.JS$IndexedAccessType")
 export class IndexedAccessType extends JSMixin(Object) implements Expression, TypeTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, objectType: TypeTree, indexType: JRightPadded<TypeTree>, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, objectType: TypeTree, indexType: TypeTree, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -5381,14 +5381,14 @@ export class IndexedAccessType extends JSMixin(Object) implements Expression, Ty
             return objectType === this._objectType ? this : new IndexedAccessType(this._id, this._prefix, this._markers, objectType, this._indexType, this._type);
         }
 
-        private readonly _indexType: JRightPadded<TypeTree>;
+        private readonly _indexType: TypeTree;
 
         public get indexType(): TypeTree {
-            return this._indexType.element;
+            return this._indexType;
         }
 
         public withIndexType(indexType: TypeTree): IndexedAccessType {
-            return this.padding.withIndexType(this._indexType.withElement(indexType));
+            return indexType === this._indexType ? this : new IndexedAccessType(this._id, this._prefix, this._markers, this._objectType, indexType, this._type);
         }
 
         private readonly _type: JavaType | null;
@@ -5403,18 +5403,6 @@ export class IndexedAccessType extends JSMixin(Object) implements Expression, Ty
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
         return v.visitIndexedAccessType(this, p);
-    }
-
-    get padding() {
-        const t = this;
-        return new class {
-            public get indexType(): JRightPadded<TypeTree> {
-                return t._indexType;
-            }
-            public withIndexType(indexType: JRightPadded<TypeTree>): IndexedAccessType {
-                return t._indexType === indexType ? t : new IndexedAccessType(t._id, t._prefix, t._markers, t._objectType, indexType, t._type);
-            }
-        }
     }
 
 }
@@ -5608,6 +5596,70 @@ export namespace JsAssignmentOperation {
             And = 1,
             Or = 2,
 
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$TypeTreeExpression")
+export class TypeTreeExpression extends JSMixin(Object) implements Expression, TypeTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, expression: Expression) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._expression = expression;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): TypeTreeExpression {
+            return id === this._id ? this : new TypeTreeExpression(id, this._prefix, this._markers, this._expression);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): TypeTreeExpression {
+            return prefix === this._prefix ? this : new TypeTreeExpression(this._id, prefix, this._markers, this._expression);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): TypeTreeExpression {
+            return markers === this._markers ? this : new TypeTreeExpression(this._id, this._prefix, markers, this._expression);
+        }
+
+        private readonly _expression: Expression;
+
+        public get expression(): Expression {
+            return this._expression;
+        }
+
+        public withExpression(expression: Expression): TypeTreeExpression {
+            return expression === this._expression ? this : new TypeTreeExpression(this._id, this._prefix, this._markers, expression);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitTypeTreeExpression(this, p);
+    }
+
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): TypeTreeExpression {
+        return extensions.withJavaType(this, type);
     }
 
 }

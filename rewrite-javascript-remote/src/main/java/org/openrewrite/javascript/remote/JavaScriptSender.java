@@ -696,7 +696,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(indexedAccessType, JS.IndexedAccessType::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(indexedAccessType, JS.IndexedAccessType::getMarkers, ctx::sendMarkers);
             ctx.sendNode(indexedAccessType, JS.IndexedAccessType::getObjectType, ctx::sendTree);
-            ctx.sendNode(indexedAccessType, e -> e.getPadding().getIndexType(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(indexedAccessType, JS.IndexedAccessType::getIndexType, ctx::sendTree);
             ctx.sendTypedValue(indexedAccessType, JS.IndexedAccessType::getType);
             return indexedAccessType;
         }
@@ -721,6 +721,15 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(jsAssignmentOperation, JS.JsAssignmentOperation::getAssignment, ctx::sendTree);
             ctx.sendTypedValue(jsAssignmentOperation, JS.JsAssignmentOperation::getType);
             return jsAssignmentOperation;
+        }
+
+        @Override
+        public JS.TypeTreeExpression visitTypeTreeExpression(JS.TypeTreeExpression typeTreeExpression, SenderContext ctx) {
+            ctx.sendValue(typeTreeExpression, JS.TypeTreeExpression::getId);
+            ctx.sendNode(typeTreeExpression, JS.TypeTreeExpression::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(typeTreeExpression, JS.TypeTreeExpression::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(typeTreeExpression, JS.TypeTreeExpression::getExpression, ctx::sendTree);
+            return typeTreeExpression;
         }
 
         @Override

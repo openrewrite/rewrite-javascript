@@ -4875,11 +4875,7 @@ public interface JS extends J {
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class IndexedAccessType implements JS, Expression, TypeTree {
-        @Nullable
-        @NonFinal
-        transient WeakReference<IndexedAccessType.Padding> padding;
 
         @With
         @EqualsAndHashCode.Include
@@ -4901,15 +4897,9 @@ public interface JS extends J {
         @Getter
         TypeTree objectType;
 
-        JRightPadded<TypeTree> indexType;
-
-        public TypeTree getIndexType() {
-            return indexType.getElement();
-        }
-
-        public TypeTree withIndexType(IndexType indexType) {
-            return getPadding().withIndexType(JRightPadded.withElement(this.indexType, indexType));
-        }
+        @With
+        @Getter
+        TypeTree indexType;
 
         @With
         @Nullable
@@ -4924,34 +4914,6 @@ public interface JS extends J {
         @Override
         public CoordinateBuilder.Expression getCoordinates() {
             return new CoordinateBuilder.Expression(this);
-        }
-
-        public IndexedAccessType.Padding getPadding() {
-            IndexedAccessType.Padding p;
-            if (this.padding == null) {
-                p = new IndexedAccessType.Padding(this);
-                this.padding = new WeakReference<>(p);
-            } else {
-                p = this.padding.get();
-                if (p == null || p.t != this) {
-                    p = new IndexedAccessType.Padding(this);
-                    this.padding = new WeakReference<>(p);
-                }
-            }
-            return p;
-        }
-
-        @RequiredArgsConstructor
-        public static class Padding {
-            private final IndexedAccessType t;
-
-            public JRightPadded<TypeTree> getIndexType() {
-                return t.indexType;
-            }
-
-            public IndexedAccessType withIndexType(JRightPadded<TypeTree> indexType) {
-                return t.indexType == indexType ? t : new IndexedAccessType(t.id, t.prefix, t.markers, t.objectType, indexType, t.type);
-            }
         }
 
         @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -5132,6 +5094,47 @@ public interface JS extends J {
             public JsAssignmentOperation withOperator(JLeftPadded<JsAssignmentOperation.Type> operator) {
                 return t.operator == operator ? t : new JsAssignmentOperation(t.id, t.prefix, t.markers, t.variable, operator, t.assignment, t.type);
             }
+        }
+    }
+
+
+    @Getter
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    final class TypeTreeExpression implements JS, Expression, TypeTree {
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        Space prefix;
+
+        @With
+        Markers markers;
+
+        @With
+        Expression expression;
+
+        @Override
+        public @Nullable JavaType getType() {
+            return expression.getType();
+        }
+
+        @Override
+        public TypeTreeExpression withType(@Nullable JavaType type) {
+            return expression.getType() == type ? this : new TypeTreeExpression(this.id, this.prefix, this.markers, this.expression.withType(type));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitTypeTreeExpression(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Expression getCoordinates() {
+            return new CoordinateBuilder.Expression(this);
         }
     }
 }

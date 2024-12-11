@@ -259,6 +259,7 @@ export namespace JsSpace {
         MAPPED_TYPE_PREFIX,
         MAPPED_TYPE_KEYS_REMAPPING_PREFIX,
         MAPPED_TYPE_MAPPED_TYPE_PARAMETER_PREFIX,
+        TYPE_TREE_EXPRESSION_PREFIX,
     }
 }
 export namespace JsLeftPadded {
