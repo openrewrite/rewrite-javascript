@@ -696,7 +696,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(indexedAccessType, JS.IndexedAccessType::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(indexedAccessType, JS.IndexedAccessType::getMarkers, ctx::sendMarkers);
             ctx.sendNode(indexedAccessType, JS.IndexedAccessType::getObjectType, ctx::sendTree);
-            ctx.sendNode(indexedAccessType, e -> e.getPadding().getIndexType(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(indexedAccessType, JS.IndexedAccessType::getIndexType, ctx::sendTree);
             ctx.sendTypedValue(indexedAccessType, JS.IndexedAccessType::getType);
             return indexedAccessType;
         }

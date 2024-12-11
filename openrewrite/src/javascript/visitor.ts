@@ -850,7 +850,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         indexedAccessType = tempExpression as IndexedAccessType;
         indexedAccessType = indexedAccessType.withMarkers(this.visitMarkers(indexedAccessType.markers, p));
         indexedAccessType = indexedAccessType.withObjectType(this.visitAndCast(indexedAccessType.objectType, p)!);
-        indexedAccessType = indexedAccessType.padding.withIndexType(this.visitJsRightPadded(indexedAccessType.padding.indexType, JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE, p)!);
+        indexedAccessType = indexedAccessType.withIndexType(this.visitAndCast(indexedAccessType.indexType, p)!);
         return indexedAccessType;
     }
 

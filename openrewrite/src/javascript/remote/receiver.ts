@@ -610,7 +610,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         indexedAccessType = indexedAccessType.withPrefix(ctx.receiveNode(indexedAccessType.prefix, receiveSpace)!);
         indexedAccessType = indexedAccessType.withMarkers(ctx.receiveNode(indexedAccessType.markers, ctx.receiveMarkers)!);
         indexedAccessType = indexedAccessType.withObjectType(ctx.receiveNode(indexedAccessType.objectType, ctx.receiveTree)!);
-        indexedAccessType = indexedAccessType.padding.withIndexType(ctx.receiveNode(indexedAccessType.padding.indexType, receiveRightPaddedTree)!);
+        indexedAccessType = indexedAccessType.withIndexType(ctx.receiveNode(indexedAccessType.indexType, ctx.receiveTree)!);
         indexedAccessType = indexedAccessType.withType(ctx.receiveValue(indexedAccessType.type, ValueType.Object));
         return indexedAccessType;
     }
@@ -1953,7 +1953,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<TypeTree>(null, ctx.receiveTree)!,
-                ctx.receiveNode<JRightPadded<TypeTree>>(null, receiveRightPaddedTree)!,
+                ctx.receiveNode<TypeTree>(null, ctx.receiveTree)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }

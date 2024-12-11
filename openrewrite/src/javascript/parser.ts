@@ -440,8 +440,8 @@ export class JavaScriptParserVisitor {
         }
         for (let heritageClause of node.heritageClauses) {
             if (heritageClause.token == ts.SyntaxKind.ExtendsKeyword) {
-                const typeTreeExpression = this.visit(heritageClause.types[0]);
-                return this.leftPadded(this.prefix(heritageClause.getFirstToken()!), new TypeTreeExpression(randomId(), Space.EMPTY, Markers.EMPTY, typeTreeExpression));
+                const expression = this.visit(heritageClause.types[0]);
+                return this.leftPadded(this.prefix(heritageClause.getFirstToken()!), new TypeTreeExpression(randomId(), Space.EMPTY, Markers.EMPTY, expression));
             }
         }
         return null;
@@ -1426,15 +1426,12 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.convert(node.objectType),
-            this.rightPadded(
-                new JS.IndexedAccessType.IndexType(
-                    randomId(),
-                    this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBracketToken)!),
-                    Markers.EMPTY,
-                    this.rightPadded(this.convert(node.indexType), this.suffix(node.indexType)),
-                    this.mapType(node.indexType)
-                ),
-                this.suffix(this.findChildNode(node, ts.SyntaxKind.CloseBracketToken)!)
+            new JS.IndexedAccessType.IndexType(
+                randomId(),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBracketToken)!),
+                Markers.EMPTY,
+                this.rightPadded(this.convert(node.indexType), this.suffix(node.indexType)),
+                this.mapType(node.indexType)
             ),
             this.mapType(node)
         );

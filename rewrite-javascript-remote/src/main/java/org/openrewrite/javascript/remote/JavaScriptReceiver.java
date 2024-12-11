@@ -714,7 +714,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
             indexedAccessType = indexedAccessType.withPrefix(ctx.receiveNonNullNode(indexedAccessType.getPrefix(), JavaScriptReceiver::receiveSpace));
             indexedAccessType = indexedAccessType.withMarkers(ctx.receiveNonNullNode(indexedAccessType.getMarkers(), ctx::receiveMarkers));
             indexedAccessType = indexedAccessType.withObjectType(ctx.receiveNonNullNode(indexedAccessType.getObjectType(), ctx::receiveTree));
-            indexedAccessType = indexedAccessType.getPadding().withIndexType(ctx.receiveNonNullNode(indexedAccessType.getPadding().getIndexType(), JavaScriptReceiver::receiveRightPaddedTree));
+            indexedAccessType = indexedAccessType.withIndexType(ctx.receiveNonNullNode(indexedAccessType.getIndexType(), ctx::receiveTree));
             indexedAccessType = indexedAccessType.withType(ctx.receiveValue(indexedAccessType.getType(), JavaType.class));
             return indexedAccessType;
         }
@@ -1467,6 +1467,9 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 if (type == JS.JsImportSpecifier.class) return Factory::createJSJsImportSpecifier;
                 if (type == JS.JsBinary.class) return Factory::createJSJsBinary;
                 if (type == JS.LiteralType.class) return Factory::createJSLiteralType;
+                if (type == JS.MappedType.class) return Factory::createJSMappedType;
+                if (type == JS.MappedType.KeysRemapping.class) return Factory::createJSMappedTypeKeysRemapping;
+                if (type == JS.MappedType.MappedTypeParameter.class) return Factory::createJSMappedTypeMappedTypeParameter;
                 if (type == JS.ObjectBindingDeclarations.class) return Factory::createJSObjectBindingDeclarations;
                 if (type == JS.PropertyAssignment.class) return Factory::createJSPropertyAssignment;
                 if (type == JS.SatisfiesExpression.class) return Factory::createJSSatisfiesExpression;
@@ -1784,8 +1787,8 @@ public class JavaScriptReceiver implements Receiver<JS> {
             );
         }
 
-            if (type == JS.MappedType.class) {
-                return (T) new JS.MappedType(
+        private static JS.MappedType createJSMappedType(ReceiverContext ctx) {
+            return new JS.MappedType(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
@@ -1796,31 +1799,29 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
-                );
-            }
+            );
+        }
 
-            if (type == JS.MappedType.KeysRemapping.class) {
-                return (T) new JS.MappedType.KeysRemapping(
+        private static JS.MappedType.KeysRemapping createJSMappedTypeKeysRemapping(ReceiverContext ctx) {
+            return new JS.MappedType.KeysRemapping(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveRightPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.MappedType.MappedTypeParameter.class) {
-                return (T) new JS.MappedType.MappedTypeParameter(
+        private static JS.MappedType.MappedTypeParameter createJSMappedTypeMappedTypeParameter(ReceiverContext ctx) {
+            return new JS.MappedType.MappedTypeParameter(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
-                );
-            }
+            );
+        }
 
-            if (type == JS.ObjectBindingDeclarations.class) {
-                return (T) new JS.ObjectBindingDeclarations(
         private static JS.ObjectBindingDeclarations createJSObjectBindingDeclarations(ReceiverContext ctx) {
             return new JS.ObjectBindingDeclarations(
                     ctx.receiveNonNullValue(null, UUID.class),
@@ -2227,7 +2228,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
-                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveValue(null, JavaType.class)
             );
         }

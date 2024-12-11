@@ -715,7 +715,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
             iat = (JS.IndexedAccessType) temp;
         }
         iat = iat.withObjectType(Objects.requireNonNull(visitAndCast(iat.getObjectType(), p)));
-        iat = iat.getPadding().withIndexType(Objects.requireNonNull(visitRightPadded(iat.getPadding().getIndexType(), JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE, p)));
+        iat = iat.withIndexType(Objects.requireNonNull(visitAndCast(iat.getIndexType(), p)));
         iat = iat.withType(visitType(iat.getType(), p));
         return iat;
     }

@@ -4875,11 +4875,7 @@ public interface JS extends J {
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class IndexedAccessType implements JS, Expression, TypeTree {
-        @Nullable
-        @NonFinal
-        transient WeakReference<IndexedAccessType.Padding> padding;
 
         @With
         @EqualsAndHashCode.Include
@@ -4901,15 +4897,9 @@ public interface JS extends J {
         @Getter
         TypeTree objectType;
 
-        JRightPadded<TypeTree> indexType;
-
-        public TypeTree getIndexType() {
-            return indexType.getElement();
-        }
-
-        public TypeTree withIndexType(IndexType indexType) {
-            return getPadding().withIndexType(JRightPadded.withElement(this.indexType, indexType));
-        }
+        @With
+        @Getter
+        TypeTree indexType;
 
         @With
         @Nullable
@@ -4924,34 +4914,6 @@ public interface JS extends J {
         @Override
         public CoordinateBuilder.Expression getCoordinates() {
             return new CoordinateBuilder.Expression(this);
-        }
-
-        public IndexedAccessType.Padding getPadding() {
-            IndexedAccessType.Padding p;
-            if (this.padding == null) {
-                p = new IndexedAccessType.Padding(this);
-                this.padding = new WeakReference<>(p);
-            } else {
-                p = this.padding.get();
-                if (p == null || p.t != this) {
-                    p = new IndexedAccessType.Padding(this);
-                    this.padding = new WeakReference<>(p);
-                }
-            }
-            return p;
-        }
-
-        @RequiredArgsConstructor
-        public static class Padding {
-            private final IndexedAccessType t;
-
-            public JRightPadded<TypeTree> getIndexType() {
-                return t.indexType;
-            }
-
-            public IndexedAccessType withIndexType(JRightPadded<TypeTree> indexType) {
-                return t.indexType == indexType ? t : new IndexedAccessType(t.id, t.prefix, t.markers, t.objectType, indexType, t.type);
-            }
         }
 
         @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)

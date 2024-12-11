@@ -5331,7 +5331,7 @@ export class ExportSpecifier extends JSMixin(Object) implements Expression, Type
 
 @LstType("org.openrewrite.javascript.tree.JS$IndexedAccessType")
 export class IndexedAccessType extends JSMixin(Object) implements Expression, TypeTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, objectType: TypeTree, indexType: JRightPadded<TypeTree>, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, objectType: TypeTree, indexType: TypeTree, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -5381,14 +5381,14 @@ export class IndexedAccessType extends JSMixin(Object) implements Expression, Ty
             return objectType === this._objectType ? this : new IndexedAccessType(this._id, this._prefix, this._markers, objectType, this._indexType, this._type);
         }
 
-        private readonly _indexType: JRightPadded<TypeTree>;
+        private readonly _indexType: TypeTree;
 
         public get indexType(): TypeTree {
-            return this._indexType.element;
+            return this._indexType;
         }
 
         public withIndexType(indexType: TypeTree): IndexedAccessType {
-            return this.padding.withIndexType(this._indexType.withElement(indexType));
+            return indexType === this._indexType ? this : new IndexedAccessType(this._id, this._prefix, this._markers, this._objectType, indexType, this._type);
         }
 
         private readonly _type: JavaType | null;
@@ -5403,18 +5403,6 @@ export class IndexedAccessType extends JSMixin(Object) implements Expression, Ty
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
         return v.visitIndexedAccessType(this, p);
-    }
-
-    get padding() {
-        const t = this;
-        return new class {
-            public get indexType(): JRightPadded<TypeTree> {
-                return t._indexType;
-            }
-            public withIndexType(indexType: JRightPadded<TypeTree>): IndexedAccessType {
-                return t._indexType === indexType ? t : new IndexedAccessType(t._id, t._prefix, t._markers, t._objectType, indexType, t._type);
-            }
-        }
     }
 
 }

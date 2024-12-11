@@ -928,7 +928,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(iat.getObjectType(), p);
         // expect that this element is printed accordingly
         // <space_before>[<inner_space_before>index<inner_right_padded_suffix_space>]<right_padded_suffix_space>
-        visitRightPadded(iat.getPadding().getIndexType(), JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE, "", p);
+        visit(iat.getIndexType(), p);
 
         afterSyntax(iat, p);
 

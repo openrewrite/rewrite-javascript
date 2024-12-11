@@ -605,7 +605,7 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(indexedAccessType, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(indexedAccessType, v => v.markers, ctx.sendMarkers);
         ctx.sendNode(indexedAccessType, v => v.objectType, ctx.sendTree);
-        ctx.sendNode(indexedAccessType, v => v.padding.indexType, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(indexedAccessType, v => v.indexType, ctx.sendTree);
         ctx.sendTypedValue(indexedAccessType, v => v.type, ValueType.Object);
         return indexedAccessType;
     }

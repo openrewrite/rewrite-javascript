@@ -183,7 +183,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public JS.MappedType visitMappedType(JS.MappedType mappedType, P p) {
         visitAndValidate(mappedType.getPrefixToken(), J.Literal.class, p);
-        visitAndValidate(mappedType.getKeysRemapping(), JS.MappedType.KeysRemapping.class, p);
+        visitAndValidateNonNull(mappedType.getKeysRemapping(), JS.MappedType.KeysRemapping.class, p);
         visitAndValidate(mappedType.getSuffixToken(), J.Literal.class, p);
         visitAndValidate(mappedType.getValueType(), TypeTree.class, p);
         return mappedType;
@@ -191,15 +191,15 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.MappedType.KeysRemapping visitMappedTypeKeysRemapping(JS.MappedType.KeysRemapping keysRemapping, P p) {
-        visitAndValidate(keysRemapping.getTypeParameter(), JS.MappedType.MappedTypeParameter.class, p);
+        visitAndValidateNonNull(keysRemapping.getTypeParameter(), JS.MappedType.MappedTypeParameter.class, p);
         visitAndValidate(keysRemapping.getNameType(), Expression.class, p);
         return keysRemapping;
     }
 
     @Override
     public JS.MappedType.MappedTypeParameter visitMappedTypeMappedTypeParameter(JS.MappedType.MappedTypeParameter mappedTypeParameter, P p) {
-        visitAndValidate(mappedTypeParameter.getName(), Expression.class, p);
-        visitAndValidate(mappedTypeParameter.getIterateType(), TypeTree.class, p);
+        visitAndValidateNonNull(mappedTypeParameter.getName(), Expression.class, p);
+        visitAndValidateNonNull(mappedTypeParameter.getIterateType(), TypeTree.class, p);
         return mappedTypeParameter;
     }
 
