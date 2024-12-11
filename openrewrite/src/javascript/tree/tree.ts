@@ -4508,7 +4508,7 @@ export namespace NamespaceDeclaration {
 }
 
 @LstType("org.openrewrite.javascript.tree.JS$FunctionDeclaration")
-export class FunctionDeclaration extends JSMixin(Object) implements Statement, Expression, TypedTree {
+export class FunctionDeclaration extends JSMixin(Object) implements Statement, Expression, TypedTree, TypeTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], asteriskToken: JLeftPadded<boolean>, name: JLeftPadded<Java.Identifier>, typeParameters: Java.TypeParameters | null, parameters: JContainer<Statement>, returnTypeExpression: TypeTree | null, body: J, _type: JavaType | null) {
         super();
         this._id = id;
@@ -5664,6 +5664,7 @@ export namespace JsAssignmentOperation {
             QuestionQuestion = 0,
             And = 1,
             Or = 2,
+            Power = 3,
 
     }
 

@@ -1833,8 +1833,15 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             null,
             Space.EMPTY,
-            this.visit(node.expression),
-            this.mapCommaSeparatedList(node.arguments ? node.getChildren(this.sourceFile).slice(2) : []),
+            node.typeArguments ? new J.ParameterizedType(
+                randomId(),
+                Space.EMPTY,
+                Markers.EMPTY,
+                this.visit(node.expression),
+                this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments),
+                null
+            ): this.visit(node.expression),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node)),
             null,
             this.mapMethodType(node)
         );
@@ -2087,6 +2094,9 @@ export class JavaScriptParserVisitor {
                     break;
                 case ts.SyntaxKind.BarBarEqualsToken:
                     assignmentOperation = JS.JsAssignmentOperation.Type.Or;
+                    break;
+                case ts.SyntaxKind.AsteriskAsteriskToken:
+                    assignmentOperation = JS.JsAssignmentOperation.Type.Power;
                     break;
             }
 
@@ -2750,7 +2760,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private getParameterListNodes(node: ts.SignatureDeclarationBase, openToken : ts.SyntaxKind = ts.SyntaxKind.OpenParenToken) {
+    private getParameterListNodes(node: ts.SignatureDeclarationBase | ts.NewExpression, openToken : ts.SyntaxKind = ts.SyntaxKind.OpenParenToken) {
         const children = node.getChildren(this.sourceFile);
         for (let i = 0; i < children.length; i++) {
             if (children[i].kind == openToken) {

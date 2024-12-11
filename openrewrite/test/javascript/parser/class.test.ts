@@ -469,4 +469,14 @@ describe('class mapping', () => {
         );
     });
 
+
+    test('new class with type arguments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const _onDidChangeEnvironment = /*a*/new/*b*/ EventEmitter/*c*/</*d*/string/*e*/>/*f*/(/*g*/)/*h*/;
+            `)
+        );
+    });
+
 });

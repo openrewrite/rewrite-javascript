@@ -344,6 +344,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             case Or:
                 keyword = "||=";
                 break;
+            case Power:
+                keyword = "**";
+                break;
         }
         beforeSyntax(assignOp, JsSpace.Location.ASSIGNMENT_OPERATION_PREFIX, p);
         visit(assignOp.getVariable(), p);

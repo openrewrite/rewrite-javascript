@@ -4189,7 +4189,7 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    final class FunctionDeclaration implements JS, Statement, Expression, TypedTree {
+    final class FunctionDeclaration implements JS, Statement, Expression, TypedTree, TypeTree {
 
         @Nullable
         @NonFinal
@@ -5172,6 +5172,7 @@ public interface JS extends J {
             QuestionQuestion,
             And,
             Or,
+            Power
         }
 
         public JsAssignmentOperation.Padding getPadding() {

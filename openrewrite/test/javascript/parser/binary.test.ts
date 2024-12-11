@@ -80,6 +80,13 @@ describe('arithmetic operator mapping', () => {
           typeScript('1 >>> 2')
         );
     });
+
+    test('power operation ', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('2 ** 3')
+        );
+    });
 });
 
 describe('bitwise operator mapping', () => {
