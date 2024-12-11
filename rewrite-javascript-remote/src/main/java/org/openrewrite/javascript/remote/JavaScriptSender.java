@@ -119,6 +119,15 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.DebuggerStatement visitDebuggerStatement(JS.DebuggerStatement debuggerStatement, SenderContext ctx) {
+            ctx.sendValue(debuggerStatement, JS.DebuggerStatement::getId);
+            ctx.sendNode(debuggerStatement, JS.DebuggerStatement::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(debuggerStatement, JS.DebuggerStatement::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(debuggerStatement, e -> e.getPadding().getDebugger(), JavaScriptSender::sendRightPadded);
+            return debuggerStatement;
+        }
+
+        @Override
         public JS.DefaultType visitDefaultType(JS.DefaultType defaultType, SenderContext ctx) {
             ctx.sendValue(defaultType, JS.DefaultType::getId);
             ctx.sendNode(defaultType, JS.DefaultType::getPrefix, JavaScriptSender::sendSpace);

@@ -260,6 +260,7 @@ export namespace JsSpace {
         MAPPED_TYPE_KEYS_REMAPPING_PREFIX,
         MAPPED_TYPE_MAPPED_TYPE_PARAMETER_PREFIX,
         TYPE_TREE_EXPRESSION_PREFIX,
+        DEBUGGER_STATEMENT_PREFIX,
     }
 }
 export namespace JsLeftPadded {
@@ -331,6 +332,7 @@ export namespace JsRightPadded {
         INDEXED_ACCESS_TYPE_INDEX_TYPE_ELEMENT,
         MAPPED_TYPE_KEYS_REMAPPING_TYPE_PARAMETER,
         MAPPED_TYPE_KEYS_REMAPPING_NAME_TYPE,
+        DEBUGGER_STATEMENT_DEBUGGER,
     }
 }
 export namespace JsContainer {

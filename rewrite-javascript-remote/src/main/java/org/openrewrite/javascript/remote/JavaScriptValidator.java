@@ -97,6 +97,12 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.DebuggerStatement visitDebuggerStatement(JS.DebuggerStatement debuggerStatement, P p) {
+        visitAndValidateNonNull(debuggerStatement.getDebugger(), J.Literal.class, p);
+        return debuggerStatement;
+    }
+
+    @Override
     public JS.DefaultType visitDefaultType(JS.DefaultType defaultType, P p) {
         visitAndValidateNonNull(defaultType.getLeft(), Expression.class, p);
         visitAndValidateNonNull(defaultType.getRight(), Expression.class, p);

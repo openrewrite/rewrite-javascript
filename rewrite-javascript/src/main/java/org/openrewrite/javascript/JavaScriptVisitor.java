@@ -166,6 +166,20 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return d;
     }
 
+    public J visitDebuggerStatement(JS.DebuggerStatement debuggerStatement, P p) {
+        JS.DebuggerStatement d = debuggerStatement;
+        d = d.withPrefix(visitSpace(d.getPrefix(), JsSpace.Location.DEBUGGER_STATEMENT_PREFIX, p));
+        d = d.withMarkers(visitMarkers(d.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(d, p);
+        if (!(temp instanceof JS.DebuggerStatement)) {
+            return temp;
+        } else {
+            d = (JS.DebuggerStatement) temp;
+        }
+        d = d.getPadding().withDebugger(Objects.requireNonNull(visitRightPadded(d.getPadding().getDebugger(), JsRightPadded.Location.DEBUGGER, p)));
+        return d;
+    }
+
     public J visitDelete(JS.Delete delete, P p) {
         JS.Delete d = delete;
         d = d.withPrefix(visitSpace(d.getPrefix(), JsSpace.Location.DELETE_PREFIX, p));
