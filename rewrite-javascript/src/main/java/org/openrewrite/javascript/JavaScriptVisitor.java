@@ -101,7 +101,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         );
         a = a.withParameters(Objects.requireNonNull(visitAndCast(a.getParameters(), p)));
         a = a.withReturnTypeExpression(visitAndCast(a.getReturnTypeExpression(), p));
-        a = a.withArrow(visitSpace(a.getArrow(), Space.Location.LAMBDA_ARROW_PREFIX, p));
+        a = a.getPadding().withBody(visitLeftPadded(a.getPadding().getBody(), JsLeftPadded.Location.LAMBDA_ARROW, p));
         a = a.withBody(Objects.requireNonNull(visitAndCast(a.getBody(), p)));
         a = a.withType(visitType(a.getType(), p));
         return a;
@@ -163,6 +163,20 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         d = d.withBeforeEquals(visitSpace(d.getBeforeEquals(), Space.Location.ASSIGNMENT_OPERATION_PREFIX, p));
         d = d.withRight(Objects.requireNonNull(visitAndCast(d.getRight(), p)));
         d = d.withType(visitType(d.getType(), p));
+        return d;
+    }
+
+    public J visitDebuggerStatement(JS.DebuggerStatement debuggerStatement, P p) {
+        JS.DebuggerStatement d = debuggerStatement;
+        d = d.withPrefix(visitSpace(d.getPrefix(), JsSpace.Location.DEBUGGER_STATEMENT_PREFIX, p));
+        d = d.withMarkers(visitMarkers(d.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(d, p);
+        if (!(temp instanceof JS.DebuggerStatement)) {
+            return temp;
+        } else {
+            d = (JS.DebuggerStatement) temp;
+        }
+        d = d.getPadding().withDebugger(Objects.requireNonNull(visitRightPadded(d.getPadding().getDebugger(), JsRightPadded.Location.DEBUGGER, p)));
         return d;
     }
 

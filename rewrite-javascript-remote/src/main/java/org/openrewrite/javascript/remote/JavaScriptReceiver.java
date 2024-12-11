@@ -110,8 +110,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
             arrowFunction = arrowFunction.withTypeParameters(ctx.receiveNode(arrowFunction.getTypeParameters(), ctx::receiveTree));
             arrowFunction = arrowFunction.withParameters(ctx.receiveNonNullNode(arrowFunction.getParameters(), ctx::receiveTree));
             arrowFunction = arrowFunction.withReturnTypeExpression(ctx.receiveNode(arrowFunction.getReturnTypeExpression(), ctx::receiveTree));
-            arrowFunction = arrowFunction.withArrow(ctx.receiveNonNullNode(arrowFunction.getArrow(), JavaScriptReceiver::receiveSpace));
-            arrowFunction = arrowFunction.withBody(ctx.receiveNonNullNode(arrowFunction.getBody(), ctx::receiveTree));
+            arrowFunction = arrowFunction.getPadding().withBody(ctx.receiveNonNullNode(arrowFunction.getPadding().getBody(), JavaScriptReceiver::receiveLeftPaddedTree));
             arrowFunction = arrowFunction.withType(ctx.receiveValue(arrowFunction.getType(), JavaType.class));
             return arrowFunction;
         }
@@ -135,6 +134,15 @@ public class JavaScriptReceiver implements Receiver<JS> {
             conditionalType = conditionalType.getPadding().withCondition(ctx.receiveNonNullNode(conditionalType.getPadding().getCondition(), JavaScriptReceiver::receiveContainer));
             conditionalType = conditionalType.withType(ctx.receiveValue(conditionalType.getType(), JavaType.class));
             return conditionalType;
+        }
+
+        @Override
+        public JS.DebuggerStatement visitDebuggerStatement(JS.DebuggerStatement debuggerStatement, ReceiverContext ctx) {
+            debuggerStatement = debuggerStatement.withId(ctx.receiveNonNullValue(debuggerStatement.getId(), UUID.class));
+            debuggerStatement = debuggerStatement.withPrefix(ctx.receiveNonNullNode(debuggerStatement.getPrefix(), JavaScriptReceiver::receiveSpace));
+            debuggerStatement = debuggerStatement.withMarkers(ctx.receiveNonNullNode(debuggerStatement.getMarkers(), ctx::receiveMarkers));
+            debuggerStatement = debuggerStatement.getPadding().withDebugger(ctx.receiveNonNullNode(debuggerStatement.getPadding().getDebugger(), JavaScriptReceiver::receiveRightPaddedTree));
+            return debuggerStatement;
         }
 
         @Override
@@ -1455,6 +1463,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 if (type == JS.ArrowFunction.class) return Factory::createJSArrowFunction;
                 if (type == JS.Await.class) return Factory::createJSAwait;
                 if (type == JS.ConditionalType.class) return Factory::createJSConditionalType;
+                if (type == JS.DebuggerStatement.class) return Factory::createJSDebuggerStatement;
                 if (type == JS.DefaultType.class) return Factory::createJSDefaultType;
                 if (type == JS.Delete.class) return Factory::createJSDelete;
                 if (type == JS.Export.class) return Factory::createJSExport;
@@ -1624,8 +1633,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, ctx::receiveTree),
-                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
-                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
             );
         }
@@ -1648,6 +1656,15 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
+            );
+        }
+
+        private static JS.DebuggerStatement createJSDebuggerStatement(ReceiverContext ctx) {
+            return new JS.DebuggerStatement(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
             );
         }
 

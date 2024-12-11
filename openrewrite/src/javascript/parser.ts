@@ -1913,8 +1913,7 @@ export class JavaScriptParserVisitor {
                     isParenthesized ? [this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!))] : [] // to handle the case: (/*no*/) => ...
             ),
             this.mapTypeInfo(node),
-            this.prefix(node.equalsGreaterThanToken),
-            this.convert(node.body),
+            this.leftPadded(this.prefix(node.equalsGreaterThanToken), this.convert(node.body)),
             this.mapType(node)
         );
     }
@@ -2368,6 +2367,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitSyntheticExpression(node: ts.SyntheticExpression) {
+        // SyntheticExpression is a special type of node used internally by the TypeScript compiler
         return this.visitUnknown(node);
     }
 
@@ -2431,6 +2431,7 @@ export class JavaScriptParserVisitor {
 
     visitIfStatement(node: ts.IfStatement) {
         const semicolonAfterThen = node.thenStatement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken;
+        const semicolonAfterElse = node.elseStatement?.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken;
         return new J.If(
             randomId(),
             this.prefix(node),
@@ -2452,8 +2453,8 @@ export class JavaScriptParserVisitor {
                 Markers.EMPTY,
                 this.rightPadded(
                     this.convert(node.elseStatement),
-                    semicolonAfterThen ? this.prefix(node.elseStatement.getLastToken()!) : Space.EMPTY,
-                    semicolonAfterThen ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+                    semicolonAfterElse ? this.prefix(node.elseStatement.getLastToken()!) : Space.EMPTY,
+                    semicolonAfterElse ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
                 )
             ) : null
         );
@@ -2641,7 +2642,23 @@ export class JavaScriptParserVisitor {
     }
 
     visitDebuggerStatement(node: ts.DebuggerStatement) {
-        return this.visitUnknown(node);
+        return new JS.DebuggerStatement(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            this.rightPadded(
+                new J.Literal(
+                    randomId(),
+                    this.prefix(node),
+                    Markers.EMPTY,
+                    null,
+                    "debugger",
+                    null,
+                    this.mapPrimitiveType(node)
+                ),
+                this.suffix(this.findChildNode(node, ts.SyntaxKind.DebuggerKeyword)!),
+            )
+        );
     }
 
     visitVariableDeclaration(node: ts.VariableDeclaration) {

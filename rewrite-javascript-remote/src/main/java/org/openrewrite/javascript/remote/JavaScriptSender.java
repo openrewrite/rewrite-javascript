@@ -92,8 +92,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(arrowFunction, JS.ArrowFunction::getTypeParameters, ctx::sendTree);
             ctx.sendNode(arrowFunction, JS.ArrowFunction::getParameters, ctx::sendTree);
             ctx.sendNode(arrowFunction, JS.ArrowFunction::getReturnTypeExpression, ctx::sendTree);
-            ctx.sendNode(arrowFunction, JS.ArrowFunction::getArrow, JavaScriptSender::sendSpace);
-            ctx.sendNode(arrowFunction, JS.ArrowFunction::getBody, ctx::sendTree);
+            ctx.sendNode(arrowFunction, e -> e.getPadding().getBody(), JavaScriptSender::sendLeftPadded);
             ctx.sendTypedValue(arrowFunction, JS.ArrowFunction::getType);
             return arrowFunction;
         }
@@ -117,6 +116,15 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(conditionalType, e -> e.getPadding().getCondition(), JavaScriptSender::sendContainer);
             ctx.sendTypedValue(conditionalType, JS.ConditionalType::getType);
             return conditionalType;
+        }
+
+        @Override
+        public JS.DebuggerStatement visitDebuggerStatement(JS.DebuggerStatement debuggerStatement, SenderContext ctx) {
+            ctx.sendValue(debuggerStatement, JS.DebuggerStatement::getId);
+            ctx.sendNode(debuggerStatement, JS.DebuggerStatement::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(debuggerStatement, JS.DebuggerStatement::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(debuggerStatement, e -> e.getPadding().getDebugger(), JavaScriptSender::sendRightPadded);
+            return debuggerStatement;
         }
 
         @Override

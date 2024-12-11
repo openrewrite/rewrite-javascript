@@ -51,6 +51,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public void setCursor(@Nullable Cursor cursor) {
+        super.setCursor(cursor);
+        delegate.internalSetCursor(cursor);
+    }
+
+    private void internalSetCursor(@Nullable Cursor cursor) {
+        super.setCursor(cursor);
+    }
+
+    @Override
     public J visitCompilationUnit(JS.CompilationUnit cu, PrintOutputCapture<P> p) {
         beforeSyntax(cu, Space.Location.COMPILATION_UNIT_PREFIX, p);
 
@@ -100,11 +110,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visit(arrowFunction.getReturnTypeExpression(), p);
         }
 
-        visitSpace(arrowFunction.getArrow(), Space.Location.LAMBDA_ARROW_PREFIX, p);
-        if ((arrowFunction.getBody() != null) && !(arrowFunction.getBody() instanceof J.Empty)) {
-            p.append("=>");
-            visit(arrowFunction.getBody(), p);
-        }
+        visitLeftPadded("=>", arrowFunction.getPadding().getBody(), JsLeftPadded.Location.LAMBDA_ARROW, p);
+
         afterSyntax(arrowFunction, p);
         return arrowFunction;
     }
@@ -149,6 +156,14 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(defaultType.getRight(), p);
         afterSyntax(defaultType, p);
         return defaultType;
+    }
+
+    @Override
+    public J visitDebuggerStatement(JS.DebuggerStatement debuggerStatement, PrintOutputCapture<P> p) {
+        beforeSyntax(debuggerStatement, JsSpace.Location.DEBUGGER_STATEMENT_PREFIX, p);
+        visitRightPadded(debuggerStatement.getPadding().getDebugger(), JsRightPadded.Location.DEBUGGER, p);
+        afterSyntax(debuggerStatement, p);
+        return debuggerStatement;
     }
 
     @Override
@@ -963,6 +978,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
 
         @Override
+        public void setCursor(@Nullable Cursor cursor) {
+            super.setCursor(cursor);
+            JavaScriptPrinter.this.internalSetCursor(cursor);
+        }
+
+        public void internalSetCursor(@Nullable Cursor cursor) {
+            super.setCursor(cursor);
+        }
+
+        @Override
         public J visitEnumValue(J.EnumValue enum_, PrintOutputCapture<P> p) {
             beforeSyntax(enum_, Space.Location.ENUM_VALUE_PREFIX, p);
             visit(enum_.getName(), p);
@@ -1292,10 +1317,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 visitSpace(bounds.getBefore(), JContainer.Location.TYPE_BOUNDS.getBeforeLocation(), p);
                 JRightPadded<TypeTree> constraintType = bounds.getPadding().getElements().get(0);
 
-                if (getCursor().getParentTreeCursor().getValue() instanceof JS.MappedType) {
-                    p.append("in");
-                    this.visitRightPadded(constraintType, JContainer.Location.TYPE_BOUNDS.getElementLocation(), p);
-                } else if (!(constraintType.getElement() instanceof J.Empty)) {
+                if (!(constraintType.getElement() instanceof J.Empty)) {
                     p.append("extends");
                     this.visitRightPadded(constraintType, JContainer.Location.TYPE_BOUNDS.getElementLocation(), p);
                 }

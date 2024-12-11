@@ -394,8 +394,14 @@ public interface JS extends J {
      */
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Data
     final class ArrowFunction implements JS, Statement, Expression, TypedTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<ArrowFunction.Padding> padding;
 
         @With
         @EqualsAndHashCode.Include
@@ -425,11 +431,15 @@ public interface JS extends J {
         @Nullable
         TypeTree returnTypeExpression;
 
-        @With
-        Space arrow;
+        JLeftPadded<J> body;
 
-        @With
-        J body;
+        public J getBody() {
+            return body.getElement();
+        }
+
+        public ArrowFunction withBody(J body) {
+            return getPadding().withBody(JLeftPadded.withElement(this.body, body));
+        }
 
         @With
         @Nullable
@@ -445,6 +455,35 @@ public interface JS extends J {
         public CoordinateBuilder.Statement getCoordinates() {
             return new CoordinateBuilder.Statement(this);
         }
+
+        public ArrowFunction.Padding getPadding() {
+            ArrowFunction.Padding p;
+            if (this.padding == null) {
+                p = new ArrowFunction.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.f != this) {
+                    p = new ArrowFunction.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ArrowFunction f;
+
+            public JLeftPadded<J> getBody() {
+                return f.body;
+            }
+
+            public ArrowFunction withBody(JLeftPadded<J> body) {
+                return f.body == body ?  f: new ArrowFunction(f.id, f.prefix, f.markers, f.leadingAnnotations, f.modifiers, f.typeParameters, f.parameters, f.returnTypeExpression, body, f.type);
+            }
+        }
+
     }
 
     @Getter
@@ -551,6 +590,78 @@ public interface JS extends J {
 
             public ConditionalType withCondition(@Nullable JContainer<TypedTree> condition) {
                 return t.condition == condition ? t : new ConditionalType(t.id, t.prefix, t.markers, t.checkType, condition, t.type);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    class DebuggerStatement implements JS, Statement {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<DebuggerStatement.Padding> padding;
+
+        @Getter
+        @With
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @Getter
+        @With
+        Space prefix;
+
+        @Getter
+        @With
+        Markers markers;
+
+        JRightPadded<J.Literal> debugger;
+
+        public J.Literal getDebugger() {
+            return debugger.getElement();
+        }
+
+        public DebuggerStatement withDebugger(J.Literal debugger) {
+            return getPadding().withDebugger(JRightPadded.withElement(this.debugger, debugger));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitDebuggerStatement(this, p);
+        }
+
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public DebuggerStatement.Padding getPadding() {
+            DebuggerStatement.Padding p;
+            if (this.padding == null) {
+                p = new DebuggerStatement.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new DebuggerStatement.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final DebuggerStatement t;
+
+            public JRightPadded<J.Literal> getDebugger() {
+                return t.debugger;
+            }
+
+            public DebuggerStatement withDebugger(JRightPadded<J.Literal> debugger) {
+                return t.debugger == debugger ? t : new DebuggerStatement(t.id, t.prefix, t.markers, debugger);
             }
         }
     }

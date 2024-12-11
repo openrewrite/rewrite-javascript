@@ -22,4 +22,16 @@ describe('if mapping', () => {
           typeScript('if (true) console.log("foo"); else console.log("bar");')
         );
     });
+
+    test('if-else with semicolon', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                if (true) {
+                    console.log("foo");
+                } else
+                    console.log("bar");
+            `)
+        );
+    });
 });

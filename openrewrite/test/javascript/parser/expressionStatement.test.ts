@@ -190,4 +190,16 @@ describe('expression statement mapping', () => {
         );
     });
 
+    test('debugging statement', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+              function calculate(value: number) {
+                  /*a*/debugger/*b*/;/*c*/ // Pauses execution when debugging
+                  return value * 2;
+              }
+          `)
+        );
+    });
+
 });

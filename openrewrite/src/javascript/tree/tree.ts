@@ -251,7 +251,7 @@ export class Alias extends JSMixin(Object) implements Expression {
 
 @LstType("org.openrewrite.javascript.tree.JS$ArrowFunction")
 export class ArrowFunction extends JSMixin(Object) implements Statement, Expression, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeParameters: Java.TypeParameters | null, parameters: Java.Lambda.Parameters, returnTypeExpression: TypeTree | null, arrow: Space, body: J, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeParameters: Java.TypeParameters | null, parameters: Java.Lambda.Parameters, returnTypeExpression: TypeTree | null, body: JLeftPadded<J>, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -261,7 +261,6 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         this._typeParameters = typeParameters;
         this._parameters = parameters;
         this._returnTypeExpression = returnTypeExpression;
-        this._arrow = arrow;
         this._body = body;
         this._type = _type;
     }
@@ -273,7 +272,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withId(id: UUID): ArrowFunction {
-            return id === this._id ? this : new ArrowFunction(id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return id === this._id ? this : new ArrowFunction(id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
         }
 
         private readonly _prefix: Space;
@@ -283,7 +282,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withPrefix(prefix: Space): ArrowFunction {
-            return prefix === this._prefix ? this : new ArrowFunction(this._id, prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return prefix === this._prefix ? this : new ArrowFunction(this._id, prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
         }
 
         private readonly _markers: Markers;
@@ -293,7 +292,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withMarkers(markers: Markers): ArrowFunction {
-            return markers === this._markers ? this : new ArrowFunction(this._id, this._prefix, markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return markers === this._markers ? this : new ArrowFunction(this._id, this._prefix, markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
         }
 
         private readonly _leadingAnnotations: Java.Annotation[];
@@ -303,7 +302,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withLeadingAnnotations(leadingAnnotations: Java.Annotation[]): ArrowFunction {
-            return leadingAnnotations === this._leadingAnnotations ? this : new ArrowFunction(this._id, this._prefix, this._markers, leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return leadingAnnotations === this._leadingAnnotations ? this : new ArrowFunction(this._id, this._prefix, this._markers, leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
         }
 
         private readonly _modifiers: Java.Modifier[];
@@ -313,7 +312,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withModifiers(modifiers: Java.Modifier[]): ArrowFunction {
-            return modifiers === this._modifiers ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return modifiers === this._modifiers ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
         }
 
         private readonly _typeParameters: Java.TypeParameters | null;
@@ -323,7 +322,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withTypeParameters(typeParameters: Java.TypeParameters | null): ArrowFunction {
-            return typeParameters === this._typeParameters ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return typeParameters === this._typeParameters ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, typeParameters, this._parameters, this._returnTypeExpression, this._body, this._type);
         }
 
         private readonly _parameters: Java.Lambda.Parameters;
@@ -333,7 +332,7 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withParameters(parameters: Java.Lambda.Parameters): ArrowFunction {
-            return parameters === this._parameters ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, parameters, this._returnTypeExpression, this._arrow, this._body, this._type);
+            return parameters === this._parameters ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, parameters, this._returnTypeExpression, this._body, this._type);
         }
 
         private readonly _returnTypeExpression: TypeTree | null;
@@ -343,27 +342,17 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withReturnTypeExpression(returnTypeExpression: TypeTree | null): ArrowFunction {
-            return returnTypeExpression === this._returnTypeExpression ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, returnTypeExpression, this._arrow, this._body, this._type);
+            return returnTypeExpression === this._returnTypeExpression ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, returnTypeExpression, this._body, this._type);
         }
 
-        private readonly _arrow: Space;
-
-        public get arrow(): Space {
-            return this._arrow;
-        }
-
-        public withArrow(arrow: Space): ArrowFunction {
-            return arrow === this._arrow ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, arrow, this._body, this._type);
-        }
-
-        private readonly _body: J;
+        private readonly _body: JLeftPadded<J>;
 
         public get body(): J {
-            return this._body;
+            return this._body.element;
         }
 
         public withBody(body: J): ArrowFunction {
-            return body === this._body ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, body, this._type);
+            return this.padding.withBody(this._body.withElement(body));
         }
 
         private readonly _type: JavaType | null;
@@ -373,11 +362,23 @@ export class ArrowFunction extends JSMixin(Object) implements Statement, Express
         }
 
         public withType(_type: JavaType | null): ArrowFunction {
-            return _type === this._type ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._arrow, this._body, _type);
+            return _type === this._type ? this : new ArrowFunction(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, this._typeParameters, this._parameters, this._returnTypeExpression, this._body, _type);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
         return v.visitArrowFunction(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get body(): JLeftPadded<J> {
+                return t._body;
+            }
+            public withBody(body: JLeftPadded<J>): ArrowFunction {
+                return t._body === body ? t : new ArrowFunction(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeParameters, t._parameters, t._returnTypeExpression, body, t._type);
+            }
+        }
     }
 
 }
@@ -533,6 +534,74 @@ export class ConditionalType extends JSMixin(Object) implements TypeTree, Expres
             }
             public withCondition(condition: JContainer<TypedTree>): ConditionalType {
                 return t._condition === condition ? t : new ConditionalType(t._id, t._prefix, t._markers, t._checkType, condition, t._type);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$DebuggerStatement")
+export class DebuggerStatement extends JSMixin(Object) implements Statement {
+    public constructor(id: UUID, prefix: Space, markers: Markers, _debugger: JRightPadded<Java.Literal>) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._debugger = _debugger;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): DebuggerStatement {
+            return id === this._id ? this : new DebuggerStatement(id, this._prefix, this._markers, this._debugger);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): DebuggerStatement {
+            return prefix === this._prefix ? this : new DebuggerStatement(this._id, prefix, this._markers, this._debugger);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): DebuggerStatement {
+            return markers === this._markers ? this : new DebuggerStatement(this._id, this._prefix, markers, this._debugger);
+        }
+
+        private readonly _debugger: JRightPadded<Java.Literal>;
+
+        public get debugger(): Java.Literal {
+            return this._debugger.element;
+        }
+
+        public withDebugger(_debugger: Java.Literal): DebuggerStatement {
+            return this.padding.withDebugger(this._debugger.withElement(_debugger));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitDebuggerStatement(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get debugger(): JRightPadded<Java.Literal> {
+                return t._debugger;
+            }
+            public withDebugger(_debugger: JRightPadded<Java.Literal>): DebuggerStatement {
+                return t._debugger === _debugger ? t : new DebuggerStatement(t._id, t._prefix, t._markers, _debugger);
             }
         }
     }

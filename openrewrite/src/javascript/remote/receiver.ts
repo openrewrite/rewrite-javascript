@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DebuggerStatement, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -60,8 +60,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         arrowFunction = arrowFunction.withTypeParameters(ctx.receiveNode(arrowFunction.typeParameters, ctx.receiveTree));
         arrowFunction = arrowFunction.withParameters(ctx.receiveNode(arrowFunction.parameters, ctx.receiveTree)!);
         arrowFunction = arrowFunction.withReturnTypeExpression(ctx.receiveNode(arrowFunction.returnTypeExpression, ctx.receiveTree));
-        arrowFunction = arrowFunction.withArrow(ctx.receiveNode(arrowFunction.arrow, receiveSpace)!);
-        arrowFunction = arrowFunction.withBody(ctx.receiveNode(arrowFunction.body, ctx.receiveTree)!);
+        arrowFunction = arrowFunction.padding.withBody(ctx.receiveNode(arrowFunction.padding.body, receiveLeftPaddedTree)!);
         arrowFunction = arrowFunction.withType(ctx.receiveValue(arrowFunction.type, ValueType.Object));
         return arrowFunction;
     }
@@ -83,6 +82,14 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         conditionalType = conditionalType.padding.withCondition(ctx.receiveNode(conditionalType.padding.condition, receiveContainer)!);
         conditionalType = conditionalType.withType(ctx.receiveValue(conditionalType.type, ValueType.Object));
         return conditionalType;
+    }
+
+    public visitDebuggerStatement(debuggerStatement: DebuggerStatement, ctx: ReceiverContext): J {
+        debuggerStatement = debuggerStatement.withId(ctx.receiveValue(debuggerStatement.id, ValueType.UUID)!);
+        debuggerStatement = debuggerStatement.withPrefix(ctx.receiveNode(debuggerStatement.prefix, receiveSpace)!);
+        debuggerStatement = debuggerStatement.withMarkers(ctx.receiveNode(debuggerStatement.markers, ctx.receiveMarkers)!);
+        debuggerStatement = debuggerStatement.padding.withDebugger(ctx.receiveNode(debuggerStatement.padding.debugger, receiveRightPaddedTree)!);
+        return debuggerStatement;
     }
 
     public visitDefaultType(defaultType: DefaultType, ctx: ReceiverContext): J {
@@ -1349,8 +1356,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<Java.TypeParameters>(null, ctx.receiveTree),
                 ctx.receiveNode<Java.Lambda.Parameters>(null, ctx.receiveTree)!,
                 ctx.receiveNode<TypeTree>(null, ctx.receiveTree),
-                ctx.receiveNode(null, receiveSpace)!,
-                ctx.receiveNode<J>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<J>>(null, receiveLeftPaddedTree)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }
@@ -1373,6 +1379,15 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
                 ctx.receiveNode<JContainer<TypedTree>>(null, receiveContainer)!,
                 ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$DebuggerStatement") {
+            return new DebuggerStatement(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JRightPadded<Java.Literal>>(null, receiveRightPaddedTree)!
             );
         }
 
