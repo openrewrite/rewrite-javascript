@@ -4190,7 +4190,7 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    final class FunctionDeclaration implements JS, Statement, Expression, TypedTree {
+    final class FunctionDeclaration implements JS, Statement, Expression, TypedTree, TypeTree {
 
         @Nullable
         @NonFinal
