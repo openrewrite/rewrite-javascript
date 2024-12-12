@@ -159,14 +159,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
-    public J visitDebuggerStatement(JS.DebuggerStatement debuggerStatement, PrintOutputCapture<P> p) {
-        beforeSyntax(debuggerStatement, JsSpace.Location.DEBUGGER_STATEMENT_PREFIX, p);
-        visitRightPadded(debuggerStatement.getPadding().getDebugger(), JsRightPadded.Location.DEBUGGER, p);
-        afterSyntax(debuggerStatement, p);
-        return debuggerStatement;
-    }
-
-    @Override
     public J visitDelete(JS.Delete delete, PrintOutputCapture<P> p) {
         beforeSyntax(delete, JsSpace.Location.DELETE_PREFIX, p);
         p.append("delete");
