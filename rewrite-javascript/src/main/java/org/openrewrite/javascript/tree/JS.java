@@ -596,78 +596,6 @@ public interface JS extends J {
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
-    @RequiredArgsConstructor
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    class DebuggerStatement implements JS, Statement {
-
-        @Nullable
-        @NonFinal
-        transient WeakReference<DebuggerStatement.Padding> padding;
-
-        @Getter
-        @With
-        @EqualsAndHashCode.Include
-        UUID id;
-
-        @Getter
-        @With
-        Space prefix;
-
-        @Getter
-        @With
-        Markers markers;
-
-        JRightPadded<J.Literal> debugger;
-
-        public J.Literal getDebugger() {
-            return debugger.getElement();
-        }
-
-        public DebuggerStatement withDebugger(J.Literal debugger) {
-            return getPadding().withDebugger(JRightPadded.withElement(this.debugger, debugger));
-        }
-
-        @Override
-        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
-            return v.visitDebuggerStatement(this, p);
-        }
-
-        @Override
-        public CoordinateBuilder.Statement getCoordinates() {
-            return new CoordinateBuilder.Statement(this);
-        }
-
-        public DebuggerStatement.Padding getPadding() {
-            DebuggerStatement.Padding p;
-            if (this.padding == null) {
-                p = new DebuggerStatement.Padding(this);
-                this.padding = new WeakReference<>(p);
-            } else {
-                p = this.padding.get();
-                if (p == null || p.t != this) {
-                    p = new DebuggerStatement.Padding(this);
-                    this.padding = new WeakReference<>(p);
-                }
-            }
-            return p;
-        }
-
-        @RequiredArgsConstructor
-        public static class Padding {
-            private final DebuggerStatement t;
-
-            public JRightPadded<J.Literal> getDebugger() {
-                return t.debugger;
-            }
-
-            public DebuggerStatement withDebugger(JRightPadded<J.Literal> debugger) {
-                return t.debugger == debugger ? t : new DebuggerStatement(t.id, t.prefix, t.markers, debugger);
-            }
-        }
-    }
-
-    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @Data
     @With
     final class DefaultType implements JS, Expression, TypedTree, NameTree {
@@ -2498,7 +2426,7 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    final class TemplateExpression implements JS, Statement, Expression {
+    final class TemplateExpression implements JS, Statement, Expression, TypeTree {
 
         @Nullable
         @NonFinal
@@ -2903,6 +2831,7 @@ public interface JS extends J {
         public enum Type {
             ReadOnly,
             KeyOf,
+            Unique
         }
 
         public JS.TypeOperator.Padding getPadding() {
@@ -4189,7 +4118,7 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    final class FunctionDeclaration implements JS, Statement, Expression, TypedTree, TypeTree {
+    final class FunctionDeclaration implements JS, Statement, Expression, TypedTree {
 
         @Nullable
         @NonFinal

@@ -137,15 +137,6 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
-        public JS.DebuggerStatement visitDebuggerStatement(JS.DebuggerStatement debuggerStatement, ReceiverContext ctx) {
-            debuggerStatement = debuggerStatement.withId(ctx.receiveNonNullValue(debuggerStatement.getId(), UUID.class));
-            debuggerStatement = debuggerStatement.withPrefix(ctx.receiveNonNullNode(debuggerStatement.getPrefix(), JavaScriptReceiver::receiveSpace));
-            debuggerStatement = debuggerStatement.withMarkers(ctx.receiveNonNullNode(debuggerStatement.getMarkers(), ctx::receiveMarkers));
-            debuggerStatement = debuggerStatement.getPadding().withDebugger(ctx.receiveNonNullNode(debuggerStatement.getPadding().getDebugger(), JavaScriptReceiver::receiveRightPaddedTree));
-            return debuggerStatement;
-        }
-
-        @Override
         public JS.DefaultType visitDefaultType(JS.DefaultType defaultType, ReceiverContext ctx) {
             defaultType = defaultType.withId(ctx.receiveNonNullValue(defaultType.getId(), UUID.class));
             defaultType = defaultType.withPrefix(ctx.receiveNonNullNode(defaultType.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1463,7 +1454,6 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 if (type == JS.ArrowFunction.class) return Factory::createJSArrowFunction;
                 if (type == JS.Await.class) return Factory::createJSAwait;
                 if (type == JS.ConditionalType.class) return Factory::createJSConditionalType;
-                if (type == JS.DebuggerStatement.class) return Factory::createJSDebuggerStatement;
                 if (type == JS.DefaultType.class) return Factory::createJSDefaultType;
                 if (type == JS.Delete.class) return Factory::createJSDelete;
                 if (type == JS.Export.class) return Factory::createJSExport;
@@ -1656,15 +1646,6 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
-            );
-        }
-
-        private static JS.DebuggerStatement createJSDebuggerStatement(ReceiverContext ctx) {
-            return new JS.DebuggerStatement(
-                    ctx.receiveNonNullValue(null, UUID.class),
-                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
-                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
-                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
             );
         }
 

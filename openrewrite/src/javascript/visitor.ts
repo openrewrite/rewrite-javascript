@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DebuggerStatement, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -83,19 +83,6 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         conditionalType = conditionalType.withCheckType(this.visitAndCast(conditionalType.checkType, p)!);
         conditionalType = conditionalType.padding.withCondition(this.visitJsContainer(conditionalType.padding.condition, JsContainer.Location.CONDITIONAL_TYPE_CONDITION, p)!);
         return conditionalType;
-    }
-
-    public visitDebuggerStatement(debuggerStatement: DebuggerStatement, p: P): J | null {
-        debuggerStatement = debuggerStatement.withPrefix(this.visitJsSpace(debuggerStatement.prefix, JsSpace.Location.DEBUGGER_STATEMENT_PREFIX, p)!);
-        let tempStatement = this.visitStatement(debuggerStatement, p) as Statement;
-        if (!(tempStatement instanceof DebuggerStatement))
-        {
-            return tempStatement;
-        }
-        debuggerStatement = tempStatement as DebuggerStatement;
-        debuggerStatement = debuggerStatement.withMarkers(this.visitMarkers(debuggerStatement.markers, p));
-        debuggerStatement = debuggerStatement.padding.withDebugger(this.visitJsRightPadded(debuggerStatement.padding.debugger, JsRightPadded.Location.DEBUGGER_STATEMENT_DEBUGGER, p)!);
-        return debuggerStatement;
     }
 
     public visitDefaultType(defaultType: DefaultType, p: P): J | null {

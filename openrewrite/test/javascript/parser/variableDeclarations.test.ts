@@ -88,10 +88,36 @@ describe('variable declaration mapping', () => {
             `)
         );
     });
+
     test('exported variables', () => {
         rewriteRun(
           //language=typescript
           typeScript(' export /*0.1*/  let  /*0.2*/    a   /*1*/ :      /*2*/  number =2    /*3*/ , /*4*/   b   /*5*/:/*6*/    /*7*/string  /*8*/   =/*9*/    "2" /*10*/  ; //11')
+        );
+    });
+
+    test('unique symbol', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('declare const unset: unique symbol;')
+        );
+    });
+
+    test('bigint', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('type res3 = Call<Objects.PartialDeep, bigint>;\n')
+        );
+    });
+
+    test('property signature as an array', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+              export type Apply<fn extends Fn, args extends unknown[]> = (fn & {
+                  [rawArgs]: args;
+              })["return"];
+          `)
         );
     });
 

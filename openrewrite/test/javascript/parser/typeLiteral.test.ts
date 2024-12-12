@@ -45,4 +45,15 @@ describe('type literal mapping', () => {
             `)
         );
     });
+
+    test('type literal in params', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type ascii = {
+                    " ": 32; "!": 33;
+                }
+            `)
+        );
+    });
 });

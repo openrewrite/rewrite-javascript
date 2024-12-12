@@ -539,6 +539,14 @@ export class JavaScriptParserVisitor {
         return this.mapIdentifier(node, 'never');
     }
 
+    visitSymbolKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'symbol');
+    }
+
+    visitBigIntKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'bigint');
+    }
+
     private mapLiteral(node: ts.LiteralExpression | ts.TrueLiteral | ts.FalseLiteral | ts.NullLiteral | ts.Identifier
         | ts.TemplateHead | ts.TemplateMiddle | ts.TemplateTail, value: any): J.Literal {
         return new J.Literal(
@@ -815,28 +823,54 @@ export class JavaScriptParserVisitor {
             );
         }
 
-        return new J.VariableDeclarations(
-            randomId(),
-            this.prefix(node),
-            Markers.EMPTY,
-            [], // no decorators allowed
-            this.mapModifiers(node),
-            this.mapTypeInfo(node),
-            null,
-            [],
-            [this.rightPadded(
-                new J.VariableDeclarations.NamedVariable(
-                    randomId(),
-                    this.prefix(node.name),
-                    Markers.EMPTY,
-                    this.visit(node.name),
-                    [],
-                    null,
-                    this.mapVariableType(node)
-                ),
-                Space.EMPTY
-            )]
-        );
+        const nameExpression = this.visit(node.name)
+
+        if (nameExpression instanceof J.Identifier) {
+            return new J.VariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [], // no decorators allowed
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [],
+                [this.rightPadded(
+                    new J.VariableDeclarations.NamedVariable(
+                        randomId(),
+                        this.prefix(node.name),
+                        Markers.EMPTY,
+                        nameExpression,
+                        [],
+                        null,
+                        this.mapVariableType(node)
+                    ),
+                    Space.EMPTY
+                )]
+            );
+        } else {
+            return new JS.JSVariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [], // no decorators allowed
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [this.rightPadded(
+                    new JS.JSVariableDeclarations.JSNamedVariable(
+                        randomId(),
+                        this.prefix(node.name),
+                        Markers.EMPTY,
+                        nameExpression,
+                        [],
+                        null,
+                        this.mapVariableType(node)
+                    ),
+                    Space.EMPTY
+                )]
+            );
+        }
     }
 
     visitPropertyDeclaration(node: ts.PropertyDeclaration) {
@@ -855,6 +889,37 @@ export class JavaScriptParserVisitor {
                         this.prefix(node.name),
                         Markers.EMPTY,
                         this.getOptionalUnary(node),
+                        [],
+                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
+                        this.mapVariableType(node)
+                    ),
+                    Space.EMPTY
+                )]
+            );
+        }
+
+        if (node.exclamationToken) {
+            return new JS.JSVariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.mapDecorators(node),
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [this.rightPadded(
+                    new JS.JSVariableDeclarations.JSNamedVariable(
+                        randomId(),
+                        this.prefix(node.name),
+                        Markers.EMPTY,
+                        new JS.Unary(
+                            randomId(),
+                            Space.EMPTY,
+                            Markers.EMPTY,
+                            this.leftPadded(this.suffix(node.name), JS.Unary.Type.Exclamation),
+                            this.visit(node.name),
+                            this.mapType(node)
+                        ),
                         [],
                         node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
                         this.mapVariableType(node)
@@ -1408,6 +1473,8 @@ export class JavaScriptParserVisitor {
                     return JS.TypeOperator.Type.KeyOf;
                 case ts.SyntaxKind.ReadonlyKeyword:
                     return JS.TypeOperator.Type.ReadOnly;
+                case ts.SyntaxKind.UniqueKeyword:
+                    return JS.TypeOperator.Type.Unique;
             }
         }
 
@@ -2652,22 +2719,9 @@ export class JavaScriptParserVisitor {
     }
 
     visitDebuggerStatement(node: ts.DebuggerStatement) {
-        return new JS.DebuggerStatement(
+        return new ExpressionStatement(
             randomId(),
-            this.prefix(node),
-            Markers.EMPTY,
-            this.rightPadded(
-                new J.Literal(
-                    randomId(),
-                    this.prefix(node),
-                    Markers.EMPTY,
-                    null,
-                    "debugger",
-                    null,
-                    this.mapPrimitiveType(node)
-                ),
-                this.suffix(this.findChildNode(node, ts.SyntaxKind.DebuggerKeyword)!),
-            )
+            this.mapIdentifier(node, 'debugger')
         );
     }
 

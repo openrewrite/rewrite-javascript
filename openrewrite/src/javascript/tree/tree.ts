@@ -540,74 +540,6 @@ export class ConditionalType extends JSMixin(Object) implements TypeTree, Expres
 
 }
 
-@LstType("org.openrewrite.javascript.tree.JS$DebuggerStatement")
-export class DebuggerStatement extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, _debugger: JRightPadded<Java.Literal>) {
-        super();
-        this._id = id;
-        this._prefix = prefix;
-        this._markers = markers;
-        this._debugger = _debugger;
-    }
-
-        private readonly _id: UUID;
-
-        public get id(): UUID {
-            return this._id;
-        }
-
-        public withId(id: UUID): DebuggerStatement {
-            return id === this._id ? this : new DebuggerStatement(id, this._prefix, this._markers, this._debugger);
-        }
-
-        private readonly _prefix: Space;
-
-        public get prefix(): Space {
-            return this._prefix;
-        }
-
-        public withPrefix(prefix: Space): DebuggerStatement {
-            return prefix === this._prefix ? this : new DebuggerStatement(this._id, prefix, this._markers, this._debugger);
-        }
-
-        private readonly _markers: Markers;
-
-        public get markers(): Markers {
-            return this._markers;
-        }
-
-        public withMarkers(markers: Markers): DebuggerStatement {
-            return markers === this._markers ? this : new DebuggerStatement(this._id, this._prefix, markers, this._debugger);
-        }
-
-        private readonly _debugger: JRightPadded<Java.Literal>;
-
-        public get debugger(): Java.Literal {
-            return this._debugger.element;
-        }
-
-        public withDebugger(_debugger: Java.Literal): DebuggerStatement {
-            return this.padding.withDebugger(this._debugger.withElement(_debugger));
-        }
-
-    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
-        return v.visitDebuggerStatement(this, p);
-    }
-
-    get padding() {
-        const t = this;
-        return new class {
-            public get debugger(): JRightPadded<Java.Literal> {
-                return t._debugger;
-            }
-            public withDebugger(_debugger: JRightPadded<Java.Literal>): DebuggerStatement {
-                return t._debugger === _debugger ? t : new DebuggerStatement(t._id, t._prefix, t._markers, _debugger);
-            }
-        }
-    }
-
-}
-
 @LstType("org.openrewrite.javascript.tree.JS$DefaultType")
 export class DefaultType extends JSMixin(Object) implements Expression, TypedTree, NameTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, left: Expression, beforeEquals: Space, right: Expression, _type: JavaType | null) {
@@ -2547,7 +2479,7 @@ export class TaggedTemplateExpression extends JSMixin(Object) implements Stateme
 }
 
 @LstType("org.openrewrite.javascript.tree.JS$TemplateExpression")
-export class TemplateExpression extends JSMixin(Object) implements Statement, Expression {
+export class TemplateExpression extends JSMixin(Object) implements Statement, Expression, TypeTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, head: Java.Literal, templateSpans: JRightPadded<TemplateExpression.TemplateSpan>[], _type: JavaType | null) {
         super();
         this._id = id;
@@ -3128,6 +3060,7 @@ export namespace TypeOperator {
     export enum Type {
             ReadOnly = 0,
             KeyOf = 1,
+            Unique = 2,
 
     }
 
@@ -4508,7 +4441,7 @@ export namespace NamespaceDeclaration {
 }
 
 @LstType("org.openrewrite.javascript.tree.JS$FunctionDeclaration")
-export class FunctionDeclaration extends JSMixin(Object) implements Statement, Expression, TypedTree, TypeTree {
+export class FunctionDeclaration extends JSMixin(Object) implements Statement, Expression, TypedTree {
     public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], asteriskToken: JLeftPadded<boolean>, name: JLeftPadded<Java.Identifier>, typeParameters: Java.TypeParameters | null, parameters: JContainer<Statement>, returnTypeExpression: TypeTree | null, body: J, _type: JavaType | null) {
         super();
         this._id = id;

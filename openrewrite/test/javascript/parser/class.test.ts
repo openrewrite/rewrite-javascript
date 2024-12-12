@@ -479,4 +479,15 @@ describe('class mapping', () => {
         );
     });
 
+    test('property declaration', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export class CodeLoopbackClient {
+                    private server!: http.Server | https.Server;
+                }
+            `)
+        );
+    });
+
 });
