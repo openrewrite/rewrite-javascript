@@ -77,7 +77,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         ListUtils.map(arrowFunction.getLeadingAnnotations(), el -> visitAndValidateNonNull(el, J.Annotation.class, p));
         ListUtils.map(arrowFunction.getModifiers(), el -> visitAndValidateNonNull(el, J.Modifier.class, p));
         visitAndValidate(arrowFunction.getTypeParameters(), J.TypeParameters.class, p);
-        visitAndValidateNonNull(arrowFunction.getParameters(), J.Lambda.Parameters.class, p);
+        visitAndValidate(arrowFunction.getParameters().getParameters(), J.class, p);
         visitAndValidate(arrowFunction.getReturnTypeExpression(), TypeTree.class, p);
         visitAndValidateNonNull(arrowFunction.getBody(), J.class, p);
         return arrowFunction;

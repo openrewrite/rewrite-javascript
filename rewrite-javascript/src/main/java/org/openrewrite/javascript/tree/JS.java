@@ -394,8 +394,14 @@ public interface JS extends J {
      */
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Data
     final class ArrowFunction implements JS, Statement, Expression, TypedTree {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<ArrowFunction.Padding> padding;
 
         @With
         @EqualsAndHashCode.Include
@@ -425,11 +431,15 @@ public interface JS extends J {
         @Nullable
         TypeTree returnTypeExpression;
 
-        @With
-        Space arrow;
+        JLeftPadded<J> body;
 
-        @With
-        J body;
+        public J getBody() {
+            return body.getElement();
+        }
+
+        public ArrowFunction withBody(J body) {
+            return getPadding().withBody(JLeftPadded.withElement(this.body, body));
+        }
 
         @With
         @Nullable
@@ -445,6 +455,35 @@ public interface JS extends J {
         public CoordinateBuilder.Statement getCoordinates() {
             return new CoordinateBuilder.Statement(this);
         }
+
+        public ArrowFunction.Padding getPadding() {
+            ArrowFunction.Padding p;
+            if (this.padding == null) {
+                p = new ArrowFunction.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.f != this) {
+                    p = new ArrowFunction.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ArrowFunction f;
+
+            public JLeftPadded<J> getBody() {
+                return f.body;
+            }
+
+            public ArrowFunction withBody(JLeftPadded<J> body) {
+                return f.body == body ?  f: new ArrowFunction(f.id, f.prefix, f.markers, f.leadingAnnotations, f.modifiers, f.typeParameters, f.parameters, f.returnTypeExpression, body, f.type);
+            }
+        }
+
     }
 
     @Getter
@@ -2387,7 +2426,7 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    final class TemplateExpression implements JS, Statement, Expression {
+    final class TemplateExpression implements JS, Statement, Expression, TypeTree {
 
         @Nullable
         @NonFinal
@@ -2792,6 +2831,7 @@ public interface JS extends J {
         public enum Type {
             ReadOnly,
             KeyOf,
+            Unique
         }
 
         public JS.TypeOperator.Padding getPadding() {
@@ -5061,6 +5101,7 @@ public interface JS extends J {
             QuestionQuestion,
             And,
             Or,
+            Power
         }
 
         public JsAssignmentOperation.Padding getPadding() {

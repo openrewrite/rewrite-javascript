@@ -60,8 +60,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         arrowFunction = arrowFunction.withTypeParameters(ctx.receiveNode(arrowFunction.typeParameters, ctx.receiveTree));
         arrowFunction = arrowFunction.withParameters(ctx.receiveNode(arrowFunction.parameters, ctx.receiveTree)!);
         arrowFunction = arrowFunction.withReturnTypeExpression(ctx.receiveNode(arrowFunction.returnTypeExpression, ctx.receiveTree));
-        arrowFunction = arrowFunction.withArrow(ctx.receiveNode(arrowFunction.arrow, receiveSpace)!);
-        arrowFunction = arrowFunction.withBody(ctx.receiveNode(arrowFunction.body, ctx.receiveTree)!);
+        arrowFunction = arrowFunction.padding.withBody(ctx.receiveNode(arrowFunction.padding.body, receiveLeftPaddedTree)!);
         arrowFunction = arrowFunction.withType(ctx.receiveValue(arrowFunction.type, ValueType.Object));
         return arrowFunction;
     }
@@ -1349,8 +1348,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<Java.TypeParameters>(null, ctx.receiveTree),
                 ctx.receiveNode<Java.Lambda.Parameters>(null, ctx.receiveTree)!,
                 ctx.receiveNode<TypeTree>(null, ctx.receiveTree),
-                ctx.receiveNode(null, receiveSpace)!,
-                ctx.receiveNode<J>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<J>>(null, receiveLeftPaddedTree)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }

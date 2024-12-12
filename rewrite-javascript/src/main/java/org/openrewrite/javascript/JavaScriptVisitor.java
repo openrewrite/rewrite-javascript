@@ -101,7 +101,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         );
         a = a.withParameters(Objects.requireNonNull(visitAndCast(a.getParameters(), p)));
         a = a.withReturnTypeExpression(visitAndCast(a.getReturnTypeExpression(), p));
-        a = a.withArrow(visitSpace(a.getArrow(), Space.Location.LAMBDA_ARROW_PREFIX, p));
+        a = a.getPadding().withBody(visitLeftPadded(a.getPadding().getBody(), JsLeftPadded.Location.LAMBDA_ARROW, p));
         a = a.withBody(Objects.requireNonNull(visitAndCast(a.getBody(), p)));
         a = a.withType(visitType(a.getType(), p));
         return a;

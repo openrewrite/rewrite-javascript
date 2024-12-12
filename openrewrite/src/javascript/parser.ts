@@ -539,6 +539,14 @@ export class JavaScriptParserVisitor {
         return this.mapIdentifier(node, 'never');
     }
 
+    visitSymbolKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'symbol');
+    }
+
+    visitBigIntKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'bigint');
+    }
+
     private mapLiteral(node: ts.LiteralExpression | ts.TrueLiteral | ts.FalseLiteral | ts.NullLiteral | ts.Identifier
         | ts.TemplateHead | ts.TemplateMiddle | ts.TemplateTail, value: any): J.Literal {
         return new J.Literal(
@@ -815,28 +823,54 @@ export class JavaScriptParserVisitor {
             );
         }
 
-        return new J.VariableDeclarations(
-            randomId(),
-            this.prefix(node),
-            Markers.EMPTY,
-            [], // no decorators allowed
-            this.mapModifiers(node),
-            this.mapTypeInfo(node),
-            null,
-            [],
-            [this.rightPadded(
-                new J.VariableDeclarations.NamedVariable(
-                    randomId(),
-                    this.prefix(node.name),
-                    Markers.EMPTY,
-                    this.visit(node.name),
-                    [],
-                    null,
-                    this.mapVariableType(node)
-                ),
-                Space.EMPTY
-            )]
-        );
+        const nameExpression = this.visit(node.name)
+
+        if (nameExpression instanceof J.Identifier) {
+            return new J.VariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [], // no decorators allowed
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [],
+                [this.rightPadded(
+                    new J.VariableDeclarations.NamedVariable(
+                        randomId(),
+                        this.prefix(node.name),
+                        Markers.EMPTY,
+                        nameExpression,
+                        [],
+                        null,
+                        this.mapVariableType(node)
+                    ),
+                    Space.EMPTY
+                )]
+            );
+        } else {
+            return new JS.JSVariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [], // no decorators allowed
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [this.rightPadded(
+                    new JS.JSVariableDeclarations.JSNamedVariable(
+                        randomId(),
+                        this.prefix(node.name),
+                        Markers.EMPTY,
+                        nameExpression,
+                        [],
+                        null,
+                        this.mapVariableType(node)
+                    ),
+                    Space.EMPTY
+                )]
+            );
+        }
     }
 
     visitPropertyDeclaration(node: ts.PropertyDeclaration) {
@@ -855,6 +889,37 @@ export class JavaScriptParserVisitor {
                         this.prefix(node.name),
                         Markers.EMPTY,
                         this.getOptionalUnary(node),
+                        [],
+                        node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
+                        this.mapVariableType(node)
+                    ),
+                    Space.EMPTY
+                )]
+            );
+        }
+
+        if (node.exclamationToken) {
+            return new JS.JSVariableDeclarations(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.mapDecorators(node),
+                this.mapModifiers(node),
+                this.mapTypeInfo(node),
+                null,
+                [this.rightPadded(
+                    new JS.JSVariableDeclarations.JSNamedVariable(
+                        randomId(),
+                        this.prefix(node.name),
+                        Markers.EMPTY,
+                        new JS.Unary(
+                            randomId(),
+                            Space.EMPTY,
+                            Markers.EMPTY,
+                            this.leftPadded(this.suffix(node.name), JS.Unary.Type.Exclamation),
+                            this.visit(node.name),
+                            this.mapType(node)
+                        ),
                         [],
                         node.initializer ? this.leftPadded(this.prefix(node.getChildAt(node.getChildren().indexOf(node.initializer) - 1)), this.visit(node.initializer)) : null,
                         this.mapVariableType(node)
@@ -1408,6 +1473,8 @@ export class JavaScriptParserVisitor {
                     return JS.TypeOperator.Type.KeyOf;
                 case ts.SyntaxKind.ReadonlyKeyword:
                     return JS.TypeOperator.Type.ReadOnly;
+                case ts.SyntaxKind.UniqueKeyword:
+                    return JS.TypeOperator.Type.Unique;
             }
         }
 
@@ -1833,8 +1900,15 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             null,
             Space.EMPTY,
-            this.visit(node.expression),
-            this.mapCommaSeparatedList(node.arguments ? node.getChildren(this.sourceFile).slice(2) : []),
+            node.typeArguments ? new J.ParameterizedType(
+                randomId(),
+                Space.EMPTY,
+                Markers.EMPTY,
+                this.visit(node.expression),
+                this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments),
+                null
+            ): this.visit(node.expression),
+            this.mapCommaSeparatedList(this.getParameterListNodes(node)),
             null,
             this.mapMethodType(node)
         );
@@ -1913,8 +1987,7 @@ export class JavaScriptParserVisitor {
                     isParenthesized ? [this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!))] : [] // to handle the case: (/*no*/) => ...
             ),
             this.mapTypeInfo(node),
-            this.prefix(node.equalsGreaterThanToken),
-            this.convert(node.body),
+            this.leftPadded(this.prefix(node.equalsGreaterThanToken), this.convert(node.body)),
             this.mapType(node)
         );
     }
@@ -2088,6 +2161,9 @@ export class JavaScriptParserVisitor {
                     break;
                 case ts.SyntaxKind.BarBarEqualsToken:
                     assignmentOperation = JS.JsAssignmentOperation.Type.Or;
+                    break;
+                case ts.SyntaxKind.AsteriskAsteriskToken:
+                    assignmentOperation = JS.JsAssignmentOperation.Type.Power;
                     break;
             }
 
@@ -2368,6 +2444,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitSyntheticExpression(node: ts.SyntheticExpression) {
+        // SyntheticExpression is a special type of node used internally by the TypeScript compiler
         return this.visitUnknown(node);
     }
 
@@ -2431,6 +2508,7 @@ export class JavaScriptParserVisitor {
 
     visitIfStatement(node: ts.IfStatement) {
         const semicolonAfterThen = node.thenStatement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken;
+        const semicolonAfterElse = node.elseStatement?.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken;
         return new J.If(
             randomId(),
             this.prefix(node),
@@ -2452,8 +2530,8 @@ export class JavaScriptParserVisitor {
                 Markers.EMPTY,
                 this.rightPadded(
                     this.convert(node.elseStatement),
-                    semicolonAfterThen ? this.prefix(node.elseStatement.getLastToken()!) : Space.EMPTY,
-                    semicolonAfterThen ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+                    semicolonAfterElse ? this.prefix(node.elseStatement.getLastToken()!) : Space.EMPTY,
+                    semicolonAfterElse ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
                 )
             ) : null
         );
@@ -2641,7 +2719,10 @@ export class JavaScriptParserVisitor {
     }
 
     visitDebuggerStatement(node: ts.DebuggerStatement) {
-        return this.visitUnknown(node);
+        return new ExpressionStatement(
+            randomId(),
+            this.mapIdentifier(node, 'debugger')
+        );
     }
 
     visitVariableDeclaration(node: ts.VariableDeclaration) {
@@ -2733,7 +2814,7 @@ export class JavaScriptParserVisitor {
         );
     }
 
-    private getParameterListNodes(node: ts.SignatureDeclarationBase, openToken : ts.SyntaxKind = ts.SyntaxKind.OpenParenToken) {
+    private getParameterListNodes(node: ts.SignatureDeclarationBase | ts.NewExpression, openToken : ts.SyntaxKind = ts.SyntaxKind.OpenParenToken) {
         const children = node.getChildren(this.sourceFile);
         for (let i = 0; i < children.length; i++) {
             if (children[i].kind == openToken) {

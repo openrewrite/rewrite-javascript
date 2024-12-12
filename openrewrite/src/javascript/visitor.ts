@@ -54,8 +54,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         arrowFunction = arrowFunction.withTypeParameters(this.visitAndCast(arrowFunction.typeParameters, p));
         arrowFunction = arrowFunction.withParameters(this.visitAndCast(arrowFunction.parameters, p)!);
         arrowFunction = arrowFunction.withReturnTypeExpression(this.visitAndCast(arrowFunction.returnTypeExpression, p));
-        arrowFunction = arrowFunction.withArrow(this.visitJsSpace(arrowFunction.arrow, JsSpace.Location.ARROW_FUNCTION_ARROW, p)!);
-        arrowFunction = arrowFunction.withBody(this.visitAndCast(arrowFunction.body, p)!);
+        arrowFunction = arrowFunction.padding.withBody(this.visitJsLeftPadded(arrowFunction.padding.body, JsLeftPadded.Location.ARROW_FUNCTION_BODY, p)!);
         return arrowFunction;
     }
 

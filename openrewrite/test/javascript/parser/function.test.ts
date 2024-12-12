@@ -421,4 +421,16 @@ describe('function mapping', () => {
             `)
         );
     });
+
+    test('no additional comma test', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                new Promise(function() {
+                   let x;
+                   let y;
+                })
+            `)
+        );
+    });
 });

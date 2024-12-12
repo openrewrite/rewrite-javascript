@@ -302,6 +302,7 @@ export namespace JsLeftPadded {
         MAPPED_TYPE_MAPPED_TYPE_PARAMETER_ITERATE_TYPE,
         MAPPED_TYPE_HAS_READONLY,
         MAPPED_TYPE_HAS_QUESTION_TOKEN,
+        ARROW_FUNCTION_BODY,
     }
 }
 export namespace JsRightPadded {

@@ -110,8 +110,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
             arrowFunction = arrowFunction.withTypeParameters(ctx.receiveNode(arrowFunction.getTypeParameters(), ctx::receiveTree));
             arrowFunction = arrowFunction.withParameters(ctx.receiveNonNullNode(arrowFunction.getParameters(), ctx::receiveTree));
             arrowFunction = arrowFunction.withReturnTypeExpression(ctx.receiveNode(arrowFunction.getReturnTypeExpression(), ctx::receiveTree));
-            arrowFunction = arrowFunction.withArrow(ctx.receiveNonNullNode(arrowFunction.getArrow(), JavaScriptReceiver::receiveSpace));
-            arrowFunction = arrowFunction.withBody(ctx.receiveNonNullNode(arrowFunction.getBody(), ctx::receiveTree));
+            arrowFunction = arrowFunction.getPadding().withBody(ctx.receiveNonNullNode(arrowFunction.getPadding().getBody(), JavaScriptReceiver::receiveLeftPaddedTree));
             arrowFunction = arrowFunction.withType(ctx.receiveValue(arrowFunction.getType(), JavaType.class));
             return arrowFunction;
         }
@@ -1624,8 +1623,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, ctx::receiveTree),
-                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
-                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
             );
         }
