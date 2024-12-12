@@ -433,4 +433,13 @@ describe('function mapping', () => {
             `)
         );
     });
+
+    test('empty body function', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export function getHeader(headers: ResponseHeaders, name: string): ResponseHeaderValue;
+            `)
+        );
+    });
 });

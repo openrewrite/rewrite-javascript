@@ -303,6 +303,7 @@ export namespace JsLeftPadded {
         MAPPED_TYPE_HAS_READONLY,
         MAPPED_TYPE_HAS_QUESTION_TOKEN,
         ARROW_FUNCTION_BODY,
+        YIELD_DELEGATED,
     }
 }
 export namespace JsRightPadded {

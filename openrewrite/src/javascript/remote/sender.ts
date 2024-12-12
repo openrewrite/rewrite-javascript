@@ -411,7 +411,7 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendValue(_yield, v => v.id, ValueType.UUID);
         ctx.sendNode(_yield, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(_yield, v => v.markers, ctx.sendMarkers);
-        ctx.sendValue(_yield, v => v.delegated, ValueType.Primitive);
+        ctx.sendNode(_yield, v => v.padding.delegated, Visitor.sendLeftPadded(ValueType.Primitive));
         ctx.sendNode(_yield, v => v.expression, ctx.sendTree);
         ctx.sendTypedValue(_yield, v => v.type, ValueType.Object);
         return _yield;

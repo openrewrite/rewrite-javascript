@@ -1037,7 +1037,20 @@ export class JavaScriptParserVisitor {
     }
 
     visitMethodDeclaration(node: ts.MethodDeclaration) {
-        if (node.questionToken) {
+        if (node.questionToken || node.asteriskToken) {
+            let methodName = node.questionToken ? this.getOptionalUnary(node) : this.visit(node.name);
+
+            if (node.asteriskToken) {
+                methodName = new JS.Unary(
+                    randomId(),
+                    this.prefix(node.asteriskToken),
+                    Markers.EMPTY,
+                    this.leftPadded(this.prefix(node.name), JS.Unary.Type.Asterisk),
+                    methodName,
+                    this.mapType(node)
+                )
+            }
+
             return new JS.JSMethodDeclaration(
                 randomId(),
                 this.prefix(node),
@@ -1046,7 +1059,7 @@ export class JavaScriptParserVisitor {
                 this.mapModifiers(node),
                 this.mapTypeParametersAsObject(node),
                 this.mapTypeInfo(node),
-                this.getOptionalUnary(node),
+                methodName,
                 this.mapCommaSeparatedList(this.getParameterListNodes(node)),
                 null,
                 node.body ? this.convert<J.Block>(node.body) : null,
@@ -2335,7 +2348,7 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            false,
+            node.asteriskToken ? this.leftPadded(this.prefix(node.asteriskToken), true) : this.leftPadded(Space.EMPTY, false),
             node.expression ? this.visit(node.expression) : null,
             this.mapType(node)
         );
@@ -2809,7 +2822,7 @@ export class JavaScriptParserVisitor {
             this.mapTypeParametersAsObject(node),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
             this.mapTypeInfo(node),
-            this.convert(node.body!),
+            node.body ? this.convert(node.body) : null,
             this.mapMethodType(node)
         );
     }

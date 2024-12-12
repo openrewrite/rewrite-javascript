@@ -416,7 +416,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         _yield = _yield.withId(ctx.receiveValue(_yield.id, ValueType.UUID)!);
         _yield = _yield.withPrefix(ctx.receiveNode(_yield.prefix, receiveSpace)!);
         _yield = _yield.withMarkers(ctx.receiveNode(_yield.markers, ctx.receiveMarkers)!);
-        _yield = _yield.withDelegated(ctx.receiveValue(_yield.delegated, ValueType.Primitive)!);
+        _yield = _yield.padding.withDelegated(ctx.receiveNode(_yield.padding.delegated, leftPaddedValueReceiver(ValueType.Primitive))!);
         _yield = _yield.withExpression(ctx.receiveNode(_yield.expression, ctx.receiveTree));
         _yield = _yield.withType(ctx.receiveValue(_yield.type, ValueType.Object));
         return _yield;
@@ -519,7 +519,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         functionDeclaration = functionDeclaration.withTypeParameters(ctx.receiveNode(functionDeclaration.typeParameters, ctx.receiveTree));
         functionDeclaration = functionDeclaration.padding.withParameters(ctx.receiveNode(functionDeclaration.padding.parameters, receiveContainer)!);
         functionDeclaration = functionDeclaration.withReturnTypeExpression(ctx.receiveNode(functionDeclaration.returnTypeExpression, ctx.receiveTree));
-        functionDeclaration = functionDeclaration.withBody(ctx.receiveNode(functionDeclaration.body, ctx.receiveTree)!);
+        functionDeclaration = functionDeclaration.withBody(ctx.receiveNode(functionDeclaration.body, ctx.receiveTree));
         functionDeclaration = functionDeclaration.withType(ctx.receiveValue(functionDeclaration.type, ValueType.Object));
         return functionDeclaration;
     }
@@ -1740,7 +1740,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveValue(null, ValueType.Primitive)!,
+                ctx.receiveNode<JLeftPadded<boolean>>(null, leftPaddedValueReceiver(ValueType.Primitive))!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree),
                 ctx.receiveValue(null, ValueType.Object)
             );
@@ -1852,7 +1852,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<Java.TypeParameters>(null, ctx.receiveTree),
                 ctx.receiveNode<JContainer<Statement>>(null, receiveContainer)!,
                 ctx.receiveNode<TypeTree>(null, ctx.receiveTree),
-                ctx.receiveNode<J>(null, ctx.receiveTree)!,
+                ctx.receiveNode<J>(null, ctx.receiveTree),
                 ctx.receiveValue(null, ValueType.Object)
             );
         }

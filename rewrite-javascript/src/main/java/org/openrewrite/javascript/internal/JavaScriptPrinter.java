@@ -640,6 +640,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 visitSpace(unary.getPadding().getOperator().getBefore(), Space.Location.UNARY_OPERATOR, p);
                 p.append("?.");
                 break;
+            case Asterisk:
+                p.append("*");
+                visitSpace(unary.getPadding().getOperator().getBefore(), Space.Location.UNARY_OPERATOR, p);
+                visit(unary.getExpression(), p);
             default:
                 break;
         }
@@ -681,9 +685,11 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         beforeSyntax(yield, JsSpace.Location.YIELD_PREFIX, p);
 
         p.append("yield");
+
         if (yield.isDelegated()) {
-            p.append("*");
+            visitLeftPaddedBoolean("*", yield.getPadding().getDelegated(), JsLeftPadded.Location.JS_YIELD_DELEGATED, p);
         }
+
         visit(yield.getExpression(), p);
 
         afterSyntax(yield, p);
@@ -758,11 +764,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         visit(method.getLeadingAnnotations(), p);
         method.getModifiers().forEach(it -> delegate.visitModifier(it, p));
 
-        Asterisk asterisk = method.getMarkers().findFirst(Asterisk.class).orElse(null);
-        if (asterisk != null) {
-            visitSpace(asterisk.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-            p.append("*");
-        }
         visit(method.getName(), p);
 
         J.TypeParameters typeParameters = method.getTypeParameters();
@@ -809,7 +810,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visit(functionDeclaration.getReturnTypeExpression(), p);
         }
 
-        visit(functionDeclaration.getBody(), p);
+        if (functionDeclaration.getBody() != null) {
+            visit(functionDeclaration.getBody(), p);
+        }
+
         afterSyntax(functionDeclaration, p);
         return functionDeclaration;
     }
@@ -1139,11 +1143,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visit(method.getLeadingAnnotations(), p);
             method.getModifiers().forEach(it -> delegate.visitModifier(it, p));
 
-            Asterisk asterisk = method.getMarkers().findFirst(Asterisk.class).orElse(null);
-            if (asterisk != null) {
-                visitSpace(asterisk.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-                p.append("*");
-            }
             visit(method.getName(), p);
 
             J.TypeParameters typeParameters = method.getAnnotations().getTypeParameters();
@@ -1376,20 +1375,6 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitLeftPadded("=", initializer, JLeftPadded.Location.VARIABLE_INITIALIZER, p);
             afterSyntax(variable, p);
             return variable;
-        }
-
-        @Override
-        public J visitYield(J.Yield yield, PrintOutputCapture<P> p) {
-            beforeSyntax(yield, Space.Location.YIELD_PREFIX, p);
-            p.append("yield");
-            Asterisk asterisk = yield.getMarkers().findFirst(Asterisk.class).orElse(null);
-            if (asterisk != null) {
-                visitSpace(asterisk.getPrefix(), Space.Location.LANGUAGE_EXTENSION, p);
-                p.append("*");
-            }
-            visit(yield.getValue(), p);
-            afterSyntax(yield, p);
-            return yield;
         }
 
         protected void visitStatement(@Nullable JRightPadded<Statement> paddedStat, JRightPadded.Location location, PrintOutputCapture<P> p) {

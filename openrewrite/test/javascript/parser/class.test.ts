@@ -469,7 +469,6 @@ describe('class mapping', () => {
         );
     });
 
-
     test('new class with type arguments', () => {
         rewriteRun(
             //language=typescript
@@ -485,6 +484,18 @@ describe('class mapping', () => {
             typeScript(`
                 export class CodeLoopbackClient {
                     private server!: http.Server | https.Server;
+                }
+            `)
+        );
+    });
+
+    test('static method with asterisk', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class A {
+                    public static/*a*/*/*b*/getMarkdownRestSnippets?(document: TextDocument): Generator<Range> {
+                    }
                 }
             `)
         );

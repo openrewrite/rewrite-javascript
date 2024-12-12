@@ -577,6 +577,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         }
         _yield = tempExpression as Yield;
         _yield = _yield.withMarkers(this.visitMarkers(_yield.markers, p));
+        _yield = _yield.padding.withDelegated(this.visitJsLeftPadded(_yield.padding.delegated, JsLeftPadded.Location.YIELD_DELEGATED, p)!);
         _yield = _yield.withExpression(this.visitAndCast(_yield.expression, p));
         return _yield;
     }
@@ -715,7 +716,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         functionDeclaration = functionDeclaration.withTypeParameters(this.visitAndCast(functionDeclaration.typeParameters, p));
         functionDeclaration = functionDeclaration.padding.withParameters(this.visitJsContainer(functionDeclaration.padding.parameters, JsContainer.Location.FUNCTION_DECLARATION_PARAMETERS, p)!);
         functionDeclaration = functionDeclaration.withReturnTypeExpression(this.visitAndCast(functionDeclaration.returnTypeExpression, p));
-        functionDeclaration = functionDeclaration.withBody(this.visitAndCast(functionDeclaration.body, p)!);
+        functionDeclaration = functionDeclaration.withBody(this.visitAndCast(functionDeclaration.body, p));
         return functionDeclaration;
     }
 
