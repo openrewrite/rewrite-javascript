@@ -484,7 +484,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendValue(yield, JS.Yield::getId);
             ctx.sendNode(yield, JS.Yield::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(yield, JS.Yield::getMarkers, ctx::sendMarkers);
-            ctx.sendValue(yield, JS.Yield::isDelegated);
+            ctx.sendNode(yield, e -> e.getPadding().getDelegated(), JavaScriptSender::sendLeftPadded);
             ctx.sendNode(yield, JS.Yield::getExpression, ctx::sendTree);
             ctx.sendTypedValue(yield, JS.Yield::getType);
             return yield;

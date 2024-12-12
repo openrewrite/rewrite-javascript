@@ -24,4 +24,24 @@ describe('yield mapping', () => {
           typeScript('yield* other')
         );
     });
+
+    test('yield expression', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              DenseMatrix.prototype[Symbol.iterator] = function* () {
+                  const recurse = function* (value, index) {
+                      if (isArray(value)) {
+                          for (let i = 0; i < value.length; i++) {
+                              yield* recurse(value[i], index.concat(i))
+                          }
+                      } else {
+                          yield ({value, index})
+                      }
+                  }
+                  yield/*a*/* /*b*/recurse(this._data, [])
+              }
+          `)
+        );
+    });
 });

@@ -404,7 +404,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         visitAndValidate(functionDeclaration.getTypeParameters(), J.TypeParameters.class, p);
         visitAndValidate(functionDeclaration.getParameters(), Statement.class, p);
         visitAndValidate(functionDeclaration.getReturnTypeExpression(), TypeTree.class, p);
-        visitAndValidateNonNull(functionDeclaration.getBody(), J.class, p);
+        visitAndValidate(functionDeclaration.getBody(), J.class, p);
         return functionDeclaration;
     }
 

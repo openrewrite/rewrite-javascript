@@ -3270,6 +3270,7 @@ export namespace Unary {
             Exclamation = 2,
             QuestionDot = 3,
             QuestionDotWithDot = 4,
+            Asterisk = 5,
 
     }
 
@@ -3499,7 +3500,7 @@ export class Void extends JSMixin(Object) implements Expression, Statement {
 
 @LstType("org.openrewrite.javascript.tree.JS$Yield")
 export class Yield extends JSMixin(Object) implements Expression {
-    public constructor(id: UUID, prefix: Space, markers: Markers, delegated: boolean, expression: Expression | null, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, delegated: JLeftPadded<boolean>, expression: Expression | null, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -3539,14 +3540,14 @@ export class Yield extends JSMixin(Object) implements Expression {
             return markers === this._markers ? this : new Yield(this._id, this._prefix, markers, this._delegated, this._expression, this._type);
         }
 
-        private readonly _delegated: boolean;
+        private readonly _delegated: JLeftPadded<boolean>;
 
         public get delegated(): boolean {
-            return this._delegated;
+            return this._delegated.element;
         }
 
         public withDelegated(delegated: boolean): Yield {
-            return delegated === this._delegated ? this : new Yield(this._id, this._prefix, this._markers, delegated, this._expression, this._type);
+            return this.padding.withDelegated(this._delegated.withElement(delegated));
         }
 
         private readonly _expression: Expression | null;
@@ -3571,6 +3572,18 @@ export class Yield extends JSMixin(Object) implements Expression {
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
         return v.visitJsYield(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get delegated(): JLeftPadded<boolean> {
+                return t._delegated;
+            }
+            public withDelegated(delegated: JLeftPadded<boolean>): Yield {
+                return t._delegated === delegated ? t : new Yield(t._id, t._prefix, t._markers, delegated, t._expression, t._type);
+            }
+        }
     }
 
 }
@@ -4442,7 +4455,7 @@ export namespace NamespaceDeclaration {
 
 @LstType("org.openrewrite.javascript.tree.JS$FunctionDeclaration")
 export class FunctionDeclaration extends JSMixin(Object) implements Statement, Expression, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], asteriskToken: JLeftPadded<boolean>, name: JLeftPadded<Java.Identifier>, typeParameters: Java.TypeParameters | null, parameters: JContainer<Statement>, returnTypeExpression: TypeTree | null, body: J, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], asteriskToken: JLeftPadded<boolean>, name: JLeftPadded<Java.Identifier>, typeParameters: Java.TypeParameters | null, parameters: JContainer<Statement>, returnTypeExpression: TypeTree | null, body: J | null, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -4547,13 +4560,13 @@ export class FunctionDeclaration extends JSMixin(Object) implements Statement, E
             return returnTypeExpression === this._returnTypeExpression ? this : new FunctionDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._asteriskToken, this._name, this._typeParameters, this._parameters, returnTypeExpression, this._body, this._type);
         }
 
-        private readonly _body: J;
+        private readonly _body: J | null;
 
-        public get body(): J {
+        public get body(): J | null {
             return this._body;
         }
 
-        public withBody(body: J): FunctionDeclaration {
+        public withBody(body: J | null): FunctionDeclaration {
             return body === this._body ? this : new FunctionDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._asteriskToken, this._name, this._typeParameters, this._parameters, this._returnTypeExpression, body, this._type);
         }
 

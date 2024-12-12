@@ -3031,7 +3031,8 @@ public interface JS extends J {
             Optional,
             Exclamation,
             QuestionDot,
-            QuestionDotWithDot;
+            QuestionDotWithDot,
+            Asterisk;
 
             public boolean isModifying() {
                 switch (this) {
@@ -3261,24 +3262,46 @@ public interface JS extends J {
         }
     }
 
-    @Getter
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
-    @With
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class Yield implements JS, Expression {
 
+        @Nullable
+        @NonFinal
+        transient WeakReference<Padding> padding;
+
         @EqualsAndHashCode.Include
+        @With
+        @Getter
         UUID id;
 
+        @With
+        @Getter
         Space prefix;
+
+        @With
+        @Getter
         Markers markers;
 
-        boolean delegated;
+        JLeftPadded<Boolean> delegated;
 
+        public boolean isDelegated() {
+            return delegated.getElement();
+        }
+
+        public JS.Yield withDelegated(boolean delegated) {
+            return getPadding().withDelegated(this.delegated.withElement(delegated));
+        }
+
+        @With
+        @Getter
         @Nullable
         Expression expression;
 
+        @With
+        @Getter
         @Nullable
         JavaType type;
 
@@ -3291,6 +3314,35 @@ public interface JS extends J {
         public CoordinateBuilder.Expression getCoordinates() {
             return new CoordinateBuilder.Expression(this);
         }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JS.Yield t;
+
+            public JLeftPadded<Boolean> getDelegated() {
+                return t.delegated;
+            }
+
+            public JS.Yield withDelegated(JLeftPadded<Boolean> delegated) {
+                return t.delegated == delegated ? t : new JS.Yield(t.id, t.prefix, t.markers, delegated, t.expression, t.type);
+            }
+        }
+
     }
 
     @Getter
@@ -4182,6 +4234,7 @@ public interface JS extends J {
 
         @Getter
         @With
+        @Nullable
         J body;
 
         @Getter

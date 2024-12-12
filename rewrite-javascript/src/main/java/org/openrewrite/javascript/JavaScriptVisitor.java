@@ -867,6 +867,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             y = (JS.Yield) temp;
         }
+        y = y.getPadding().withDelegated(this.visitLeftPadded(y.getPadding().getDelegated(), JsLeftPadded.Location.JS_YIELD_DELEGATED, p));
         y = y.withExpression(visitAndCast(y.getExpression(), p));
         return y;
     }
@@ -981,7 +982,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         f = f.withTypeParameters(visitAndCast(f.getTypeParameters(), p));
         f = f.getPadding().withParameters(Objects.requireNonNull(visitContainer(f.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, p)));
         f = f.withReturnTypeExpression(visitAndCast(f.getReturnTypeExpression(), p));
-        f = f.withBody(Objects.requireNonNull(visitAndCast(f.getBody(), p)));
+        f = f.withBody(visitAndCast(f.getBody(), p));
         f = f.withType(visitType(f.getType(), p));
         return f;
     }
