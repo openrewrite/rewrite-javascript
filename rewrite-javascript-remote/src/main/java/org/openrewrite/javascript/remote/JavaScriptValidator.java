@@ -569,7 +569,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDeclaration, P p) {
         ListUtils.map(classDeclaration.getLeadingAnnotations(), el -> visitAndValidateNonNull(el, J.Annotation.class, p));
         ListUtils.map(classDeclaration.getModifiers(), el -> visitAndValidateNonNull(el, J.Modifier.class, p));
-        visit(classDeclaration.getPadding().getKind(), p);
+        visitAndValidate(classDeclaration.getPadding().getKind().getAnnotations(), J.Annotation.class, p);
         visitAndValidateNonNull(classDeclaration.getName(), J.Identifier.class, p);
         visitAndValidate(classDeclaration.getTypeParameters(), J.TypeParameter.class, p);
         visitAndValidate(classDeclaration.getPrimaryConstructor(), Statement.class, p);
@@ -743,6 +743,12 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         visitAndValidateNonNull(methodInvocation.getName(), J.Identifier.class, p);
         visitAndValidate(methodInvocation.getArguments(), Expression.class, p);
         return methodInvocation;
+    }
+
+    @Override
+    public J.Modifier visitModifier(J.Modifier modifier, P p) {
+        ListUtils.map(modifier.getAnnotations(), el -> visitAndValidateNonNull(el, J.Annotation.class, p));
+        return modifier;
     }
 
     @Override
