@@ -182,4 +182,13 @@ describe('arrow mapping', () => {
         );
     });
 
+    test('arrow function with empty object binding', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                ({/*a*/}) => ({/*b*/})
+            `)
+        );
+    });
+
 });

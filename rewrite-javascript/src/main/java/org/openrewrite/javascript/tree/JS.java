@@ -1893,13 +1893,13 @@ public interface JS extends J {
         @Getter
         TypeTree typeExpression;
 
-        JContainer<BindingElement> bindings;
+        JContainer<J> bindings;
 
-        public List<BindingElement> getBindings() {
+        public List<J> getBindings() {
             return bindings.getElements();
         }
 
-        public ObjectBindingDeclarations withBindings(List<BindingElement> bindings) {
+        public ObjectBindingDeclarations withBindings(List<J> bindings) {
             return getPadding().withBindings(JContainer.withElements(this.bindings, bindings));
         }
 
@@ -1976,11 +1976,11 @@ public interface JS extends J {
         public static class Padding {
             private final ObjectBindingDeclarations t;
 
-            public JContainer<BindingElement> getBindings() {
+            public JContainer<J> getBindings() {
                 return t.bindings;
             }
 
-            public ObjectBindingDeclarations withBindings(JContainer<BindingElement> bindings) {
+            public ObjectBindingDeclarations withBindings(JContainer<J> bindings) {
                 return t.bindings == bindings ? t : new ObjectBindingDeclarations(t.id, t.prefix, t.markers, t.leadingAnnotations, t.modifiers, t.typeExpression, bindings, t.initializer);
             }
 

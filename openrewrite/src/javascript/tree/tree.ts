@@ -1964,7 +1964,7 @@ export namespace MappedType {
 
 @LstType("org.openrewrite.javascript.tree.JS$ObjectBindingDeclarations")
 export class ObjectBindingDeclarations extends JSMixin(Object) implements Expression, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<BindingElement>, initializer: JLeftPadded<Expression> | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, leadingAnnotations: Java.Annotation[], modifiers: Java.Modifier[], typeExpression: TypeTree | null, bindings: JContainer<J>, initializer: JLeftPadded<Expression> | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -2036,13 +2036,13 @@ export class ObjectBindingDeclarations extends JSMixin(Object) implements Expres
             return typeExpression === this._typeExpression ? this : new ObjectBindingDeclarations(this._id, this._prefix, this._markers, this._leadingAnnotations, this._modifiers, typeExpression, this._bindings, this._initializer);
         }
 
-        private readonly _bindings: JContainer<BindingElement>;
+        private readonly _bindings: JContainer<J>;
 
-        public get bindings(): BindingElement[] {
+        public get bindings(): J[] {
             return this._bindings.elements;
         }
 
-        public withBindings(bindings: BindingElement[]): ObjectBindingDeclarations {
+        public withBindings(bindings: J[]): ObjectBindingDeclarations {
             return this.padding.withBindings(JContainer.withElements(this._bindings, bindings));
         }
 
@@ -2071,10 +2071,10 @@ export class ObjectBindingDeclarations extends JSMixin(Object) implements Expres
     get padding() {
         const t = this;
         return new class {
-            public get bindings(): JContainer<BindingElement> {
+            public get bindings(): JContainer<J> {
                 return t._bindings;
             }
-            public withBindings(bindings: JContainer<BindingElement>): ObjectBindingDeclarations {
+            public withBindings(bindings: JContainer<J>): ObjectBindingDeclarations {
                 return t._bindings === bindings ? t : new ObjectBindingDeclarations(t._id, t._prefix, t._markers, t._leadingAnnotations, t._modifiers, t._typeExpression, bindings, t._initializer);
             }
             public get initializer(): JLeftPadded<Expression> | null {
