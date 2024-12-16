@@ -22,58 +22,58 @@ import org.openrewrite.remote.SenderContext;
 
 class Extensions {
     public static <T extends J> void sendContainer(JContainer<T> container, SenderContext ctx) {
-        org.openrewrite.remote.java.Extensions.sendContainer(container, ctx);
+        org.openrewrite.java.remote.Extensions.sendContainer(container, ctx);
     }
 
     public static <T> void sendLeftPadded(JLeftPadded<T> leftPadded, SenderContext ctx) {
-        org.openrewrite.remote.java.Extensions.sendLeftPadded(leftPadded, ctx);
+        org.openrewrite.java.remote.Extensions.sendLeftPadded(leftPadded, ctx);
     }
 
     public static <T> void sendRightPadded(JRightPadded<T> rightPadded, SenderContext ctx) {
-        org.openrewrite.remote.java.Extensions.sendRightPadded(rightPadded, ctx);
+        org.openrewrite.java.remote.Extensions.sendRightPadded(rightPadded, ctx);
     }
 
     public static void sendSpace(Space space, SenderContext ctx) {
-        org.openrewrite.remote.java.Extensions.sendSpace(space, ctx);
+        org.openrewrite.java.remote.Extensions.sendSpace(space, ctx);
     }
 
     public static void sendComment(Comment comment, SenderContext ctx) {
-        org.openrewrite.remote.java.Extensions.sendComment(comment, ctx);
+        org.openrewrite.java.remote.Extensions.sendComment(comment, ctx);
     }
 
     public static <T extends J> JContainer<T> receiveContainer(@Nullable JContainer<T> container, @Nullable Class<?> type, ReceiverContext ctx) {
-        return org.openrewrite.remote.java.Extensions.receiveContainer(container, type, ctx);
+        return org.openrewrite.java.remote.Extensions.receiveContainer(container, type, ctx);
     }
 
     public static <T> ReceiverContext.DetailsReceiver<JLeftPadded<T>> leftPaddedValueReceiver(Class<T> valueType) {
-        return org.openrewrite.remote.java.Extensions.leftPaddedValueReceiver(valueType);
+        return org.openrewrite.java.remote.Extensions.leftPaddedValueReceiver(valueType);
     }
 
     public static <T> ReceiverContext.DetailsReceiver<JLeftPadded<T>> leftPaddedNodeReceiver(Class<T> nodeType) {
-        return org.openrewrite.remote.java.Extensions.leftPaddedNodeReceiver(nodeType);
+        return org.openrewrite.java.remote.Extensions.leftPaddedNodeReceiver(nodeType);
     }
 
     public static <T extends J> JLeftPadded<T> receiveLeftPaddedTree(@Nullable JLeftPadded<T> leftPadded, @Nullable Class<?> type, ReceiverContext ctx) {
-        return org.openrewrite.remote.java.Extensions.receiveLeftPaddedTree(leftPadded, type, ctx);
+        return org.openrewrite.java.remote.Extensions.receiveLeftPaddedTree(leftPadded, type, ctx);
     }
 
     public static <T> ReceiverContext.DetailsReceiver<JRightPadded<T>> rightPaddedValueReceiver(Class<T> valueType) {
-        return org.openrewrite.remote.java.Extensions.rightPaddedValueReceiver(valueType);
+        return org.openrewrite.java.remote.Extensions.rightPaddedValueReceiver(valueType);
     }
 
     public static <T> ReceiverContext.DetailsReceiver<JRightPadded<T>> rightPaddedNodeReceiver(Class<T> nodeType) {
-        return org.openrewrite.remote.java.Extensions.rightPaddedNodeReceiver(nodeType);
+        return org.openrewrite.java.remote.Extensions.rightPaddedNodeReceiver(nodeType);
     }
 
     public static <T extends J> JRightPadded<T> receiveRightPaddedTree(@Nullable JRightPadded<T> rightPadded, @Nullable Class<?> type, ReceiverContext ctx) {
-        return org.openrewrite.remote.java.Extensions.receiveRightPaddedTree(rightPadded, type, ctx);
+        return org.openrewrite.java.remote.Extensions.receiveRightPaddedTree(rightPadded, type, ctx);
     }
 
     public static Space receiveSpace(@Nullable Space space, Class<?> type, ReceiverContext ctx) {
-        return org.openrewrite.remote.java.Extensions.receiveSpace(space, type, ctx);
+        return org.openrewrite.java.remote.Extensions.receiveSpace(space, type, ctx);
     }
 
     public static Comment receiveComment(@Nullable Comment comment, @Nullable Class<Comment> type, ReceiverContext ctx) {
-        return org.openrewrite.remote.java.Extensions.receiveComment(comment, type, ctx);
+        return org.openrewrite.java.remote.Extensions.receiveComment(comment, type, ctx);
     }
 }
