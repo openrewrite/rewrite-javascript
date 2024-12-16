@@ -3,7 +3,7 @@ plugins {
 }
 
 
-val latest = if (project.hasProperty("nebula.release")) "latest.release" else "latest.integration"
+val latest = if (project.hasProperty("releasing")) "latest.release" else "latest.integration"
 dependencies {
 
     compileOnly("com.google.auto.service:auto-service-annotations:1.1.1")
