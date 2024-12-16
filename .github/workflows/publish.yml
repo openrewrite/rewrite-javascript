@@ -11,16 +11,18 @@ concurrency:
   group: publish-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  GRADLE_SWITCHES: --console=plain --info --stacktrace --warning-mode=all --no-daemon
+  GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.gradle_enterprise_access_key }}
+  ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.ossrh_username }}
+  ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ossrh_token }}
+  ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ossrh_signing_key }}
+  ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ossrh_signing_password }}
+  RELEASE_BUILD: "true"
+  RELEASE_PUBLICATION: "true"
+
 jobs:
   release:
-    uses: openrewrite/gh-automation/.github/workflows/publish-gradle.yml@main
-    secrets:
-      gradle_enterprise_access_key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-      ossrh_username: ${{ secrets.OSSRH_USERNAME }}
-      ossrh_token: ${{ secrets.OSSRH_TOKEN }}
-      ossrh_signing_key: ${{ secrets.OSSRH_SIGNING_KEY }}
-      ossrh_signing_password: ${{ secrets.OSSRH_SIGNING_PASSWORD }}
-  release-js:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -34,6 +36,16 @@ jobs:
         with:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
+
+      - uses: actions/setup-java@v4.0.0
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          develocity-access-key: ${{ secrets.gradle_enterprise_access_key }}
 
       - name: Update package.json version from tag
         working-directory: openrewrite
@@ -59,5 +71,36 @@ jobs:
           npm ci
           npm run build
           npm publish --access public
+          npm pack
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: npm install embedded
+        run: |
+          npm install @openrewrite/rewrite-remote
+          npm install ../../../../openrewrite/openrewrite-rewrite-*.tgz
+        working-directory: rewrite-javascript-remote-server/src/main/resources
+
+      - name: publish-candidate
+        if: contains(github.ref, '-rc.')
+        run: |
+          ./gradlew \
+          ${{ env.GRADLE_SWITCHES }} \
+          -Preleasing \
+          -Prelease.disableGitChecks=true \
+          -Prelease.useLastTag=true \
+          candidate \
+          publish \
+          closeAndReleaseSonatypeStagingRepository
+
+      - name: publish-release
+        if: (!contains(github.ref, '-rc.'))
+        run: |
+          ./gradlew \
+          ${{ env.GRADLE_SWITCHES }} \
+          -Preleasing \
+          -Prelease.disableGitChecks=true \
+          -Prelease.useLastTag=true \
+          final \
+          publish \
+          closeAndReleaseSonatypeStagingRepository
