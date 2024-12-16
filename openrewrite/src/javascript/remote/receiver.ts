@@ -1553,7 +1553,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNodes<Java.Annotation>(null, ctx.receiveTree)!,
                 ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
                 ctx.receiveNode<TypeTree>(null, ctx.receiveTree),
-                ctx.receiveNode<JContainer<BindingElement>>(null, receiveContainer)!,
+                ctx.receiveNode<JContainer<J>>(null, receiveContainer)!,
                 ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)
             );
         }
