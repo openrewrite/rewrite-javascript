@@ -1,9 +1,15 @@
+import com.hierynomus.gradle.license.tasks.LicenseCheck
+
 plugins {
     id("org.openrewrite.build.language-library")
 }
 
 tasks.compileJava {
     options.release = 8
+}
+
+tasks.withType<LicenseCheck> {
+    include("*.java")
 }
 
 // We don't care about publishing javadocs anywhere, so don't waste time building them
