@@ -79,6 +79,7 @@ jobs:
         run: |
           npm install @openrewrite/rewrite-remote
           npm install ../../../../openrewrite/openrewrite-rewrite-*.tgz
+          git checkout HEAD -- package.json
         working-directory: rewrite-javascript-remote-server/src/main/resources
 
       - name: publish-candidate

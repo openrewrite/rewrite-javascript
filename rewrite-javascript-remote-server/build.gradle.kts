@@ -4,6 +4,11 @@ plugins {
     id("org.openrewrite.build.language-library")
 }
 
+tasks.clean {
+    delete(projectDir.resolve("src/main/resources/package-lock.json"))
+    delete(projectDir.resolve("src/main/resources/node_modules"))
+}
+
 tasks.compileJava {
     options.release = 8
 }
