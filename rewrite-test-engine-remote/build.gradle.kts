@@ -7,7 +7,7 @@ application {
     mainClass = "org.openrewrite.remote.java.RemotingServer"
 }
 
-val latest = if (System.getenv("RELEASE_PUBLICATION") != null) "latest.release" else "latest.integration"
+val latest = if (project.hasProperty("releasing")) "latest.release" else "latest.integration"
 
 dependencies {
 

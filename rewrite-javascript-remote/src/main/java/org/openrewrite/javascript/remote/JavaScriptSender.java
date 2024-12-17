@@ -856,7 +856,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(classDeclaration, J.ClassDeclaration::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(classDeclaration, J.ClassDeclaration::getMarkers, ctx::sendMarkers);
             ctx.sendNodes(classDeclaration, J.ClassDeclaration::getLeadingAnnotations, ctx::sendTree, Tree::getId);
-            ctx.sendNodes(classDeclaration, J.ClassDeclaration::getModifiers, this::sendModifier, Tree::getId);
+            ctx.sendNodes(classDeclaration, J.ClassDeclaration::getModifiers, ctx::sendTree, Tree::getId);
             ctx.sendNode(classDeclaration, e -> e.getPadding().getKind(), this::sendClassDeclarationKind);
             ctx.sendNode(classDeclaration, J.ClassDeclaration::getName, ctx::sendTree);
             ctx.sendNode(classDeclaration, e -> e.getPadding().getTypeParameters(), JavaScriptSender::sendContainer);
@@ -1113,7 +1113,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(methodDeclaration, J.MethodDeclaration::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(methodDeclaration, J.MethodDeclaration::getMarkers, ctx::sendMarkers);
             ctx.sendNodes(methodDeclaration, J.MethodDeclaration::getLeadingAnnotations, ctx::sendTree, Tree::getId);
-            ctx.sendNodes(methodDeclaration, J.MethodDeclaration::getModifiers, this::sendModifier, Tree::getId);
+            ctx.sendNodes(methodDeclaration, J.MethodDeclaration::getModifiers, ctx::sendTree, Tree::getId);
             ctx.sendNode(methodDeclaration, e -> e.getAnnotations().getTypeParameters(), this::sendMethodTypeParameters);
             ctx.sendNode(methodDeclaration, J.MethodDeclaration::getReturnTypeExpression, ctx::sendTree);
             ctx.sendNode(methodDeclaration, e -> e.getAnnotations().getName(), this::sendMethodIdentifierWithAnnotations);
@@ -1143,13 +1143,15 @@ public class JavaScriptSender implements Sender<JS> {
             return methodInvocation;
         }
 
-        private void sendModifier(J.Modifier modifier, SenderContext ctx) {
+        @Override
+        public J.Modifier visitModifier(J.Modifier modifier, SenderContext ctx) {
             ctx.sendValue(modifier, J.Modifier::getId);
             ctx.sendNode(modifier, J.Modifier::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(modifier, J.Modifier::getMarkers, ctx::sendMarkers);
             ctx.sendValue(modifier, J.Modifier::getKeyword);
             ctx.sendValue(modifier, J.Modifier::getType);
             ctx.sendNodes(modifier, J.Modifier::getAnnotations, ctx::sendTree, Tree::getId);
+            return modifier;
         }
 
         @Override
@@ -1362,7 +1364,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(typeParameter, J.TypeParameter::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(typeParameter, J.TypeParameter::getMarkers, ctx::sendMarkers);
             ctx.sendNodes(typeParameter, J.TypeParameter::getAnnotations, ctx::sendTree, Tree::getId);
-            ctx.sendNodes(typeParameter, J.TypeParameter::getModifiers, this::sendModifier, Tree::getId);
+            ctx.sendNodes(typeParameter, J.TypeParameter::getModifiers, ctx::sendTree, Tree::getId);
             ctx.sendNode(typeParameter, J.TypeParameter::getName, ctx::sendTree);
             ctx.sendNode(typeParameter, e -> e.getPadding().getBounds(), JavaScriptSender::sendContainer);
             return typeParameter;
@@ -1393,7 +1395,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(variableDeclarations, J.VariableDeclarations::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(variableDeclarations, J.VariableDeclarations::getMarkers, ctx::sendMarkers);
             ctx.sendNodes(variableDeclarations, J.VariableDeclarations::getLeadingAnnotations, ctx::sendTree, Tree::getId);
-            ctx.sendNodes(variableDeclarations, J.VariableDeclarations::getModifiers, this::sendModifier, Tree::getId);
+            ctx.sendNodes(variableDeclarations, J.VariableDeclarations::getModifiers, ctx::sendTree, Tree::getId);
             ctx.sendNode(variableDeclarations, J.VariableDeclarations::getTypeExpression, ctx::sendTree);
             ctx.sendNode(variableDeclarations, J.VariableDeclarations::getVarargs, JavaScriptSender::sendSpace);
             ctx.sendNodes(variableDeclarations, J.VariableDeclarations::getDimensionsBeforeName, JavaScriptSender::sendLeftPadded, Function.identity());

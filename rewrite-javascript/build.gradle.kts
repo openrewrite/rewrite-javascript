@@ -5,8 +5,7 @@ plugins {
 }
 
 
-//val latest = if (System.getenv("RELEASE_PUBLICATION") != null) "latest.release" else "latest.integration"
-val latest = "latest.release";
+val latest = if (project.hasProperty("releasing")) "latest.release" else "latest.integration"
 dependencies {
     compileOnly("org.openrewrite:rewrite-test")
 
