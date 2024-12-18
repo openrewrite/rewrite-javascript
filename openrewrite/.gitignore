@@ -18,3 +18,4 @@ yarn-error.log*
 .env.*.local
 
 tsconfig.build.tsbuildinfo
+/openrewrite-rewrite-*.tgz

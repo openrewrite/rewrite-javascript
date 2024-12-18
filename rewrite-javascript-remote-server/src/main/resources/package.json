@@ -1,0 +1,7 @@
+{
+  "name": "@openrewrite/rewrite-bundled-starter",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+  }
+}

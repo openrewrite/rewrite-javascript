@@ -8,3 +8,5 @@ bin/
 /js/dist
 /js/node_modules/
 .vscode/*
+/rewrite-javascript-remote-server/src/main/resources/node_modules/
+/rewrite-javascript-remote-server/src/main/resources/package-lock.json
