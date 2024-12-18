@@ -54,17 +54,6 @@ jobs:
           echo "Release tag is $TAG_VERSION"
           npm version $TAG_VERSION --no-git-tag-version
 
-      - name: Commit version updates
-        working-directory: openrewrite
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          git commit -m "bump version ${GITHUB_REF#refs/tags/}"
-          git push https://${GH_TOKEN}@github.com/openrewrite/rewrite-javascript.git HEAD:main
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: publish-npm
         working-directory: openrewrite
         run: |
@@ -109,3 +98,21 @@ jobs:
           final \
           publish \
           closeAndReleaseSonatypeStagingRepository
+
+      - name: Update package.json version from tag
+        working-directory: openrewrite
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+          echo "Release tag is $TAG_VERSION"
+          npm version $TAG_VERSION --no-git-tag-version
+
+      - name: Commit version updates
+        working-directory: openrewrite
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "bump version ${GITHUB_REF#refs/tags/}"
+          git push https://${GH_TOKEN}@github.com/openrewrite/rewrite-javascript.git HEAD:main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
