@@ -78,9 +78,9 @@ jobs:
       - name: npm install embedded
         run: |
           npm install @openrewrite/rewrite-remote
-          npm install ../../../../openrewrite/openrewrite-rewrite-*.tgz
+          npm install ../../../../../openrewrite/openrewrite-rewrite-*.tgz
           git checkout HEAD -- package.json
-        working-directory: rewrite-javascript-remote-server/src/main/resources
+        working-directory: rewrite-javascript-remote-server/src/main/resources/node-server
 
       - name: publish-candidate
         if: contains(github.ref, '-rc.')
