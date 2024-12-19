@@ -918,7 +918,11 @@ public interface JS extends J {
         @With
         Markers markers;
 
-        JRightPadded<Boolean> constructorType;
+        @Getter
+        @With
+        List<Modifier> modifiers;
+
+        JLeftPadded<Boolean> constructorType;
 
         public boolean isConstructorType() {
             return constructorType.getElement();
@@ -984,13 +988,13 @@ public interface JS extends J {
         public static class Padding {
             private final FunctionType t;
 
-            public JRightPadded<Boolean> getConstructorType() {
+            public JLeftPadded<Boolean> getConstructorType() {
                 return t.constructorType;
             }
 
-            public FunctionType withConstructorType(JRightPadded<Boolean> constructor) {
+            public FunctionType withConstructorType(JLeftPadded<Boolean> constructor) {
                 return t.constructorType == constructor ? t :
-                        new FunctionType(t.id, t.prefix, t.markers, constructor, t.typeParameters, t.parameters, t.arrow, t.returnType, t.type);
+                        new FunctionType(t.id, t.prefix, t.markers, t.modifiers, constructor, t.typeParameters, t.parameters, t.arrow, t.returnType, t.type);
             }
 
             public JContainer<Statement> getParameters() {
@@ -998,7 +1002,7 @@ public interface JS extends J {
             }
 
             public FunctionType withParameters(JContainer<Statement> parameters) {
-                return t.parameters == parameters ? t : new FunctionType(t.id, t.prefix, t.markers, t.constructorType, t.typeParameters, parameters, t.arrow, t.returnType, t.type);
+                return t.parameters == parameters ? t : new FunctionType(t.id, t.prefix, t.markers, t.modifiers, t.constructorType, t.typeParameters, parameters, t.arrow, t.returnType, t.type);
             }
         }
     }
@@ -4111,6 +4115,7 @@ public interface JS extends J {
 
         @With
         @Getter
+        @Nullable
         Block body;
 
         @Override

@@ -52,7 +52,8 @@ public class JsLeftPadded {
         MAPPED_TYPE_READONLY(JsSpace.Location.MAPPED_TYPE_READONLY_PREFIX),
         MAPPED_TYPE_QUESTION_TOKEN(JsSpace.Location.MAPPED_TYPE_QUESTION_TOKEN_PREFIX),
         LAMBDA_ARROW(JsSpace.Location.LAMBDA_ARROW_PREFIX),
-        JS_YIELD_DELEGATED(JsSpace.Location.JS_YIELD_DELEGATED_PREFIX);
+        JS_YIELD_DELEGATED(JsSpace.Location.JS_YIELD_DELEGATED_PREFIX),
+        FUNCTION_TYPE_CONSTRUCTOR(JsSpace.Location.FUNCTION_TYPE_CONSTRUCTOR_PREFIX);
 
         private final JsSpace.Location beforeLocation;
 

@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {J, isJava, Comment, Expression, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, Loop, MethodCall, NameTree, Space, Statement, TextComment, TypedTree, TypeTree} from "./tree";
-import {AnnotatedType, Annotation, ArrayAccess, ArrayType, Assert, Assignment, AssignmentOperation, Binary, Block, Break, Case, ClassDeclaration, CompilationUnit, Continue, DoWhileLoop, Empty, EnumValue, EnumValueSet, FieldAccess, ForEachLoop, ForLoop, ParenthesizedTypeTree, Identifier, If, Import, InstanceOf, IntersectionType, Label, Lambda, Literal, MemberReference, MethodDeclaration, MethodInvocation, Modifier, MultiCatch, NewArray, ArrayDimension, NewClass, NullableType, Package, ParameterizedType, Parentheses, ControlParentheses, Primitive, Return, Switch, SwitchExpression, Synchronized, Ternary, Throw, Try, TypeCast, TypeParameter, TypeParameters, Unary, VariableDeclarations, WhileLoop, Wildcard, Yield, Unknown} from "./tree";
+import {AnnotatedType, Annotation, ArrayAccess, ArrayType, Assert, Assignment, AssignmentOperation, Binary, Block, Break, Case, ClassDeclaration, CompilationUnit, Continue, DoWhileLoop, Empty, EnumValue, EnumValueSet, FieldAccess, ForEachLoop, ForLoop, ParenthesizedTypeTree, Identifier, If, Import, InstanceOf, IntersectionType, Label, Lambda, Literal, MemberReference, MethodDeclaration, MethodInvocation, Modifier, MultiCatch, NewArray, ArrayDimension, NewClass, NullableType, Package, ParameterizedType, Parentheses, ControlParentheses, Primitive, Return, Switch, SwitchExpression, Synchronized, Ternary, Throw, Try, TypeCast, TypeParameter, TypeParameters, Unary, VariableDeclarations, WhileLoop, Wildcard, Yield, Unknown, Erroneous} from "./tree";
 
 export class JavaVisitor<P> extends TreeVisitor<J, P> {
     isAcceptable(sourceFile: SourceFile, p: P): boolean {
@@ -963,6 +963,24 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
         source = source.withPrefix(this.visitSpace(source.prefix, Space.Location.UNKNOWN_SOURCE_PREFIX, p)!);
         source = source.withMarkers(this.visitMarkers(source.markers, p));
         return source;
+    }
+
+    public visitErroneous(erroneous: Erroneous, p: P): J | null {
+        erroneous = erroneous.withPrefix(this.visitSpace(erroneous.prefix, Space.Location.ERRONEOUS_PREFIX, p)!);
+        let tempStatement = this.visitStatement(erroneous, p) as Statement;
+        if (!(tempStatement instanceof Erroneous))
+        {
+            return tempStatement;
+        }
+        erroneous = tempStatement as Erroneous;
+        let tempExpression = this.visitExpression(erroneous, p) as Expression;
+        if (!(tempExpression instanceof Erroneous))
+        {
+            return tempExpression;
+        }
+        erroneous = tempExpression as Erroneous;
+        erroneous = erroneous.withMarkers(this.visitMarkers(erroneous.markers, p));
+        return erroneous;
     }
 
     public visitContainer<T>(container: JContainer<T> | null, loc: JContainer.Location, p: P): JContainer<T> | null {

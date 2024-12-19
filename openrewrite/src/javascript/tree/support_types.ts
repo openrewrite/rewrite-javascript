@@ -304,6 +304,7 @@ export namespace JsLeftPadded {
         MAPPED_TYPE_HAS_QUESTION_TOKEN,
         ARROW_FUNCTION_BODY,
         YIELD_DELEGATED,
+        FUNCTION_TYPE_CONSTRUCTOR_TYPE,
     }
 }
 export namespace JsRightPadded {
@@ -324,7 +325,6 @@ export namespace JsRightPadded {
         JSFOR_IN_OF_LOOP_CONTROL_ITERABLE,
         JSFOR_OF_LOOP_BODY,
         JSFOR_IN_LOOP_BODY,
-        FUNCTION_TYPE_CONSTRUCTOR_TYPE,
         TEMPLATE_EXPRESSION_TEMPLATE_SPANS,
         TAGGED_TEMPLATE_EXPRESSION_TAG,
         IMPORT_TYPE_HAS_TYPEOF,

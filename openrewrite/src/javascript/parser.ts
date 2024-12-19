@@ -262,12 +262,13 @@ export class JavaScriptParserVisitor {
     private mapModifiers(node: ts.VariableDeclarationList | ts.VariableStatement | ts.ClassDeclaration | ts.PropertyDeclaration
         | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration
         | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration
-        | ts.ArrowFunction | ts.IndexSignatureDeclaration | ts.TypeAliasDeclaration | ts.ExportDeclaration | ts.ExportAssignment | ts.FunctionExpression) {
+        | ts.ArrowFunction | ts.IndexSignatureDeclaration | ts.TypeAliasDeclaration | ts.ExportDeclaration | ts.ExportAssignment | ts.FunctionExpression
+        | ts.ConstructorTypeNode) {
         if (ts.isVariableStatement(node) || ts.isModuleDeclaration(node)  || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node)
             || ts.isInterfaceDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node) || ts.isParameter(node)
             || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node)
             || ts.isIndexSignatureDeclaration(node) || ts.isTypeAliasDeclaration(node) || ts.isExportDeclaration(node)
-            || ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node)) {
+            || ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isConstructorTypeNode(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         }
         else if (ts.isExportAssignment(node)) {
@@ -1148,6 +1149,25 @@ export class JavaScriptParserVisitor {
     }
 
     visitGetAccessor(node: ts.GetAccessorDeclaration) {
+        const name = this.visit(node.name);
+        if (!(name instanceof J.Identifier)) {
+            return new JS.JSMethodDeclaration(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [],
+                this.mapModifiers(node),
+                null,
+                this.mapTypeInfo(node),
+                name,
+                this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+                null,
+                node.body ? this.convert<J.Block>(node.body) : null,
+                null,
+                this.mapMethodType(node)
+            );
+        }
+
         return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
@@ -1157,7 +1177,7 @@ export class JavaScriptParserVisitor {
             null,
             this.mapTypeInfo(node),
             new J.MethodDeclaration.IdentifierWithAnnotations(
-                this.visit(node.name),
+                name,
                 []
             ),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
@@ -1169,6 +1189,25 @@ export class JavaScriptParserVisitor {
     }
 
     visitSetAccessor(node: ts.SetAccessorDeclaration) {
+        const name = this.visit(node.name);
+        if (!(name instanceof J.Identifier)) {
+            return new JS.JSMethodDeclaration(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                [],
+                this.mapModifiers(node),
+                null,
+                null,
+                name,
+                this.mapCommaSeparatedList(this.getParameterListNodes(node)),
+                null,
+                node.body ? this.convert<J.Block>(node.body) : null,
+                null,
+                this.mapMethodType(node)
+            );
+        }
+
         return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
@@ -1178,7 +1217,7 @@ export class JavaScriptParserVisitor {
             null,
             null,
             new J.MethodDeclaration.IdentifierWithAnnotations(
-                this.visit(node.name),
+                name,
                 []
             ),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
@@ -1289,7 +1328,8 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.rightPadded(false, Space.EMPTY),
+            [],
+            this.leftPadded(Space.EMPTY, false),
             this.mapTypeParametersAsObject(node),
             new JContainer(
                 this.prefix(node.getChildAt(node.getChildren().findIndex(n => n.pos === node.parameters.pos) - 1)),
@@ -1305,7 +1345,8 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.rightPadded(true, this.suffix(this.findChildNode(node, ts.SyntaxKind.NewKeyword)!)),
+            this.mapModifiers(node),
+            this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.NewKeyword)!), true),
             this.mapTypeParametersAsObject(node),
             new JContainer(
                 this.prefix(node.getChildAt(node.getChildren().findIndex(n => n.pos === node.parameters.pos) - 1)),
@@ -1920,7 +1961,7 @@ export class JavaScriptParserVisitor {
                 this.visit(node.expression),
                 this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments),
                 null
-            ): this.visit(node.expression),
+            ): new TypeTreeExpression(randomId(), Space.EMPTY, Markers.EMPTY, this.visit(node.expression)),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
             null,
             this.mapMethodType(node)
@@ -2926,7 +2967,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitModuleDeclaration(node: ts.ModuleDeclaration) {
-        const body = this.visit(node.body as ts.Node);
+        const body = node.body ? this.visit(node.body as ts.Node) : null;
 
         let namespaceKeyword = this.findChildNode(node, ts.SyntaxKind.NamespaceKeyword);
         const keywordType = namespaceKeyword ? JS.NamespaceDeclaration.KeywordType.Namespace : JS.NamespaceDeclaration.KeywordType.Module
@@ -3035,7 +3076,32 @@ export class JavaScriptParserVisitor {
     }
 
     visitNamespaceExportDeclaration(node: ts.NamespaceExportDeclaration) {
-        return this.visitUnknown(node);
+        return new JS.NamespaceDeclaration(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            [
+                new J.Modifier(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    'export',
+                    J.Modifier.Type.LanguageExtension,
+                    []
+                ),
+                new J.Modifier(
+                    randomId(),
+                    this.prefix(this.findChildNode(node, ts.SyntaxKind.AsKeyword)!),
+                    Markers.EMPTY,
+                    'as',
+                    J.Modifier.Type.LanguageExtension,
+                    []
+                )
+            ],
+            this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.NamespaceKeyword)!), JS.NamespaceDeclaration.KeywordType.Namespace),
+            this.rightPadded(this.convert(node.name), this.suffix(node.name)),
+            null
+        );
     }
 
     visitImportEqualsDeclaration(node: ts.ImportEqualsDeclaration) {

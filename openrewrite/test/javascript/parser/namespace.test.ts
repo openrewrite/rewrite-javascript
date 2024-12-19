@@ -230,4 +230,45 @@ describe('namespace mapping', () => {
           `)
         );
     });
+
+    test('empty body', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                declare module 'vue-count-to' /*a*/;/*b*/
+          `)
+        );
+    });
+
+    test('namespace export as', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                declare namespace MyLibrary {
+                    function sayHello(name: string): void;
+                }
+
+                /*a*/ export /*b*/ as /*c*/ namespace /*d*/ MyLibrary/*e*/;
+          `)
+        );
+    });
+
+    test('complex namespace export as', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export {Fraction}
+
+                export as namespace math /*a*/
+
+                /*b*/ type NoLiteralType<T> = T extends number
+                    ? number
+                    : T extends string
+                        ? string
+                        : T extends boolean
+                            ? boolean
+                            : T
+          `)
+        );
+    });
 });

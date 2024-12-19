@@ -198,9 +198,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     @Override
     public J visitFunctionType(JS.FunctionType functionType, PrintOutputCapture<P> p) {
         beforeSyntax(functionType, JsSpace.Location.FUNCTION_TYPE_PREFIX, p);
+        functionType.getModifiers().forEach(m -> delegate.visitModifier(m, p));
+
         if (functionType.isConstructorType()) {
-            p.append("new");
-            visitRightPadded(functionType.getPadding().getConstructorType(), JsRightPadded.Location.FUNCTION_TYPE_CONSTRUCTOR, p);
+            visitLeftPaddedBoolean("new", functionType.getPadding().getConstructorType(), JsLeftPadded.Location.FUNCTION_TYPE_CONSTRUCTOR, p);
         }
         J.TypeParameters typeParameters = functionType.getTypeParameters();
         if (typeParameters != null) {
@@ -386,8 +387,10 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 p.append("module");
                 break;
         }
-        visit(namespaceDeclaration.getName(), p);
-        visit(namespaceDeclaration.getBody(), p);
+        this.visitRightPadded(namespaceDeclaration.getPadding().getName(), JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p);
+        if (namespaceDeclaration.getBody() != null) {
+            visit(namespaceDeclaration.getBody(), p);
+        }
         afterSyntax(namespaceDeclaration, p);
         return namespaceDeclaration;
     }

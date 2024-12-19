@@ -135,7 +135,8 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         functionType = functionType.withId(ctx.receiveValue(functionType.id, ValueType.UUID)!);
         functionType = functionType.withPrefix(ctx.receiveNode(functionType.prefix, receiveSpace)!);
         functionType = functionType.withMarkers(ctx.receiveNode(functionType.markers, ctx.receiveMarkers)!);
-        functionType = functionType.padding.withConstructorType(ctx.receiveNode(functionType.padding.constructorType, rightPaddedValueReceiver(ValueType.Primitive))!);
+        functionType = functionType.withModifiers(ctx.receiveNodes(functionType.modifiers, ctx.receiveTree)!);
+        functionType = functionType.padding.withConstructorType(ctx.receiveNode(functionType.padding.constructorType, leftPaddedValueReceiver(ValueType.Primitive))!);
         functionType = functionType.withTypeParameters(ctx.receiveNode(functionType.typeParameters, ctx.receiveTree));
         functionType = functionType.padding.withParameters(ctx.receiveNode(functionType.padding.parameters, receiveContainer)!);
         functionType = functionType.withArrow(ctx.receiveNode(functionType.arrow, receiveSpace)!);
@@ -505,7 +506,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         namespaceDeclaration = namespaceDeclaration.withModifiers(ctx.receiveNodes(namespaceDeclaration.modifiers, ctx.receiveTree)!);
         namespaceDeclaration = namespaceDeclaration.padding.withKeywordType(ctx.receiveNode(namespaceDeclaration.padding.keywordType, leftPaddedValueReceiver(ValueType.Enum))!);
         namespaceDeclaration = namespaceDeclaration.padding.withName(ctx.receiveNode(namespaceDeclaration.padding.name, receiveRightPaddedTree)!);
-        namespaceDeclaration = namespaceDeclaration.withBody(ctx.receiveNode(namespaceDeclaration.body, ctx.receiveTree)!);
+        namespaceDeclaration = namespaceDeclaration.withBody(ctx.receiveNode(namespaceDeclaration.body, ctx.receiveTree));
         return namespaceDeclaration;
     }
 
@@ -1308,6 +1309,14 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         return source;
     }
 
+    public visitErroneous(erroneous: Java.Erroneous, ctx: ReceiverContext): J {
+        erroneous = erroneous.withId(ctx.receiveValue(erroneous.id, ValueType.UUID)!);
+        erroneous = erroneous.withPrefix(ctx.receiveNode(erroneous.prefix, receiveSpace)!);
+        erroneous = erroneous.withMarkers(ctx.receiveNode(erroneous.markers, ctx.receiveMarkers)!);
+        erroneous = erroneous.withText(ctx.receiveValue(erroneous.text, ValueType.Primitive)!);
+        return erroneous;
+    }
+
 }
 
 class Factory implements ReceiverFactory {
@@ -1431,7 +1440,8 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveNode<JRightPadded<boolean>>(null, rightPaddedValueReceiver(ValueType.Primitive))!,
+                ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<boolean>>(null, leftPaddedValueReceiver(ValueType.Primitive))!,
                 ctx.receiveNode<Java.TypeParameters>(null, ctx.receiveTree),
                 ctx.receiveNode<JContainer<Statement>>(null, receiveContainer)!,
                 ctx.receiveNode(null, receiveSpace)!,
@@ -1837,7 +1847,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
                 ctx.receiveNode<JLeftPadded<NamespaceDeclaration.KeywordType>>(null, leftPaddedValueReceiver(ValueType.Enum))!,
                 ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
-                ctx.receiveNode<Java.Block>(null, ctx.receiveTree)!
+                ctx.receiveNode<Java.Block>(null, ctx.receiveTree)
             );
         }
 
@@ -2714,6 +2724,15 @@ class Factory implements ReceiverFactory {
 
         if (type === "org.openrewrite.java.tree.J$Unknown$Source") {
             return new Java.Unknown.Source(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveValue(null, ValueType.Primitive)!
+            );
+        }
+
+        if (type === "org.openrewrite.java.tree.J$Erroneous") {
+            return new Java.Erroneous(
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,

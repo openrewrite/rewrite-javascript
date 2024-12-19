@@ -691,6 +691,7 @@ export namespace Space {
         WILDCARD_BOUND,
         WILDCARD_PREFIX,
         YIELD_PREFIX,
+        ERRONEOUS_PREFIX,
     }
 }
 

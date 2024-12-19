@@ -71,7 +71,7 @@ describe('type alias mapping', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
-                type MyConstructor = new (arg: string) => string;
+                type MyConstructor = abstract new (arg: string) => string;
             `)
         );
     });
@@ -81,6 +81,15 @@ describe('type alias mapping', () => {
             //language=typescript
             typeScript(`
                 type MyConstructor = /*a*/new/*b*/ (/*c*/arg: string) => string;
+            `)
+        );
+    });
+
+    test('construct function type alias with abstract and comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type MyConstructor = /*0*/ abstract /*a*/new/*b*/ (/*c*/arg: string) => string;
             `)
         );
     });

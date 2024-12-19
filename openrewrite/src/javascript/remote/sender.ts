@@ -130,7 +130,8 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendValue(functionType, v => v.id, ValueType.UUID);
         ctx.sendNode(functionType, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(functionType, v => v.markers, ctx.sendMarkers);
-        ctx.sendNode(functionType, v => v.padding.constructorType, Visitor.sendRightPadded(ValueType.Primitive));
+        ctx.sendNodes(functionType, v => v.modifiers, ctx.sendTree, t => t.id);
+        ctx.sendNode(functionType, v => v.padding.constructorType, Visitor.sendLeftPadded(ValueType.Primitive));
         ctx.sendNode(functionType, v => v.typeParameters, ctx.sendTree);
         ctx.sendNode(functionType, v => v.padding.parameters, Visitor.sendContainer(ValueType.Tree));
         ctx.sendNode(functionType, v => v.arrow, Visitor.sendSpace);
@@ -1306,6 +1307,14 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(source, v => v.markers, ctx.sendMarkers);
         ctx.sendValue(source, v => v.text, ValueType.Primitive);
         return source;
+    }
+
+    public visitErroneous(erroneous: Java.Erroneous, ctx: SenderContext): J {
+        ctx.sendValue(erroneous, v => v.id, ValueType.UUID);
+        ctx.sendNode(erroneous, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(erroneous, v => v.markers, ctx.sendMarkers);
+        ctx.sendValue(erroneous, v => v.text, ValueType.Primitive);
+        return erroneous;
     }
 
     private static sendContainer<T>(type: ValueType): (container: JContainer<T>, ctx: SenderContext) => void {

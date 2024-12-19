@@ -501,4 +501,45 @@ describe('class mapping', () => {
         );
     });
 
+    test('new expression parentheses', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class Base {
+                    attrs: any;
+
+                    constructor(attrs: any) {
+                        this.attrs = attrs;
+                    }
+
+                    clone() {
+                        return new (<any>this.constructor)(this.attrs);
+                    }
+                }
+            `)
+        );
+    });
+
+    test('get/set accessor with a name as expression', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export function mochaGlobalSetup() {
+                    globalThis.Path2D ??= class Path2D {
+                        constructor(path) {
+                            this.path = path
+                        }
+
+                        get [Symbol.toStringTag]() {
+                            return 'Path2D';
+                        }
+
+                        set [Symbol.toStringTag](path) {
+                        }
+                    }
+                }
+            `)
+        );
+    });
+
 });
