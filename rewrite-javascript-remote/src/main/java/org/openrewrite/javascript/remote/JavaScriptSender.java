@@ -1,11 +1,11 @@
 /*
  * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Moderne Source Available License (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://docs.moderne.io/licensing/moderne-source-available-license
+ * https://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /*
  * -------------------THIS FILE IS AUTO GENERATED--------------------------
  * Changes to this file may cause incorrect behavior and will be lost if
@@ -174,7 +175,8 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendValue(functionType, JS.FunctionType::getId);
             ctx.sendNode(functionType, JS.FunctionType::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(functionType, JS.FunctionType::getMarkers, ctx::sendMarkers);
-            ctx.sendNode(functionType, e -> e.getPadding().getConstructorType(), JavaScriptSender::sendRightPadded);
+            ctx.sendNodes(functionType, JS.FunctionType::getModifiers, ctx::sendTree, Tree::getId);
+            ctx.sendNode(functionType, e -> e.getPadding().getConstructorType(), JavaScriptSender::sendLeftPadded);
             ctx.sendNode(functionType, JS.FunctionType::getTypeParameters, ctx::sendTree);
             ctx.sendNode(functionType, e -> e.getPadding().getParameters(), JavaScriptSender::sendContainer);
             ctx.sendNode(functionType, JS.FunctionType::getArrow, JavaScriptSender::sendSpace);
@@ -1461,6 +1463,15 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(source, J.Unknown.Source::getMarkers, ctx::sendMarkers);
             ctx.sendValue(source, J.Unknown.Source::getText);
             return source;
+        }
+
+        @Override
+        public J.Erroneous visitErroneous(J.Erroneous erroneous, SenderContext ctx) {
+            ctx.sendValue(erroneous, J.Erroneous::getId);
+            ctx.sendNode(erroneous, J.Erroneous::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(erroneous, J.Erroneous::getMarkers, ctx::sendMarkers);
+            ctx.sendValue(erroneous, J.Erroneous::getText);
+            return erroneous;
         }
 
     }

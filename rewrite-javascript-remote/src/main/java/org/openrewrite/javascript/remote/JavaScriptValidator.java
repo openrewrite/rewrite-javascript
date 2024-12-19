@@ -1,11 +1,11 @@
 /*
  * Copyright 2024 the original author or authors.
  * <p>
- * Licensed under the Moderne Source Available License (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * https://docs.moderne.io/licensing/moderne-source-available-license
+ * https://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /*
  * -------------------THIS FILE IS AUTO GENERATED--------------------------
  * Changes to this file may cause incorrect behavior and will be lost if
@@ -131,6 +132,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.FunctionType visitFunctionType(JS.FunctionType functionType, P p) {
+        ListUtils.map(functionType.getModifiers(), el -> visitAndValidateNonNull(el, J.Modifier.class, p));
         visitAndValidate(functionType.getTypeParameters(), J.TypeParameters.class, p);
         visitAndValidate(functionType.getParameters(), Statement.class, p);
         visitAndValidateNonNull(functionType.getReturnType(), Expression.class, p);
@@ -392,7 +394,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     public JS.NamespaceDeclaration visitNamespaceDeclaration(JS.NamespaceDeclaration namespaceDeclaration, P p) {
         ListUtils.map(namespaceDeclaration.getModifiers(), el -> visitAndValidateNonNull(el, J.Modifier.class, p));
         visitAndValidateNonNull(namespaceDeclaration.getName(), Expression.class, p);
-        visitAndValidateNonNull(namespaceDeclaration.getBody(), J.Block.class, p);
+        visitAndValidate(namespaceDeclaration.getBody(), J.Block.class, p);
         return namespaceDeclaration;
     }
 
@@ -946,6 +948,11 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.Unknown.Source visitUnknownSource(J.Unknown.Source source, P p) {
         return source;
+    }
+
+    @Override
+    public J.Erroneous visitErroneous(J.Erroneous erroneous, P p) {
+        return erroneous;
     }
 
 }

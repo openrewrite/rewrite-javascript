@@ -163,7 +163,8 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         }
         functionType = tempExpression as FunctionType;
         functionType = functionType.withMarkers(this.visitMarkers(functionType.markers, p));
-        functionType = functionType.padding.withConstructorType(this.visitJsRightPadded(functionType.padding.constructorType, JsRightPadded.Location.FUNCTION_TYPE_CONSTRUCTOR_TYPE, p)!);
+        functionType = functionType.withModifiers(ListUtils.map(functionType.modifiers, el => this.visitAndCast(el, p)));
+        functionType = functionType.padding.withConstructorType(this.visitJsLeftPadded(functionType.padding.constructorType, JsLeftPadded.Location.FUNCTION_TYPE_CONSTRUCTOR_TYPE, p)!);
         functionType = functionType.withTypeParameters(this.visitAndCast(functionType.typeParameters, p));
         functionType = functionType.padding.withParameters(this.visitJsContainer(functionType.padding.parameters, JsContainer.Location.FUNCTION_TYPE_PARAMETERS, p)!);
         functionType = functionType.withArrow(this.visitJsSpace(functionType.arrow, JsSpace.Location.FUNCTION_TYPE_ARROW, p)!);
@@ -691,7 +692,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         namespaceDeclaration = namespaceDeclaration.withModifiers(ListUtils.map(namespaceDeclaration.modifiers, el => this.visitAndCast(el, p)));
         namespaceDeclaration = namespaceDeclaration.padding.withKeywordType(this.visitJsLeftPadded(namespaceDeclaration.padding.keywordType, JsLeftPadded.Location.NAMESPACE_DECLARATION_KEYWORD_TYPE, p)!);
         namespaceDeclaration = namespaceDeclaration.padding.withName(this.visitJsRightPadded(namespaceDeclaration.padding.name, JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p)!);
-        namespaceDeclaration = namespaceDeclaration.withBody(this.visitAndCast(namespaceDeclaration.body, p)!);
+        namespaceDeclaration = namespaceDeclaration.withBody(this.visitAndCast(namespaceDeclaration.body, p));
         return namespaceDeclaration;
     }
 

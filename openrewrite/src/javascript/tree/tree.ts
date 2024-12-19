@@ -895,11 +895,12 @@ export class ExpressionWithTypeArguments extends JSMixin(Object) implements Type
 
 @LstType("org.openrewrite.javascript.tree.JS$FunctionType")
 export class FunctionType extends JSMixin(Object) implements Expression, TypeTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, constructorType: JRightPadded<boolean>, typeParameters: Java.TypeParameters | null, parameters: JContainer<Statement>, arrow: Space, returnType: Expression, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], constructorType: JLeftPadded<boolean>, typeParameters: Java.TypeParameters | null, parameters: JContainer<Statement>, arrow: Space, returnType: Expression, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
+        this._modifiers = modifiers;
         this._constructorType = constructorType;
         this._typeParameters = typeParameters;
         this._parameters = parameters;
@@ -915,7 +916,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withId(id: UUID): FunctionType {
-            return id === this._id ? this : new FunctionType(id, this._prefix, this._markers, this._constructorType, this._typeParameters, this._parameters, this._arrow, this._returnType, this._type);
+            return id === this._id ? this : new FunctionType(id, this._prefix, this._markers, this._modifiers, this._constructorType, this._typeParameters, this._parameters, this._arrow, this._returnType, this._type);
         }
 
         private readonly _prefix: Space;
@@ -925,7 +926,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withPrefix(prefix: Space): FunctionType {
-            return prefix === this._prefix ? this : new FunctionType(this._id, prefix, this._markers, this._constructorType, this._typeParameters, this._parameters, this._arrow, this._returnType, this._type);
+            return prefix === this._prefix ? this : new FunctionType(this._id, prefix, this._markers, this._modifiers, this._constructorType, this._typeParameters, this._parameters, this._arrow, this._returnType, this._type);
         }
 
         private readonly _markers: Markers;
@@ -935,10 +936,20 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withMarkers(markers: Markers): FunctionType {
-            return markers === this._markers ? this : new FunctionType(this._id, this._prefix, markers, this._constructorType, this._typeParameters, this._parameters, this._arrow, this._returnType, this._type);
+            return markers === this._markers ? this : new FunctionType(this._id, this._prefix, markers, this._modifiers, this._constructorType, this._typeParameters, this._parameters, this._arrow, this._returnType, this._type);
         }
 
-        private readonly _constructorType: JRightPadded<boolean>;
+        private readonly _modifiers: Java.Modifier[];
+
+        public get modifiers(): Java.Modifier[] {
+            return this._modifiers;
+        }
+
+        public withModifiers(modifiers: Java.Modifier[]): FunctionType {
+            return modifiers === this._modifiers ? this : new FunctionType(this._id, this._prefix, this._markers, modifiers, this._constructorType, this._typeParameters, this._parameters, this._arrow, this._returnType, this._type);
+        }
+
+        private readonly _constructorType: JLeftPadded<boolean>;
 
         public get constructorType(): boolean {
             return this._constructorType.element;
@@ -955,7 +966,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withTypeParameters(typeParameters: Java.TypeParameters | null): FunctionType {
-            return typeParameters === this._typeParameters ? this : new FunctionType(this._id, this._prefix, this._markers, this._constructorType, typeParameters, this._parameters, this._arrow, this._returnType, this._type);
+            return typeParameters === this._typeParameters ? this : new FunctionType(this._id, this._prefix, this._markers, this._modifiers, this._constructorType, typeParameters, this._parameters, this._arrow, this._returnType, this._type);
         }
 
         private readonly _parameters: JContainer<Statement>;
@@ -975,7 +986,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withArrow(arrow: Space): FunctionType {
-            return arrow === this._arrow ? this : new FunctionType(this._id, this._prefix, this._markers, this._constructorType, this._typeParameters, this._parameters, arrow, this._returnType, this._type);
+            return arrow === this._arrow ? this : new FunctionType(this._id, this._prefix, this._markers, this._modifiers, this._constructorType, this._typeParameters, this._parameters, arrow, this._returnType, this._type);
         }
 
         private readonly _returnType: Expression;
@@ -985,7 +996,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withReturnType(returnType: Expression): FunctionType {
-            return returnType === this._returnType ? this : new FunctionType(this._id, this._prefix, this._markers, this._constructorType, this._typeParameters, this._parameters, this._arrow, returnType, this._type);
+            return returnType === this._returnType ? this : new FunctionType(this._id, this._prefix, this._markers, this._modifiers, this._constructorType, this._typeParameters, this._parameters, this._arrow, returnType, this._type);
         }
 
         private readonly _type: JavaType | null;
@@ -995,7 +1006,7 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
         }
 
         public withType(_type: JavaType | null): FunctionType {
-            return _type === this._type ? this : new FunctionType(this._id, this._prefix, this._markers, this._constructorType, this._typeParameters, this._parameters, this._arrow, this._returnType, _type);
+            return _type === this._type ? this : new FunctionType(this._id, this._prefix, this._markers, this._modifiers, this._constructorType, this._typeParameters, this._parameters, this._arrow, this._returnType, _type);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
@@ -1005,17 +1016,17 @@ export class FunctionType extends JSMixin(Object) implements Expression, TypeTre
     get padding() {
         const t = this;
         return new class {
-            public get constructorType(): JRightPadded<boolean> {
+            public get constructorType(): JLeftPadded<boolean> {
                 return t._constructorType;
             }
-            public withConstructorType(constructorType: JRightPadded<boolean>): FunctionType {
-                return t._constructorType === constructorType ? t : new FunctionType(t._id, t._prefix, t._markers, constructorType, t._typeParameters, t._parameters, t._arrow, t._returnType, t._type);
+            public withConstructorType(constructorType: JLeftPadded<boolean>): FunctionType {
+                return t._constructorType === constructorType ? t : new FunctionType(t._id, t._prefix, t._markers, t._modifiers, constructorType, t._typeParameters, t._parameters, t._arrow, t._returnType, t._type);
             }
             public get parameters(): JContainer<Statement> {
                 return t._parameters;
             }
             public withParameters(parameters: JContainer<Statement>): FunctionType {
-                return t._parameters === parameters ? t : new FunctionType(t._id, t._prefix, t._markers, t._constructorType, t._typeParameters, parameters, t._arrow, t._returnType, t._type);
+                return t._parameters === parameters ? t : new FunctionType(t._id, t._prefix, t._markers, t._modifiers, t._constructorType, t._typeParameters, parameters, t._arrow, t._returnType, t._type);
             }
         }
     }
@@ -4339,7 +4350,7 @@ export class JSForInOfLoopControl extends JSMixin(Object) {
 
 @LstType("org.openrewrite.javascript.tree.JS$NamespaceDeclaration")
 export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], keywordType: JLeftPadded<NamespaceDeclaration.KeywordType>, name: JRightPadded<Expression>, body: Java.Block) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], keywordType: JLeftPadded<NamespaceDeclaration.KeywordType>, name: JRightPadded<Expression>, body: Java.Block | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -4410,13 +4421,13 @@ export class NamespaceDeclaration extends JSMixin(Object) implements Statement {
             return this.padding.withName(this._name.withElement(name));
         }
 
-        private readonly _body: Java.Block;
+        private readonly _body: Java.Block | null;
 
-        public get body(): Java.Block {
+        public get body(): Java.Block | null {
             return this._body;
         }
 
-        public withBody(body: Java.Block): NamespaceDeclaration {
+        public withBody(body: Java.Block | null): NamespaceDeclaration {
             return body === this._body ? this : new NamespaceDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._keywordType, this._name, body);
         }
 
