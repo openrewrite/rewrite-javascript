@@ -348,6 +348,7 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(typeQuery, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(typeQuery, v => v.markers, ctx.sendMarkers);
         ctx.sendNode(typeQuery, v => v.typeExpression, ctx.sendTree);
+        ctx.sendNode(typeQuery, v => v.padding.typeArguments, Visitor.sendContainer(ValueType.Tree));
         ctx.sendTypedValue(typeQuery, v => v.type, ValueType.Object);
         return typeQuery;
     }

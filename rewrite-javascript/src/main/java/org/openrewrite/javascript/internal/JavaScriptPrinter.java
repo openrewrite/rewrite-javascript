@@ -577,6 +577,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         beforeSyntax(typeQuery, JsSpace.Location.TYPE_QUERY_PREFIX, p);
         p.append("typeof");
         visit(typeQuery.getTypeExpression(), p);
+        visitContainer("<", typeQuery.getPadding().getTypeArguments(), JsContainer.Location.TYPE_QUERY_TYPE_ARGUMENTS, ",", ">", p);
         afterSyntax(typeQuery, p);
         return typeQuery;
     }
@@ -835,8 +836,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     public J visitIndexSignatureDeclaration(JS.IndexSignatureDeclaration isd, PrintOutputCapture<P> p) {
         beforeSyntax(isd, JsSpace.Location.INDEXED_SIGNATURE_DECLARATION_PREFIX, p);
 
+        isd.getModifiers().forEach(m -> delegate.visitModifier(m, p));
         visitContainer("[", isd.getPadding().getParameters(), JsContainer.Location.INDEXED_SIGNATURE_DECLARATION_PARAMETERS, "", "]", p);
-
         visitLeftPadded(":", isd.getPadding().getTypeExpression(), JsLeftPadded.Location.INDEXED_SIGNATURE_DECLARATION_TYPE_EXPRESSION, p);
 
         afterSyntax(isd, p);
@@ -1309,6 +1310,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         public J visitTypeParameter(J.TypeParameter typeParameter, PrintOutputCapture<P> p) {
             beforeSyntax(typeParameter, Space.Location.TYPE_PARAMETERS_PREFIX, p);
             visit(typeParameter.getAnnotations(), p);
+            typeParameter.getModifiers().forEach(m -> delegate.visitModifier(m, p));
             visit(typeParameter.getName(), p);
 
             JContainer<TypeTree> bounds = typeParameter.getPadding().getBounds();

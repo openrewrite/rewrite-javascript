@@ -179,4 +179,15 @@ describe('empty mapping', () => {
           `)
         );
     });
+
+    test('enum with string literals', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              enum CustomizableCompilers {
+                  /*a*/'typescript'/*b*/ = 'typescript'
+              }
+          `)
+        );
+    });
 });

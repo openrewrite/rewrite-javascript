@@ -17,4 +17,33 @@ describe('property access mapping', () => {
           typeScript('foo . bar . baz')
         );
     });
+
+    test('optional property last', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('options.onGroup?.(onGroupOptions)')
+        );
+    });
+
+    test('optional property first', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('options?.onGroup(onGroupOptions)')
+        );
+    });
+
+    test('optional property all', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('options?.onGroup?.(onGroupOptions)')
+        );
+    });
+
+    test('no optional properties', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('options.onGroup(onGroupOptions)')
+        );
+    });
+
 });

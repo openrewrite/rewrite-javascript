@@ -191,4 +191,23 @@ describe('arrow mapping', () => {
         );
     });
 
+    test('arrow function with const type param', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                prop: </*a*/const /*b*/ S extends SchemaObj, A, E>(
+                    name: string,
+                    schemas: S,
+                    self: TestFunction<
+                        A,
+                        E,
+                        R,
+                        [{ [K in keyof S]: Schema.Schema.Type<S[K]> }, V.TaskContext<V.RunnerTestCase<{}>> & V.TestContext]
+                    >,
+                    timeout?: number | V.TestOptions
+                ) => void
+            `)
+        );
+    });
+
 });

@@ -156,4 +156,14 @@ describe('call mapping', () => {
         );
     });
 
+    // need a way to distinguish new class calls with empty braces and without braces
+    test.skip('call new expression without braces', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                var d = (new Date).getTime()
+            `)
+        );
+    });
+
 });

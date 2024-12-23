@@ -263,12 +263,12 @@ export class JavaScriptParserVisitor {
         | ts.FunctionDeclaration | ts.ParameterDeclaration | ts.MethodDeclaration | ts.EnumDeclaration | ts.InterfaceDeclaration
         | ts.PropertySignature | ts.ConstructorDeclaration | ts.ModuleDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration
         | ts.ArrowFunction | ts.IndexSignatureDeclaration | ts.TypeAliasDeclaration | ts.ExportDeclaration | ts.ExportAssignment | ts.FunctionExpression
-        | ts.ConstructorTypeNode) {
+        | ts.ConstructorTypeNode | ts.TypeParameterDeclaration) {
         if (ts.isVariableStatement(node) || ts.isModuleDeclaration(node)  || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node)
             || ts.isInterfaceDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node) || ts.isParameter(node)
             || ts.isMethodDeclaration(node) || ts.isConstructorDeclaration(node) || ts.isArrowFunction(node)
             || ts.isIndexSignatureDeclaration(node) || ts.isTypeAliasDeclaration(node) || ts.isExportDeclaration(node)
-            || ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isConstructorTypeNode(node)) {
+            || ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isConstructorTypeNode(node) || ts.isTypeParameterDeclaration(node)) {
             return node.modifiers ? node.modifiers?.filter(ts.isModifier).map(this.mapModifier) : [];
         }
         else if (ts.isExportAssignment(node)) {
@@ -648,7 +648,7 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             [],
-            [],
+            this.mapModifiers(node),
             this.visit(node.name),
             (node.constraint || node.default) ?
                 new JContainer(
@@ -771,17 +771,8 @@ export class JavaScriptParserVisitor {
         let _arguments: JContainer<J.Expression> | null = null;
 
         if (ts.isCallExpression(node.expression)) {
-            let callExpression: J.MethodInvocation = this.convert(node.expression);
-            annotationType = callExpression.select === null ? callExpression.name :
-                new J.FieldAccess(
-                    randomId(),
-                    callExpression.prefix,
-                    Markers.EMPTY,
-                    callExpression.select,
-                    this.leftPadded(callExpression.padding.select!.after, callExpression.name),
-                    callExpression.type
-                );
-            _arguments = callExpression.padding.arguments;
+            annotationType = this.convert(node.expression.expression);
+            _arguments = this.mapCommaSeparatedList(node.expression.getChildren(this.sourceFile).slice(-3))
         } else if (ts.isIdentifier(node.expression)) {
             annotationType = this.convert(node.expression);
         } else if (ts.isPropertyAccessExpression(node.expression)) {
@@ -1333,7 +1324,8 @@ export class JavaScriptParserVisitor {
             this.mapTypeParametersAsObject(node),
             new JContainer(
                 this.prefix(node.getChildAt(node.getChildren().findIndex(n => n.pos === node.parameters.pos) - 1)),
-                node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p))),
+                node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p)))
+                    .concat(node.parameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!)) : []),
                 Markers.EMPTY),
             this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsGreaterThanToken)!),
             this.convert(node.type),
@@ -1363,6 +1355,7 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.convert(node.exprName),
+            node.typeArguments ? this.mapTypeArguments(this.suffix(node.exprName), node.typeArguments) : null,
             this.mapType(node)
         )
     }
@@ -1899,36 +1892,19 @@ export class JavaScriptParserVisitor {
         if (ts.isIdentifier(node.expression) && !node.questionDotToken) {
             select = null;
             name = this.convert(node.expression);
-        } else if (ts.isPropertyAccessExpression(node.expression)) {
-            select = this.rightPadded(
-                node.expression.questionDotToken ?
-                    new JS.Unary(
-                        randomId(),
-                        Space.EMPTY,
-                        Markers.EMPTY,
-                        this.leftPadded(this.suffix(node.expression.expression), JS.Unary.Type.QuestionDot),
-                        this.visit(node.expression.expression),
-                        this.mapType(node)
-                    ) :
-                    this.convert<J.Expression>(node.expression.expression),
-                this.prefix(node.expression.getChildAt(1, this.sourceFile))
-            );
-            name = this.convert(node.expression.name);
+        } else if (node.questionDotToken) {
+            select = this.rightPadded(new JS.Unary(
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    this.leftPadded(this.suffix(node.expression), JS.Unary.Type.QuestionDotWithDot),
+                    this.visit(node.expression),
+                    this.mapType(node)
+                ),
+                Space.EMPTY
+            )
         } else {
-            if (node.questionDotToken) {
-                select = this.rightPadded(new JS.Unary(
-                        randomId(),
-                        Space.EMPTY,
-                        Markers.EMPTY,
-                        this.leftPadded(this.suffix(node.expression), JS.Unary.Type.QuestionDotWithDot),
-                        this.visit(node.expression),
-                        this.mapType(node)
-                    ),
-                    Space.EMPTY
-                )
-            } else {
-                select = this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
-            }
+            select = this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
         }
 
         return new J.MethodInvocation(
@@ -1975,7 +1951,7 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             this.rightPadded(this.visit(node.tag), this.suffix(node.tag)),
             node.typeArguments ? this.mapTypeArguments(Space.EMPTY, node.typeArguments) : null,
-            this.visit(node.template),
+            this.convert(node.template),
             this.mapType(node)
         )
     }
@@ -2561,8 +2537,8 @@ export class JavaScriptParserVisitor {
     }
 
     visitIfStatement(node: ts.IfStatement) {
-        const semicolonAfterThen = node.thenStatement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken;
-        const semicolonAfterElse = node.elseStatement?.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken;
+        const semicolonAfterThen = (node.thenStatement?.kind != ts.SyntaxKind.IfStatement) && (node.thenStatement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken);
+        const semicolonAfterElse = (node.elseStatement?.kind != ts.SyntaxKind.IfStatement) && (node.elseStatement?.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken);
         return new J.If(
             randomId(),
             this.prefix(node),
@@ -2641,9 +2617,9 @@ export class JavaScriptParserVisitor {
                     (ts.isVariableDeclarationList(node.initializer) ? this.rightPadded(this.visit(node.initializer), Space.EMPTY) :
                         this.rightPadded(new ExpressionStatement(randomId(), this.visit(node.initializer)), this.suffix(node.initializer.getLastToken()!))) :
                     this.rightPadded(this.newJEmpty(), this.suffix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!))],  // to handle for (/*_*/; ; );
-                node.condition ? this.rightPadded(ts.isStatement(node.condition) ? this.visit(node.condition) : new ExpressionStatement(randomId(), this.visit(node.condition)), this.suffix(node.condition.getLastToken()!)) :
+                node.condition ? this.rightPadded(ts.isStatement(node.condition) ? this.visit(node.condition) : new ExpressionStatement(randomId(), this.visit(node.condition)), this.suffix(node.condition)) :
                     this.rightPadded(this.newJEmpty(), this.suffix(this.findChildNode(node, ts.SyntaxKind.SemicolonToken)!)),  // to handle for ( ;/*_*/; );
-                [node.incrementor ? this.rightPadded(ts.isStatement(node.incrementor) ? this.visit(node.incrementor) : new ExpressionStatement(randomId(), this.visit(node.incrementor)), this.suffix(node.incrementor.getLastToken()!)) :
+                [node.incrementor ? this.rightPadded(ts.isStatement(node.incrementor) ? this.visit(node.incrementor) : new ExpressionStatement(randomId(), this.visit(node.incrementor)), this.suffix(node.incrementor)) :
                     this.rightPadded(this.newJEmpty(this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!)), Space.EMPTY)],  // to handle for ( ; ;/*_*/);
             ),
             this.rightPadded(
@@ -3435,7 +3411,7 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             [],
-            node.name ? this.convert(node.name) : this.mapIdentifier(node, ""),
+            node.name ? ts.isStringLiteral(node.name) ? this.mapIdentifier(node.name, node.name.getText()) : this.convert(node.name) : this.mapIdentifier(node, ""),
             node.initializer ? new J.NewClass(
                     randomId(),
                     this.suffix(node.name),
@@ -3789,6 +3765,7 @@ export class JavaScriptParserVisitor {
             Markers.EMPTY,
             [],
             typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp)))
+                .concat(typeParameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.GreaterThanToken)!)) : []),
         );
     }
 

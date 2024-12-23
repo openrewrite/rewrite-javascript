@@ -199,4 +199,20 @@ describe('method mapping', () => {
         );
     });
 
+    test('method invocation with empty body', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export class ResultLengthMismatch extends TypeIdError(SqlErrorTypeId, "ResultLengthMismatch")<{
+                    readonly expected: number
+                    readonly actual: number
+                }> {
+                    get message() {
+                        return \`Expected \${this.expected} results but got \${this.actual}\`
+                    }
+                }
+          `)
+        );
+    });
+
 });

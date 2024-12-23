@@ -473,6 +473,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         typeQuery = tempExpression as TypeQuery;
         typeQuery = typeQuery.withMarkers(this.visitMarkers(typeQuery.markers, p));
         typeQuery = typeQuery.withTypeExpression(this.visitAndCast(typeQuery.typeExpression, p)!);
+        typeQuery = typeQuery.padding.withTypeArguments(this.visitJsContainer(typeQuery.padding.typeArguments, JsContainer.Location.TYPE_QUERY_TYPE_ARGUMENTS, p));
         return typeQuery;
     }
 

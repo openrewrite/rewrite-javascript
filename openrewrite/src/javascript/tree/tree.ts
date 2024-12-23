@@ -805,7 +805,7 @@ export class Export extends JSMixin(Object) implements Statement {
 
 @LstType("org.openrewrite.javascript.tree.JS$ExpressionWithTypeArguments")
 export class ExpressionWithTypeArguments extends JSMixin(Object) implements TypeTree, Expression {
-    public constructor(id: UUID, prefix: Space, markers: Markers, clazz: NameTree, typeArguments: JContainer<Expression> | null, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, clazz: J, typeArguments: JContainer<Expression> | null, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -845,13 +845,13 @@ export class ExpressionWithTypeArguments extends JSMixin(Object) implements Type
             return markers === this._markers ? this : new ExpressionWithTypeArguments(this._id, this._prefix, markers, this._clazz, this._typeArguments, this._type);
         }
 
-        private readonly _clazz: NameTree;
+        private readonly _clazz: J;
 
-        public get clazz(): NameTree {
+        public get clazz(): J {
             return this._clazz;
         }
 
-        public withClazz(clazz: NameTree): ExpressionWithTypeArguments {
+        public withClazz(clazz: J): ExpressionWithTypeArguments {
             return clazz === this._clazz ? this : new ExpressionWithTypeArguments(this._id, this._prefix, this._markers, clazz, this._typeArguments, this._type);
         }
 
@@ -2384,7 +2384,7 @@ export namespace ScopedVariableDeclarations {
 
 @LstType("org.openrewrite.javascript.tree.JS$TaggedTemplateExpression")
 export class TaggedTemplateExpression extends JSMixin(Object) implements Statement, Expression {
-    public constructor(id: UUID, prefix: Space, markers: Markers, tag: JRightPadded<Expression> | null, typeArguments: JContainer<Expression> | null, templateExpression: TemplateExpression, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, tag: JRightPadded<Expression> | null, typeArguments: JContainer<Expression> | null, templateExpression: Expression, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -2445,13 +2445,13 @@ export class TaggedTemplateExpression extends JSMixin(Object) implements Stateme
             return this.padding.withTypeArguments(JContainer.withElementsNullable(this._typeArguments, typeArguments));
         }
 
-        private readonly _templateExpression: TemplateExpression;
+        private readonly _templateExpression: Expression;
 
-        public get templateExpression(): TemplateExpression {
+        public get templateExpression(): Expression {
             return this._templateExpression;
         }
 
-        public withTemplateExpression(templateExpression: TemplateExpression): TaggedTemplateExpression {
+        public withTemplateExpression(templateExpression: Expression): TaggedTemplateExpression {
             return templateExpression === this._templateExpression ? this : new TaggedTemplateExpression(this._id, this._prefix, this._markers, this._tag, this._typeArguments, templateExpression, this._type);
         }
 
@@ -2915,12 +2915,13 @@ export class TypeOf extends JSMixin(Object) implements Expression {
 
 @LstType("org.openrewrite.javascript.tree.JS$TypeQuery")
 export class TypeQuery extends JSMixin(Object) implements Expression, TypeTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, typeExpression: TypeTree, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, typeExpression: TypeTree, typeArguments: JContainer<Expression> | null, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
         this._typeExpression = typeExpression;
+        this._typeArguments = typeArguments;
         this._type = _type;
     }
 
@@ -2931,7 +2932,7 @@ export class TypeQuery extends JSMixin(Object) implements Expression, TypeTree {
         }
 
         public withId(id: UUID): TypeQuery {
-            return id === this._id ? this : new TypeQuery(id, this._prefix, this._markers, this._typeExpression, this._type);
+            return id === this._id ? this : new TypeQuery(id, this._prefix, this._markers, this._typeExpression, this._typeArguments, this._type);
         }
 
         private readonly _prefix: Space;
@@ -2941,7 +2942,7 @@ export class TypeQuery extends JSMixin(Object) implements Expression, TypeTree {
         }
 
         public withPrefix(prefix: Space): TypeQuery {
-            return prefix === this._prefix ? this : new TypeQuery(this._id, prefix, this._markers, this._typeExpression, this._type);
+            return prefix === this._prefix ? this : new TypeQuery(this._id, prefix, this._markers, this._typeExpression, this._typeArguments, this._type);
         }
 
         private readonly _markers: Markers;
@@ -2951,7 +2952,7 @@ export class TypeQuery extends JSMixin(Object) implements Expression, TypeTree {
         }
 
         public withMarkers(markers: Markers): TypeQuery {
-            return markers === this._markers ? this : new TypeQuery(this._id, this._prefix, markers, this._typeExpression, this._type);
+            return markers === this._markers ? this : new TypeQuery(this._id, this._prefix, markers, this._typeExpression, this._typeArguments, this._type);
         }
 
         private readonly _typeExpression: TypeTree;
@@ -2961,7 +2962,17 @@ export class TypeQuery extends JSMixin(Object) implements Expression, TypeTree {
         }
 
         public withTypeExpression(typeExpression: TypeTree): TypeQuery {
-            return typeExpression === this._typeExpression ? this : new TypeQuery(this._id, this._prefix, this._markers, typeExpression, this._type);
+            return typeExpression === this._typeExpression ? this : new TypeQuery(this._id, this._prefix, this._markers, typeExpression, this._typeArguments, this._type);
+        }
+
+        private readonly _typeArguments: JContainer<Expression> | null;
+
+        public get typeArguments(): Expression[] | null {
+            return this._typeArguments === null ? null : this._typeArguments.elements;
+        }
+
+        public withTypeArguments(typeArguments: Expression[] | null): TypeQuery {
+            return this.padding.withTypeArguments(JContainer.withElementsNullable(this._typeArguments, typeArguments));
         }
 
         private readonly _type: JavaType | null;
@@ -2971,11 +2982,23 @@ export class TypeQuery extends JSMixin(Object) implements Expression, TypeTree {
         }
 
         public withType(_type: JavaType | null): TypeQuery {
-            return _type === this._type ? this : new TypeQuery(this._id, this._prefix, this._markers, this._typeExpression, _type);
+            return _type === this._type ? this : new TypeQuery(this._id, this._prefix, this._markers, this._typeExpression, this._typeArguments, _type);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
         return v.visitTypeQuery(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get typeArguments(): JContainer<Expression> | null {
+                return t._typeArguments;
+            }
+            public withTypeArguments(typeArguments: JContainer<Expression> | null): TypeQuery {
+                return t._typeArguments === typeArguments ? t : new TypeQuery(t._id, t._prefix, t._markers, t._typeExpression, typeArguments, t._type);
+            }
+        }
     }
 
 }

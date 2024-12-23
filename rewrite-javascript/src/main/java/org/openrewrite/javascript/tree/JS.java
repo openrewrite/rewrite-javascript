@@ -832,7 +832,7 @@ public interface JS extends J {
 
         @With
         @Getter
-        NameTree clazz;
+        J clazz;
 
         @Nullable
         JContainer<Expression> typeArguments;
@@ -2371,7 +2371,7 @@ public interface JS extends J {
         }
 
         @With
-        TemplateExpression templateExpression;
+        Expression templateExpression;
 
         @With
         @Nullable
@@ -2747,22 +2747,43 @@ public interface JS extends J {
         }
     }
 
-    @Getter
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
-    @With
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Getter
     final class TypeQuery implements JS, Expression, TypeTree {
 
+        @Nullable
+        @NonFinal
+        transient WeakReference<TypeQuery.Padding> padding;
+
         @EqualsAndHashCode.Include
+        @With
         UUID id;
 
+        @With
         Space prefix;
+
+        @With
         Markers markers;
 
+        @With
         TypeTree typeExpression;
 
         @Nullable
+        JContainer<Expression> typeArguments;
+
+        public @Nullable List<Expression> getTypeArguments() {
+            return typeArguments == null ? null : typeArguments.getElements();
+        }
+
+        public TypeQuery withTypeArguments(@Nullable List<Expression> typeParameters) {
+            return getPadding().withTypeArguments(JContainer.withElementsNullable(this.typeArguments, typeParameters));
+        }
+
+        @Nullable
+        @With
         JavaType type;
 
         @Override
@@ -2773,6 +2794,34 @@ public interface JS extends J {
         @Override
         public CoordinateBuilder.Expression getCoordinates() {
             return new CoordinateBuilder.Expression(this);
+        }
+
+        public TypeQuery.Padding getPadding() {
+            TypeQuery.Padding p;
+            if (this.padding == null) {
+                p = new TypeQuery.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new TypeQuery.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final TypeQuery t;
+
+            public @Nullable JContainer<Expression> getTypeArguments() {
+                return t.typeArguments;
+            }
+
+            public TypeQuery withTypeArguments(@Nullable JContainer<Expression> typeArguments) {
+                return t.typeArguments == typeArguments ? t : new TypeQuery(t.id, t.prefix, t.markers, t.typeExpression,  typeArguments, t.type);
+            }
         }
     }
 

@@ -414,6 +414,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(typeQuery, JS.TypeQuery::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(typeQuery, JS.TypeQuery::getMarkers, ctx::sendMarkers);
             ctx.sendNode(typeQuery, JS.TypeQuery::getTypeExpression, ctx::sendTree);
+            ctx.sendNode(typeQuery, e -> e.getPadding().getTypeArguments(), JavaScriptSender::sendContainer);
             ctx.sendTypedValue(typeQuery, JS.TypeQuery::getType);
             return typeQuery;
         }

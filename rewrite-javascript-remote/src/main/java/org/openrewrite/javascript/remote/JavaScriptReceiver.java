@@ -432,6 +432,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
             typeQuery = typeQuery.withPrefix(ctx.receiveNonNullNode(typeQuery.getPrefix(), JavaScriptReceiver::receiveSpace));
             typeQuery = typeQuery.withMarkers(ctx.receiveNonNullNode(typeQuery.getMarkers(), ctx::receiveMarkers));
             typeQuery = typeQuery.withTypeExpression(ctx.receiveNonNullNode(typeQuery.getTypeExpression(), ctx::receiveTree));
+            typeQuery = typeQuery.getPadding().withTypeArguments(ctx.receiveNode(typeQuery.getPadding().getTypeArguments(), JavaScriptReceiver::receiveContainer));
             typeQuery = typeQuery.withType(ctx.receiveValue(typeQuery.getType(), JavaType.class));
             return typeQuery;
         }
@@ -1967,6 +1968,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
             );
         }

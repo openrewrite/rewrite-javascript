@@ -353,6 +353,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         typeQuery = typeQuery.withPrefix(ctx.receiveNode(typeQuery.prefix, receiveSpace)!);
         typeQuery = typeQuery.withMarkers(ctx.receiveNode(typeQuery.markers, ctx.receiveMarkers)!);
         typeQuery = typeQuery.withTypeExpression(ctx.receiveNode(typeQuery.typeExpression, ctx.receiveTree)!);
+        typeQuery = typeQuery.padding.withTypeArguments(ctx.receiveNode(typeQuery.padding.typeArguments, receiveContainer));
         typeQuery = typeQuery.withType(ctx.receiveValue(typeQuery.type, ValueType.Object));
         return typeQuery;
     }
@@ -1429,7 +1430,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveNode<NameTree>(null, ctx.receiveTree)!,
+                ctx.receiveNode<J>(null, ctx.receiveTree)!,
                 ctx.receiveNode<JContainer<Expression>>(null, receiveContainer),
                 ctx.receiveValue(null, ValueType.Object)
             );
@@ -1614,7 +1615,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree),
                 ctx.receiveNode<JContainer<Expression>>(null, receiveContainer),
-                ctx.receiveNode<TemplateExpression>(null, ctx.receiveTree)!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }
@@ -1679,6 +1680,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<TypeTree>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JContainer<Expression>>(null, receiveContainer),
                 ctx.receiveValue(null, ValueType.Object)
             );
         }

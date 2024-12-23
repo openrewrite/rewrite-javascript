@@ -112,4 +112,14 @@ describe('type-query operator mapping', () => {
             `)
         );
     });
+
+    test('typeof with generics', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type MyStructReturnType<X extends S.Schema.All> = S.Schema.Type<ReturnType<typeof MyStruct/*a*/</*c*/X/*d*/>/*b*/>>
+            `)
+        );
+    });
+
 });

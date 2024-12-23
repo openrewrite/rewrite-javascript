@@ -14,6 +14,15 @@ describe('template expression mapping', () => {
         );
     });
 
+    test('simple template with literal', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const v = \`\${42}\`;
+            `)
+        );
+    });
+
     test('simple template with comments', () => {
         rewriteRun(
             //language=typescript
@@ -124,6 +133,21 @@ describe('template expression mapping', () => {
             typeScript(`
                 type Name = "Alice";
                 type Greeting = \`Hello, \${Name}!\`;
+            `)
+        );
+    });
+
+    test('template yield LiteralType ', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                Effect.gen(function* () {
+                    const sql = yield* SqlClient.SqlClient
+
+                    const rows = yield* sql<{ table_name: string }>\`abc \`
+
+                    expect(rows).toEqual([{table_name: "test_creation"}])
+                }).pipe(runTest({table: "test_creation"}))
             `)
         );
     });

@@ -99,6 +99,7 @@ describe('import mapping', () => {
             //language=typescript
             typeScript(`
                 import foo from 'module-name' with { type: "json" };
+                import Package from 'module-name' assert { type: "json" }
             `)
         );
     });
