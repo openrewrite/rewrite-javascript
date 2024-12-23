@@ -219,4 +219,17 @@ describe('for mapping', () => {
             `)
         );
     });
+
+    test('for with bool condition', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                let bit = true
+                for (let i = 0;/*a*/ bit/*b*/; ++i) {
+                   bit = false;
+                }
+            `)
+        );
+    });
+
 });

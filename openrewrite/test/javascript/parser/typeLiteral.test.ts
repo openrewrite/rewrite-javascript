@@ -56,4 +56,15 @@ describe('type literal mapping', () => {
             `)
         );
     });
+
+    test('with index signature and mapped type', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+              export const struct: <R extends {/*a*/ readonly /*b*/[x: string]: Semigroup<any> }>(
+                  fields: R
+              ) => Semigroup<{ readonly [K in keyof R]: [R[K]] extends [Semigroup<infer A>] ? A : never }> = product_.struct(Product)
+          `)
+        );
+    });
 });

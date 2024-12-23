@@ -125,7 +125,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.ExpressionWithTypeArguments visitExpressionWithTypeArguments(JS.ExpressionWithTypeArguments expressionWithTypeArguments, P p) {
-        visitAndValidateNonNull(expressionWithTypeArguments.getClazz(), NameTree.class, p);
+        visitAndValidateNonNull(expressionWithTypeArguments.getClazz(), J.class, p);
         visitAndValidate(expressionWithTypeArguments.getTypeArguments(), Expression.class, p);
         return expressionWithTypeArguments;
     }
@@ -245,7 +245,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     public JS.TaggedTemplateExpression visitTaggedTemplateExpression(JS.TaggedTemplateExpression taggedTemplateExpression, P p) {
         visitAndValidate(taggedTemplateExpression.getTag(), Expression.class, p);
         visitAndValidate(taggedTemplateExpression.getTypeArguments(), Expression.class, p);
-        visitAndValidateNonNull(taggedTemplateExpression.getTemplateExpression(), JS.TemplateExpression.class, p);
+        visitAndValidateNonNull(taggedTemplateExpression.getTemplateExpression(), Expression.class, p);
         return taggedTemplateExpression;
     }
 
@@ -287,6 +287,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public JS.TypeQuery visitTypeQuery(JS.TypeQuery typeQuery, P p) {
         visitAndValidateNonNull(typeQuery.getTypeExpression(), TypeTree.class, p);
+        visitAndValidate(typeQuery.getTypeArguments(), Expression.class, p);
         return typeQuery;
     }
 

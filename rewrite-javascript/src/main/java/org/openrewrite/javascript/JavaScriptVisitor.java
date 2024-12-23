@@ -840,6 +840,9 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
             t = (JS.TypeQuery) temp;
         }
         t = t.withTypeExpression(Objects.requireNonNull(visitAndCast(t.getTypeExpression(), p)));
+        if (t.getPadding().getTypeArguments() != null) {
+            t = t.getPadding().withTypeArguments(visitContainer(t.getPadding().getTypeArguments(), JsContainer.Location.TYPE_QUERY_TYPE_ARGUMENTS, p));
+        }
         t = t.withType(visitType(t.getType(), p));
         return t;
     }

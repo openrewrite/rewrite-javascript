@@ -353,5 +353,6 @@ export namespace JsContainer {
         IMPORT_TYPE_TYPE_ARGUMENTS,
         NAMED_EXPORTS_ELEMENTS,
         MAPPED_TYPE_VALUE_TYPE,
+        TYPE_QUERY_TYPE_ARGUMENTS,
     }
 }

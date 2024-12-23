@@ -238,4 +238,27 @@ describe('type alias mapping', () => {
             `)
         );
     });
+
+    test('trailing comma in params', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type RichText = (
+                    overrides?: Partial<RichTextField>/*a*/,/*b*/
+                ) => RichTextField
+            `)
+        );
+    });
+
+    test('trailing comma in type args', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export type AfterReadRichTextHookArgs<
+                    TValue = any,
+                > = {}
+            `)
+        );
+    });
+
 });
