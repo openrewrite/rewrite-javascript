@@ -1,5 +1,4 @@
 rootProject.name = "rewrite-javascript"
-include("js")
 include("rewrite-javascript")
 include("rewrite-javascript-remote")
 include("rewrite-test-engine-remote")
