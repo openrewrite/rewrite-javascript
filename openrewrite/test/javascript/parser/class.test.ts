@@ -542,4 +542,15 @@ describe('class mapping', () => {
         );
     });
 
+    test('class with type param with trailing comma', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export class APIError<
+                    TData extends null | object = { [key: string]: unknown } | null,
+                > extends ExtendableError<TData> {}
+            `)
+        );
+    });
+
 });

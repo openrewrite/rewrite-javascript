@@ -162,6 +162,7 @@ describe('call mapping', () => {
             //language=typescript
             typeScript(`
                 var d = (new Date).getTime()
+                // use marker omit
             `)
         );
     });

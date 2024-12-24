@@ -158,6 +158,15 @@ describe('export keyword tests', () => {
             `)
         );
     });
+
+    test('empty named export', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export {/*a*/}
+            `)
+        );
+    });
 });
 
 

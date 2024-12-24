@@ -309,6 +309,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(propertyAssignment, JS.PropertyAssignment::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(propertyAssignment, JS.PropertyAssignment::getMarkers, ctx::sendMarkers);
             ctx.sendNode(propertyAssignment, e -> e.getPadding().getName(), JavaScriptSender::sendRightPadded);
+            ctx.sendValue(propertyAssignment, JS.PropertyAssignment::getAssigmentToken);
             ctx.sendNode(propertyAssignment, JS.PropertyAssignment::getInitializer, ctx::sendTree);
             return propertyAssignment;
         }

@@ -2101,12 +2101,13 @@ export class ObjectBindingDeclarations extends JSMixin(Object) implements Expres
 
 @LstType("org.openrewrite.javascript.tree.JS$PropertyAssignment")
 export class PropertyAssignment extends JSMixin(Object) implements Statement, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<Expression>, initializer: Expression | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<Expression>, assigmentToken: PropertyAssignment.AssigmentToken, initializer: Expression | null) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
         this._name = name;
+        this._assigmentToken = assigmentToken;
         this._initializer = initializer;
     }
 
@@ -2117,7 +2118,7 @@ export class PropertyAssignment extends JSMixin(Object) implements Statement, Ty
         }
 
         public withId(id: UUID): PropertyAssignment {
-            return id === this._id ? this : new PropertyAssignment(id, this._prefix, this._markers, this._name, this._initializer);
+            return id === this._id ? this : new PropertyAssignment(id, this._prefix, this._markers, this._name, this._assigmentToken, this._initializer);
         }
 
         private readonly _prefix: Space;
@@ -2127,7 +2128,7 @@ export class PropertyAssignment extends JSMixin(Object) implements Statement, Ty
         }
 
         public withPrefix(prefix: Space): PropertyAssignment {
-            return prefix === this._prefix ? this : new PropertyAssignment(this._id, prefix, this._markers, this._name, this._initializer);
+            return prefix === this._prefix ? this : new PropertyAssignment(this._id, prefix, this._markers, this._name, this._assigmentToken, this._initializer);
         }
 
         private readonly _markers: Markers;
@@ -2137,7 +2138,7 @@ export class PropertyAssignment extends JSMixin(Object) implements Statement, Ty
         }
 
         public withMarkers(markers: Markers): PropertyAssignment {
-            return markers === this._markers ? this : new PropertyAssignment(this._id, this._prefix, markers, this._name, this._initializer);
+            return markers === this._markers ? this : new PropertyAssignment(this._id, this._prefix, markers, this._name, this._assigmentToken, this._initializer);
         }
 
         private readonly _name: JRightPadded<Expression>;
@@ -2150,6 +2151,16 @@ export class PropertyAssignment extends JSMixin(Object) implements Statement, Ty
             return this.padding.withName(this._name.withElement(name));
         }
 
+        private readonly _assigmentToken: PropertyAssignment.AssigmentToken;
+
+        public get assigmentToken(): PropertyAssignment.AssigmentToken {
+            return this._assigmentToken;
+        }
+
+        public withAssigmentToken(assigmentToken: PropertyAssignment.AssigmentToken): PropertyAssignment {
+            return assigmentToken === this._assigmentToken ? this : new PropertyAssignment(this._id, this._prefix, this._markers, this._name, assigmentToken, this._initializer);
+        }
+
         private readonly _initializer: Expression | null;
 
         public get initializer(): Expression | null {
@@ -2157,7 +2168,7 @@ export class PropertyAssignment extends JSMixin(Object) implements Statement, Ty
         }
 
         public withInitializer(initializer: Expression | null): PropertyAssignment {
-            return initializer === this._initializer ? this : new PropertyAssignment(this._id, this._prefix, this._markers, this._name, initializer);
+            return initializer === this._initializer ? this : new PropertyAssignment(this._id, this._prefix, this._markers, this._name, this._assigmentToken, initializer);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
@@ -2179,9 +2190,19 @@ export class PropertyAssignment extends JSMixin(Object) implements Statement, Ty
                 return t._name;
             }
             public withName(name: JRightPadded<Expression>): PropertyAssignment {
-                return t._name === name ? t : new PropertyAssignment(t._id, t._prefix, t._markers, name, t._initializer);
+                return t._name === name ? t : new PropertyAssignment(t._id, t._prefix, t._markers, name, t._assigmentToken, t._initializer);
             }
         }
+    }
+
+}
+
+export namespace PropertyAssignment {
+    export enum AssigmentToken {
+            Colon = 0,
+            Equals = 1,
+            Empty = 2,
+
     }
 
 }
@@ -4482,6 +4503,7 @@ export namespace NamespaceDeclaration {
     export enum KeywordType {
             Namespace = 0,
             Module = 1,
+            Empty = 2,
 
     }
 
@@ -5211,7 +5233,7 @@ export class ExportAssignment extends JSMixin(Object) implements Statement {
 
 @LstType("org.openrewrite.javascript.tree.JS$NamedExports")
 export class NamedExports extends JSMixin(Object) implements Expression {
-    public constructor(id: UUID, prefix: Space, markers: Markers, elements: JContainer<ExportSpecifier>, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, elements: JContainer<Expression>, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -5250,13 +5272,13 @@ export class NamedExports extends JSMixin(Object) implements Expression {
             return markers === this._markers ? this : new NamedExports(this._id, this._prefix, markers, this._elements, this._type);
         }
 
-        private readonly _elements: JContainer<ExportSpecifier>;
+        private readonly _elements: JContainer<Expression>;
 
-        public get elements(): ExportSpecifier[] {
+        public get elements(): Expression[] {
             return this._elements.elements;
         }
 
-        public withElements(elements: ExportSpecifier[]): NamedExports {
+        public withElements(elements: Expression[]): NamedExports {
             return this.padding.withElements(JContainer.withElements(this._elements, elements));
         }
 
@@ -5277,10 +5299,10 @@ export class NamedExports extends JSMixin(Object) implements Expression {
     get padding() {
         const t = this;
         return new class {
-            public get elements(): JContainer<ExportSpecifier> {
+            public get elements(): JContainer<Expression> {
                 return t._elements;
             }
-            public withElements(elements: JContainer<ExportSpecifier>): NamedExports {
+            public withElements(elements: JContainer<Expression>): NamedExports {
                 return t._elements === elements ? t : new NamedExports(t._id, t._prefix, t._markers, elements, t._type);
             }
         }

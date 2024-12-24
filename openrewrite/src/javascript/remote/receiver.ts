@@ -258,6 +258,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         propertyAssignment = propertyAssignment.withPrefix(ctx.receiveNode(propertyAssignment.prefix, receiveSpace)!);
         propertyAssignment = propertyAssignment.withMarkers(ctx.receiveNode(propertyAssignment.markers, ctx.receiveMarkers)!);
         propertyAssignment = propertyAssignment.padding.withName(ctx.receiveNode(propertyAssignment.padding.name, receiveRightPaddedTree)!);
+        propertyAssignment = propertyAssignment.withAssigmentToken(ctx.receiveValue(propertyAssignment.assigmentToken, ValueType.Enum)!);
         propertyAssignment = propertyAssignment.withInitializer(ctx.receiveNode(propertyAssignment.initializer, ctx.receiveTree));
         return propertyAssignment;
     }
@@ -1575,6 +1576,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<JRightPadded<Expression>>(null, receiveRightPaddedTree)!,
+                ctx.receiveValue(null, ValueType.Enum)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)
             );
         }
@@ -1941,7 +1943,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveNode<JContainer<ExportSpecifier>>(null, receiveContainer)!,
+                ctx.receiveNode<JContainer<Expression>>(null, receiveContainer)!,
                 ctx.receiveValue(null, ValueType.Object)
             );
         }
