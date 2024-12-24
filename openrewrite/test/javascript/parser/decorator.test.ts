@@ -45,6 +45,15 @@ describe('class decorator mapping', () => {
           `)
         );
     });
+    test('decorator with type params', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              @StaticInterfaceImplement/*a*/<ISpriteAssembler>/*b*/()
+              export class SimpleSpriteAssembler {}
+          `)
+        );
+    });
     test('class / method / params / properties decorators', () => {
         rewriteRun(
           //language=typescript

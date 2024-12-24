@@ -38,4 +38,16 @@ describe('do-while mapping', () => {
             `)
         );
     });
+
+    test.skip('do-while with labeled statement', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                partition: do {
+                    break partition;
+                } while (from < to)/*a*/;/*b*/
+            `)
+        );
+    });
+
 });

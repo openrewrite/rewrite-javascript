@@ -253,6 +253,7 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(propertyAssignment, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(propertyAssignment, v => v.markers, ctx.sendMarkers);
         ctx.sendNode(propertyAssignment, v => v.padding.name, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendValue(propertyAssignment, v => v.assigmentToken, ValueType.Enum);
         ctx.sendNode(propertyAssignment, v => v.initializer, ctx.sendTree);
         return propertyAssignment;
     }

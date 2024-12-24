@@ -455,7 +455,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.NamedExports visitNamedExports(JS.NamedExports namedExports, P p) {
-        visitAndValidate(namedExports.getElements(), JS.ExportSpecifier.class, p);
+        visitAndValidate(namedExports.getElements(), Expression.class, p);
         return namedExports;
     }
 

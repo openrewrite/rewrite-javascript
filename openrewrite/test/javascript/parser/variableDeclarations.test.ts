@@ -169,4 +169,13 @@ describe('variable declaration mapping', () => {
             `),
         );
     });
+
+    test('variable with exclamation token', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                let schema/*a*/!/*b*/: number;
+          `)
+        );
+    });
 });

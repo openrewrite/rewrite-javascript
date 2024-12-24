@@ -2029,6 +2029,9 @@ public interface JS extends J {
         }
 
         @With
+        AssigmentToken assigmentToken;
+
+        @With
         @Nullable
         Expression initializer;
 
@@ -2040,12 +2043,18 @@ public interface JS extends J {
         @SuppressWarnings("unchecked")
         @Override
         public PropertyAssignment withType(@Nullable JavaType type) {
-            return initializer.getType() == type ? this : new PropertyAssignment(id, prefix, markers, name, initializer.withType(type));
+            return initializer.getType() == type ? this : new PropertyAssignment(id, prefix, markers, name, assigmentToken, initializer.withType(type));
         }
 
         @Override
         public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
             return v.visitPropertyAssignment(this, p);
+        }
+
+        public enum AssigmentToken {
+            Colon,
+            Equals,
+            Empty
         }
 
         public Padding getPadding() {
@@ -2083,9 +2092,8 @@ public interface JS extends J {
             }
 
             public PropertyAssignment withName(JRightPadded<Expression> target) {
-                return t.name == target ? t : new PropertyAssignment(t.id, t.prefix, t.markers, target, t.initializer);
+                return t.name == target ? t : new PropertyAssignment(t.id, t.prefix, t.markers, target, t.assigmentToken, t.initializer);
             }
-
         }
     }
 
@@ -4196,6 +4204,7 @@ public interface JS extends J {
         public enum KeywordType {
             Namespace,
             Module,
+            Empty
         }
 
         @RequiredArgsConstructor
@@ -4885,13 +4894,13 @@ public interface JS extends J {
         @Getter
         Markers markers;
 
-        JContainer<ExportSpecifier> elements;
+        JContainer<Expression> elements;
 
-        public List<ExportSpecifier> getElements() {
+        public List<Expression> getElements() {
             return elements.getElements();
         }
 
-        public NamedExports withElements(List<ExportSpecifier> elements) {
+        public NamedExports withElements(List<Expression> elements) {
             return getPadding().withElements(JContainer.withElements(this.elements, elements));
         }
 
@@ -4929,11 +4938,11 @@ public interface JS extends J {
         public static class Padding {
             private final NamedExports t;
 
-            public JContainer<ExportSpecifier> getElements() {
+            public JContainer<Expression> getElements() {
                 return t.elements;
             }
 
-            public NamedExports withElements(JContainer<ExportSpecifier> elements) {
+            public NamedExports withElements(JContainer<Expression> elements) {
                 return t.elements == elements ? t : new NamedExports(t.id, t.prefix, t.markers, elements, t.type);
             }
         }

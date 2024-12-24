@@ -271,4 +271,19 @@ describe('namespace mapping', () => {
           `)
         );
     });
+
+
+    test('extend global type definitions without namespace keyword', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                declare global {
+                    interface Window {
+                        myCustomGlobalFunction?: () => void; // Add a custom global function
+                    }
+                }
+          `)
+        );
+    });
+
 });

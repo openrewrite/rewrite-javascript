@@ -366,7 +366,11 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         if (propertyAssignment.getInitializer() != null) {
             // if property is not null, we should print it like `{ a: b }`
             // otherwise it is a shorthanded assignment where we have stuff like `{ a }` only
-            p.append(':');
+            if (propertyAssignment.getAssigmentToken() == JS.PropertyAssignment.AssigmentToken.Colon) {
+                p.append(':');
+            } else if (propertyAssignment.getAssigmentToken() == JS.PropertyAssignment.AssigmentToken.Equals) {
+                p.append('=');
+            }
             visit(propertyAssignment.getInitializer(), p);
         }
 
@@ -385,6 +389,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 break;
             case Module:
                 p.append("module");
+                break;
+            default:
                 break;
         }
         this.visitRightPadded(namespaceDeclaration.getPadding().getName(), JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p);

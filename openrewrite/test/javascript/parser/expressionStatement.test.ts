@@ -202,4 +202,16 @@ describe('expression statement mapping', () => {
         );
     });
 
+    test('shorthand property assignment with initializer', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                ({
+                    initialState,
+                    resultSelector/*a*/ = /*b*/identity as ResultFunc<S, T>,
+                } = initialStateOrOptions as GenerateOptions<T, S>);
+            `)
+        );
+    });
+
 });
