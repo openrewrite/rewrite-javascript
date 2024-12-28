@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -119,6 +119,15 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         expressionStatement = expressionStatement.withId(ctx.receiveValue(expressionStatement.id, ValueType.UUID)!);
         expressionStatement = expressionStatement.withExpression(ctx.receiveNode(expressionStatement.expression, ctx.receiveTree)!);
         return expressionStatement;
+    }
+
+    public visitTrailingTokenStatement(trailingTokenStatement: TrailingTokenStatement, ctx: ReceiverContext): J {
+        trailingTokenStatement = trailingTokenStatement.withId(ctx.receiveValue(trailingTokenStatement.id, ValueType.UUID)!);
+        trailingTokenStatement = trailingTokenStatement.withPrefix(ctx.receiveNode(trailingTokenStatement.prefix, receiveSpace)!);
+        trailingTokenStatement = trailingTokenStatement.withMarkers(ctx.receiveNode(trailingTokenStatement.markers, ctx.receiveMarkers)!);
+        trailingTokenStatement = trailingTokenStatement.padding.withExpression(ctx.receiveNode(trailingTokenStatement.padding.expression, receiveRightPaddedTree)!);
+        trailingTokenStatement = trailingTokenStatement.withType(ctx.receiveValue(trailingTokenStatement.type, ValueType.Object));
+        return trailingTokenStatement;
     }
 
     public visitExpressionWithTypeArguments(expressionWithTypeArguments: ExpressionWithTypeArguments, ctx: ReceiverContext): J {
@@ -1423,6 +1432,16 @@ class Factory implements ReceiverFactory {
             return new ExpressionStatement(
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$TrailingTokenStatement") {
+            return new TrailingTokenStatement(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JRightPadded<J>>(null, receiveRightPaddedTree)!,
+                ctx.receiveValue(null, ValueType.Object)
             );
         }
 

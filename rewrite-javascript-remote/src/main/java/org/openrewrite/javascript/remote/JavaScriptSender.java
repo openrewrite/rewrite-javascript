@@ -160,6 +160,16 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.TrailingTokenStatement visitTrailingTokenStatement(JS.TrailingTokenStatement trailingTokenStatement, SenderContext ctx) {
+            ctx.sendValue(trailingTokenStatement, JS.TrailingTokenStatement::getId);
+            ctx.sendNode(trailingTokenStatement, JS.TrailingTokenStatement::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(trailingTokenStatement, JS.TrailingTokenStatement::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(trailingTokenStatement, e -> e.getPadding().getExpression(), JavaScriptSender::sendRightPadded);
+            ctx.sendTypedValue(trailingTokenStatement, JS.TrailingTokenStatement::getType);
+            return trailingTokenStatement;
+        }
+
+        @Override
         public JS.ExpressionWithTypeArguments visitExpressionWithTypeArguments(JS.ExpressionWithTypeArguments expressionWithTypeArguments, SenderContext ctx) {
             ctx.sendValue(expressionWithTypeArguments, JS.ExpressionWithTypeArguments::getId);
             ctx.sendNode(expressionWithTypeArguments, JS.ExpressionWithTypeArguments::getPrefix, JavaScriptSender::sendSpace);

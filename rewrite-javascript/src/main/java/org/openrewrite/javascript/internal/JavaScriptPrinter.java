@@ -177,6 +177,14 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitTrailingTokenStatement(JS.TrailingTokenStatement statement, PrintOutputCapture<P> p) {
+        beforeSyntax(statement, JsSpace.Location.TRAILING_TOKEN_PREFIX, p);
+        visitRightPadded(statement.getPadding().getExpression(), JsRightPadded.Location.TRAILING_TOKEN_EXPRESSION, p);
+        afterSyntax(statement, p);
+        return statement;
+    }
+
+    @Override
     public J visitExport(JS.Export export, PrintOutputCapture<P> p) {
         beforeSyntax(export, JsSpace.Location.EXPORT_PREFIX, p);
         p.append("export");
