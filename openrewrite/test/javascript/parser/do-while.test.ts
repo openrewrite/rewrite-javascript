@@ -39,13 +39,28 @@ describe('do-while mapping', () => {
         );
     });
 
-    test.skip('do-while with labeled statement', () => {
+    test('do-while with labeled statement and semicolon', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
-                partition: do {
-                    break partition;
-                } while (from < to)/*a*/;/*b*/
+                function foo() {
+                    partition: do {
+                        break partition;
+                    } while (from < to)/*a*/;/*b*/
+                }
+            `)
+        );
+    });
+
+    test('do-while statement with semicolon', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export function getMarkoRoot(path: t.NodePath<t.Node>) {
+                    do curPath = curPath.parentPath/*a*/;/*b*/
+                    while (curPath && !isMarko(curPath));
+                    return curPath;
+                }
             `)
         );
     });

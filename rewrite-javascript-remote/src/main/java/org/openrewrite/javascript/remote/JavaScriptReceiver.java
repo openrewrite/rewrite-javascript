@@ -178,6 +178,16 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.TrailingTokenStatement visitTrailingTokenStatement(JS.TrailingTokenStatement trailingTokenStatement, ReceiverContext ctx) {
+            trailingTokenStatement = trailingTokenStatement.withId(ctx.receiveNonNullValue(trailingTokenStatement.getId(), UUID.class));
+            trailingTokenStatement = trailingTokenStatement.withPrefix(ctx.receiveNonNullNode(trailingTokenStatement.getPrefix(), JavaScriptReceiver::receiveSpace));
+            trailingTokenStatement = trailingTokenStatement.withMarkers(ctx.receiveNonNullNode(trailingTokenStatement.getMarkers(), ctx::receiveMarkers));
+            trailingTokenStatement = trailingTokenStatement.getPadding().withExpression(ctx.receiveNonNullNode(trailingTokenStatement.getPadding().getExpression(), JavaScriptReceiver::receiveRightPaddedTree));
+            trailingTokenStatement = trailingTokenStatement.withType(ctx.receiveValue(trailingTokenStatement.getType(), JavaType.class));
+            return trailingTokenStatement;
+        }
+
+        @Override
         public JS.ExpressionWithTypeArguments visitExpressionWithTypeArguments(JS.ExpressionWithTypeArguments expressionWithTypeArguments, ReceiverContext ctx) {
             expressionWithTypeArguments = expressionWithTypeArguments.withId(ctx.receiveNonNullValue(expressionWithTypeArguments.getId(), UUID.class));
             expressionWithTypeArguments = expressionWithTypeArguments.withPrefix(ctx.receiveNonNullNode(expressionWithTypeArguments.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1481,6 +1491,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 if (type == JS.Delete.class) return Factory::createJSDelete;
                 if (type == JS.Export.class) return Factory::createJSExport;
                 if (type == JS.ExpressionStatement.class) return Factory::createJSExpressionStatement;
+                if (type == JS.TrailingTokenStatement.class) return Factory::createJSTrailingTokenStatement;
                 if (type == JS.ExpressionWithTypeArguments.class) return Factory::createJSExpressionWithTypeArguments;
                 if (type == JS.FunctionType.class) return Factory::createJSFunctionType;
                 if (type == JS.InferType.class) return Factory::createJSInferType;
@@ -1711,6 +1722,16 @@ public class JavaScriptReceiver implements Receiver<JS> {
             return new JS.ExpressionStatement(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, ctx::receiveTree)
+            );
+        }
+
+        private static JS.TrailingTokenStatement createJSTrailingTokenStatement(ReceiverContext ctx) {
+            return new JS.TrailingTokenStatement(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
+                    ctx.receiveValue(null, JavaType.class)
             );
         }
 

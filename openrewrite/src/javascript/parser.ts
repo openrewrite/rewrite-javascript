@@ -2544,8 +2544,8 @@ export class JavaScriptParserVisitor {
     }
 
     visitIfStatement(node: ts.IfStatement) {
-        const semicolonAfterThen = (node.thenStatement?.kind != ts.SyntaxKind.IfStatement) && (node.thenStatement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken);
-        const semicolonAfterElse = (node.elseStatement?.kind != ts.SyntaxKind.IfStatement) && (node.elseStatement?.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken);
+        const semicolonAfterThen = (node.thenStatement.getChildAt(node.thenStatement.getChildCount() - 1)?.kind == ts.SyntaxKind.SemicolonToken);
+        const semicolonAfterElse = (node.elseStatement?.getChildAt(node.elseStatement.getChildCount() - 1)?.kind == ts.SyntaxKind.SemicolonToken);
         return new J.If(
             randomId(),
             this.prefix(node),
@@ -2579,9 +2579,11 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.rightPadded(this.visit(node.statement), this.suffix(node.statement)),
+            this.rightPadded(this.visit(node.statement),
+                node.statement.kind === ts.SyntaxKind.ExpressionStatement ? this.prefix(node.statement.getLastToken()!) : this.suffix(node.statement),
+                node.statement.kind === ts.SyntaxKind.ExpressionStatement ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY),
             this.leftPadded(
-                Space.EMPTY,
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.WhileKeyword)!),
                 new J.ControlParentheses(
                     randomId(),
                     this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
@@ -2632,7 +2634,7 @@ export class JavaScriptParserVisitor {
             this.rightPadded(
                 this.convert(node.statement),
                 this.semicolonPrefix(node.statement),
-                node.statement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+                node.statement.getChildAt(node.statement.getChildCount() - 1)?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
             )
         );
     }
@@ -2652,7 +2654,7 @@ export class JavaScriptParserVisitor {
             this.rightPadded(
                 this.convert(node.statement),
                 this.semicolonPrefix(node.statement),
-                node.statement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+                node.statement.getChildAt(node.statement.getChildCount() - 1)?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
             )
         );
     }
@@ -2673,7 +2675,7 @@ export class JavaScriptParserVisitor {
             this.rightPadded(
                 this.convert(node.statement),
                 this.semicolonPrefix(node.statement),
-                node.statement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+                node.statement.getChildAt(node.statement.getChildCount() - 1)?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
             )
         );
     }
@@ -2730,7 +2732,17 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.rightPadded(this.visit(node.label), this.suffix(node.label)),
-            this.visit(node.statement)
+            new JS.TrailingTokenStatement(
+                randomId(),
+                Space.EMPTY,
+                Markers.EMPTY,
+                this.rightPadded(
+                    this.visit(node.statement),
+                    this.semicolonPrefix(node.statement),
+                    node.statement.getChildAt(node.statement.getChildCount() - 1)?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+                ),
+                this.mapType(node.statement)
+            )
         );
     }
 

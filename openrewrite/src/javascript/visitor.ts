@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -138,6 +138,25 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
     public visitExpressionStatement(expressionStatement: ExpressionStatement, p: P): J | null {
         expressionStatement = expressionStatement.withExpression(this.visitAndCast(expressionStatement.expression, p)!);
         return expressionStatement;
+    }
+
+    public visitTrailingTokenStatement(trailingTokenStatement: TrailingTokenStatement, p: P): J | null {
+        trailingTokenStatement = trailingTokenStatement.withPrefix(this.visitJsSpace(trailingTokenStatement.prefix, JsSpace.Location.TRAILING_TOKEN_STATEMENT_PREFIX, p)!);
+        let tempStatement = this.visitStatement(trailingTokenStatement, p) as Statement;
+        if (!(tempStatement instanceof TrailingTokenStatement))
+        {
+            return tempStatement;
+        }
+        trailingTokenStatement = tempStatement as TrailingTokenStatement;
+        let tempExpression = this.visitExpression(trailingTokenStatement, p) as Expression;
+        if (!(tempExpression instanceof TrailingTokenStatement))
+        {
+            return tempExpression;
+        }
+        trailingTokenStatement = tempExpression as TrailingTokenStatement;
+        trailingTokenStatement = trailingTokenStatement.withMarkers(this.visitMarkers(trailingTokenStatement.markers, p));
+        trailingTokenStatement = trailingTokenStatement.padding.withExpression(this.visitJsRightPadded(trailingTokenStatement.padding.expression, JsRightPadded.Location.TRAILING_TOKEN_STATEMENT_EXPRESSION, p)!);
+        return trailingTokenStatement;
     }
 
     public visitExpressionWithTypeArguments(expressionWithTypeArguments: ExpressionWithTypeArguments, p: P): J | null {

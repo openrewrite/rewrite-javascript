@@ -36,9 +36,9 @@ describe('if mapping', () => {
             //language=typescript
             typeScript(`
                 if (true) {
-                    console.log("foo");
+                    console.log("foo")/*a*/;/*b*/
                 } else
-                    console.log("bar");
+                    console.log("bar")/*a*/;/*b*/
             `)
         );
     });
@@ -67,4 +67,81 @@ describe('if mapping', () => {
             `)
         );
     });
+
+    test('if with for with semicolon', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                if (prevProps)
+                    for (let name in prevProps) name in nextProps || (node[name] = void 0)/*a*/;/*b*/
+            `)
+        );
+    });
+
+    test('for with if with return and semicolon', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                    for (let opt of el.options)
+                         if (opt.selected !== opt.defaultSelected) return !0;
+            `)
+        );
+    });
+
+
+    test('for with if with semicolon', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                for(;;)
+                    if (true)
+                        console.log("foo")/*a*/;/*b*/
+            `)
+        );
+    });
+
+    test('if with return', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+               if (prevProps)
+                    return abs(prevProps)/*a*/;/*b*/
+            `)
+        );
+    });
+
+    test('if with break', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                for(;;) {
+                    if (!len--) break;
+                }
+            `)
+        );
+    });
+
+    test('if with continue', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                for(;;) {
+                    if (!len--) continue;
+                }
+            `)
+        );
+    });
+
+    test('if with do', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                if (newStart > newEnd)
+                    do {
+                        abs(x);
+                    } while (oldStart <= oldEnd);
+            `)
+        );
+    });
+
 });
