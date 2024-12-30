@@ -1941,7 +1941,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 Space.EMPTY,
                 Markers.EMPTY,
-                this.visit(node.expression),
+                new TypeTreeExpression(randomId(), Space.EMPTY, Markers.EMPTY, this.visit(node.expression)),
                 this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments),
                 null
             ): new TypeTreeExpression(randomId(), Space.EMPTY, Markers.EMPTY, this.visit(node.expression)),

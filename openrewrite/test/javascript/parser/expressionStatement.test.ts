@@ -214,4 +214,13 @@ describe('expression statement mapping', () => {
         );
     });
 
+    test('new expression with array access', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const results = new this.constructor[Symbol.species]<Key, Value>();
+            `)
+        );
+    });
+
 });
