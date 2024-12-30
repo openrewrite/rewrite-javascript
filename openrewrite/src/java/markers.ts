@@ -46,3 +46,21 @@ export class TrailingComma implements Marker {
         return suffix == this._suffix ? this : new TrailingComma(this._id, suffix);
     }
 }
+
+@LstType("org.openrewrite.java.marker.OmitParentheses")
+export class OmitParentheses implements Marker {
+    [MarkerSymbol] = true;
+    private readonly _id: UUID;
+
+    constructor(id: UUID) {
+        this._id = id;
+    }
+
+    get id() {
+        return this._id;
+    }
+
+    withId(id: UUID): OmitParentheses {
+        return id == this._id ? this : new OmitParentheses(id);
+    }
+}
