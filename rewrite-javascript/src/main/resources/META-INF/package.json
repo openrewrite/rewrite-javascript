@@ -4,7 +4,7 @@
   "description": "",
   "dependencies": {
     "@openrewrite/rewrite-remote": "~0.13.0",
-    "@openrewrite/rewrite": "~0.25.0"
+    "@openrewrite/rewrite": "~0.26.0"
   },
   "devDependencies": {
   }
