@@ -36,6 +36,20 @@ describe('type literal mapping', () => {
           `)
         );
     });
+    test('null save access ?.', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const array: Array<any> = null;
+                console.log(array.length);
+            `),
+            //language=typescript
+            typeScript(`
+                const array: Array<any> = null;
+                console.log(array?.length);
+            `)
+        );
+    });
 
     test('type literal', () => {
         rewriteRun(
