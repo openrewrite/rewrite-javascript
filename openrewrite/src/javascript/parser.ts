@@ -1331,7 +1331,9 @@ export class JavaScriptParserVisitor {
             this.mapTypeParametersAsObject(node),
             new JContainer(
                 this.prefix(node.getChildAt(node.getChildren().findIndex(n => n.pos === node.parameters.pos) - 1)),
-                node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p)))
+                node.parameters.length == 0 ?
+                    [this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!))]
+                    : node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p)))
                     .concat(node.parameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!)) : []),
                 Markers.EMPTY),
             this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsGreaterThanToken)!),
@@ -2123,7 +2125,7 @@ export class JavaScriptParserVisitor {
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
-            this.leftPadded(this.prefix(node.getFirstToken()!), unaryOperator),
+            this.leftPadded(this.suffix(node.operand), unaryOperator),
             this.convert(node.operand),
             this.mapType(node)
         );
@@ -2608,7 +2610,7 @@ export class JavaScriptParserVisitor {
            this.rightPadded(
                this.convert(node.statement),
                this.semicolonPrefix(node.statement),
-               node.statement.getLastToken()?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+               node.statement.getChildAt(node.statement.getChildCount() - 1)?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
            )
         );
     }
@@ -2823,6 +2825,8 @@ export class JavaScriptParserVisitor {
                     ? JS.ScopedVariableDeclarations.Scope.Let
                     : kind?.kind === ts.SyntaxKind.ConstKeyword
                     ? JS.ScopedVariableDeclarations.Scope.Const
+                    : kind?.kind === ts.SyntaxKind.UsingKeyword
+                    ? JS.ScopedVariableDeclarations.Scope.Using
                     : JS.ScopedVariableDeclarations.Scope.Var
             ),
             node.declarations.map((declaration) => {
@@ -3785,7 +3789,7 @@ export class JavaScriptParserVisitor {
     private mapTypeParametersAsJContainer(node: ts.ClassDeclaration | ts.InterfaceDeclaration | ts.ClassExpression): JContainer<J.TypeParameter> | null {
         return node.typeParameters
             ? JContainer.build(
-                this.suffix(this.findChildNode(node, ts.SyntaxKind.Identifier)!),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!),
                 this.mapTypeParametersList(node.typeParameters)
                     .concat(node.typeParameters.hasTrailingComma ? this.rightPadded(
                         new J.TypeParameter(randomId(), Space.EMPTY, Markers.EMPTY, [], [], this.newJEmpty(), null),
@@ -3802,10 +3806,12 @@ export class JavaScriptParserVisitor {
 
         return new J.TypeParameters(
             randomId(),
-            this.prefix(node.getChildAt(node.getChildren().findIndex(n => n.pos === typeParameters[0].pos) - 1)),
+            this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!),
             Markers.EMPTY,
             [],
-            typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp)))
+            typeParameters.length == 0 ?
+                [this.rightPadded(new J.TypeParameter(randomId(), Space.EMPTY, Markers.EMPTY, [], [], this.newJEmpty(), null), this.prefix(this.findChildNode(node, ts.SyntaxKind.GreaterThanToken)!))]
+                : typeParameters.map(tp => this.rightPadded(this.visit(tp), this.suffix(tp)))
                 .concat(typeParameters.hasTrailingComma ? this.rightPadded(
                     new J.TypeParameter(randomId(), Space.EMPTY, Markers.EMPTY, [], [], this.newJEmpty(), null),
                     this.prefix(this.findChildNode(node, ts.SyntaxKind.GreaterThanToken)!)) : []),

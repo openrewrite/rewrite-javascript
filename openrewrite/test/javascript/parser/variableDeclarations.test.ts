@@ -178,4 +178,13 @@ describe('variable declaration mapping', () => {
           `)
         );
     });
+
+    test('variable with using keyword', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                using unrefTimer = stub(Deno, 'unrefTimer');
+            `)
+        );
+    });
 });

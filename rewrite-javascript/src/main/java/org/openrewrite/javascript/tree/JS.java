@@ -2333,6 +2333,7 @@ public interface JS extends J {
             Const,
             Let,
             Var,
+            Using
         }
 
         @RequiredArgsConstructor

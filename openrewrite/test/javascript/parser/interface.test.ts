@@ -389,4 +389,15 @@ describe('interface mapping', () => {
         );
     });
 
+    test('function type with empty args', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export interface ProxyCursorHooks {
+                    getValue?: (/*a*/)=> any;
+                }
+            `)
+        );
+    });
+
 });

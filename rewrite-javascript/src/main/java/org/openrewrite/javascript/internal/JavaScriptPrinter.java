@@ -254,7 +254,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
     @Override
     public J visitJsImport(JS.JsImport jsImport, PrintOutputCapture<P> p) {
-        beforeSyntax(jsImport, JsSpace.Location.EXPORT_PREFIX, p);
+        beforeSyntax(jsImport, JsSpace.Location.IMPORT_PREFIX, p);
         p.append("import");
 
         if (jsImport.getImportType()) {
@@ -427,6 +427,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                     break;
                 case Var:
                     p.append("var");
+                    break;
+                case Using:
+                    p.append("using");
                     break;
             }
         }
