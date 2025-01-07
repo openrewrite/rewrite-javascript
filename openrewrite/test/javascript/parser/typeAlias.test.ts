@@ -261,4 +261,13 @@ describe('type alias mapping', () => {
         );
     });
 
+    test('type with empty type argument', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type A/*a*/</*b*/>/*c*/ = {/*d*/}
+            `)
+        );
+    });
+
 });

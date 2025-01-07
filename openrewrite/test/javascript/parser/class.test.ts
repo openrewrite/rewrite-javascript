@@ -553,4 +553,15 @@ describe('class mapping', () => {
         );
     });
 
+    test('new anonymous class with type params', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                new (class/*a*/<T extends object> extends WeakRef<T> {
+                    foo = "bar";
+                })({hello: "world"});
+            `)
+        );
+    });
+
 });

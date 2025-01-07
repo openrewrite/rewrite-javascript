@@ -64,4 +64,11 @@ describe('postfix operator mapping', () => {
           typeScript('a--;')
         );
     });
+
+    test('unary with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('/*a*/a/*b*/++/*c*/;')
+        );
+    });
 });

@@ -2477,6 +2477,7 @@ export namespace ScopedVariableDeclarations {
             Const = 0,
             Let = 1,
             Var = 2,
+            Using = 3,
 
     }
 
