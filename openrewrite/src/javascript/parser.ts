@@ -210,15 +210,45 @@ export class JavaScriptParserVisitor {
         return this.visit(node) as T;
     }
 
+    detectBOMAndTextEncoding(content: String) : { hasBom: boolean; encoding: string | null } {
+        const BOM_UTF8 = "\uFEFF"; // BOM for UTF-8
+        const BOM_UTF16_LE = [0xFF, 0xFE]; // BOM for UTF-16 Little Endian
+
+        // Detect BOM
+        const hasUtf8Bom = content.startsWith(BOM_UTF8);
+        const hasUtf16LeBom = content.charCodeAt(0) === BOM_UTF16_LE[0] && content.charCodeAt(1) === BOM_UTF16_LE[1];
+
+        if (hasUtf8Bom) {
+            return { hasBom: true, encoding: 'utf8' };
+        } else if (hasUtf16LeBom) {
+            return { hasBom: true, encoding: 'utf16le' };
+        }
+
+        return { hasBom: false, encoding: null };
+    }
+
     visitSourceFile(node: ts.SourceFile): JS.CompilationUnit {
+
+        let bomAndTextEncoding = this.detectBOMAndTextEncoding(node.getFullText());
+
+        let prefix = this.prefix(node);
+        if (bomAndTextEncoding.hasBom) {
+            // If a node full text has a BOM marker, it becomes a part of the prefix, so we remove it
+            if (bomAndTextEncoding.encoding === 'utf8') {
+                prefix = prefix.withWhitespace(prefix.whitespace!.slice(1));
+            } else if (bomAndTextEncoding.encoding === 'utf16le') {
+                prefix = prefix.withWhitespace(prefix.whitespace!.slice(2));
+            }
+        }
+
         return new JS.CompilationUnit(
             randomId(),
-            this.prefix(node),
+            prefix,
             Markers.EMPTY,
             this.sourceFile.fileName,
             null,
-            null,
-            false,
+            bomAndTextEncoding.encoding,
+            bomAndTextEncoding.hasBom,
             null,
             [],
             this.semicolonPaddedStatementList(node.statements),
