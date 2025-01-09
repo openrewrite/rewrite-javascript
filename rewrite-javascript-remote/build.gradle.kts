@@ -10,9 +10,9 @@ dependencies {
     annotationProcessor("com.google.auto.service:auto-service:1.1.1")
 
     implementation(project(":rewrite-javascript"))
-    implementation(platform("org.openrewrite:rewrite-bom:$latest"))
+    implementation(platform("org.openrewrite:rewrite-bom:8.41.1"))
     implementation("org.openrewrite:rewrite-java")
-    implementation("org.openrewrite:rewrite-remote:$latest") {
+    implementation("org.openrewrite:rewrite-remote:0.5.5") {
         exclude(group = "org.openrewrite", module = "rewrite-javascript")
     }
 
@@ -21,7 +21,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-params:latest.release")
     testImplementation("org.openrewrite:rewrite-test")
-    testImplementation("org.openrewrite.recipe:rewrite-static-analysis:${latest}")
+    testImplementation("org.openrewrite.recipe:rewrite-static-analysis:1.21.1")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")

@@ -9,7 +9,7 @@ val latest = if (System.getenv("RELEASE_PUBLICATION") != null) "latest.release" 
 dependencies {
     compileOnly("org.openrewrite:rewrite-test")
 
-    implementation(platform("org.openrewrite:rewrite-bom:$latest"))
+    implementation(platform("org.openrewrite:rewrite-bom:8.41.1"))
     implementation("org.openrewrite:rewrite-java")
     implementation("org.openrewrite:rewrite-remote-java:$latest") {
         exclude(group = "org.openrewrite", module = "rewrite-javascript")
@@ -20,7 +20,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-params:latest.release")
     testImplementation("org.openrewrite:rewrite-test")
-    testImplementation("org.openrewrite.recipe:rewrite-static-analysis:${latest}")
+    testImplementation("org.openrewrite.recipe:rewrite-static-analysis:1.21.1")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
     testImplementation(project(":rewrite-javascript-remote"))
 

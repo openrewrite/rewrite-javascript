@@ -13,7 +13,7 @@ dependencies {
 
     // The bom version can also be set to a specific version
     // https://github.com/openrewrite/rewrite-recipe-bom/releases
-    implementation(platform("org.openrewrite:rewrite-bom:latest.release"))
+    implementation(platform("org.openrewrite:rewrite-bom:8.41.1"))
 
     implementation("org.openrewrite:rewrite-core")
     implementation("org.openrewrite:rewrite-java")
@@ -21,10 +21,10 @@ dependencies {
     implementation(project(":rewrite-javascript"))
     implementation(project(":rewrite-javascript-remote"))
 
-    implementation("org.openrewrite:rewrite-remote:${latest}") {
+    implementation("org.openrewrite:rewrite-remote:0.5.5") {
         exclude(group = "org.openrewrite", module = "rewrite-remote-java")
     }
-    implementation("org.openrewrite:rewrite-remote-java:${latest}") {
+    implementation("org.openrewrite:rewrite-remote-java:0.5.5") {
         exclude(group = "org.openrewrite", module = "rewrite-remote-java")
     }
 
