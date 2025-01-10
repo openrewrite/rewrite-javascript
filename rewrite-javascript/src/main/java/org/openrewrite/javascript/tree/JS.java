@@ -5296,7 +5296,8 @@ public interface JS extends J {
             QuestionQuestion,
             And,
             Or,
-            Power
+            Power,
+            Exp
         }
 
         public JsAssignmentOperation.Padding getPadding() {

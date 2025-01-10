@@ -18,8 +18,11 @@ package org.openrewrite.javascript.recipe;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.ShortenFullyQualifiedTypeReferences;
+import org.openrewrite.javascript.JavaScriptParser;
 import org.openrewrite.staticanalysis.SimplifyBooleanExpression;
 import org.openrewrite.test.RewriteTest;
+
+import java.nio.file.Paths;
 
 import static org.openrewrite.javascript.Assertions.javaScript;
 
@@ -30,7 +33,8 @@ class RecipeTest implements RewriteTest {
     @Test
     void simplifyBooleanExpression() {
         rewriteRun(
-          spec -> spec.recipe(new SimplifyBooleanExpression()),
+          spec -> spec.recipe(new SimplifyBooleanExpression())
+            .parser(JavaScriptParser.usingRemotingInstallation(Paths.get("./build/node-installation-dir"))),
           javaScript(
             """
               const b = !false
@@ -45,7 +49,8 @@ class RecipeTest implements RewriteTest {
     @Test
     void shortenFullyQualifiedNames() {
         rewriteRun(
-          spec -> spec.recipe(new ShortenFullyQualifiedTypeReferences()),
+          spec -> spec.recipe(new ShortenFullyQualifiedTypeReferences())
+            .parser(JavaScriptParser.usingRemotingInstallation(Paths.get("./build/node-installation-dir"))),
           javaScript(
             """
               const a = { b: false }

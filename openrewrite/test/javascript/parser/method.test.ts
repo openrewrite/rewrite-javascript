@@ -210,4 +210,15 @@ describe('method mapping', () => {
         );
     });
 
+    test('method name as string literal', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export interface IEnumerable<T> extends Iterable<T> {
+                    /*a*/"System.Collections.IEnumerable.GetEnumerator"/*b*/(/*c*/): IEnumerator<any>;
+                }
+          `)
+        );
+    });
+
 });

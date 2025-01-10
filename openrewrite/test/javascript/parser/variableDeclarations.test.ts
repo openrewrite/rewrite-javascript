@@ -187,4 +187,21 @@ describe('variable declaration mapping', () => {
             `)
         );
     });
+
+    test('variable with await using keyword', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                const getDb = async () => {
+                    return {async createUser(data) {
+                            const user = to<AdapterUser>(data)
+                                /*a*/await /*b*/ using db = await getDb()
+                            await db.U.insertOne(user)
+                            return from<AdapterUser>(user)
+                        }
+                    }
+                }
+            `)
+        );
+    });
 });

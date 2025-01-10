@@ -138,4 +138,22 @@ describe('try-catch mapping', () => {
         );
     });
 
+    test.skip('catch with ObjectBindingPattern as a name', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class A {
+                    public async connect() {
+                        try {
+                            await new Promise(null);
+                        } catch ({error} : any ) {
+                            throw error;
+                        } finally {
+                        }
+                    }
+                }
+            `)
+        );
+    });
+
 });

@@ -349,6 +349,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             case Power:
                 keyword = "**";
                 break;
+            case Exp:
+                keyword = "**=";
+                break;
         }
         beforeSyntax(assignOp, JsSpace.Location.ASSIGNMENT_OPERATION_PREFIX, p);
         visit(assignOp.getVariable(), p);
@@ -412,7 +415,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
     @Override
     public J visitScopedVariableDeclarations(JS.ScopedVariableDeclarations variableDeclarations, PrintOutputCapture<P> p) {
-        beforeSyntax(variableDeclarations, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
+        beforeSyntax(variableDeclarations, JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_PREFIX, p);
         variableDeclarations.getModifiers().forEach(m -> delegate.visitModifier(m, p));
 
         JLeftPadded<JS.ScopedVariableDeclarations.Scope> scope = variableDeclarations.getPadding().getScope();

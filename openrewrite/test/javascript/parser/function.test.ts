@@ -7,7 +7,7 @@ describe('function mapping', () => {
     test('simple', () => {
         rewriteRun(
           //language=typescript
-          typeScript('function f () { let c = 1; }')
+          typeScript('function f () /*a*/{/*b*/ let c = 1; }')
         );
     });
     test('single parameter', () => {

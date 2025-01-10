@@ -18,8 +18,11 @@ package org.openrewrite.javascript.recipe;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.javascript.AddLicenseHeader;
+import org.openrewrite.javascript.JavaScriptParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
+import java.nio.file.Paths;
 
 import static java.util.Calendar.YEAR;
 import static java.util.Calendar.getInstance;
@@ -37,7 +40,7 @@ class AddLicenseHeaderTest implements RewriteTest {
             you may not use this file except in compliance with the License.
             You may obtain a copy of the License at
             """.trim()
-        ));
+        )).parser(JavaScriptParser.usingRemotingInstallation(Paths.get("./build/node-installation-dir")));
     }
 
     @Test

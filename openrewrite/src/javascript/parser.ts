@@ -546,6 +546,10 @@ export class JavaScriptParserVisitor {
         return this.mapIdentifier(node, 'any');
     }
 
+    visitIntrinsicKeyword(node: ts.Node) {
+        return this.mapIdentifier(node, 'intrinsic');
+    }
+
     visitObjectKeyword(node: ts.Node) {
         return this.mapIdentifier(node, 'object');
     }
@@ -814,6 +818,13 @@ export class JavaScriptParserVisitor {
             annotationType = this.convert(node.expression);
         } else if (ts.isPropertyAccessExpression(node.expression)) {
             annotationType = this.convert(node.expression);
+        } else if (ts.isParenthesizedExpression(node.expression)) {
+            annotationType = new JS.TypeTreeExpression(
+                randomId(),
+                this.prefix(node.expression),
+                Markers.EMPTY,
+                this.convert(node.expression)
+            );
         } else {
             return this.visitUnknown(node);
         }
@@ -1045,6 +1056,12 @@ export class JavaScriptParserVisitor {
             );
         }
 
+        const name: J.Identifier = !node.name
+            ? this.mapIdentifier(node, "")
+            : ts.isStringLiteral(node.name)
+                ? this.mapIdentifier(node.name, node.name.getText())
+                : this.visit(node.name);
+
         return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
@@ -1054,7 +1071,7 @@ export class JavaScriptParserVisitor {
             this.mapTypeParametersAsObject(node),
             this.mapTypeInfo(node),
             new J.MethodDeclaration.IdentifierWithAnnotations(
-                node.name ? this.visit(node.name) : this.mapIdentifier(node, ""),
+                name,
                 []
             ),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
@@ -1381,7 +1398,10 @@ export class JavaScriptParserVisitor {
             this.mapTypeParametersAsObject(node),
             new JContainer(
                 this.prefix(node.getChildAt(node.getChildren().findIndex(n => n.pos === node.parameters.pos) - 1)),
-                node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p))),
+                node.parameters.length == 0 ?
+                    [this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!))]
+                    : node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p)))
+                        .concat(node.parameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!)) : []),
                 Markers.EMPTY),
             this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsGreaterThanToken)!),
             this.convert(node.type),
@@ -2234,6 +2254,9 @@ export class JavaScriptParserVisitor {
                 case ts.SyntaxKind.AsteriskAsteriskToken:
                     assignmentOperation = JS.JsAssignmentOperation.Type.Power;
                     break;
+                case ts.SyntaxKind.AsteriskAsteriskEqualsToken:
+                    assignmentOperation = JS.JsAssignmentOperation.Type.Exp;
+                    break;
             }
 
             if (assignmentOperation !== undefined) {
@@ -2428,7 +2451,7 @@ export class JavaScriptParserVisitor {
                 randomId(),
                 this.prefix(node),
                 Markers.EMPTY,
-                [], //this.mapDecorators(node),
+                this.mapDecorators(node),
                 [], //this.mapModifiers(node),
                 new J.ClassDeclaration.Kind(
                     randomId(),
@@ -2558,7 +2581,8 @@ export class JavaScriptParserVisitor {
     }
 
     visitVariableStatement(node: ts.VariableStatement) {
-        return this.visitVariableDeclarationList(node.declarationList).withModifiers(this.mapModifiers(node)).withPrefix(this.prefix(node));
+        const declaration =  this.visitVariableDeclarationList(node.declarationList);
+        return declaration.withModifiers(this.mapModifiers(node).concat(declaration.modifiers)).withPrefix(this.prefix(node));
     }
 
     visitExpressionStatement(node: ts.ExpressionStatement): J.Statement {
@@ -2788,6 +2812,10 @@ export class JavaScriptParserVisitor {
     }
 
     visitTryStatement(node: ts.TryStatement) {
+        if (node.catchClause?.variableDeclaration?.name && !ts.isIdentifier(node.catchClause?.variableDeclaration?.name)) {
+            this.visitUnknown(node);
+        }
+
         return new J.Try(
           randomId(),
           this.prefix(node),
@@ -2843,14 +2871,28 @@ export class JavaScriptParserVisitor {
     }
 
     visitVariableDeclarationList(node: ts.VariableDeclarationList) {
-        const kind = node.getFirstToken(this.sourceFile);
+        let kind = node.getFirstToken();
+
+        // to parse the declaration case: await using db = ...
+        let modifier;
+        if (kind?.kind === ts.SyntaxKind.AwaitKeyword) {
+            modifier = new J.Modifier(
+                randomId(),
+                this.prefix(kind),
+                Markers.EMPTY,
+                'await',
+                J.Modifier.Type.LanguageExtension,
+                []
+            );
+            kind = node.getChildAt(1);
+        }
         return new JS.ScopedVariableDeclarations(
             randomId(),
             Space.EMPTY,
             Markers.EMPTY,
-            [],
+            modifier ? [modifier] : [],
             this.leftPadded(
-                this.prefix(node),
+                kind ? this.prefix(kind) : this.prefix(node),
                 kind?.kind === ts.SyntaxKind.LetKeyword
                     ? JS.ScopedVariableDeclarations.Scope.Let
                     : kind?.kind === ts.SyntaxKind.ConstKeyword
@@ -3812,7 +3854,7 @@ export class JavaScriptParserVisitor {
         return args;
     }
 
-    private mapDecorators(node: ts.ClassDeclaration | ts.FunctionDeclaration | ts.MethodDeclaration | ts.ConstructorDeclaration | ts.ParameterDeclaration | ts.PropertyDeclaration | ts.SetAccessorDeclaration | ts.GetAccessorDeclaration): J.Annotation[] {
+    private mapDecorators(node: ts.ClassDeclaration | ts.FunctionDeclaration | ts.MethodDeclaration | ts.ConstructorDeclaration | ts.ParameterDeclaration | ts.PropertyDeclaration | ts.SetAccessorDeclaration | ts.GetAccessorDeclaration | ts.ClassExpression): J.Annotation[] {
         return node.modifiers?.filter(ts.isDecorator)?.map(this.convert<J.Annotation>) ?? [];
     }
 
