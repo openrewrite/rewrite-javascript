@@ -1412,10 +1412,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         @Override
         public <M extends Marker> M visitMarker(Marker marker, PrintOutputCapture<P> p) {
-            if (marker instanceof TrailingComma) {
-                p.append(",");
-                visitSpace(((TrailingComma) marker).getSuffix(), Space.Location.LANGUAGE_EXTENSION, p);
-            } else if (marker instanceof Semicolon) {
+            if (marker instanceof Semicolon) {
                 p.append(';');
             }
             return super.visitMarker(marker, p);
