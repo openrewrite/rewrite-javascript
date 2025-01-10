@@ -81,10 +81,16 @@ describe('arithmetic operator mapping', () => {
         );
     });
 
-    test('power operation ', () => {
+    test('power operation', () => {
         rewriteRun(
             //language=typescript
             typeScript('2 ** 3')
+        );
+    });
+    test('exponentiation operation', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript('x **= 1')
         );
     });
 });

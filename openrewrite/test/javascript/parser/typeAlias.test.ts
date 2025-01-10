@@ -270,4 +270,36 @@ describe('type alias mapping', () => {
         );
     });
 
+    test('type with intrinsic keyword', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Uppercase<S extends string> = intrinsic
+            `)
+        );
+    });
+
+    test('constructor type with trailing coma', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type ElementConstructor<P> =
+                    (new(
+                    x: P,
+                    y?: any/*a*/,/*b*/
+                ) => Component<any, any>);
+            `)
+        );
+    });
+
+    test('constructor type with empty param', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type ElementConstructor<P> =
+                    (new(/*a*/) => Component<any, any>);
+            `)
+        );
+    });
+
 });

@@ -54,6 +54,27 @@ describe('class decorator mapping', () => {
           `)
         );
     });
+    test('decorator with parenthesized expression', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              class SimpleSpriteAssembler {
+                  @/*a*/(/*b*/Ember.computed('fullName').readOnly()/*c*/)/*d*/
+                  get fullNameReadonly() {
+                      return 'fullName';
+                  }
+              }
+          `)
+        );
+    });
+    test('decorator on class expression', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              const Foo = (x => x)(@dec('') class { })
+          `)
+        );
+    });
     test('class / method / params / properties decorators', () => {
         rewriteRun(
           //language=typescript

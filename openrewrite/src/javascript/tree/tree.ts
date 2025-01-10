@@ -5747,6 +5747,7 @@ export namespace JsAssignmentOperation {
             And = 1,
             Or = 2,
             Power = 3,
+            Exp = 4,
 
     }
 
