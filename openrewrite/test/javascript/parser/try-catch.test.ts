@@ -138,7 +138,24 @@ describe('try-catch mapping', () => {
         );
     });
 
-    test.skip('catch with ObjectBindingPattern as a name', () => {
+    test('catch with ObjectBindingPattern as a name', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class A {
+                    public async connect() {
+                        try {
+                            await new Promise(null);
+                        } catch ({error} : any ) {
+                            throw error;
+                        }
+                    }
+                }
+            `)
+        );
+    });
+
+    test('catch with ObjectBindingPattern as a name with finally', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
@@ -149,6 +166,7 @@ describe('try-catch mapping', () => {
                         } catch ({error} : any ) {
                             throw error;
                         } finally {
+                            console.log("Log");
                         }
                     }
                 }

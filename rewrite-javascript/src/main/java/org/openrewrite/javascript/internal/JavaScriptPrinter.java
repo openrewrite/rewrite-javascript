@@ -905,6 +905,27 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     }
 
     @Override
+    public J visitJSTry(JS.JSTry jsTry, PrintOutputCapture<P> p) {
+        beforeSyntax(jsTry, JsSpace.Location.JSTRY_PREFIX, p);
+        p.append("try");
+        visit(jsTry.getBody(), p);
+        visit(jsTry.getCatches(), p);
+        visitLeftPadded("finally", jsTry.getPadding().getFinallie(), JsLeftPadded.Location.JSTRY_FINALLY, p);
+        afterSyntax(jsTry, p);
+        return jsTry;
+    }
+
+    @Override
+    public J visitJSTryJSCatch(JS.JSTry.JSCatch jsCatch, PrintOutputCapture<P> p) {
+        beforeSyntax(jsCatch, JsSpace.Location.JSCATCH_PREFIX, p);
+        p.append("catch");
+        visit(jsCatch.getParameter(), p);
+        visit(jsCatch.getBody(), p);
+        afterSyntax(jsCatch, p);
+        return jsCatch;
+    }
+
+    @Override
     public J visitArrayBindingPattern(JS.ArrayBindingPattern abp, PrintOutputCapture<P> p) {
         beforeSyntax(abp, JsSpace.Location.ARRAY_BINDING_PATTERN_PREFIX, p);
 
@@ -989,6 +1010,16 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         afterSyntax(iatit, p);
 
         return iatit;
+    }
+
+    @Override
+    public J visitWithStatement(JS.WithStatement withStatement, PrintOutputCapture<P> p) {
+        beforeSyntax(withStatement, JsSpace.Location.WITH_PREFIX, p);
+        p.append("with");
+        visit(withStatement.getExpression(), p);
+        visitRightPadded(withStatement.getPadding().getBody(), JsRightPadded.Location.WITH_BODY, p);
+        afterSyntax(withStatement, p);
+        return withStatement;
     }
 
     private class JavaScriptJavaPrinter extends JavaPrinter<P> {

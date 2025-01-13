@@ -2483,6 +2483,85 @@ export namespace ScopedVariableDeclarations {
 
 }
 
+@LstType("org.openrewrite.javascript.tree.JS$WithStatement")
+export class WithStatement extends JSMixin(Object) implements Statement {
+    public constructor(id: UUID, prefix: Space, markers: Markers, expression: Java.ControlParentheses<Expression>, body: JRightPadded<Statement>) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._expression = expression;
+        this._body = body;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): WithStatement {
+            return id === this._id ? this : new WithStatement(id, this._prefix, this._markers, this._expression, this._body);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): WithStatement {
+            return prefix === this._prefix ? this : new WithStatement(this._id, prefix, this._markers, this._expression, this._body);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): WithStatement {
+            return markers === this._markers ? this : new WithStatement(this._id, this._prefix, markers, this._expression, this._body);
+        }
+
+        private readonly _expression: Java.ControlParentheses<Expression>;
+
+        public get expression(): Java.ControlParentheses<Expression> {
+            return this._expression;
+        }
+
+        public withExpression(expression: Java.ControlParentheses<Expression>): WithStatement {
+            return expression === this._expression ? this : new WithStatement(this._id, this._prefix, this._markers, expression, this._body);
+        }
+
+        private readonly _body: JRightPadded<Statement>;
+
+        public get body(): Statement {
+            return this._body.element;
+        }
+
+        public withBody(body: Statement): WithStatement {
+            return this.padding.withBody(this._body.withElement(body));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitWithStatement(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get body(): JRightPadded<Statement> {
+                return t._body;
+            }
+            public withBody(body: JRightPadded<Statement>): WithStatement {
+                return t._body === body ? t : new WithStatement(t._id, t._prefix, t._markers, t._expression, body);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.javascript.tree.JS$TaggedTemplateExpression")
 export class TaggedTemplateExpression extends JSMixin(Object) implements Statement, Expression {
     public constructor(id: UUID, prefix: Space, markers: Markers, tag: JRightPadded<Expression> | null, typeArguments: JContainer<Expression> | null, templateExpression: Expression, _type: JavaType | null) {
@@ -4468,6 +4547,166 @@ export class JSForInOfLoopControl extends JSMixin(Object) {
                 return t._iterable === iterable ? t : new JSForInOfLoopControl(t._id, t._prefix, t._markers, t._variable, iterable);
             }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JSTry")
+export class JSTry extends JSMixin(Object) implements Statement {
+    public constructor(id: UUID, prefix: Space, markers: Markers, body: Java.Block, catches: JSTry.JSCatch, finallie: JLeftPadded<Java.Block> | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._body = body;
+        this._catches = catches;
+        this._finallie = finallie;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JSTry {
+            return id === this._id ? this : new JSTry(id, this._prefix, this._markers, this._body, this._catches, this._finallie);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JSTry {
+            return prefix === this._prefix ? this : new JSTry(this._id, prefix, this._markers, this._body, this._catches, this._finallie);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JSTry {
+            return markers === this._markers ? this : new JSTry(this._id, this._prefix, markers, this._body, this._catches, this._finallie);
+        }
+
+        private readonly _body: Java.Block;
+
+        public get body(): Java.Block {
+            return this._body;
+        }
+
+        public withBody(body: Java.Block): JSTry {
+            return body === this._body ? this : new JSTry(this._id, this._prefix, this._markers, body, this._catches, this._finallie);
+        }
+
+        private readonly _catches: JSTry.JSCatch;
+
+        public get catches(): JSTry.JSCatch {
+            return this._catches;
+        }
+
+        public withCatches(catches: JSTry.JSCatch): JSTry {
+            return catches === this._catches ? this : new JSTry(this._id, this._prefix, this._markers, this._body, catches, this._finallie);
+        }
+
+        private readonly _finallie: JLeftPadded<Java.Block> | null;
+
+        public get finallie(): Java.Block | null {
+            return this._finallie === null ? null : this._finallie.element;
+        }
+
+        public withFinallie(finallie: Java.Block | null): JSTry {
+            return this.padding.withFinallie(JLeftPadded.withElement(this._finallie, finallie));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJSTry(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get finallie(): JLeftPadded<Java.Block> | null {
+                return t._finallie;
+            }
+            public withFinallie(finallie: JLeftPadded<Java.Block> | null): JSTry {
+                return t._finallie === finallie ? t : new JSTry(t._id, t._prefix, t._markers, t._body, t._catches, finallie);
+            }
+        }
+    }
+
+}
+
+export namespace JSTry {
+    @LstType("org.openrewrite.javascript.tree.JS$JSTry$JSCatch")
+    export class JSCatch extends JSMixin(Object) {
+        public constructor(id: UUID, prefix: Space, markers: Markers, parameter: Java.ControlParentheses<JSVariableDeclarations>, body: Java.Block) {
+            super();
+            this._id = id;
+            this._prefix = prefix;
+            this._markers = markers;
+            this._parameter = parameter;
+            this._body = body;
+        }
+
+            private readonly _id: UUID;
+
+            public get id(): UUID {
+                return this._id;
+            }
+
+            public withId(id: UUID): JSTry.JSCatch {
+                return id === this._id ? this : new JSTry.JSCatch(id, this._prefix, this._markers, this._parameter, this._body);
+            }
+
+            private readonly _prefix: Space;
+
+            public get prefix(): Space {
+                return this._prefix;
+            }
+
+            public withPrefix(prefix: Space): JSTry.JSCatch {
+                return prefix === this._prefix ? this : new JSTry.JSCatch(this._id, prefix, this._markers, this._parameter, this._body);
+            }
+
+            private readonly _markers: Markers;
+
+            public get markers(): Markers {
+                return this._markers;
+            }
+
+            public withMarkers(markers: Markers): JSTry.JSCatch {
+                return markers === this._markers ? this : new JSTry.JSCatch(this._id, this._prefix, markers, this._parameter, this._body);
+            }
+
+            private readonly _parameter: Java.ControlParentheses<JSVariableDeclarations>;
+
+            public get parameter(): Java.ControlParentheses<JSVariableDeclarations> {
+                return this._parameter;
+            }
+
+            public withParameter(parameter: Java.ControlParentheses<JSVariableDeclarations>): JSTry.JSCatch {
+                return parameter === this._parameter ? this : new JSTry.JSCatch(this._id, this._prefix, this._markers, parameter, this._body);
+            }
+
+            private readonly _body: Java.Block;
+
+            public get body(): Java.Block {
+                return this._body;
+            }
+
+            public withBody(body: Java.Block): JSTry.JSCatch {
+                return body === this._body ? this : new JSTry.JSCatch(this._id, this._prefix, this._markers, this._parameter, body);
+            }
+
+        public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+            return v.visitJSTryJSCatch(this, p);
+        }
+
     }
 
 }

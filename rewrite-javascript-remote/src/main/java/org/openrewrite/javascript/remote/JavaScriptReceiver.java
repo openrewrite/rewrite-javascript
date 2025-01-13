@@ -372,6 +372,16 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public JS.WithStatement visitWithStatement(JS.WithStatement withStatement, ReceiverContext ctx) {
+            withStatement = withStatement.withId(ctx.receiveNonNullValue(withStatement.getId(), UUID.class));
+            withStatement = withStatement.withPrefix(ctx.receiveNonNullNode(withStatement.getPrefix(), JavaScriptReceiver::receiveSpace));
+            withStatement = withStatement.withMarkers(ctx.receiveNonNullNode(withStatement.getMarkers(), ctx::receiveMarkers));
+            withStatement = withStatement.withExpression(ctx.receiveNonNullNode(withStatement.getExpression(), ctx::receiveTree));
+            withStatement = withStatement.getPadding().withBody(ctx.receiveNonNullNode(withStatement.getPadding().getBody(), JavaScriptReceiver::receiveRightPaddedTree));
+            return withStatement;
+        }
+
+        @Override
         public JS.TaggedTemplateExpression visitTaggedTemplateExpression(JS.TaggedTemplateExpression taggedTemplateExpression, ReceiverContext ctx) {
             taggedTemplateExpression = taggedTemplateExpression.withId(ctx.receiveNonNullValue(taggedTemplateExpression.getId(), UUID.class));
             taggedTemplateExpression = taggedTemplateExpression.withPrefix(ctx.receiveNonNullNode(taggedTemplateExpression.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -602,6 +612,27 @@ public class JavaScriptReceiver implements Receiver<JS> {
             jSForInOfLoopControl = jSForInOfLoopControl.getPadding().withVariable(ctx.receiveNonNullNode(jSForInOfLoopControl.getPadding().getVariable(), JavaScriptReceiver::receiveRightPaddedTree));
             jSForInOfLoopControl = jSForInOfLoopControl.getPadding().withIterable(ctx.receiveNonNullNode(jSForInOfLoopControl.getPadding().getIterable(), JavaScriptReceiver::receiveRightPaddedTree));
             return jSForInOfLoopControl;
+        }
+
+        @Override
+        public JS.JSTry visitJSTry(JS.JSTry jSTry, ReceiverContext ctx) {
+            jSTry = jSTry.withId(ctx.receiveNonNullValue(jSTry.getId(), UUID.class));
+            jSTry = jSTry.withPrefix(ctx.receiveNonNullNode(jSTry.getPrefix(), JavaScriptReceiver::receiveSpace));
+            jSTry = jSTry.withMarkers(ctx.receiveNonNullNode(jSTry.getMarkers(), ctx::receiveMarkers));
+            jSTry = jSTry.withBody(ctx.receiveNonNullNode(jSTry.getBody(), ctx::receiveTree));
+            jSTry = jSTry.withCatches(ctx.receiveNonNullNode(jSTry.getCatches(), ctx::receiveTree));
+            jSTry = jSTry.getPadding().withFinallie(ctx.receiveNode(jSTry.getPadding().getFinallie(), JavaScriptReceiver::receiveLeftPaddedTree));
+            return jSTry;
+        }
+
+        @Override
+        public JS.JSTry.JSCatch visitJSTryJSCatch(JS.JSTry.JSCatch jSCatch, ReceiverContext ctx) {
+            jSCatch = jSCatch.withId(ctx.receiveNonNullValue(jSCatch.getId(), UUID.class));
+            jSCatch = jSCatch.withPrefix(ctx.receiveNonNullNode(jSCatch.getPrefix(), JavaScriptReceiver::receiveSpace));
+            jSCatch = jSCatch.withMarkers(ctx.receiveNonNullNode(jSCatch.getMarkers(), ctx::receiveMarkers));
+            jSCatch = jSCatch.withParameter(ctx.receiveNonNullNode(jSCatch.getParameter(), ctx::receiveTree));
+            jSCatch = jSCatch.withBody(ctx.receiveNonNullNode(jSCatch.getBody(), ctx::receiveTree));
+            return jSCatch;
         }
 
         @Override
@@ -1508,6 +1539,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 if (type == JS.SatisfiesExpression.class) return Factory::createJSSatisfiesExpression;
                 if (type == JS.ScopedVariableDeclarations.class) return Factory::createJSScopedVariableDeclarations;
                 if (type == JS.StatementExpression.class) return Factory::createJSStatementExpression;
+                if (type == JS.WithStatement.class) return Factory::createJSWithStatement;
                 if (type == JS.TaggedTemplateExpression.class) return Factory::createJSTaggedTemplateExpression;
                 if (type == JS.TemplateExpression.class) return Factory::createJSTemplateExpression;
                 if (type == JS.TemplateExpression.TemplateSpan.class) return Factory::createJSTemplateExpressionTemplateSpan;
@@ -1529,6 +1561,8 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 if (type == JS.JSForOfLoop.class) return Factory::createJSJSForOfLoop;
                 if (type == JS.JSForInLoop.class) return Factory::createJSJSForInLoop;
                 if (type == JS.JSForInOfLoopControl.class) return Factory::createJSJSForInOfLoopControl;
+                if (type == JS.JSTry.class) return Factory::createJSJSTry;
+                if (type == JS.JSTry.JSCatch.class) return Factory::createJSJSTryJSCatch;
                 if (type == JS.NamespaceDeclaration.class) return Factory::createJSNamespaceDeclaration;
                 if (type == JS.FunctionDeclaration.class) return Factory::createJSFunctionDeclaration;
                 if (type == JS.TypeLiteral.class) return Factory::createJSTypeLiteral;
@@ -1919,6 +1953,16 @@ public class JavaScriptReceiver implements Receiver<JS> {
             );
         }
 
+        private static JS.WithStatement createJSWithStatement(ReceiverContext ctx) {
+            return new JS.WithStatement(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
+            );
+        }
+
         private static JS.TaggedTemplateExpression createJSTaggedTemplateExpression(ReceiverContext ctx) {
             return new JS.TaggedTemplateExpression(
                     ctx.receiveNonNullValue(null, UUID.class),
@@ -2149,6 +2193,27 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree)
+            );
+        }
+
+        private static JS.JSTry createJSJSTry(ReceiverContext ctx) {
+            return new JS.JSTry(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
+            );
+        }
+
+        private static JS.JSTry.JSCatch createJSJSTryJSCatch(ReceiverContext ctx) {
+            return new JS.JSTry.JSCatch(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree)
             );
         }
 

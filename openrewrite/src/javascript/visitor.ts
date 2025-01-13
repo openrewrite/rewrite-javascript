@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, WithStatement, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, JSTry, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -391,6 +391,20 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return statementExpression;
     }
 
+    public visitWithStatement(withStatement: WithStatement, p: P): J | null {
+        withStatement = withStatement.withPrefix(this.visitJsSpace(withStatement.prefix, JsSpace.Location.WITH_STATEMENT_PREFIX, p)!);
+        let tempStatement = this.visitStatement(withStatement, p) as Statement;
+        if (!(tempStatement instanceof WithStatement))
+        {
+            return tempStatement;
+        }
+        withStatement = tempStatement as WithStatement;
+        withStatement = withStatement.withMarkers(this.visitMarkers(withStatement.markers, p));
+        withStatement = withStatement.withExpression(this.visitAndCast(withStatement.expression, p)!);
+        withStatement = withStatement.padding.withBody(this.visitJsRightPadded(withStatement.padding.body, JsRightPadded.Location.WITH_STATEMENT_BODY, p)!);
+        return withStatement;
+    }
+
     public visitTaggedTemplateExpression(taggedTemplateExpression: TaggedTemplateExpression, p: P): J | null {
         taggedTemplateExpression = taggedTemplateExpression.withPrefix(this.visitJsSpace(taggedTemplateExpression.prefix, JsSpace.Location.TAGGED_TEMPLATE_EXPRESSION_PREFIX, p)!);
         let tempStatement = this.visitStatement(taggedTemplateExpression, p) as Statement;
@@ -698,6 +712,29 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         jSForInOfLoopControl = jSForInOfLoopControl.padding.withVariable(this.visitJsRightPadded(jSForInOfLoopControl.padding.variable, JsRightPadded.Location.JSFOR_IN_OF_LOOP_CONTROL_VARIABLE, p)!);
         jSForInOfLoopControl = jSForInOfLoopControl.padding.withIterable(this.visitJsRightPadded(jSForInOfLoopControl.padding.iterable, JsRightPadded.Location.JSFOR_IN_OF_LOOP_CONTROL_ITERABLE, p)!);
         return jSForInOfLoopControl;
+    }
+
+    public visitJSTry(jSTry: JSTry, p: P): J | null {
+        jSTry = jSTry.withPrefix(this.visitJsSpace(jSTry.prefix, JsSpace.Location.JSTRY_PREFIX, p)!);
+        let tempStatement = this.visitStatement(jSTry, p) as Statement;
+        if (!(tempStatement instanceof JSTry))
+        {
+            return tempStatement;
+        }
+        jSTry = tempStatement as JSTry;
+        jSTry = jSTry.withMarkers(this.visitMarkers(jSTry.markers, p));
+        jSTry = jSTry.withBody(this.visitAndCast(jSTry.body, p)!);
+        jSTry = jSTry.withCatches(this.visitAndCast(jSTry.catches, p)!);
+        jSTry = jSTry.padding.withFinallie(this.visitJsLeftPadded(jSTry.padding.finallie, JsLeftPadded.Location.JSTRY_FINALLIE, p));
+        return jSTry;
+    }
+
+    public visitJSTryJSCatch(jSCatch: JSTry.JSCatch, p: P): J | null {
+        jSCatch = jSCatch.withPrefix(this.visitJsSpace(jSCatch.prefix, JsSpace.Location.JSTRY_JSCATCH_PREFIX, p)!);
+        jSCatch = jSCatch.withMarkers(this.visitMarkers(jSCatch.markers, p));
+        jSCatch = jSCatch.withParameter(this.visitAndCast(jSCatch.parameter, p)!);
+        jSCatch = jSCatch.withBody(this.visitAndCast(jSCatch.body, p)!);
+        return jSCatch;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, p: P): J | null {

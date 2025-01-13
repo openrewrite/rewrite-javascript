@@ -1102,6 +1102,35 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return c;
     }
 
+    public J visitJSTry(JS.JSTry jsTry, P p) {
+        JS.JSTry t = jsTry;
+        t = t.withPrefix(visitSpace(t.getPrefix(), JsSpace.Location.JSTRY_PREFIX, p));
+        t = t.withMarkers(visitMarkers(t.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(t, p);
+        if (!(temp instanceof JS.JSTry)) {
+            return temp;
+        } else {
+            t = (JS.JSTry) temp;
+        }
+
+        t = t.withBody(Objects.requireNonNull(visitAndCast(t.getBody(), p)));
+        t = t.withCatches(Objects.requireNonNull(visitAndCast(t.getCatches(), p)));
+        if (t.getPadding().getFinallie() != null) {
+            t = t.getPadding().withFinallie(Objects.requireNonNull(visitLeftPadded(t.getPadding().getFinallie(), JsLeftPadded.Location.JSTRY_FINALLY, p)));
+        }
+        return t;
+    }
+
+    public J visitJSTryJSCatch(JS.JSTry.JSCatch jsCatch, P p) {
+        JS.JSTry.JSCatch c = jsCatch;
+        c = c.withPrefix(visitSpace(c.getPrefix(), JsSpace.Location.JSCATCH_PREFIX, p));
+        c = c.withMarkers(visitMarkers(c.getMarkers(), p));
+
+        c = c.withParameter(Objects.requireNonNull(visitAndCast(c.getParameter(), p)));
+        c = c.withBody(Objects.requireNonNull(visitAndCast(c.getBody(), p)));
+        return c;
+    }
+
     public J visitArrayBindingPattern(JS.ArrayBindingPattern arrayBindingPattern, P p) {
         JS.ArrayBindingPattern c = arrayBindingPattern;
         c = c.withPrefix(visitSpace(c.getPrefix(), JsSpace.Location.ARRAY_BINDING_PATTERN_PREFIX, p));
@@ -1153,5 +1182,21 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         a = a.withExpression(Objects.requireNonNull(visitAndCast(a.getExpression(), p)));
         a = a.withType(visitType(a.getType(), p));
         return a;
+    }
+
+    public J visitWithStatement(JS.WithStatement withStatement, P p) {
+        JS.WithStatement w = withStatement;
+        w = w.withPrefix(visitSpace(w.getPrefix(), JsSpace.Location.WITH_PREFIX, p));
+        w = w.withMarkers(visitMarkers(w.getMarkers(), p));
+        Statement temp = (Statement) visitStatement(w, p);
+        if (!(temp instanceof JS.WithStatement)) {
+            return temp;
+        } else {
+            w = (JS.WithStatement) temp;
+        }
+
+        w = w.withExpression(Objects.requireNonNull(visitAndCast(w.getExpression(), p)));
+        w = w.getPadding().withBody(Objects.requireNonNull(visitRightPadded(w.getPadding().getBody(), JsRightPadded.Location.WITH_BODY, p)));
+        return w;
     }
 }

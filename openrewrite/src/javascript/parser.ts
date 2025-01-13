@@ -2764,7 +2764,22 @@ export class JavaScriptParserVisitor {
     }
 
     visitWithStatement(node: ts.WithStatement) {
-        return this.visitUnknown(node);
+        return new JS.WithStatement(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            new J.ControlParentheses(
+                randomId(),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
+                Markers.EMPTY,
+                this.rightPadded(this.visit(node.expression), this.suffix(node.expression))
+            ),
+            this.rightPadded(
+                this.convert(node.statement),
+                this.semicolonPrefix(node.statement),
+                node.statement.getChildAt(node.statement.getChildCount() - 1)?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY
+            )
+        );
     }
 
     visitSwitchStatement(node: ts.SwitchStatement) {
@@ -2813,7 +2828,14 @@ export class JavaScriptParserVisitor {
 
     visitTryStatement(node: ts.TryStatement) {
         if (node.catchClause?.variableDeclaration?.name && !ts.isIdentifier(node.catchClause?.variableDeclaration?.name)) {
-            this.visitUnknown(node);
+            return new JS.JSTry(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                this.visit(node.tryBlock),
+                this.visit(node.catchClause),
+                node.finallyBlock ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.FinallyKeyword)!), this.visit(node.finallyBlock)) : null
+            );
         }
 
         return new J.Try(
@@ -3431,6 +3453,32 @@ export class JavaScriptParserVisitor {
     }
 
     visitCatchClause(node: ts.CatchClause) {
+        if (node.variableDeclaration?.name && !ts.isIdentifier(node.variableDeclaration?.name)) {
+            return new JS.JSTry.JSCatch(
+                randomId(),
+                this.prefix(node),
+                Markers.EMPTY,
+                new J.ControlParentheses(
+                    randomId(),
+                    this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
+                    Markers.EMPTY,
+                    this.rightPadded(
+                        new JS.JSVariableDeclarations(
+                            randomId(),
+                            this.prefix(node.variableDeclaration),
+                            Markers.EMPTY,
+                            [],
+                            [],
+                            this.mapTypeInfo(node.variableDeclaration),
+                            null,
+                            [this.rightPadded(this.visit(node.variableDeclaration), Space.EMPTY)]
+                        ),
+                        this.suffix(node.variableDeclaration))
+                    ),
+                this.visit(node.block)
+            )
+        }
+
         return new J.Try.Catch(
             randomId(),
             this.prefix(node),

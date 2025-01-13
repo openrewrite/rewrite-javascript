@@ -261,6 +261,9 @@ export namespace JsSpace {
         MAPPED_TYPE_MAPPED_TYPE_PARAMETER_PREFIX,
         TYPE_TREE_EXPRESSION_PREFIX,
         TRAILING_TOKEN_STATEMENT_PREFIX,
+        JSTRY_PREFIX,
+        JSTRY_JSCATCH_PREFIX,
+        WITH_STATEMENT_PREFIX,
     }
 }
 export namespace JsLeftPadded {
@@ -306,6 +309,7 @@ export namespace JsLeftPadded {
         ARROW_FUNCTION_BODY,
         YIELD_DELEGATED,
         FUNCTION_TYPE_CONSTRUCTOR_TYPE,
+        JSTRY_FINALLIE,
     }
 }
 export namespace JsRightPadded {
@@ -334,6 +338,7 @@ export namespace JsRightPadded {
         MAPPED_TYPE_KEYS_REMAPPING_TYPE_PARAMETER,
         MAPPED_TYPE_KEYS_REMAPPING_NAME_TYPE,
         TRAILING_TOKEN_STATEMENT_EXPRESSION,
+        WITH_STATEMENT_BODY,
     }
 }
 export namespace JsContainer {

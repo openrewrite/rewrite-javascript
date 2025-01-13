@@ -248,6 +248,13 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     }
 
     @Override
+    public JS.WithStatement visitWithStatement(JS.WithStatement withStatement, P p) {
+        visitAndValidateNonNull(withStatement.getExpression(), J.ControlParentheses.class, p);
+        visitAndValidateNonNull(withStatement.getBody(), Statement.class, p);
+        return withStatement;
+    }
+
+    @Override
     public JS.TaggedTemplateExpression visitTaggedTemplateExpression(JS.TaggedTemplateExpression taggedTemplateExpression, P p) {
         visitAndValidate(taggedTemplateExpression.getTag(), Expression.class, p);
         visitAndValidate(taggedTemplateExpression.getTypeArguments(), Expression.class, p);
@@ -395,6 +402,21 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         visitAndValidateNonNull(jSForInOfLoopControl.getVariable(), J.class, p);
         visitAndValidateNonNull(jSForInOfLoopControl.getIterable(), Expression.class, p);
         return jSForInOfLoopControl;
+    }
+
+    @Override
+    public JS.JSTry visitJSTry(JS.JSTry jSTry, P p) {
+        visitAndValidateNonNull(jSTry.getBody(), J.Block.class, p);
+        visitAndValidateNonNull(jSTry.getCatches(), JS.JSTry.JSCatch.class, p);
+        visitAndValidate(jSTry.getFinallie(), J.Block.class, p);
+        return jSTry;
+    }
+
+    @Override
+    public JS.JSTry.JSCatch visitJSTryJSCatch(JS.JSTry.JSCatch jSCatch, P p) {
+        visitAndValidateNonNull(jSCatch.getParameter(), J.ControlParentheses.class, p);
+        visitAndValidateNonNull(jSCatch.getBody(), J.Block.class, p);
+        return jSCatch;
     }
 
     @Override

@@ -354,6 +354,16 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public JS.WithStatement visitWithStatement(JS.WithStatement withStatement, SenderContext ctx) {
+            ctx.sendValue(withStatement, JS.WithStatement::getId);
+            ctx.sendNode(withStatement, JS.WithStatement::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(withStatement, JS.WithStatement::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(withStatement, JS.WithStatement::getExpression, ctx::sendTree);
+            ctx.sendNode(withStatement, e -> e.getPadding().getBody(), JavaScriptSender::sendRightPadded);
+            return withStatement;
+        }
+
+        @Override
         public JS.TaggedTemplateExpression visitTaggedTemplateExpression(JS.TaggedTemplateExpression taggedTemplateExpression, SenderContext ctx) {
             ctx.sendValue(taggedTemplateExpression, JS.TaggedTemplateExpression::getId);
             ctx.sendNode(taggedTemplateExpression, JS.TaggedTemplateExpression::getPrefix, JavaScriptSender::sendSpace);
@@ -584,6 +594,27 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(jSForInOfLoopControl, e -> e.getPadding().getVariable(), JavaScriptSender::sendRightPadded);
             ctx.sendNode(jSForInOfLoopControl, e -> e.getPadding().getIterable(), JavaScriptSender::sendRightPadded);
             return jSForInOfLoopControl;
+        }
+
+        @Override
+        public JS.JSTry visitJSTry(JS.JSTry jSTry, SenderContext ctx) {
+            ctx.sendValue(jSTry, JS.JSTry::getId);
+            ctx.sendNode(jSTry, JS.JSTry::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jSTry, JS.JSTry::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(jSTry, JS.JSTry::getBody, ctx::sendTree);
+            ctx.sendNode(jSTry, JS.JSTry::getCatches, ctx::sendTree);
+            ctx.sendNode(jSTry, e -> e.getPadding().getFinallie(), JavaScriptSender::sendLeftPadded);
+            return jSTry;
+        }
+
+        @Override
+        public JS.JSTry.JSCatch visitJSTryJSCatch(JS.JSTry.JSCatch jSCatch, SenderContext ctx) {
+            ctx.sendValue(jSCatch, JS.JSTry.JSCatch::getId);
+            ctx.sendNode(jSCatch, JS.JSTry.JSCatch::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jSCatch, JS.JSTry.JSCatch::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(jSCatch, JS.JSTry.JSCatch::getParameter, ctx::sendTree);
+            ctx.sendNode(jSCatch, JS.JSTry.JSCatch::getBody, ctx::sendTree);
+            return jSCatch;
         }
 
         @Override
