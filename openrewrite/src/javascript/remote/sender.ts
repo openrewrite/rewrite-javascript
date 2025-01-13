@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, WithStatement, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, JSTry, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -293,6 +293,15 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         return statementExpression;
     }
 
+    public visitWithStatement(withStatement: WithStatement, ctx: SenderContext): J {
+        ctx.sendValue(withStatement, v => v.id, ValueType.UUID);
+        ctx.sendNode(withStatement, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(withStatement, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(withStatement, v => v.expression, ctx.sendTree);
+        ctx.sendNode(withStatement, v => v.padding.body, Visitor.sendRightPadded(ValueType.Tree));
+        return withStatement;
+    }
+
     public visitTaggedTemplateExpression(taggedTemplateExpression: TaggedTemplateExpression, ctx: SenderContext): J {
         ctx.sendValue(taggedTemplateExpression, v => v.id, ValueType.UUID);
         ctx.sendNode(taggedTemplateExpression, v => v.prefix, Visitor.sendSpace);
@@ -503,6 +512,25 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(jSForInOfLoopControl, v => v.padding.variable, Visitor.sendRightPadded(ValueType.Tree));
         ctx.sendNode(jSForInOfLoopControl, v => v.padding.iterable, Visitor.sendRightPadded(ValueType.Tree));
         return jSForInOfLoopControl;
+    }
+
+    public visitJSTry(jSTry: JSTry, ctx: SenderContext): J {
+        ctx.sendValue(jSTry, v => v.id, ValueType.UUID);
+        ctx.sendNode(jSTry, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(jSTry, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(jSTry, v => v.body, ctx.sendTree);
+        ctx.sendNode(jSTry, v => v.catches, ctx.sendTree);
+        ctx.sendNode(jSTry, v => v.padding.finallie, Visitor.sendLeftPadded(ValueType.Tree));
+        return jSTry;
+    }
+
+    public visitJSTryJSCatch(jSCatch: JSTry.JSCatch, ctx: SenderContext): J {
+        ctx.sendValue(jSCatch, v => v.id, ValueType.UUID);
+        ctx.sendNode(jSCatch, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(jSCatch, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(jSCatch, v => v.parameter, ctx.sendTree);
+        ctx.sendNode(jSCatch, v => v.body, ctx.sendTree);
+        return jSCatch;
     }
 
     public visitNamespaceDeclaration(namespaceDeclaration: NamespaceDeclaration, ctx: SenderContext): J {

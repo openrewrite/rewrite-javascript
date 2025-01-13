@@ -2414,6 +2414,83 @@ public interface JS extends J {
         }
     }
 
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class WithStatement implements JS, Statement {
+
+        @Nullable
+        @NonFinal
+        transient WeakReference<Padding> padding;
+
+        @With
+        @Getter
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        ControlParentheses<Expression> expression;
+
+        JRightPadded<Statement> body;
+
+        public Statement getBody() {
+            return body.getElement();
+        }
+
+        public WithStatement withBody(Statement body) {
+            return getPadding().withBody(this.body.withElement(body));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitWithStatement(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final WithStatement t;
+
+            public JRightPadded<Statement> getBody() {
+                return t.body;
+            }
+
+            public WithStatement withBody(JRightPadded<Statement> body) {
+                return t.body == body ? t : new WithStatement(t.id, t.prefix, t.markers, t.expression, body);
+            }
+        }
+    }
+
     @Getter
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
@@ -4198,6 +4275,113 @@ public interface JS extends J {
 
             public JSForInOfLoopControl withIterable(JRightPadded<Expression> iterable) {
                 return t.iterable == iterable ? t : new JSForInOfLoopControl(t.id, t.prefix, t.markers, t.variable, iterable);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class JSTry implements JS, Statement {
+        @Nullable
+        @NonFinal
+        transient WeakReference<JSTry.Padding> padding;
+
+        @With
+        @Getter
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        @With
+        @Getter
+        Block body;
+
+        @With
+        @Getter
+        JSTry.JSCatch catches;
+
+        @Nullable
+        JLeftPadded<Block> finallie;
+
+        public @Nullable Block getFinallie() {
+            return finallie == null ? null : finallie.getElement();
+        }
+
+        public JSTry withFinallie(@Nullable Block finallie) {
+            return getPadding().withFinallie(JLeftPadded.withElement(this.finallie, finallie));
+        }
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitJSTry(this, p);
+        }
+
+        @Override
+        @Transient
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
+        }
+
+        @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+        @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+        @Data
+        public static final class JSCatch implements JS {
+            @With
+            @EqualsAndHashCode.Include
+            UUID id;
+
+            @With
+            Space prefix;
+
+            @With
+            Markers markers;
+
+            @With
+            ControlParentheses<JSVariableDeclarations> parameter;
+
+            @With
+            Block body;
+
+            @Override
+            public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+                return v.visitJSTryJSCatch(this, p);
+            }
+        }
+
+        public JSTry.Padding getPadding() {
+            JSTry.Padding p;
+            if (this.padding == null) {
+                p = new JSTry.Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new JSTry.Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final JSTry t;
+
+            public @Nullable JLeftPadded<Block> getFinallie() {
+                return t.finallie;
+            }
+
+            public JSTry withFinallie(@Nullable JLeftPadded<Block> finallie) {
+                return t.finallie == finallie ? t : new JSTry(t.id, t.prefix, t.markers, t.body, t.catches, finallie);
             }
         }
     }
