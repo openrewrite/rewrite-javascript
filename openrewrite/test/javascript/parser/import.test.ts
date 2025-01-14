@@ -115,4 +115,13 @@ describe('import mapping', () => {
             `)
         );
     });
+
+    test('external module import', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                import mongodb = /*a*/require/*b*/(/*c*/'mongodb'/*d*/)/*e*/;
+            `)
+        );
+    });
 });
