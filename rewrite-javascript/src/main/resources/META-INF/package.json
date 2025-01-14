@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
-    "@openrewrite/rewrite-remote": "~0.13.0",
-    "@openrewrite/rewrite": "~0.26.0"
+    "@openrewrite/rewrite-remote": "~0.15.0",
+    "@openrewrite/rewrite": "~0.28.0"
   },
   "devDependencies": {
   }
