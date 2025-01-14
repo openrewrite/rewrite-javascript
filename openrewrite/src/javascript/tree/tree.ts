@@ -1317,7 +1317,7 @@ export class ImportType extends JSMixin(Object) implements Expression, TypeTree 
 
 @LstType("org.openrewrite.javascript.tree.JS$JsImport")
 export class JsImport extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], importClause: JLeftPadded<JsImportClause> | null, moduleSpecifier: JLeftPadded<Expression>, attributes: ImportAttributes | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], importClause: JsImportClause | null, moduleSpecifier: JLeftPadded<Expression>, attributes: ImportAttributes | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -1368,14 +1368,14 @@ export class JsImport extends JSMixin(Object) implements Statement {
             return modifiers === this._modifiers ? this : new JsImport(this._id, this._prefix, this._markers, modifiers, this._importClause, this._moduleSpecifier, this._attributes);
         }
 
-        private readonly _importClause: JLeftPadded<JsImportClause> | null;
+        private readonly _importClause: JsImportClause | null;
 
         public get importClause(): JsImportClause | null {
-            return this._importClause === null ? null : this._importClause.element;
+            return this._importClause;
         }
 
         public withImportClause(importClause: JsImportClause | null): JsImport {
-            return this.padding.withImportClause(JLeftPadded.withElement(this._importClause, importClause));
+            return importClause === this._importClause ? this : new JsImport(this._id, this._prefix, this._markers, this._modifiers, importClause, this._moduleSpecifier, this._attributes);
         }
 
         private readonly _moduleSpecifier: JLeftPadded<Expression>;
@@ -1405,12 +1405,6 @@ export class JsImport extends JSMixin(Object) implements Statement {
     get padding() {
         const t = this;
         return new class {
-            public get importClause(): JLeftPadded<JsImportClause> | null {
-                return t._importClause;
-            }
-            public withImportClause(importClause: JLeftPadded<JsImportClause> | null): JsImport {
-                return t._importClause === importClause ? t : new JsImport(t._id, t._prefix, t._markers, t._modifiers, importClause, t._moduleSpecifier, t._attributes);
-            }
             public get moduleSpecifier(): JLeftPadded<Expression> {
                 return t._moduleSpecifier;
             }

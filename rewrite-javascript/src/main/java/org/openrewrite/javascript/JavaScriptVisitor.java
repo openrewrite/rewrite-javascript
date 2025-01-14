@@ -319,7 +319,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
             i = (JS.JsImport) temp;
         }
         i = i.withModifiers(Objects.requireNonNull(ListUtils.map(i.getModifiers(), e -> visitAndCast(e, p))));
-        i = i.getPadding().withImportClause(visitLeftPadded(i.getPadding().getImportClause(), JsLeftPadded.Location.JS_IMPORT_IMPORT_CLAUSE, p));
+        i = i.withImportClause(visitAndCast(i.getImportClause(), p));
         i = i.getPadding().withModuleSpecifier(Objects.requireNonNull(visitLeftPadded(i.getPadding().getModuleSpecifier(), JsLeftPadded.Location.JS_IMPORT_MODULE_SPECIFIER, p)));
         i = i.withAttributes(visitAndCast(i.getAttributes(), p));
         return i;

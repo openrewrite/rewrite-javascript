@@ -3214,10 +3214,7 @@ export class JavaScriptParserVisitor {
     }
 
     visitImportEqualsDeclaration(node: ts.ImportEqualsDeclaration) {
-
         const kind = this.findChildNode(node, ts.SyntaxKind.ImportKeyword)!;
-
-
 
         return new JS.ScopedVariableDeclarations(
             randomId(),
@@ -3230,31 +3227,31 @@ export class JavaScriptParserVisitor {
             ),
             [
                 this.rightPadded(new J.VariableDeclarations(
-                            randomId(),
-                            Space.EMPTY,
-                            Markers.EMPTY,
-                            [], // FIXME decorators?
-                            node.isTypeOnly ? [new J.Modifier(
-                                randomId(),
-                                this.prefix(this.findChildNode(node, ts.SyntaxKind.TypeKeyword)!),
-                                Markers.EMPTY,
-                                "type",
-                                J.Modifier.Type.LanguageExtension,
-                                []
-                            )] : [],
-                            null,
-                            null, // FIXME varargs
-                            [],
-                            [this.rightPadded(new J.VariableDeclarations.NamedVariable(
-                                randomId(),
-                                Space.EMPTY,
-                                Markers.EMPTY,
-                                this.visit(node.name),
-                                [],
-                                this.leftPadded(this.suffix(node.name), this.visit(node.moduleReference)),
-                                this.mapVariableType(node)
-                            ), Space.EMPTY)]
-                        ), Space.EMPTY)
+                    randomId(),
+                    Space.EMPTY,
+                    Markers.EMPTY,
+                    [],
+                    node.isTypeOnly ? [new J.Modifier(
+                        randomId(),
+                        this.prefix(this.findChildNode(node, ts.SyntaxKind.TypeKeyword)!),
+                        Markers.EMPTY,
+                        "type",
+                        J.Modifier.Type.LanguageExtension,
+                        []
+                    )] : [],
+                    null,
+                    null,
+                    [],
+                    [this.rightPadded(new J.VariableDeclarations.NamedVariable(
+                        randomId(),
+                        Space.EMPTY,
+                        Markers.EMPTY,
+                        this.visit(node.name),
+                        [],
+                        this.leftPadded(this.suffix(node.name), this.visit(node.moduleReference)),
+                        this.mapVariableType(node)
+                    ), Space.EMPTY)]
+                ), Space.EMPTY)
             ]
         )
     }
@@ -3265,49 +3262,18 @@ export class JavaScriptParserVisitor {
     }
 
     visitImportDeclaration(node: ts.ImportDeclaration) {
-        // const children = node.getChildren(this.sourceFile);
-        // const _default = !!node.importClause?.name;
-        // const onlyDefault = _default && node.importClause.namedBindings == undefined;
-        // return new JS.JsImport(
-        //     randomId(),
-        //     this.prefix(node),
-        //     Markers.EMPTY,
-        //     _default ? this.rightPadded(this.visit(node.importClause?.name), this.suffix(node.importClause?.name)) : null,
-        //     node.importClause?.isTypeOnly ? this.leftPadded(this.prefix(this.findChildNode(node.importClause, ts.SyntaxKind.TypeKeyword)!), node.importClause.isTypeOnly) : this.leftPadded(Space.EMPTY, false),
-        //     node.importClause && !onlyDefault ? this.visit(node.importClause) : null,
-        //     children[children.indexOf(node.moduleSpecifier) - 1].kind == ts.SyntaxKind.FromKeyword ? this.prefix(children[children.indexOf(node.moduleSpecifier) - 1]) : null,
-        //     this.convert<J.Literal>(node.moduleSpecifier),
-        //     null
-        // );
-
         return new JS.JsImport(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
             this.mapModifiers(node),
-            node.importClause ? this.leftPadded(Space.EMPTY, this.visit(node.importClause)) : null,
+            node.importClause ? this.visit(node.importClause) : null,
             this.leftPadded(node.importClause ? this.prefix(this.findChildNode(node, ts.SyntaxKind.FromKeyword)!) : Space.EMPTY, this.visit(node.moduleSpecifier)),
             node.attributes ? this.visit(node.attributes) : null
         );
     }
 
     visitImportClause(node: ts.ImportClause) {
-        // if (node.namedBindings && ts.isNamespaceImport(node.namedBindings)) {
-        //     return new JContainer(
-        //         this.prefix(node),
-        //         [this.rightPadded(new JS.Alias(
-        //             randomId(),
-        //             Space.EMPTY,
-        //             Markers.EMPTY,
-        //             // this.rightPadded(node.isTypeOnly, node.isTypeOnly ? this.suffix(this.findChildNode(node, ts.SyntaxKind.TypeKeyword)!) : Space.EMPTY),
-        //             this.rightPadded(this.mapIdentifier(node.namedBindings, "*"), this.prefix(node.namedBindings.getChildAt(1, this.sourceFile))),
-        //             this.convert(node.namedBindings.name)
-        //         ), Space.EMPTY)],
-        //         Markers.EMPTY
-        //     );
-        // }
-        // return this.mapCommaSeparatedList(node.namedBindings?.getChildren(this.sourceFile)!);
-
         return new JS.JsImportClause(
             randomId(),
             this.prefix(node),
@@ -3588,13 +3554,13 @@ export class JavaScriptParserVisitor {
 
     visitImportAttributes(node: ts.ImportAttributes) {
         const openBraceIndex = node.getChildren().findIndex(n => n.kind === ts.SyntaxKind.OpenBraceToken);
-        const elements = this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(openBraceIndex, openBraceIndex + 3));
+        const elements = this.mapCommaSeparatedList<JS.ImportAttribute>(node.getChildren(this.sourceFile).slice(openBraceIndex, openBraceIndex + 3));
         return new JS.ImportAttributes(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
             ts.SyntaxKind.WithKeyword === node.token ? JS.ImportAttributes.Token.With : JS.ImportAttributes.Token.Assert,
-            elements as any
+            elements
         );
     }
 

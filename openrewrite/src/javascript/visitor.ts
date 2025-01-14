@@ -230,7 +230,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         jsImport = tempStatement as JsImport;
         jsImport = jsImport.withMarkers(this.visitMarkers(jsImport.markers, p));
         jsImport = jsImport.withModifiers(ListUtils.map(jsImport.modifiers, el => this.visitAndCast(el, p)));
-        jsImport = jsImport.padding.withImportClause(this.visitJsLeftPadded(jsImport.padding.importClause, JsLeftPadded.Location.JS_IMPORT_IMPORT_CLAUSE, p));
+        jsImport = jsImport.withImportClause(this.visitAndCast(jsImport.importClause, p));
         jsImport = jsImport.padding.withModuleSpecifier(this.visitJsLeftPadded(jsImport.padding.moduleSpecifier, JsLeftPadded.Location.JS_IMPORT_MODULE_SPECIFIER, p)!);
         jsImport = jsImport.withAttributes(this.visitAndCast(jsImport.attributes, p));
         return jsImport;

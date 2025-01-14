@@ -260,10 +260,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         p.append("import");
 
-        JLeftPadded<JS.JsImportClause> importClause = jsImport.getPadding().getImportClause();
-        visitLeftPadded(importClause, JsLeftPadded.Location.JS_IMPORT_IMPORT_CLAUSE, p);
+        visit(jsImport.getImportClause(), p);
 
-        visitLeftPadded(importClause == null ? "" : "from", jsImport.getPadding().getModuleSpecifier(), JsLeftPadded.Location.JS_IMPORT_MODULE_SPECIFIER, p);
+        visitLeftPadded(jsImport.getImportClause() == null ? "" : "from", jsImport.getPadding().getModuleSpecifier(), JsLeftPadded.Location.JS_IMPORT_MODULE_SPECIFIER, p);
 
         visit(jsImport.getAttributes(), p);
 

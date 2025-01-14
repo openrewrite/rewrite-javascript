@@ -224,7 +224,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(jsImport, JS.JsImport::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(jsImport, JS.JsImport::getMarkers, ctx::sendMarkers);
             ctx.sendNodes(jsImport, JS.JsImport::getModifiers, ctx::sendTree, Tree::getId);
-            ctx.sendNode(jsImport, e -> e.getPadding().getImportClause(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(jsImport, JS.JsImport::getImportClause, ctx::sendTree);
             ctx.sendNode(jsImport, e -> e.getPadding().getModuleSpecifier(), JavaScriptSender::sendLeftPadded);
             ctx.sendNode(jsImport, JS.JsImport::getAttributes, ctx::sendTree);
             return jsImport;

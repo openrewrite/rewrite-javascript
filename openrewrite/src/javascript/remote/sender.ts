@@ -175,7 +175,7 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(jsImport, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(jsImport, v => v.markers, ctx.sendMarkers);
         ctx.sendNodes(jsImport, v => v.modifiers, ctx.sendTree, t => t.id);
-        ctx.sendNode(jsImport, v => v.padding.importClause, Visitor.sendLeftPadded(ValueType.Tree));
+        ctx.sendNode(jsImport, v => v.importClause, ctx.sendTree);
         ctx.sendNode(jsImport, v => v.padding.moduleSpecifier, Visitor.sendLeftPadded(ValueType.Tree));
         ctx.sendNode(jsImport, v => v.attributes, ctx.sendTree);
         return jsImport;

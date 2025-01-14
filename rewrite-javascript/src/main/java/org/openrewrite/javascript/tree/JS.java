@@ -1307,17 +1307,10 @@ public interface JS extends J {
         @Getter
         List<J.Modifier> modifiers;
 
+        @With
+        @Getter
         @Nullable
-        JLeftPadded<JsImportClause> importClause;
-
-        @Nullable
-        public JsImportClause getImportClause() {
-            return importClause != null ? importClause.getElement() : null;
-        }
-
-        public JS.JsImport withImportClause(JsImportClause importClause) {
-            return getPadding().withImportClause(JLeftPadded.withElement(this.importClause, importClause));
-        }
+        JsImportClause importClause;
 
         JLeftPadded<Expression> moduleSpecifier;
 
@@ -1369,14 +1362,6 @@ public interface JS extends J {
 
             public JsImport withModuleSpecifier(JLeftPadded<Expression> moduleSpecifier) {
                 return t.moduleSpecifier == moduleSpecifier ? t : new JsImport(t.id, t.prefix, t.markers, t.modifiers, t.importClause, moduleSpecifier, t.attributes);
-            }
-
-            public @Nullable JLeftPadded<JsImportClause> getImportClause() {
-                return t.importClause;
-            }
-
-            public JsImport withImportClause(@Nullable JLeftPadded<JsImportClause> importClause) {
-                return t.importClause == importClause ? t : new JsImport(t.id, t.prefix, t.markers, t.modifiers, importClause, t.moduleSpecifier, t.attributes);
             }
         }
     }
@@ -1455,14 +1440,6 @@ public interface JS extends J {
             public JsImportClause withName(@Nullable JRightPadded<J.Identifier> name) {
                 return t.name == name ? t : new JsImportClause(t.id, t.prefix, t.markers, t.typeOnly, name, t.namedBindings);
             }
-//
-//            public JRightPadded<Boolean> getTypeOnly() {
-//                return t.typeOnly;
-//            }
-//
-//            public JsImportClause withTypeOnly(JRightPadded<Boolean> typeOnly) {
-//                return t.typeOnly == typeOnly ? t : new JsImportClause(t.id, t.prefix, t.markers, typeOnly, t.name, t.namedBindings);
-//            }
         }
     }
 

@@ -180,7 +180,7 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         jsImport = jsImport.withPrefix(ctx.receiveNode(jsImport.prefix, receiveSpace)!);
         jsImport = jsImport.withMarkers(ctx.receiveNode(jsImport.markers, ctx.receiveMarkers)!);
         jsImport = jsImport.withModifiers(ctx.receiveNodes(jsImport.modifiers, ctx.receiveTree)!);
-        jsImport = jsImport.padding.withImportClause(ctx.receiveNode(jsImport.padding.importClause, receiveLeftPaddedTree));
+        jsImport = jsImport.withImportClause(ctx.receiveNode(jsImport.importClause, ctx.receiveTree));
         jsImport = jsImport.padding.withModuleSpecifier(ctx.receiveNode(jsImport.padding.moduleSpecifier, receiveLeftPaddedTree)!);
         jsImport = jsImport.withAttributes(ctx.receiveNode(jsImport.attributes, ctx.receiveTree));
         return jsImport;
@@ -1555,7 +1555,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
-                ctx.receiveNode<JLeftPadded<JsImportClause>>(null, receiveLeftPaddedTree),
+                ctx.receiveNode<JsImportClause>(null, ctx.receiveTree),
                 ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)!,
                 ctx.receiveNode<ImportAttributes>(null, ctx.receiveTree)
             );

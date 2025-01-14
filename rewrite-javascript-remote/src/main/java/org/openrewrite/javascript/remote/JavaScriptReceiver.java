@@ -242,7 +242,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
             jsImport = jsImport.withPrefix(ctx.receiveNonNullNode(jsImport.getPrefix(), JavaScriptReceiver::receiveSpace));
             jsImport = jsImport.withMarkers(ctx.receiveNonNullNode(jsImport.getMarkers(), ctx::receiveMarkers));
             jsImport = jsImport.withModifiers(ctx.receiveNonNullNodes(jsImport.getModifiers(), ctx::receiveTree));
-            jsImport = jsImport.getPadding().withImportClause(ctx.receiveNode(jsImport.getPadding().getImportClause(), JavaScriptReceiver::receiveLeftPaddedTree));
+            jsImport = jsImport.withImportClause(ctx.receiveNode(jsImport.getImportClause(), ctx::receiveTree));
             jsImport = jsImport.getPadding().withModuleSpecifier(ctx.receiveNonNullNode(jsImport.getPadding().getModuleSpecifier(), JavaScriptReceiver::receiveLeftPaddedTree));
             jsImport = jsImport.withAttributes(ctx.receiveNode(jsImport.getAttributes(), ctx::receiveTree));
             return jsImport;
@@ -1857,7 +1857,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
-                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
+                    ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveNode(null, ctx::receiveTree)
             );
