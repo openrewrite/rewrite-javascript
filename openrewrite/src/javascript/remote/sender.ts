@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, WithStatement, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, JSTry, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportClause, NamedImports, JsImportSpecifier, ImportAttributes, ImportAttribute, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, WithStatement, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, JSTry, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -174,13 +174,30 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendValue(jsImport, v => v.id, ValueType.UUID);
         ctx.sendNode(jsImport, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(jsImport, v => v.markers, ctx.sendMarkers);
-        ctx.sendNode(jsImport, v => v.padding.name, Visitor.sendRightPadded(ValueType.Tree));
-        ctx.sendNode(jsImport, v => v.padding.importType, Visitor.sendLeftPadded(ValueType.Primitive));
-        ctx.sendNode(jsImport, v => v.padding.imports, Visitor.sendContainer(ValueType.Tree));
-        ctx.sendNode(jsImport, v => v.from, Visitor.sendSpace);
-        ctx.sendNode(jsImport, v => v.target, ctx.sendTree);
-        ctx.sendNode(jsImport, v => v.padding.initializer, Visitor.sendLeftPadded(ValueType.Tree));
+        ctx.sendNodes(jsImport, v => v.modifiers, ctx.sendTree, t => t.id);
+        ctx.sendNode(jsImport, v => v.padding.importClause, Visitor.sendLeftPadded(ValueType.Tree));
+        ctx.sendNode(jsImport, v => v.padding.moduleSpecifier, Visitor.sendLeftPadded(ValueType.Tree));
+        ctx.sendNode(jsImport, v => v.attributes, ctx.sendTree);
         return jsImport;
+    }
+
+    public visitJsImportClause(jsImportClause: JsImportClause, ctx: SenderContext): J {
+        ctx.sendValue(jsImportClause, v => v.id, ValueType.UUID);
+        ctx.sendNode(jsImportClause, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(jsImportClause, v => v.markers, ctx.sendMarkers);
+        ctx.sendValue(jsImportClause, v => v.typeOnly, ValueType.Primitive);
+        ctx.sendNode(jsImportClause, v => v.padding.name, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(jsImportClause, v => v.namedBindings, ctx.sendTree);
+        return jsImportClause;
+    }
+
+    public visitNamedImports(namedImports: NamedImports, ctx: SenderContext): J {
+        ctx.sendValue(namedImports, v => v.id, ValueType.UUID);
+        ctx.sendNode(namedImports, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(namedImports, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(namedImports, v => v.padding.elements, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendTypedValue(namedImports, v => v.type, ValueType.Object);
+        return namedImports;
     }
 
     public visitJsImportSpecifier(jsImportSpecifier: JsImportSpecifier, ctx: SenderContext): J {
@@ -191,6 +208,24 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(jsImportSpecifier, v => v.specifier, ctx.sendTree);
         ctx.sendTypedValue(jsImportSpecifier, v => v.type, ValueType.Object);
         return jsImportSpecifier;
+    }
+
+    public visitImportAttributes(importAttributes: ImportAttributes, ctx: SenderContext): J {
+        ctx.sendValue(importAttributes, v => v.id, ValueType.UUID);
+        ctx.sendNode(importAttributes, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(importAttributes, v => v.markers, ctx.sendMarkers);
+        ctx.sendValue(importAttributes, v => v.token, ValueType.Enum);
+        ctx.sendNode(importAttributes, v => v.padding.elements, Visitor.sendContainer(ValueType.Tree));
+        return importAttributes;
+    }
+
+    public visitImportAttribute(importAttribute: ImportAttribute, ctx: SenderContext): J {
+        ctx.sendValue(importAttribute, v => v.id, ValueType.UUID);
+        ctx.sendNode(importAttribute, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(importAttribute, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(importAttribute, v => v.name, ctx.sendTree);
+        ctx.sendNode(importAttribute, v => v.padding.value, Visitor.sendLeftPadded(ValueType.Tree));
+        return importAttribute;
     }
 
     public visitJsBinary(jsBinary: JsBinary, ctx: SenderContext): J {
@@ -1346,14 +1381,6 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         ctx.sendNode(source, v => v.markers, ctx.sendMarkers);
         ctx.sendValue(source, v => v.text, ValueType.Primitive);
         return source;
-    }
-
-    public visitErroneous(erroneous: Java.Erroneous, ctx: SenderContext): J {
-        ctx.sendValue(erroneous, v => v.id, ValueType.UUID);
-        ctx.sendNode(erroneous, v => v.prefix, Visitor.sendSpace);
-        ctx.sendNode(erroneous, v => v.markers, ctx.sendMarkers);
-        ctx.sendValue(erroneous, v => v.text, ValueType.Primitive);
-        return erroneous;
     }
 
     private static sendContainer<T>(type: ValueType): (container: JContainer<T>, ctx: SenderContext) => void {

@@ -264,6 +264,10 @@ export namespace JsSpace {
         JSTRY_PREFIX,
         JSTRY_JSCATCH_PREFIX,
         WITH_STATEMENT_PREFIX,
+        IMPORT_ATTRIBUTE_PREFIX,
+        IMPORT_ATTRIBUTES_PREFIX,
+        NAMED_IMPORTS_PREFIX,
+        JS_IMPORT_CLAUSE_PREFIX,
     }
 }
 export namespace JsLeftPadded {
@@ -310,6 +314,9 @@ export namespace JsLeftPadded {
         YIELD_DELEGATED,
         FUNCTION_TYPE_CONSTRUCTOR_TYPE,
         JSTRY_FINALLIE,
+        IMPORT_ATTRIBUTE_VALUE,
+        JS_IMPORT_MODULE_SPECIFIER,
+        JS_IMPORT_IMPORT_CLAUSE,
     }
 }
 export namespace JsRightPadded {
@@ -339,6 +346,7 @@ export namespace JsRightPadded {
         MAPPED_TYPE_KEYS_REMAPPING_NAME_TYPE,
         TRAILING_TOKEN_STATEMENT_EXPRESSION,
         WITH_STATEMENT_BODY,
+        JS_IMPORT_CLAUSE_NAME,
     }
 }
 export namespace JsContainer {
@@ -361,5 +369,7 @@ export namespace JsContainer {
         NAMED_EXPORTS_ELEMENTS,
         MAPPED_TYPE_VALUE_TYPE,
         TYPE_QUERY_TYPE_ARGUMENTS,
+        IMPORT_ATTRIBUTES_ELEMENTS,
+        NAMED_IMPORTS_ELEMENTS,
     }
 }

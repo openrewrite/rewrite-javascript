@@ -94,12 +94,24 @@ describe('import mapping', () => {
         );
     });
 
-    test.skip('experimental: import with import attributes', () => {
+    test('experimental: import with import attributes', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
-                import foo from 'module-name' with { type: "json" };
                 import Package from 'module-name' assert { type: "json" }
+                import foo from 'module-name' with { type: "json" };
+                /*{1}*/import/*{2}*/ foo /*{3}*/from /*{4}*/'module-name'/*{5}*/ with/*{6}*/ {/*{7}*/ type/*{8}*/: /*{9}*/"json", /*{10}*/ } /*{11}*/;
+            `)
+        );
+    });
+
+    test('experimental: import with import attributes', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                import SpyInstance = jest.SpyInstance;
+                import type SpyInstance = jest.SpyInstance;
+                /*{1}*/import /*{2}*/type /*{3}*/SpyInstance /*{4}*/= /*{5}*/jest.SpyInstance/*{6}*/;
             `)
         );
     });

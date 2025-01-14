@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, WithStatement, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, JSTry, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportClause, NamedImports, JsImportSpecifier, ImportAttributes, ImportAttribute, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, WithStatement, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, JSTry, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -229,13 +229,32 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         }
         jsImport = tempStatement as JsImport;
         jsImport = jsImport.withMarkers(this.visitMarkers(jsImport.markers, p));
-        jsImport = jsImport.padding.withName(this.visitJsRightPadded(jsImport.padding.name, JsRightPadded.Location.JS_IMPORT_NAME, p));
-        jsImport = jsImport.padding.withImportType(this.visitJsLeftPadded(jsImport.padding.importType, JsLeftPadded.Location.JS_IMPORT_IMPORT_TYPE, p)!);
-        jsImport = jsImport.padding.withImports(this.visitJsContainer(jsImport.padding.imports, JsContainer.Location.JS_IMPORT_IMPORTS, p));
-        jsImport = jsImport.withFrom(this.visitJsSpace(jsImport.from, JsSpace.Location.JS_IMPORT_FROM, p));
-        jsImport = jsImport.withTarget(this.visitAndCast(jsImport.target, p));
-        jsImport = jsImport.padding.withInitializer(this.visitJsLeftPadded(jsImport.padding.initializer, JsLeftPadded.Location.JS_IMPORT_INITIALIZER, p));
+        jsImport = jsImport.withModifiers(ListUtils.map(jsImport.modifiers, el => this.visitAndCast(el, p)));
+        jsImport = jsImport.padding.withImportClause(this.visitJsLeftPadded(jsImport.padding.importClause, JsLeftPadded.Location.JS_IMPORT_IMPORT_CLAUSE, p));
+        jsImport = jsImport.padding.withModuleSpecifier(this.visitJsLeftPadded(jsImport.padding.moduleSpecifier, JsLeftPadded.Location.JS_IMPORT_MODULE_SPECIFIER, p)!);
+        jsImport = jsImport.withAttributes(this.visitAndCast(jsImport.attributes, p));
         return jsImport;
+    }
+
+    public visitJsImportClause(jsImportClause: JsImportClause, p: P): J | null {
+        jsImportClause = jsImportClause.withPrefix(this.visitJsSpace(jsImportClause.prefix, JsSpace.Location.JS_IMPORT_CLAUSE_PREFIX, p)!);
+        jsImportClause = jsImportClause.withMarkers(this.visitMarkers(jsImportClause.markers, p));
+        jsImportClause = jsImportClause.padding.withName(this.visitJsRightPadded(jsImportClause.padding.name, JsRightPadded.Location.JS_IMPORT_CLAUSE_NAME, p));
+        jsImportClause = jsImportClause.withNamedBindings(this.visitAndCast(jsImportClause.namedBindings, p));
+        return jsImportClause;
+    }
+
+    public visitNamedImports(namedImports: NamedImports, p: P): J | null {
+        namedImports = namedImports.withPrefix(this.visitJsSpace(namedImports.prefix, JsSpace.Location.NAMED_IMPORTS_PREFIX, p)!);
+        let tempExpression = this.visitExpression(namedImports, p) as Expression;
+        if (!(tempExpression instanceof NamedImports))
+        {
+            return tempExpression;
+        }
+        namedImports = tempExpression as NamedImports;
+        namedImports = namedImports.withMarkers(this.visitMarkers(namedImports.markers, p));
+        namedImports = namedImports.padding.withElements(this.visitJsContainer(namedImports.padding.elements, JsContainer.Location.NAMED_IMPORTS_ELEMENTS, p)!);
+        return namedImports;
     }
 
     public visitJsImportSpecifier(jsImportSpecifier: JsImportSpecifier, p: P): J | null {
@@ -250,6 +269,21 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         jsImportSpecifier = jsImportSpecifier.padding.withImportType(this.visitJsLeftPadded(jsImportSpecifier.padding.importType, JsLeftPadded.Location.JS_IMPORT_SPECIFIER_IMPORT_TYPE, p)!);
         jsImportSpecifier = jsImportSpecifier.withSpecifier(this.visitAndCast(jsImportSpecifier.specifier, p)!);
         return jsImportSpecifier;
+    }
+
+    public visitImportAttributes(importAttributes: ImportAttributes, p: P): J | null {
+        importAttributes = importAttributes.withPrefix(this.visitJsSpace(importAttributes.prefix, JsSpace.Location.IMPORT_ATTRIBUTES_PREFIX, p)!);
+        importAttributes = importAttributes.withMarkers(this.visitMarkers(importAttributes.markers, p));
+        importAttributes = importAttributes.padding.withElements(this.visitJsContainer(importAttributes.padding.elements, JsContainer.Location.IMPORT_ATTRIBUTES_ELEMENTS, p)!);
+        return importAttributes;
+    }
+
+    public visitImportAttribute(importAttribute: ImportAttribute, p: P): J | null {
+        importAttribute = importAttribute.withPrefix(this.visitJsSpace(importAttribute.prefix, JsSpace.Location.IMPORT_ATTRIBUTE_PREFIX, p)!);
+        importAttribute = importAttribute.withMarkers(this.visitMarkers(importAttribute.markers, p));
+        importAttribute = importAttribute.withName(this.visitAndCast(importAttribute.name, p)!);
+        importAttribute = importAttribute.padding.withValue(this.visitJsLeftPadded(importAttribute.padding.value, JsLeftPadded.Location.IMPORT_ATTRIBUTE_VALUE, p)!);
+        return importAttribute;
     }
 
     public visitJsBinary(jsBinary: JsBinary, p: P): J | null {

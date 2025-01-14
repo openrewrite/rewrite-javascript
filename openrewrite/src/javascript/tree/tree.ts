@@ -1317,17 +1317,15 @@ export class ImportType extends JSMixin(Object) implements Expression, TypeTree 
 
 @LstType("org.openrewrite.javascript.tree.JS$JsImport")
 export class JsImport extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, name: JRightPadded<Java.Identifier> | null, importType: JLeftPadded<boolean>, imports: JContainer<Expression> | null, _from: Space | null, target: Java.Literal | null, initializer: JLeftPadded<Expression> | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], importClause: JLeftPadded<JsImportClause> | null, moduleSpecifier: JLeftPadded<Expression>, attributes: ImportAttributes | null) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
-        this._name = name;
-        this._importType = importType;
-        this._imports = imports;
-        this._from = _from;
-        this._target = target;
-        this._initializer = initializer;
+        this._modifiers = modifiers;
+        this._importClause = importClause;
+        this._moduleSpecifier = moduleSpecifier;
+        this._attributes = attributes;
     }
 
         private readonly _id: UUID;
@@ -1337,7 +1335,7 @@ export class JsImport extends JSMixin(Object) implements Statement {
         }
 
         public withId(id: UUID): JsImport {
-            return id === this._id ? this : new JsImport(id, this._prefix, this._markers, this._name, this._importType, this._imports, this._from, this._target, this._initializer);
+            return id === this._id ? this : new JsImport(id, this._prefix, this._markers, this._modifiers, this._importClause, this._moduleSpecifier, this._attributes);
         }
 
         private readonly _prefix: Space;
@@ -1347,7 +1345,7 @@ export class JsImport extends JSMixin(Object) implements Statement {
         }
 
         public withPrefix(prefix: Space): JsImport {
-            return prefix === this._prefix ? this : new JsImport(this._id, prefix, this._markers, this._name, this._importType, this._imports, this._from, this._target, this._initializer);
+            return prefix === this._prefix ? this : new JsImport(this._id, prefix, this._markers, this._modifiers, this._importClause, this._moduleSpecifier, this._attributes);
         }
 
         private readonly _markers: Markers;
@@ -1357,67 +1355,47 @@ export class JsImport extends JSMixin(Object) implements Statement {
         }
 
         public withMarkers(markers: Markers): JsImport {
-            return markers === this._markers ? this : new JsImport(this._id, this._prefix, markers, this._name, this._importType, this._imports, this._from, this._target, this._initializer);
+            return markers === this._markers ? this : new JsImport(this._id, this._prefix, markers, this._modifiers, this._importClause, this._moduleSpecifier, this._attributes);
         }
 
-        private readonly _name: JRightPadded<Java.Identifier> | null;
+        private readonly _modifiers: Java.Modifier[];
 
-        public get name(): Java.Identifier | null {
-            return this._name === null ? null : this._name.element;
+        public get modifiers(): Java.Modifier[] {
+            return this._modifiers;
         }
 
-        public withName(name: Java.Identifier | null): JsImport {
-            return this.padding.withName(JRightPadded.withElement(this._name, name));
+        public withModifiers(modifiers: Java.Modifier[]): JsImport {
+            return modifiers === this._modifiers ? this : new JsImport(this._id, this._prefix, this._markers, modifiers, this._importClause, this._moduleSpecifier, this._attributes);
         }
 
-        private readonly _importType: JLeftPadded<boolean>;
+        private readonly _importClause: JLeftPadded<JsImportClause> | null;
 
-        public get importType(): boolean {
-            return this._importType.element;
+        public get importClause(): JsImportClause | null {
+            return this._importClause === null ? null : this._importClause.element;
         }
 
-        public withImportType(importType: boolean): JsImport {
-            return this.padding.withImportType(this._importType.withElement(importType));
+        public withImportClause(importClause: JsImportClause | null): JsImport {
+            return this.padding.withImportClause(JLeftPadded.withElement(this._importClause, importClause));
         }
 
-        private readonly _imports: JContainer<Expression> | null;
+        private readonly _moduleSpecifier: JLeftPadded<Expression>;
 
-        public get imports(): Expression[] | null {
-            return this._imports === null ? null : this._imports.elements;
+        public get moduleSpecifier(): Expression {
+            return this._moduleSpecifier.element;
         }
 
-        public withImports(imports: Expression[] | null): JsImport {
-            return this.padding.withImports(JContainer.withElementsNullable(this._imports, imports));
+        public withModuleSpecifier(moduleSpecifier: Expression): JsImport {
+            return this.padding.withModuleSpecifier(this._moduleSpecifier.withElement(moduleSpecifier));
         }
 
-        private readonly _from: Space | null;
+        private readonly _attributes: ImportAttributes | null;
 
-        public get from(): Space | null {
-            return this._from;
+        public get attributes(): ImportAttributes | null {
+            return this._attributes;
         }
 
-        public withFrom(_from: Space | null): JsImport {
-            return _from === this._from ? this : new JsImport(this._id, this._prefix, this._markers, this._name, this._importType, this._imports, _from, this._target, this._initializer);
-        }
-
-        private readonly _target: Java.Literal | null;
-
-        public get target(): Java.Literal | null {
-            return this._target;
-        }
-
-        public withTarget(target: Java.Literal | null): JsImport {
-            return target === this._target ? this : new JsImport(this._id, this._prefix, this._markers, this._name, this._importType, this._imports, this._from, target, this._initializer);
-        }
-
-        private readonly _initializer: JLeftPadded<Expression> | null;
-
-        public get initializer(): Expression | null {
-            return this._initializer === null ? null : this._initializer.element;
-        }
-
-        public withInitializer(initializer: Expression | null): JsImport {
-            return this.padding.withInitializer(JLeftPadded.withElement(this._initializer, initializer));
+        public withAttributes(attributes: ImportAttributes | null): JsImport {
+            return attributes === this._attributes ? this : new JsImport(this._id, this._prefix, this._markers, this._modifiers, this._importClause, this._moduleSpecifier, attributes);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
@@ -1427,29 +1405,186 @@ export class JsImport extends JSMixin(Object) implements Statement {
     get padding() {
         const t = this;
         return new class {
+            public get importClause(): JLeftPadded<JsImportClause> | null {
+                return t._importClause;
+            }
+            public withImportClause(importClause: JLeftPadded<JsImportClause> | null): JsImport {
+                return t._importClause === importClause ? t : new JsImport(t._id, t._prefix, t._markers, t._modifiers, importClause, t._moduleSpecifier, t._attributes);
+            }
+            public get moduleSpecifier(): JLeftPadded<Expression> {
+                return t._moduleSpecifier;
+            }
+            public withModuleSpecifier(moduleSpecifier: JLeftPadded<Expression>): JsImport {
+                return t._moduleSpecifier === moduleSpecifier ? t : new JsImport(t._id, t._prefix, t._markers, t._modifiers, t._importClause, moduleSpecifier, t._attributes);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$JsImportClause")
+export class JsImportClause extends JSMixin(Object) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, typeOnly: boolean, name: JRightPadded<Java.Identifier> | null, namedBindings: Expression | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._typeOnly = typeOnly;
+        this._name = name;
+        this._namedBindings = namedBindings;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): JsImportClause {
+            return id === this._id ? this : new JsImportClause(id, this._prefix, this._markers, this._typeOnly, this._name, this._namedBindings);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): JsImportClause {
+            return prefix === this._prefix ? this : new JsImportClause(this._id, prefix, this._markers, this._typeOnly, this._name, this._namedBindings);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): JsImportClause {
+            return markers === this._markers ? this : new JsImportClause(this._id, this._prefix, markers, this._typeOnly, this._name, this._namedBindings);
+        }
+
+        private readonly _typeOnly: boolean;
+
+        public get typeOnly(): boolean {
+            return this._typeOnly;
+        }
+
+        public withTypeOnly(typeOnly: boolean): JsImportClause {
+            return typeOnly === this._typeOnly ? this : new JsImportClause(this._id, this._prefix, this._markers, typeOnly, this._name, this._namedBindings);
+        }
+
+        private readonly _name: JRightPadded<Java.Identifier> | null;
+
+        public get name(): Java.Identifier | null {
+            return this._name === null ? null : this._name.element;
+        }
+
+        public withName(name: Java.Identifier | null): JsImportClause {
+            return this.padding.withName(JRightPadded.withElement(this._name, name));
+        }
+
+        private readonly _namedBindings: Expression | null;
+
+        public get namedBindings(): Expression | null {
+            return this._namedBindings;
+        }
+
+        public withNamedBindings(namedBindings: Expression | null): JsImportClause {
+            return namedBindings === this._namedBindings ? this : new JsImportClause(this._id, this._prefix, this._markers, this._typeOnly, this._name, namedBindings);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitJsImportClause(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
             public get name(): JRightPadded<Java.Identifier> | null {
                 return t._name;
             }
-            public withName(name: JRightPadded<Java.Identifier> | null): JsImport {
-                return t._name === name ? t : new JsImport(t._id, t._prefix, t._markers, name, t._importType, t._imports, t._from, t._target, t._initializer);
+            public withName(name: JRightPadded<Java.Identifier> | null): JsImportClause {
+                return t._name === name ? t : new JsImportClause(t._id, t._prefix, t._markers, t._typeOnly, name, t._namedBindings);
             }
-            public get importType(): JLeftPadded<boolean> {
-                return t._importType;
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$NamedImports")
+export class NamedImports extends JSMixin(Object) implements Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, elements: JContainer<Expression>, _type: JavaType | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._elements = elements;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): NamedImports {
+            return id === this._id ? this : new NamedImports(id, this._prefix, this._markers, this._elements, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): NamedImports {
+            return prefix === this._prefix ? this : new NamedImports(this._id, prefix, this._markers, this._elements, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): NamedImports {
+            return markers === this._markers ? this : new NamedImports(this._id, this._prefix, markers, this._elements, this._type);
+        }
+
+        private readonly _elements: JContainer<Expression>;
+
+        public get elements(): Expression[] {
+            return this._elements.elements;
+        }
+
+        public withElements(elements: Expression[]): NamedImports {
+            return this.padding.withElements(JContainer.withElements(this._elements, elements));
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): NamedImports {
+            return _type === this._type ? this : new NamedImports(this._id, this._prefix, this._markers, this._elements, _type);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitNamedImports(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get elements(): JContainer<Expression> {
+                return t._elements;
             }
-            public withImportType(importType: JLeftPadded<boolean>): JsImport {
-                return t._importType === importType ? t : new JsImport(t._id, t._prefix, t._markers, t._name, importType, t._imports, t._from, t._target, t._initializer);
-            }
-            public get imports(): JContainer<Expression> | null {
-                return t._imports;
-            }
-            public withImports(imports: JContainer<Expression> | null): JsImport {
-                return t._imports === imports ? t : new JsImport(t._id, t._prefix, t._markers, t._name, t._importType, imports, t._from, t._target, t._initializer);
-            }
-            public get initializer(): JLeftPadded<Expression> | null {
-                return t._initializer;
-            }
-            public withInitializer(initializer: JLeftPadded<Expression> | null): JsImport {
-                return t._initializer === initializer ? t : new JsImport(t._id, t._prefix, t._markers, t._name, t._importType, t._imports, t._from, t._target, initializer);
+            public withElements(elements: JContainer<Expression>): NamedImports {
+                return t._elements === elements ? t : new NamedImports(t._id, t._prefix, t._markers, elements, t._type);
             }
         }
     }
@@ -1540,6 +1675,173 @@ export class JsImportSpecifier extends JSMixin(Object) implements Expression, Ty
             }
             public withImportType(importType: JLeftPadded<boolean>): JsImportSpecifier {
                 return t._importType === importType ? t : new JsImportSpecifier(t._id, t._prefix, t._markers, importType, t._specifier, t._type);
+            }
+        }
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$ImportAttributes")
+export class ImportAttributes extends JSMixin(Object) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, token: ImportAttributes.Token, elements: JContainer<ImportAttribute>) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._token = token;
+        this._elements = elements;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): ImportAttributes {
+            return id === this._id ? this : new ImportAttributes(id, this._prefix, this._markers, this._token, this._elements);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): ImportAttributes {
+            return prefix === this._prefix ? this : new ImportAttributes(this._id, prefix, this._markers, this._token, this._elements);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): ImportAttributes {
+            return markers === this._markers ? this : new ImportAttributes(this._id, this._prefix, markers, this._token, this._elements);
+        }
+
+        private readonly _token: ImportAttributes.Token;
+
+        public get token(): ImportAttributes.Token {
+            return this._token;
+        }
+
+        public withToken(token: ImportAttributes.Token): ImportAttributes {
+            return token === this._token ? this : new ImportAttributes(this._id, this._prefix, this._markers, token, this._elements);
+        }
+
+        private readonly _elements: JContainer<ImportAttribute>;
+
+        public get elements(): ImportAttribute[] {
+            return this._elements.elements;
+        }
+
+        public withElements(elements: ImportAttribute[]): ImportAttributes {
+            return this.padding.withElements(JContainer.withElements(this._elements, elements));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitImportAttributes(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get elements(): JContainer<ImportAttribute> {
+                return t._elements;
+            }
+            public withElements(elements: JContainer<ImportAttribute>): ImportAttributes {
+                return t._elements === elements ? t : new ImportAttributes(t._id, t._prefix, t._markers, t._token, elements);
+            }
+        }
+    }
+
+}
+
+export namespace ImportAttributes {
+    export enum Token {
+            With = 0,
+            Assert = 1,
+
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$ImportAttribute")
+export class ImportAttribute extends JSMixin(Object) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, name: Expression, value: JLeftPadded<Expression>) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._name = name;
+        this._value = value;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): ImportAttribute {
+            return id === this._id ? this : new ImportAttribute(id, this._prefix, this._markers, this._name, this._value);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): ImportAttribute {
+            return prefix === this._prefix ? this : new ImportAttribute(this._id, prefix, this._markers, this._name, this._value);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): ImportAttribute {
+            return markers === this._markers ? this : new ImportAttribute(this._id, this._prefix, markers, this._name, this._value);
+        }
+
+        private readonly _name: Expression;
+
+        public get name(): Expression {
+            return this._name;
+        }
+
+        public withName(name: Expression): ImportAttribute {
+            return name === this._name ? this : new ImportAttribute(this._id, this._prefix, this._markers, name, this._value);
+        }
+
+        private readonly _value: JLeftPadded<Expression>;
+
+        public get value(): Expression {
+            return this._value.element;
+        }
+
+        public withValue(value: Expression): ImportAttribute {
+            return this.padding.withValue(this._value.withElement(value));
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitImportAttribute(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get value(): JLeftPadded<Expression> {
+                return t._value;
+            }
+            public withValue(value: JLeftPadded<Expression>): ImportAttribute {
+                return t._value === value ? t : new ImportAttribute(t._id, t._prefix, t._markers, t._name, value);
             }
         }
     }
@@ -2478,6 +2780,7 @@ export namespace ScopedVariableDeclarations {
             Let = 1,
             Var = 2,
             Using = 3,
+            Import = 4,
 
     }
 

@@ -223,13 +223,32 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendValue(jsImport, JS.JsImport::getId);
             ctx.sendNode(jsImport, JS.JsImport::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(jsImport, JS.JsImport::getMarkers, ctx::sendMarkers);
-            ctx.sendNode(jsImport, e -> e.getPadding().getName(), JavaScriptSender::sendRightPadded);
-            ctx.sendNode(jsImport, e -> e.getPadding().getImportType(), JavaScriptSender::sendLeftPadded);
-            ctx.sendNode(jsImport, e -> e.getPadding().getImports(), JavaScriptSender::sendContainer);
-            ctx.sendNode(jsImport, JS.JsImport::getFrom, JavaScriptSender::sendSpace);
-            ctx.sendNode(jsImport, JS.JsImport::getTarget, ctx::sendTree);
-            ctx.sendNode(jsImport, e -> e.getPadding().getInitializer(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNodes(jsImport, JS.JsImport::getModifiers, ctx::sendTree, Tree::getId);
+            ctx.sendNode(jsImport, e -> e.getPadding().getImportClause(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(jsImport, e -> e.getPadding().getModuleSpecifier(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(jsImport, JS.JsImport::getAttributes, ctx::sendTree);
             return jsImport;
+        }
+
+        @Override
+        public JS.JsImportClause visitJsImportClause(JS.JsImportClause jsImportClause, SenderContext ctx) {
+            ctx.sendValue(jsImportClause, JS.JsImportClause::getId);
+            ctx.sendNode(jsImportClause, JS.JsImportClause::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(jsImportClause, JS.JsImportClause::getMarkers, ctx::sendMarkers);
+            ctx.sendValue(jsImportClause, JS.JsImportClause::isTypeOnly);
+            ctx.sendNode(jsImportClause, e -> e.getPadding().getName(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(jsImportClause, JS.JsImportClause::getNamedBindings, ctx::sendTree);
+            return jsImportClause;
+        }
+
+        @Override
+        public JS.NamedImports visitNamedImports(JS.NamedImports namedImports, SenderContext ctx) {
+            ctx.sendValue(namedImports, JS.NamedImports::getId);
+            ctx.sendNode(namedImports, JS.NamedImports::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(namedImports, JS.NamedImports::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(namedImports, e -> e.getPadding().getElements(), JavaScriptSender::sendContainer);
+            ctx.sendTypedValue(namedImports, JS.NamedImports::getType);
+            return namedImports;
         }
 
         @Override
@@ -241,6 +260,26 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(jsImportSpecifier, JS.JsImportSpecifier::getSpecifier, ctx::sendTree);
             ctx.sendTypedValue(jsImportSpecifier, JS.JsImportSpecifier::getType);
             return jsImportSpecifier;
+        }
+
+        @Override
+        public JS.ImportAttributes visitImportAttributes(JS.ImportAttributes importAttributes, SenderContext ctx) {
+            ctx.sendValue(importAttributes, JS.ImportAttributes::getId);
+            ctx.sendNode(importAttributes, JS.ImportAttributes::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(importAttributes, JS.ImportAttributes::getMarkers, ctx::sendMarkers);
+            ctx.sendValue(importAttributes, JS.ImportAttributes::getToken);
+            ctx.sendNode(importAttributes, e -> e.getPadding().getElements(), JavaScriptSender::sendContainer);
+            return importAttributes;
+        }
+
+        @Override
+        public JS.ImportAttribute visitImportAttribute(JS.ImportAttribute importAttribute, SenderContext ctx) {
+            ctx.sendValue(importAttribute, JS.ImportAttribute::getId);
+            ctx.sendNode(importAttribute, JS.ImportAttribute::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(importAttribute, JS.ImportAttribute::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(importAttribute, JS.ImportAttribute::getName, ctx::sendTree);
+            ctx.sendNode(importAttribute, e -> e.getPadding().getValue(), JavaScriptSender::sendLeftPadded);
+            return importAttribute;
         }
 
         @Override
@@ -1506,15 +1545,6 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(source, J.Unknown.Source::getMarkers, ctx::sendMarkers);
             ctx.sendValue(source, J.Unknown.Source::getText);
             return source;
-        }
-
-        @Override
-        public J.Erroneous visitErroneous(J.Erroneous erroneous, SenderContext ctx) {
-            ctx.sendValue(erroneous, J.Erroneous::getId);
-            ctx.sendNode(erroneous, J.Erroneous::getPrefix, JavaScriptSender::sendSpace);
-            ctx.sendNode(erroneous, J.Erroneous::getMarkers, ctx::sendMarkers);
-            ctx.sendValue(erroneous, J.Erroneous::getText);
-            return erroneous;
         }
 
     }
