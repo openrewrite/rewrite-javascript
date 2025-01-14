@@ -318,20 +318,35 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             i = (JS.JsImport) temp;
         }
-        i = i.getPadding().withImportType(Objects.requireNonNull(visitLeftPadded(i.getPadding().getImportType(), JsLeftPadded.Location.JS_IMPORT_IMPORT_TYPE, p)));
-        i = i.withName(visitAndCast(i.getName(), p));
-        if (i.getPadding().getImports() != null) {
-            i = i.getPadding().withImports(visitContainer(i.getPadding().getImports(), JsContainer.Location.IMPORT_ELEMENT, p));
-        }
-        if (i.getFrom() != null) {
-            i = i.withFrom(visitSpace(i.getFrom(), JsSpace.Location.IMPORT_FROM_PREFIX, p));
-        }
-        i = i.withTarget(visitAndCast(i.getTarget(), p));
-        if (i.getPadding().getInitializer() != null) {
-            i = i.getPadding().withInitializer(visitLeftPadded(i.getPadding().getInitializer(),
-                    JsLeftPadded.Location.IMPORT_INITIALIZER, p));
-        }
+        i = i.withModifiers(Objects.requireNonNull(ListUtils.map(i.getModifiers(), e -> visitAndCast(e, p))));
+        i = i.withImportClause(visitAndCast(i.getImportClause(), p));
+        i = i.getPadding().withModuleSpecifier(Objects.requireNonNull(visitLeftPadded(i.getPadding().getModuleSpecifier(), JsLeftPadded.Location.JS_IMPORT_MODULE_SPECIFIER, p)));
+        i = i.withAttributes(visitAndCast(i.getAttributes(), p));
         return i;
+    }
+
+    public J visitJsImportClause(JS.JsImportClause jsImportClause, P p) {
+        JS.JsImportClause i = jsImportClause;
+        i = i.withPrefix(visitSpace(i.getPrefix(), JsSpace.Location.JS_IMPORT_CLAUSE_PREFIX, p));
+        i = i.withMarkers(visitMarkers(i.getMarkers(), p));
+        i = i.getPadding().withName(visitRightPadded(i.getPadding().getName(), JsRightPadded.Location.JS_IMPORT_CLAUSE_NAME, p));
+        i = i.withNamedBindings(visitAndCast(i.getNamedBindings(), p));
+        return i;
+    }
+
+    public J visitNamedImports(JS.NamedImports namedImports, P p) {
+        JS.NamedImports ne = namedImports;
+        ne = ne.withPrefix(visitSpace(ne.getPrefix(), JsSpace.Location.NAMED_IMPORTS_PREFIX, p));
+        ne = ne.withMarkers(visitMarkers(ne.getMarkers(), p));
+        Expression temp = (Expression) visitExpression(ne, p);
+        if (!(temp instanceof JS.NamedImports)) {
+            return temp;
+        } else {
+            ne = (JS.NamedImports) temp;
+        }
+        ne = ne.getPadding().withElements(Objects.requireNonNull(visitContainer(ne.getPadding().getElements(), JsContainer.Location.NAMED_IMPORTS_ELEMENTS, p)));
+        ne = ne.withType(visitType(ne.getType(), p));
+        return ne;
     }
 
     public J visitJsImportSpecifier(JS.JsImportSpecifier jis, P p) {
@@ -347,6 +362,23 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         i = i.getPadding().withImportType(Objects.requireNonNull(visitLeftPadded(i.getPadding().getImportType(), JsLeftPadded.Location.JS_IMPORT_SPECIFIER_IMPORT_TYPE, p)));
         i = i.withSpecifier(Objects.requireNonNull(visitAndCast(i.getSpecifier(), p)));
         i = i.withType(visitType(i.getType(), p));
+        return i;
+    }
+
+    public J visitImportAttributes(JS.ImportAttributes importAttributes, P p) {
+        JS.ImportAttributes i = importAttributes;
+        i = i.withPrefix(visitSpace(i.getPrefix(), JsSpace.Location.JS_IMPORT_ATTRIBUTES_PREFIX, p));
+        i = i.withMarkers(visitMarkers(i.getMarkers(), p));
+        i = i.getPadding().withElements(Objects.requireNonNull(visitContainer(i.getPadding().getElements(), JsContainer.Location.JS_IMPORT_ATTRIBUTES_ELEMENTS, p)));
+        return i;
+    }
+
+    public J visitImportAttribute(JS.ImportAttribute importAttribute, P p) {
+        JS.ImportAttribute i = importAttribute;
+        i = i.withPrefix(visitSpace(i.getPrefix(), JsSpace.Location.JS_IMPORT_ATTRIBUTE_PREFIX, p));
+        i = i.withMarkers(visitMarkers(i.getMarkers(), p));
+        i = i.withName(Objects.requireNonNull(visitAndCast(i.getName(), p)));
+        i = i.getPadding().withValue(Objects.requireNonNull(visitLeftPadded(i.getPadding().getValue(), JsLeftPadded.Location.JS_IMPORT_ATTRIBUTE_VALUE, p)));
         return i;
     }
 

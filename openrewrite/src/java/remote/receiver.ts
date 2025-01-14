@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaVisitor} from '..';
-import {J, Comment, Expression, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, Loop, MethodCall, NameTree, Space, Statement, TextComment, TypedTree, TypeTree, AnnotatedType, Annotation, ArrayAccess, ArrayType, Assert, Assignment, AssignmentOperation, Binary, Block, Break, Case, ClassDeclaration, CompilationUnit, Continue, DoWhileLoop, Empty, EnumValue, EnumValueSet, FieldAccess, ForEachLoop, ForLoop, ParenthesizedTypeTree, Identifier, If, Import, InstanceOf, IntersectionType, Label, Lambda, Literal, MemberReference, MethodDeclaration, MethodInvocation, Modifier, MultiCatch, NewArray, ArrayDimension, NewClass, NullableType, Package, ParameterizedType, Parentheses, ControlParentheses, Primitive, Return, Switch, SwitchExpression, Synchronized, Ternary, Throw, Try, TypeCast, TypeParameter, TypeParameters, Unary, VariableDeclarations, WhileLoop, Wildcard, Yield, Unknown, Erroneous} from '../tree';
+import {J, Comment, Expression, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, Loop, MethodCall, NameTree, Space, Statement, TextComment, TypedTree, TypeTree, AnnotatedType, Annotation, ArrayAccess, ArrayType, Assert, Assignment, AssignmentOperation, Binary, Block, Break, Case, ClassDeclaration, CompilationUnit, Continue, DoWhileLoop, Empty, EnumValue, EnumValueSet, FieldAccess, ForEachLoop, ForLoop, ParenthesizedTypeTree, Identifier, If, Import, InstanceOf, IntersectionType, Label, Lambda, Literal, MemberReference, MethodDeclaration, MethodInvocation, Modifier, MultiCatch, NewArray, ArrayDimension, NewClass, NullableType, Package, ParameterizedType, Parentheses, ControlParentheses, Primitive, Return, Switch, SwitchExpression, Synchronized, Ternary, Throw, Try, TypeCast, TypeParameter, TypeParameters, Unary, VariableDeclarations, WhileLoop, Wildcard, Yield, Unknown} from '../tree';
 import * as Java from "../../java/tree";
 
 export class JavaReceiver implements Receiver<J> {
@@ -706,14 +706,6 @@ class Visitor extends JavaVisitor<ReceiverContext> {
         source = source.withMarkers(ctx.receiveNode(source.markers, ctx.receiveMarkers)!);
         source = source.withText(ctx.receiveValue(source.text, ValueType.Primitive)!);
         return source;
-    }
-
-    public visitErroneous(erroneous: Erroneous, ctx: ReceiverContext): J {
-        erroneous = erroneous.withId(ctx.receiveValue(erroneous.id, ValueType.UUID)!);
-        erroneous = erroneous.withPrefix(ctx.receiveNode(erroneous.prefix, receiveSpace)!);
-        erroneous = erroneous.withMarkers(ctx.receiveNode(erroneous.markers, ctx.receiveMarkers)!);
-        erroneous = erroneous.withText(ctx.receiveValue(erroneous.text, ValueType.Primitive)!);
-        return erroneous;
     }
 
 }
@@ -1464,15 +1456,6 @@ class Factory implements ReceiverFactory {
 
         if (type === "org.openrewrite.java.tree.J$Unknown$Source") {
             return new Unknown.Source(
-                ctx.receiveValue(null, ValueType.UUID)!,
-                ctx.receiveNode(null, receiveSpace)!,
-                ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveValue(null, ValueType.Primitive)!
-            );
-        }
-
-        if (type === "org.openrewrite.java.tree.J$Erroneous") {
-            return new Erroneous(
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,

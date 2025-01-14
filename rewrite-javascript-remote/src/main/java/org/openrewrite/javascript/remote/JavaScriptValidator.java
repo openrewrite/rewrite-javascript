@@ -161,17 +161,43 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.JsImport visitJsImport(JS.JsImport jsImport, P p) {
-        visitAndValidate(jsImport.getName(), J.Identifier.class, p);
-        visitAndValidate(jsImport.getImports(), Expression.class, p);
-        visitAndValidate(jsImport.getTarget(), J.Literal.class, p);
-        visitAndValidate(jsImport.getInitializer(), Expression.class, p);
+        ListUtils.map(jsImport.getModifiers(), el -> visitAndValidateNonNull(el, J.Modifier.class, p));
+        visitAndValidate(jsImport.getImportClause(), JS.JsImportClause.class, p);
+        visitAndValidateNonNull(jsImport.getModuleSpecifier(), Expression.class, p);
+        visitAndValidate(jsImport.getAttributes(), JS.ImportAttributes.class, p);
         return jsImport;
+    }
+
+    @Override
+    public JS.JsImportClause visitJsImportClause(JS.JsImportClause jsImportClause, P p) {
+        visitAndValidate(jsImportClause.getName(), J.Identifier.class, p);
+        visitAndValidate(jsImportClause.getNamedBindings(), Expression.class, p);
+        return jsImportClause;
+    }
+
+    @Override
+    public JS.NamedImports visitNamedImports(JS.NamedImports namedImports, P p) {
+        visitAndValidate(namedImports.getElements(), Expression.class, p);
+        return namedImports;
     }
 
     @Override
     public JS.JsImportSpecifier visitJsImportSpecifier(JS.JsImportSpecifier jsImportSpecifier, P p) {
         visitAndValidateNonNull(jsImportSpecifier.getSpecifier(), Expression.class, p);
         return jsImportSpecifier;
+    }
+
+    @Override
+    public JS.ImportAttributes visitImportAttributes(JS.ImportAttributes importAttributes, P p) {
+        visitAndValidate(importAttributes.getElements(), JS.ImportAttribute.class, p);
+        return importAttributes;
+    }
+
+    @Override
+    public JS.ImportAttribute visitImportAttribute(JS.ImportAttribute importAttribute, P p) {
+        visitAndValidateNonNull(importAttribute.getName(), Expression.class, p);
+        visitAndValidateNonNull(importAttribute.getValue(), Expression.class, p);
+        return importAttribute;
     }
 
     @Override
@@ -977,11 +1003,6 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.Unknown.Source visitUnknownSource(J.Unknown.Source source, P p) {
         return source;
-    }
-
-    @Override
-    public J.Erroneous visitErroneous(J.Erroneous erroneous, P p) {
-        return erroneous;
     }
 
 }

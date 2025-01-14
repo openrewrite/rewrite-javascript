@@ -36,7 +36,10 @@ public class JsContainer {
         IMPORT_TYPE_TYPE_ARGUMENTS(JsSpace.Location.IMPORT_TYPE_TYPE_ARGUMENTS, JsRightPadded.Location.IMPORT_TYPE_TYPE_ARGUMENTS),
         NAMED_EXPORTS_ELEMENTS(JsSpace.Location.NAMED_EXPORTS_ELEMENTS_PREFIX, JsRightPadded.Location.NAMED_EXPORTS_ELEMENTS),
         MAPPED_TYPE_VALUE_TYPE(JsSpace.Location.MAPPED_TYPE_VALUE_TYPE, JsRightPadded.Location.MAPPED_TYPE_VALUE_TYPE),
-        TYPE_QUERY_TYPE_ARGUMENTS(JsSpace.Location.TYPE_QUERY_TYPE_ARGUMENTS, JsRightPadded.Location.TYPE_QUERY_TYPE_ARGUMENTS);
+        TYPE_QUERY_TYPE_ARGUMENTS(JsSpace.Location.TYPE_QUERY_TYPE_ARGUMENTS, JsRightPadded.Location.TYPE_QUERY_TYPE_ARGUMENTS),
+        NAMED_IMPORTS_ELEMENTS(JsSpace.Location.NAMED_IMPORTS_ELEMENTS_PREFIX, JsRightPadded.Location.NAMED_IMPORTS_ELEMENTS),
+        JS_IMPORT_ATTRIBUTES_ELEMENTS(JsSpace.Location.JS_IMPORT_ATTRIBUTES_ELEMENTS_PREFIX, JsRightPadded.Location.JS_IMPORT_ATTRIBUTES_ELEMENTS),
+        ;
 
         private final JsSpace.Location beforeLocation;
         private final JsRightPadded.Location elementLocation;

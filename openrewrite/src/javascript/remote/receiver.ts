@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaScriptVisitor} from '..';
-import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportSpecifier, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, WithStatement, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, JSTry, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from '../tree';
+import {JS, JsLeftPadded, JsRightPadded, JsContainer, JsSpace, CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportClause, NamedImports, JsImportSpecifier, ImportAttributes, ImportAttribute, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, WithStatement, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, JSTry, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from '../tree';
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, NameTree, Space, Statement, TypeTree, TypedTree} from "../../java";
 import * as Java from "../../java/tree";
 
@@ -179,13 +179,30 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         jsImport = jsImport.withId(ctx.receiveValue(jsImport.id, ValueType.UUID)!);
         jsImport = jsImport.withPrefix(ctx.receiveNode(jsImport.prefix, receiveSpace)!);
         jsImport = jsImport.withMarkers(ctx.receiveNode(jsImport.markers, ctx.receiveMarkers)!);
-        jsImport = jsImport.padding.withName(ctx.receiveNode(jsImport.padding.name, receiveRightPaddedTree));
-        jsImport = jsImport.padding.withImportType(ctx.receiveNode(jsImport.padding.importType, leftPaddedValueReceiver(ValueType.Primitive))!);
-        jsImport = jsImport.padding.withImports(ctx.receiveNode(jsImport.padding.imports, receiveContainer));
-        jsImport = jsImport.withFrom(ctx.receiveNode(jsImport.from, receiveSpace));
-        jsImport = jsImport.withTarget(ctx.receiveNode(jsImport.target, ctx.receiveTree));
-        jsImport = jsImport.padding.withInitializer(ctx.receiveNode(jsImport.padding.initializer, receiveLeftPaddedTree));
+        jsImport = jsImport.withModifiers(ctx.receiveNodes(jsImport.modifiers, ctx.receiveTree)!);
+        jsImport = jsImport.withImportClause(ctx.receiveNode(jsImport.importClause, ctx.receiveTree));
+        jsImport = jsImport.padding.withModuleSpecifier(ctx.receiveNode(jsImport.padding.moduleSpecifier, receiveLeftPaddedTree)!);
+        jsImport = jsImport.withAttributes(ctx.receiveNode(jsImport.attributes, ctx.receiveTree));
         return jsImport;
+    }
+
+    public visitJsImportClause(jsImportClause: JsImportClause, ctx: ReceiverContext): J {
+        jsImportClause = jsImportClause.withId(ctx.receiveValue(jsImportClause.id, ValueType.UUID)!);
+        jsImportClause = jsImportClause.withPrefix(ctx.receiveNode(jsImportClause.prefix, receiveSpace)!);
+        jsImportClause = jsImportClause.withMarkers(ctx.receiveNode(jsImportClause.markers, ctx.receiveMarkers)!);
+        jsImportClause = jsImportClause.withTypeOnly(ctx.receiveValue(jsImportClause.typeOnly, ValueType.Primitive)!);
+        jsImportClause = jsImportClause.padding.withName(ctx.receiveNode(jsImportClause.padding.name, receiveRightPaddedTree));
+        jsImportClause = jsImportClause.withNamedBindings(ctx.receiveNode(jsImportClause.namedBindings, ctx.receiveTree));
+        return jsImportClause;
+    }
+
+    public visitNamedImports(namedImports: NamedImports, ctx: ReceiverContext): J {
+        namedImports = namedImports.withId(ctx.receiveValue(namedImports.id, ValueType.UUID)!);
+        namedImports = namedImports.withPrefix(ctx.receiveNode(namedImports.prefix, receiveSpace)!);
+        namedImports = namedImports.withMarkers(ctx.receiveNode(namedImports.markers, ctx.receiveMarkers)!);
+        namedImports = namedImports.padding.withElements(ctx.receiveNode(namedImports.padding.elements, receiveContainer)!);
+        namedImports = namedImports.withType(ctx.receiveValue(namedImports.type, ValueType.Object));
+        return namedImports;
     }
 
     public visitJsImportSpecifier(jsImportSpecifier: JsImportSpecifier, ctx: ReceiverContext): J {
@@ -196,6 +213,24 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         jsImportSpecifier = jsImportSpecifier.withSpecifier(ctx.receiveNode(jsImportSpecifier.specifier, ctx.receiveTree)!);
         jsImportSpecifier = jsImportSpecifier.withType(ctx.receiveValue(jsImportSpecifier.type, ValueType.Object));
         return jsImportSpecifier;
+    }
+
+    public visitImportAttributes(importAttributes: ImportAttributes, ctx: ReceiverContext): J {
+        importAttributes = importAttributes.withId(ctx.receiveValue(importAttributes.id, ValueType.UUID)!);
+        importAttributes = importAttributes.withPrefix(ctx.receiveNode(importAttributes.prefix, receiveSpace)!);
+        importAttributes = importAttributes.withMarkers(ctx.receiveNode(importAttributes.markers, ctx.receiveMarkers)!);
+        importAttributes = importAttributes.withToken(ctx.receiveValue(importAttributes.token, ValueType.Enum)!);
+        importAttributes = importAttributes.padding.withElements(ctx.receiveNode(importAttributes.padding.elements, receiveContainer)!);
+        return importAttributes;
+    }
+
+    public visitImportAttribute(importAttribute: ImportAttribute, ctx: ReceiverContext): J {
+        importAttribute = importAttribute.withId(ctx.receiveValue(importAttribute.id, ValueType.UUID)!);
+        importAttribute = importAttribute.withPrefix(ctx.receiveNode(importAttribute.prefix, receiveSpace)!);
+        importAttribute = importAttribute.withMarkers(ctx.receiveNode(importAttribute.markers, ctx.receiveMarkers)!);
+        importAttribute = importAttribute.withName(ctx.receiveNode(importAttribute.name, ctx.receiveTree)!);
+        importAttribute = importAttribute.padding.withValue(ctx.receiveNode(importAttribute.padding.value, receiveLeftPaddedTree)!);
+        return importAttribute;
     }
 
     public visitJsBinary(jsBinary: JsBinary, ctx: ReceiverContext): J {
@@ -1348,14 +1383,6 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         return source;
     }
 
-    public visitErroneous(erroneous: Java.Erroneous, ctx: ReceiverContext): J {
-        erroneous = erroneous.withId(ctx.receiveValue(erroneous.id, ValueType.UUID)!);
-        erroneous = erroneous.withPrefix(ctx.receiveNode(erroneous.prefix, receiveSpace)!);
-        erroneous = erroneous.withMarkers(ctx.receiveNode(erroneous.markers, ctx.receiveMarkers)!);
-        erroneous = erroneous.withText(ctx.receiveValue(erroneous.text, ValueType.Primitive)!);
-        return erroneous;
-    }
-
 }
 
 class Factory implements ReceiverFactory {
@@ -1527,12 +1554,31 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNodes<Java.Modifier>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JsImportClause>(null, ctx.receiveTree),
+                ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)!,
+                ctx.receiveNode<ImportAttributes>(null, ctx.receiveTree)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$JsImportClause") {
+            return new JsImportClause(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveValue(null, ValueType.Primitive)!,
                 ctx.receiveNode<JRightPadded<Java.Identifier>>(null, receiveRightPaddedTree),
-                ctx.receiveNode<JLeftPadded<boolean>>(null, leftPaddedValueReceiver(ValueType.Primitive))!,
-                ctx.receiveNode<JContainer<Expression>>(null, receiveContainer),
-                ctx.receiveNode(null, receiveSpace),
-                ctx.receiveNode<Java.Literal>(null, ctx.receiveTree),
-                ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$NamedImports") {
+            return new NamedImports(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<JContainer<Expression>>(null, receiveContainer)!,
+                ctx.receiveValue(null, ValueType.Object)
             );
         }
 
@@ -1544,6 +1590,26 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<JLeftPadded<boolean>>(null, leftPaddedValueReceiver(ValueType.Primitive))!,
                 ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
                 ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$ImportAttributes") {
+            return new ImportAttributes(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveValue(null, ValueType.Enum)!,
+                ctx.receiveNode<JContainer<ImportAttribute>>(null, receiveContainer)!
+            );
+        }
+
+        if (type === "org.openrewrite.javascript.tree.JS$ImportAttribute") {
+            return new ImportAttribute(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JLeftPadded<Expression>>(null, receiveLeftPaddedTree)!
             );
         }
 
@@ -2806,15 +2872,6 @@ class Factory implements ReceiverFactory {
 
         if (type === "org.openrewrite.java.tree.J$Unknown$Source") {
             return new Java.Unknown.Source(
-                ctx.receiveValue(null, ValueType.UUID)!,
-                ctx.receiveNode(null, receiveSpace)!,
-                ctx.receiveNode(null, ctx.receiveMarkers)!,
-                ctx.receiveValue(null, ValueType.Primitive)!
-            );
-        }
-
-        if (type === "org.openrewrite.java.tree.J$Erroneous") {
-            return new Java.Erroneous(
                 ctx.receiveValue(null, ValueType.UUID)!,
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,

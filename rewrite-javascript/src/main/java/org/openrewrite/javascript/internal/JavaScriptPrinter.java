@@ -255,33 +255,49 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     @Override
     public J visitJsImport(JS.JsImport jsImport, PrintOutputCapture<P> p) {
         beforeSyntax(jsImport, JsSpace.Location.IMPORT_PREFIX, p);
+
+        jsImport.getModifiers().forEach(m -> delegate.visitModifier(m, p));
+
         p.append("import");
 
-        if (jsImport.getImportType()) {
-            visitLeftPaddedBoolean("type", jsImport.getPadding().getImportType(), JsLeftPadded.Location.JS_IMPORT_IMPORT_TYPE, p);
+        visit(jsImport.getImportClause(), p);
+
+        visitLeftPadded(jsImport.getImportClause() == null ? "" : "from", jsImport.getPadding().getModuleSpecifier(), JsLeftPadded.Location.JS_IMPORT_MODULE_SPECIFIER, p);
+
+        visit(jsImport.getAttributes(), p);
+
+        afterSyntax(jsImport, p);
+        return jsImport;
+    }
+
+    @Override
+    public J visitJsImportClause(JS.JsImportClause jsImportClause, PrintOutputCapture<P> p) {
+        beforeSyntax(jsImportClause, JsSpace.Location.JS_IMPORT_CLAUSE_PREFIX, p);
+
+        if (jsImportClause.isTypeOnly()) {
+            p.append("type");
         }
 
-        // for default export or `* as <alias>`
-        JS.JsImport.Padding padding = jsImport.getPadding();
-        visitRightPadded(padding.getName(), JsRightPadded.Location.IMPORT_NAME_SUFFIX, p);
+        JRightPadded<J.Identifier> name = jsImportClause.getPadding().getName();
+        visitRightPadded(name, JsRightPadded.Location.JS_IMPORT_CLAUSE_NAME, p);
 
-        if (jsImport.getName() != null && padding.getImports() != null) {
+        if (name!= null && jsImportClause.getNamedBindings() != null) {
             p.append(",");
         }
 
-        boolean braces = padding.getImports() != null &&
-                         padding.getImports().getPadding().getElements().stream().noneMatch(e -> e.getElement() instanceof JS.Alias);
-        visitContainer(braces ? "{" : "", padding.getImports(), JsContainer.Location.IMPORT_ELEMENT, ",", braces ? "}" : "", p);
+        visit(jsImportClause.getNamedBindings(), p);
 
-        if (jsImport.getFrom() != null) {
-            visitSpace(jsImport.getFrom(), Space.Location.LANGUAGE_EXTENSION, p);
-            p.append("from");
-        }
-        visit(jsImport.getTarget(), p);
+        afterSyntax(jsImportClause, p);
 
-        visitLeftPadded("=", padding.getInitializer(), JsLeftPadded.Location.IMPORT_INITIALIZER, p);
-        afterSyntax(jsImport, p);
-        return jsImport;
+        return jsImportClause;
+    }
+
+    @Override
+    public J visitNamedImports(JS.NamedImports namedImports, PrintOutputCapture<P> p) {
+        beforeSyntax(namedImports, JsSpace.Location.NAMED_IMPORTS_PREFIX, p);
+        visitContainer("{", namedImports.getPadding().getElements(), JsContainer.Location.NAMED_IMPORTS_ELEMENTS, ",", "}", p);
+        afterSyntax(namedImports, p);
+        return namedImports;
     }
 
     @Override
@@ -295,6 +311,30 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         afterSyntax(jis, p);
         return jis;
+    }
+
+    @Override
+    public J visitImportAttributes(JS.ImportAttributes importAttributes, PrintOutputCapture<P> p) {
+        beforeSyntax(importAttributes, JsSpace.Location.JS_IMPORT_ATTRIBUTES_PREFIX, p);
+
+        p.append(importAttributes.getToken().name().toLowerCase());
+
+        visitContainer("{", importAttributes.getPadding().getElements(), JsContainer.Location.JS_IMPORT_ATTRIBUTES_ELEMENTS, ",", "}", p);
+
+        afterSyntax(importAttributes, p);
+        return importAttributes;
+    }
+
+    @Override
+    public J visitImportAttribute(JS.ImportAttribute importAttribute, PrintOutputCapture<P> p) {
+        beforeSyntax(importAttribute, JsSpace.Location.JS_IMPORT_ATTRIBUTE_PREFIX, p);
+
+        visit(importAttribute.getName(), p);
+
+        visitLeftPadded(":", importAttribute.getPadding().getValue(), JsLeftPadded.Location.JS_IMPORT_ATTRIBUTE_VALUE, p);
+
+        afterSyntax(importAttribute, p);
+        return importAttribute;
     }
 
     @Override
@@ -433,6 +473,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                     break;
                 case Using:
                     p.append("using");
+                    break;
+                case Import:
+                    p.append("import");
                     break;
             }
         }
