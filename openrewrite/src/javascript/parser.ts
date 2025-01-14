@@ -3393,7 +3393,20 @@ export class JavaScriptParserVisitor {
     }
 
     visitExternalModuleReference(node: ts.ExternalModuleReference) {
-        return this.visitUnknown(node);
+        return new J.MethodInvocation(
+            randomId(),
+            this.prefix(node),
+            Markers.EMPTY,
+            null,
+            null,
+            this.mapIdentifier(node, "require"),
+            new J.JContainer(
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!),
+                [this.rightPadded(this.visit(node.expression), this.suffix(node.expression))],
+                Markers.EMPTY
+            ),
+            this.mapMethodType(node)
+        )
     }
 
     visitJsxElement(node: ts.JsxElement) {
