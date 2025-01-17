@@ -47,7 +47,12 @@ public class InputParsingTest {
             client.parseInputs(
                     Arrays.asList(
                             Parser.Input.fromFile(Path.of(ClassLoader.getSystemResource("./__mocks__/monorepo/scripts/script.ts").getPath())),
-                            Parser.Input.fromFile(Path.of(ClassLoader.getSystemResource("./__mocks__/monorepo/packages/too-good/too-good.js").getPath()))
+                            Parser.Input.fromFile(Path.of(ClassLoader.getSystemResource("./__mocks__/monorepo/packages/too-good/too-good.js").getPath())),
+                            Parser.Input.fromFile(Path.of(ClassLoader.getSystemResource("./__mocks__/jsx-project/components/welcome.jsx").getPath())),
+                            Parser.Input.fromFile(Path.of(ClassLoader.getSystemResource("./__mocks__/monorepo/not-a-workspace/naw.js").getPath())),
+                            Parser.Input.fromFile(Path.of(ClassLoader.getSystemResource("./__mocks__/monorepo/not-a-workspace/naw2.ts").getPath())),
+                            Parser.Input.fromFile(Path.of(ClassLoader.getSystemResource("./__mocks__/monorepo/packages/upvote/src/js-target.js").getPath())),
+                            Parser.Input.fromFile(Path.of(ClassLoader.getSystemResource("./__mocks__/monorepo/packages/upvote/src/ts-target.ts").getPath()))
                     ),
                     Path.of(ClassLoader.getSystemResource("./__mocks__/monorepo").getPath()),
                     ctx

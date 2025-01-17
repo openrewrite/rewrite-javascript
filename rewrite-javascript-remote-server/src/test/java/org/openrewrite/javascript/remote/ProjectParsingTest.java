@@ -16,6 +16,7 @@
 
 package org.openrewrite.javascript.remote;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Cursor;
 import org.openrewrite.InMemoryExecutionContext;
