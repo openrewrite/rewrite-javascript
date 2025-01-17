@@ -124,9 +124,10 @@ class Visitor extends JavaVisitor<SenderContext> {
         ctx.sendNode(_case, v => v.prefix, Visitor.sendSpace);
         ctx.sendNode(_case, v => v.markers, ctx.sendMarkers);
         ctx.sendValue(_case, v => v.type, ValueType.Enum);
-        ctx.sendNode(_case, v => v.padding.expressions, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendNode(_case, v => v.padding.caseLabels, Visitor.sendContainer(ValueType.Tree));
         ctx.sendNode(_case, v => v.padding.statements, Visitor.sendContainer(ValueType.Tree));
         ctx.sendNode(_case, v => v.padding.body, Visitor.sendRightPadded(ValueType.Tree));
+        ctx.sendNode(_case, v => v.guard, ctx.sendTree);
         return _case;
     }
 

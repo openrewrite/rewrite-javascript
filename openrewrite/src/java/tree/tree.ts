@@ -894,15 +894,16 @@ export class Break extends JMixin(Object) implements Statement {
 
 @LstType("org.openrewrite.java.tree.J$Case")
 export class Case extends JMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, _type: Case.Type, expressions: JContainer<Expression>, statements: JContainer<Statement>, body: JRightPadded<J> | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, _type: Case.Type, caseLabels: JContainer<J>, statements: JContainer<Statement>, body: JRightPadded<J> | null, guard: Expression | null) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
         this._type = _type;
-        this._expressions = expressions;
+        this._caseLabels = caseLabels;
         this._statements = statements;
         this._body = body;
+        this._guard = guard;
     }
 
         private readonly _id: UUID;
@@ -912,7 +913,7 @@ export class Case extends JMixin(Object) implements Statement {
         }
 
         public withId(id: UUID): Case {
-            return id === this._id ? this : new Case(id, this._prefix, this._markers, this._type, this._expressions, this._statements, this._body);
+            return id === this._id ? this : new Case(id, this._prefix, this._markers, this._type, this._caseLabels, this._statements, this._body, this._guard);
         }
 
         private readonly _prefix: Space;
@@ -922,7 +923,7 @@ export class Case extends JMixin(Object) implements Statement {
         }
 
         public withPrefix(prefix: Space): Case {
-            return prefix === this._prefix ? this : new Case(this._id, prefix, this._markers, this._type, this._expressions, this._statements, this._body);
+            return prefix === this._prefix ? this : new Case(this._id, prefix, this._markers, this._type, this._caseLabels, this._statements, this._body, this._guard);
         }
 
         private readonly _markers: Markers;
@@ -932,7 +933,7 @@ export class Case extends JMixin(Object) implements Statement {
         }
 
         public withMarkers(markers: Markers): Case {
-            return markers === this._markers ? this : new Case(this._id, this._prefix, markers, this._type, this._expressions, this._statements, this._body);
+            return markers === this._markers ? this : new Case(this._id, this._prefix, markers, this._type, this._caseLabels, this._statements, this._body, this._guard);
         }
 
         private readonly _type: Case.Type;
@@ -942,17 +943,17 @@ export class Case extends JMixin(Object) implements Statement {
         }
 
         public withType(_type: Case.Type): Case {
-            return _type === this._type ? this : new Case(this._id, this._prefix, this._markers, _type, this._expressions, this._statements, this._body);
+            return _type === this._type ? this : new Case(this._id, this._prefix, this._markers, _type, this._caseLabels, this._statements, this._body, this._guard);
         }
 
-        private readonly _expressions: JContainer<Expression>;
+        private readonly _caseLabels: JContainer<J>;
 
-        public get expressions(): Expression[] {
-            return this._expressions.elements;
+        public get caseLabels(): J[] {
+            return this._caseLabels.elements;
         }
 
-        public withExpressions(expressions: Expression[]): Case {
-            return this.padding.withExpressions(JContainer.withElements(this._expressions, expressions));
+        public withCaseLabels(caseLabels: J[]): Case {
+            return this.padding.withCaseLabels(JContainer.withElements(this._caseLabels, caseLabels));
         }
 
         private readonly _statements: JContainer<Statement>;
@@ -975,6 +976,16 @@ export class Case extends JMixin(Object) implements Statement {
             return this.padding.withBody(JRightPadded.withElement(this._body, body));
         }
 
+        private readonly _guard: Expression | null;
+
+        public get guard(): Expression | null {
+            return this._guard;
+        }
+
+        public withGuard(guard: Expression | null): Case {
+            return guard === this._guard ? this : new Case(this._id, this._prefix, this._markers, this._type, this._caseLabels, this._statements, this._body, guard);
+        }
+
     public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
         return v.visitCase(this, p);
     }
@@ -982,23 +993,23 @@ export class Case extends JMixin(Object) implements Statement {
     get padding() {
         const t = this;
         return new class {
-            public get expressions(): JContainer<Expression> {
-                return t._expressions;
+            public get caseLabels(): JContainer<J> {
+                return t._caseLabels;
             }
-            public withExpressions(expressions: JContainer<Expression>): Case {
-                return t._expressions === expressions ? t : new Case(t._id, t._prefix, t._markers, t._type, expressions, t._statements, t._body);
+            public withCaseLabels(caseLabels: JContainer<J>): Case {
+                return t._caseLabels === caseLabels ? t : new Case(t._id, t._prefix, t._markers, t._type, caseLabels, t._statements, t._body, t._guard);
             }
             public get statements(): JContainer<Statement> {
                 return t._statements;
             }
             public withStatements(statements: JContainer<Statement>): Case {
-                return t._statements === statements ? t : new Case(t._id, t._prefix, t._markers, t._type, t._expressions, statements, t._body);
+                return t._statements === statements ? t : new Case(t._id, t._prefix, t._markers, t._type, t._caseLabels, statements, t._body, t._guard);
             }
             public get body(): JRightPadded<J> | null {
                 return t._body;
             }
             public withBody(body: JRightPadded<J> | null): Case {
-                return t._body === body ? t : new Case(t._id, t._prefix, t._markers, t._type, t._expressions, t._statements, body);
+                return t._body === body ? t : new Case(t._id, t._prefix, t._markers, t._type, t._caseLabels, t._statements, body, t._guard);
             }
         }
     }

@@ -129,9 +129,10 @@ class Visitor extends JavaVisitor<ReceiverContext> {
         _case = _case.withPrefix(ctx.receiveNode(_case.prefix, receiveSpace)!);
         _case = _case.withMarkers(ctx.receiveNode(_case.markers, ctx.receiveMarkers)!);
         _case = _case.withType(ctx.receiveValue(_case.type, ValueType.Enum)!);
-        _case = _case.padding.withExpressions(ctx.receiveNode(_case.padding.expressions, receiveContainer)!);
+        _case = _case.padding.withCaseLabels(ctx.receiveNode(_case.padding.caseLabels, receiveContainer)!);
         _case = _case.padding.withStatements(ctx.receiveNode(_case.padding.statements, receiveContainer)!);
         _case = _case.padding.withBody(ctx.receiveNode(_case.padding.body, receiveRightPaddedTree));
+        _case = _case.withGuard(ctx.receiveNode(_case.guard, ctx.receiveTree));
         return _case;
     }
 
@@ -834,9 +835,10 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveValue(null, ValueType.Enum)!,
-                ctx.receiveNode<JContainer<Expression>>(null, receiveContainer)!,
+                ctx.receiveNode<JContainer<J>>(null, receiveContainer)!,
                 ctx.receiveNode<JContainer<Statement>>(null, receiveContainer)!,
-                ctx.receiveNode<JRightPadded<J>>(null, receiveRightPaddedTree)
+                ctx.receiveNode<JRightPadded<J>>(null, receiveRightPaddedTree),
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)
             );
         }
 

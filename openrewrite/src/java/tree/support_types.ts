@@ -785,7 +785,7 @@ export namespace JContainer {
     export enum Location {
         ANNOTATION_ARGUMENTS,
         CASE,
-        CASE_EXPRESSION,
+        CASE_CASE_LABELS,
         IMPLEMENTS,
         PERMITS,
         LANGUAGE_EXTENSION,

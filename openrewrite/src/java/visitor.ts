@@ -180,9 +180,10 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
         }
         _case = tempStatement as Case;
         _case = _case.withMarkers(this.visitMarkers(_case.markers, p));
-        _case = _case.padding.withExpressions(this.visitContainer(_case.padding.expressions, JContainer.Location.CASE_EXPRESSION, p)!);
+        _case = _case.padding.withCaseLabels(this.visitContainer(_case.padding.caseLabels, JContainer.Location.CASE_CASE_LABELS, p)!);
         _case = _case.padding.withStatements(this.visitContainer(_case.padding.statements, JContainer.Location.CASE, p)!);
         _case = _case.padding.withBody(this.visitRightPadded(_case.padding.body, JRightPadded.Location.CASE_BODY, p));
+        _case = _case.withGuard(this.visitAndCast(_case.guard, p));
         return _case;
     }
 
