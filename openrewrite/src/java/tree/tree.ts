@@ -6320,3 +6320,67 @@ export namespace Unknown {
     }
 
 }
+
+@LstType("org.openrewrite.java.tree.J$Erroneous")
+export class Erroneous extends JMixin(Object) implements Statement, Expression {
+    public constructor(id: UUID, prefix: Space, markers: Markers, text: string) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._text = text;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): Erroneous {
+            return id === this._id ? this : new Erroneous(id, this._prefix, this._markers, this._text);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): Erroneous {
+            return prefix === this._prefix ? this : new Erroneous(this._id, prefix, this._markers, this._text);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): Erroneous {
+            return markers === this._markers ? this : new Erroneous(this._id, this._prefix, markers, this._text);
+        }
+
+        private readonly _text: string;
+
+        public get text(): string {
+            return this._text;
+        }
+
+        public withText(text: string): Erroneous {
+            return text === this._text ? this : new Erroneous(this._id, this._prefix, this._markers, text);
+        }
+
+    public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
+        return v.visitErroneous(this, p);
+    }
+
+    public get type(): JavaType | null {
+        return extensions.getJavaType(this);
+    }
+
+    public withType(type: JavaType): Erroneous {
+        return extensions.withJavaType(this, type);
+    }
+
+}

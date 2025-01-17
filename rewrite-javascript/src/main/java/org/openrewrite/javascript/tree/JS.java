@@ -1194,9 +1194,15 @@ public interface JS extends J {
             return getPadding().withHasTypeof(this.hasTypeof.withElement(hasTypeof));
         }
 
-        @Getter
-        @With
-        J.ParenthesizedTypeTree importArgument;
+        JContainer<J> argumentAndAttributes;
+
+        public List<J> getArgumentAndAttributes() {
+            return argumentAndAttributes.getElements();
+        }
+
+        public ImportType withArgumentAndAttributes(@Nullable List<J> argumentAndAttributes) {
+            return getPadding().withArgumentAndAttributes(JContainer.withElementsNullable(this.argumentAndAttributes, argumentAndAttributes));
+        }
 
         @Nullable
         JLeftPadded<Expression> qualifier;
@@ -1259,7 +1265,15 @@ public interface JS extends J {
             }
 
             public ImportType withHasTypeof(JRightPadded<Boolean> hasTypeof) {
-                return t.hasTypeof == hasTypeof ? t : new ImportType(t.id, t.prefix, t.markers, hasTypeof, t.importArgument, t.qualifier, t.typeArguments, t.type);
+                return t.hasTypeof == hasTypeof ? t : new ImportType(t.id, t.prefix, t.markers, hasTypeof, t.argumentAndAttributes, t.qualifier, t.typeArguments, t.type);
+            }
+
+            public JContainer<J> getArgumentAndAttributes() {
+                return t.argumentAndAttributes;
+            }
+
+            public ImportType withArgumentAndAttributes(JContainer<J> argumentAndAttributes) {
+                return t.argumentAndAttributes == argumentAndAttributes ? t : new ImportType(t.id, t.prefix, t.markers, t.hasTypeof, argumentAndAttributes, t.qualifier, t.typeArguments, t.type);
             }
 
             public @Nullable JLeftPadded<Expression> getQualifier() {
@@ -1267,7 +1281,7 @@ public interface JS extends J {
             }
 
             public ImportType withQualifier(@Nullable JLeftPadded<Expression> qualifier) {
-                return t.qualifier == qualifier ? t : new ImportType(t.id, t.prefix, t.markers, t.hasTypeof, t.importArgument, qualifier, t.typeArguments, t.type);
+                return t.qualifier == qualifier ? t : new ImportType(t.id, t.prefix, t.markers, t.hasTypeof, t.argumentAndAttributes, qualifier, t.typeArguments, t.type);
             }
 
             public @Nullable JContainer<Expression> getTypeArguments() {
@@ -1275,7 +1289,7 @@ public interface JS extends J {
             }
 
             public ImportType withTypeArguments(@Nullable JContainer<Expression> typeArguments) {
-                return t.typeArguments == typeArguments ? t : new ImportType(t.id, t.prefix, t.markers, t.hasTypeof, t.importArgument, t.qualifier, typeArguments, t.type);
+                return t.typeArguments == typeArguments ? t : new ImportType(t.id, t.prefix, t.markers, t.hasTypeof, t.argumentAndAttributes, t.qualifier, typeArguments, t.type);
             }
         }
     }
@@ -1596,7 +1610,6 @@ public interface JS extends J {
 
     }
 
-
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
@@ -1668,6 +1681,94 @@ public interface JS extends J {
 
             public ImportAttributes withElements(JContainer<ImportAttribute> elements) {
                 return t.elements == elements ? t : new ImportAttributes(t.id, t.prefix, t.markers, t.token, elements);
+            }
+        }
+    }
+
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+    @RequiredArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    final class ImportTypeAttributes implements JS {
+        @Nullable
+        @NonFinal
+        transient WeakReference<Padding> padding;
+
+        @With
+        @Getter
+        @EqualsAndHashCode.Include
+        UUID id;
+
+        @With
+        @Getter
+        Space prefix;
+
+        @With
+        @Getter
+        Markers markers;
+
+        JRightPadded<Expression> token;
+
+        public Expression getToken() {
+            return token.getElement();
+        }
+
+        public ImportTypeAttributes withToken(Expression token) {
+            return getPadding().withToken(JRightPadded.withElement(this.token, token));
+        }
+
+        JContainer<ImportAttribute> elements;
+
+        public List<ImportAttribute> getElements() {
+            return elements.getElements();
+        }
+
+        public ImportTypeAttributes withElements(List<ImportAttribute> elements) {
+            return getPadding().withElements(JContainer.withElements(this.elements, elements));
+        }
+
+        @Getter
+        @With
+        Space end;
+
+        @Override
+        public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
+            return v.visitImportTypeAttributes(this, p);
+        }
+
+        public Padding getPadding() {
+            Padding p;
+            if (this.padding == null) {
+                p = new Padding(this);
+                this.padding = new WeakReference<>(p);
+            } else {
+                p = this.padding.get();
+                if (p == null || p.t != this) {
+                    p = new Padding(this);
+                    this.padding = new WeakReference<>(p);
+                }
+            }
+            return p;
+        }
+
+        @RequiredArgsConstructor
+        public static class Padding {
+            private final ImportTypeAttributes t;
+
+            public JRightPadded<Expression> getToken() {
+                return t.token;
+            }
+
+            public ImportTypeAttributes withToken(JRightPadded<Expression> token) {
+                return t.token == token ? t : new ImportTypeAttributes(t.id, t.prefix, t.markers, token, t.elements, t.end);
+            }
+
+            public JContainer<ImportAttribute> getElements() {
+                return t.elements;
+            }
+
+            public ImportTypeAttributes withElements(JContainer<ImportAttribute> elements) {
+                return t.elements == elements ? t : new ImportTypeAttributes(t.id, t.prefix, t.markers, t.token, elements, t.end);
             }
         }
     }
@@ -5240,7 +5341,6 @@ public interface JS extends J {
         @Nullable
         Expression exportClause;
 
-
         @Nullable
         JLeftPadded<Expression> moduleSpecifier;
 
@@ -5252,6 +5352,11 @@ public interface JS extends J {
         public ExportDeclaration withModuleSpecifier(@Nullable Expression moduleSpecifier) {
             return getPadding().withModuleSpecifier(JLeftPadded.withElement(this.moduleSpecifier, moduleSpecifier));
         }
+
+        @With
+        @Getter
+        @Nullable
+        ImportAttributes attributes;
 
         @Override
         public <P> J acceptJavaScript(JavaScriptVisitor<P> v, P p) {
@@ -5287,7 +5392,7 @@ public interface JS extends J {
             }
 
             public ExportDeclaration withTypeOnly(JLeftPadded<Boolean> typeOnly) {
-                return t.typeOnly == typeOnly ? t : new ExportDeclaration(t.id, t.prefix, t.markers, t.modifiers, typeOnly, t.exportClause, t.moduleSpecifier);
+                return t.typeOnly == typeOnly ? t : new ExportDeclaration(t.id, t.prefix, t.markers, t.modifiers, typeOnly, t.exportClause, t.moduleSpecifier, t.attributes);
             }
 
             @Nullable
@@ -5296,10 +5401,9 @@ public interface JS extends J {
             }
 
             public ExportDeclaration withModuleSpecifier(@Nullable JLeftPadded<Expression> moduleSpecifier) {
-                return t.moduleSpecifier == moduleSpecifier ? t : new ExportDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.typeOnly, t.exportClause, moduleSpecifier);
+                return t.moduleSpecifier == moduleSpecifier ? t : new ExportDeclaration(t.id, t.prefix, t.markers, t.modifiers, t.typeOnly, t.exportClause, moduleSpecifier, t.attributes);
             }
         }
-
     }
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)

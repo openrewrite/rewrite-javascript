@@ -167,6 +167,17 @@ describe('export keyword tests', () => {
             `)
         );
     });
+
+    test('export with attributes', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export type { A } from "A" with { type: "json" };
+                export type * as B from "B" /*a*/ with /*b*/ { type: "json" }/*c*/;
+                export { E, type F } from "C" assert { type: "json" };
+            `)
+        );
+    });
 });
 
 

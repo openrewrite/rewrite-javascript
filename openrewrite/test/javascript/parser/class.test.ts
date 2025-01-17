@@ -189,6 +189,16 @@ describe('class mapping', () => {
         );
     });
 
+    test('class with ctor as literal', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`class A {
+              "constructor"() {
+              }
+          }`)
+        );
+    });
+
     test('class with private ctor', () => {
         rewriteRun(
             //language=typescript

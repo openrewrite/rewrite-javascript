@@ -53,11 +53,25 @@ describe('while mapping', () => {
         );
     });
 
-
     test('while-if with semicolon', () => {
         rewriteRun(
             //language=typescript
             typeScript('while (i--) if (nodeList[i] == elem) return true;')
+        );
+    });
+
+    test('if-do-while with semicolon', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                if (true)
+                    do console.log("a")
+                    while (true)
+                if (true) {
+                    do console.log("b")
+                    while (true)
+                }
+            `)
         );
     });
 

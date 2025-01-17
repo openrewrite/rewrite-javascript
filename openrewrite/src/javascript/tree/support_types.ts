@@ -268,6 +268,8 @@ export namespace JsSpace {
         IMPORT_ATTRIBUTES_PREFIX,
         NAMED_IMPORTS_PREFIX,
         JS_IMPORT_CLAUSE_PREFIX,
+        IMPORT_TYPE_ATTRIBUTES_PREFIX,
+        IMPORT_TYPE_ATTRIBUTES_END,
     }
 }
 export namespace JsLeftPadded {
@@ -347,6 +349,7 @@ export namespace JsRightPadded {
         TRAILING_TOKEN_STATEMENT_EXPRESSION,
         WITH_STATEMENT_BODY,
         JS_IMPORT_CLAUSE_NAME,
+        IMPORT_TYPE_ATTRIBUTES_TOKEN,
     }
 }
 export namespace JsContainer {
@@ -371,5 +374,7 @@ export namespace JsContainer {
         TYPE_QUERY_TYPE_ARGUMENTS,
         IMPORT_ATTRIBUTES_ELEMENTS,
         NAMED_IMPORTS_ELEMENTS,
+        IMPORT_TYPE_ARGUMENT_AND_ATTRIBUTES,
+        IMPORT_TYPE_ATTRIBUTES_ELEMENTS,
     }
 }

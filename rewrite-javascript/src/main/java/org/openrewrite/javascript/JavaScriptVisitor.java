@@ -373,6 +373,16 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         return i;
     }
 
+    public J visitImportTypeAttributes(JS.ImportTypeAttributes importTypeAttributes, P p) {
+        JS.ImportTypeAttributes i = importTypeAttributes;
+        i = i.withPrefix(visitSpace(i.getPrefix(), JsSpace.Location.JS_IMPORT_TYPE_ATTRIBUTES_PREFIX, p));
+        i = i.withMarkers(visitMarkers(i.getMarkers(), p));
+        i = i.getPadding().withToken(Objects.requireNonNull(visitRightPadded(i.getPadding().getToken(), JsRightPadded.Location.JS_IMPORT_TYPE_ATTRIBUTES_TOKEN, p)));
+        i = i.getPadding().withElements(Objects.requireNonNull(visitContainer(i.getPadding().getElements(), JsContainer.Location.JS_IMPORT_TYPE_ATTRIBUTES_ELEMENTS, p)));
+        i = i.withEnd(Objects.requireNonNull(visitSpace(i.getEnd(), JsSpace.Location.JS_IMPORT_TYPE_ATTRIBUTES_END_SUFFIX, p)));
+        return i;
+    }
+
     public J visitImportAttribute(JS.ImportAttribute importAttribute, P p) {
         JS.ImportAttribute i = importAttribute;
         i = i.withPrefix(visitSpace(i.getPrefix(), JsSpace.Location.JS_IMPORT_ATTRIBUTE_PREFIX, p));
@@ -702,6 +712,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         ed = ed.getPadding().withTypeOnly(Objects.requireNonNull(visitLeftPadded(ed.getPadding().getTypeOnly(), JsLeftPadded.Location.EXPORT_DECLARATION_TYPE_ONLY, p)));
         ed = ed.withExportClause(visitAndCast(ed.getExportClause(), p));
         ed = ed.getPadding().withModuleSpecifier(visitLeftPadded(ed.getPadding().getModuleSpecifier(), JsLeftPadded.Location.EXPORT_DECLARATION_MODULE_SPECIFIER, p));
+        ed = ed.withAttributes(visitAndCast(ed.getAttributes(), p));
         return ed;
     }
 
@@ -1067,7 +1078,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
             t = (JS.ImportType) temp;
         }
         t = t.getPadding().withHasTypeof(Objects.requireNonNull(visitRightPadded(t.getPadding().getHasTypeof(), JsRightPadded.Location.IMPORT_TYPE_TYPEOF, p)));
-        t = t.withImportArgument(Objects.requireNonNull(visitAndCast(t.getImportArgument(), p)));
+        t = t.getPadding().withArgumentAndAttributes(Objects.requireNonNull(visitContainer(t.getPadding().getArgumentAndAttributes(), JsContainer.Location.IMPORT_TYPE_ARGUMENTS_AND_ATTRIBUTES, p)));
         t = t.getPadding().withQualifier(visitLeftPadded(t.getPadding().getQualifier(), JsLeftPadded.Location.IMPORT_TYPE_QUALIFIER, p));
         if (t.getPadding().getTypeArguments() != null) {
             t = t.getPadding().withTypeArguments(visitContainer(t.getPadding().getTypeArguments(), JsContainer.Location.IMPORT_TYPE_TYPE_ARGUMENTS, p));
