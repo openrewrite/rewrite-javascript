@@ -3491,6 +3491,7 @@ export class JavaScriptParserVisitor {
                 this.semicolonPaddedStatementList(node.statements),
                 Markers.EMPTY
             ),
+            null,
             null
         );
     }
@@ -3511,6 +3512,7 @@ export class JavaScriptParserVisitor {
                 this.semicolonPaddedStatementList(node.statements),
                 Markers.EMPTY
             ),
+            null,
             null
         );
     }
