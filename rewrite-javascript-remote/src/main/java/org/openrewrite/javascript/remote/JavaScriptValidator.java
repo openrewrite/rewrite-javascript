@@ -623,9 +623,10 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public J.Case visitCase(J.Case case_, P p) {
-        visitAndValidate(case_.getExpressions(), Expression.class, p);
+        visitAndValidate(case_.getCaseLabels(), J.class, p);
         visitAndValidate(case_.getStatements(), Statement.class, p);
         visitAndValidate(case_.getBody(), J.class, p);
+        visitAndValidate(case_.getGuard(), Expression.class, p);
         return case_;
     }
 

@@ -958,9 +958,10 @@ public class JavaScriptReceiver implements Receiver<JS> {
             case_ = case_.withPrefix(ctx.receiveNonNullNode(case_.getPrefix(), JavaScriptReceiver::receiveSpace));
             case_ = case_.withMarkers(ctx.receiveNonNullNode(case_.getMarkers(), ctx::receiveMarkers));
             case_ = case_.withType(ctx.receiveNonNullValue(case_.getType(), J.Case.Type.class));
-            case_ = case_.getPadding().withExpressions(ctx.receiveNonNullNode(case_.getPadding().getExpressions(), JavaScriptReceiver::receiveContainer));
+            case_ = case_.getPadding().withCaseLabels(ctx.receiveNonNullNode(case_.getPadding().getCaseLabels(), JavaScriptReceiver::receiveContainer));
             case_ = case_.getPadding().withStatements(ctx.receiveNonNullNode(case_.getPadding().getStatements(), JavaScriptReceiver::receiveContainer));
             case_ = case_.getPadding().withBody(ctx.receiveNode(case_.getPadding().getBody(), JavaScriptReceiver::receiveRightPaddedTree));
+            case_ = case_.withGuard(ctx.receiveNode(case_.getGuard(), ctx::receiveTree));
             return case_;
         }
 
@@ -2598,7 +2599,8 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullValue(null, J.Case.Type.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
-                    ctx.receiveNode(null, JavaScriptReceiver::receiveRightPaddedTree)
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveRightPaddedTree),
+                    ctx.receiveNode(null, ctx::receiveTree)
             );
         }
 

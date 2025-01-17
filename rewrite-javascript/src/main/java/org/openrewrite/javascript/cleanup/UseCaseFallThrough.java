@@ -115,6 +115,8 @@ public class UseCaseFallThrough extends Recipe {
                             J.Binary.Case.Type.Statement,
                             null,
                             JContainer.build(singletonList(JRightPadded.build(expression.withPrefix(Space.build(" ", expression.getPrefix().getComments()))))),
+                            null,
+                            null,
                             JContainer.empty(),
                             null
                     );

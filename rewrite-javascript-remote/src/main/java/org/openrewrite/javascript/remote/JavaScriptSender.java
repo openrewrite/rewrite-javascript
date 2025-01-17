@@ -940,9 +940,10 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(case_, J.Case::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(case_, J.Case::getMarkers, ctx::sendMarkers);
             ctx.sendValue(case_, J.Case::getType);
-            ctx.sendNode(case_, e -> e.getPadding().getExpressions(), JavaScriptSender::sendContainer);
+            ctx.sendNode(case_, e -> e.getPadding().getCaseLabels(), JavaScriptSender::sendContainer);
             ctx.sendNode(case_, e -> e.getPadding().getStatements(), JavaScriptSender::sendContainer);
             ctx.sendNode(case_, e -> e.getPadding().getBody(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(case_, J.Case::getGuard, ctx::sendTree);
             return case_;
         }
 
