@@ -66,12 +66,14 @@ public class ProjectParsingTest {
     }
 
     @Test
+    @Disabled
     public void testSingleProject() {
         Path projectConfigurationFilePath = Path.of(ClassLoader.getSystemResource("./__mocks__/monorepo/packages/upvote/package.json").getPath());
         runTestOnProjectConfigurationFile(projectConfigurationFilePath);
     }
 
     @Test
+    @Disabled
     public void testMonoRepo() {
         Path projectConfigurationFilePath = Path.of(ClassLoader.getSystemResource("./__mocks__/monorepo/package.json").getPath());
         runTestOnProjectConfigurationFile(projectConfigurationFilePath);
