@@ -64,14 +64,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: npm install embedded
-        run: |
-          npm install @openrewrite/rewrite-remote
-          npm install @openrewrite/rewrite
-          rm -rf node_modules
-          rm -rf package-lock.json
+#      - name: npm install embedded
+#        run: |
+#          npm install @openrewrite/rewrite-remote
+#          npm install @openrewrite/rewrite
+#          rm -rf node_modules
+#          rm -rf package-lock.json
 #          npm install ../../../../../openrewrite/openrewrite-rewrite-*.tgz
-        working-directory: rewrite-javascript-remote-server/src/main/resources/node-server
+#        working-directory: rewrite-javascript-remote-server/src/main/resources/node-server
 
       - name: build-java
         run: |

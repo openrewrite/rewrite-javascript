@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
@@ -13,10 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-{
-  "name": "@openrewrite/rewrite-bundled-starter",
-  "version": "1.0.0",
-  "description": "",
-  "dependencies": {
-  }
-}
+const naw2: string = 'naw2';
+console.log(naw2);

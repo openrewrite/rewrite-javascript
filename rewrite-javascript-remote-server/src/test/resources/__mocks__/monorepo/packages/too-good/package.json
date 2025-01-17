@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 {
-  "name": "@openrewrite/rewrite-bundled-starter",
-  "version": "1.0.0",
-  "description": "",
-  "dependencies": {
-  }
+    "name": "@mock/too-good",
+    "version": "1.0.0",
+    "index": "./too-good.js"
 }

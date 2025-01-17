@@ -56,12 +56,12 @@ jobs:
       - run: npm pack
         working-directory: openrewrite
 
-      - name: npm install embedded
-        run: |
-          npm install @openrewrite/rewrite-remote
-          npm install ../../../../../openrewrite/openrewrite-rewrite-*.tgz
-          git checkout HEAD -- package.json
-        working-directory: rewrite-javascript-remote-server/src/main/resources/node-server
+#      - name: npm install embedded
+#        run: |
+#          npm install @openrewrite/rewrite-remote
+#          npm install ../../../../../openrewrite/openrewrite-rewrite-*.tgz
+#          git checkout HEAD -- package.json
+#        working-directory: rewrite-javascript-remote-server/src/main/resources/node-server
 
       - name: publish-java-snapshots
         if: github.event_name != 'pull_request'

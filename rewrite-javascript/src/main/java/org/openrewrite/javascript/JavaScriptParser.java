@@ -47,6 +47,11 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
+
+/**
+ * @deprecated in favor {@link org.openrewrite.remote.RemotingInputParser}
+ */
+@Deprecated
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class JavaScriptParser implements Parser {
 

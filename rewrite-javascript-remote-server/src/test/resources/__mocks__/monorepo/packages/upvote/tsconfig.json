@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 {
-  "name": "@openrewrite/rewrite-bundled-starter",
-  "version": "1.0.0",
-  "description": "",
-  "dependencies": {
-  }
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./build"
+  },
+  "include": ["./src/**/*"]
 }

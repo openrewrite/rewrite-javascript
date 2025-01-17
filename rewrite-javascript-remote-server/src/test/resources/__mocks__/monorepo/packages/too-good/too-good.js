@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
@@ -13,10 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-{
-  "name": "@openrewrite/rewrite-bundled-starter",
-  "version": "1.0.0",
-  "description": "",
-  "dependencies": {
-  }
-}
+export const tooGood = function () {
+  console.log('too good');
+};

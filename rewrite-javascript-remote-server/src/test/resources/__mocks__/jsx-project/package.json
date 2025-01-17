@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 {
-  "name": "@openrewrite/rewrite-bundled-starter",
-  "version": "1.0.0",
-  "description": "",
-  "dependencies": {
-  }
+    "name": "jsx-project",
+    "version": "1.1.1"
 }

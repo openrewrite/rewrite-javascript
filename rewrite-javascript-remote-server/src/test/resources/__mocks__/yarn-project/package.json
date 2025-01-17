@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 {
-  "name": "@openrewrite/rewrite-bundled-starter",
-  "version": "1.0.0",
-  "description": "",
-  "dependencies": {
-  }
+    "name": "yarn-project",
+    "version": "3.2.1"
 }

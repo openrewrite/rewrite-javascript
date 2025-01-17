@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 {
-  "name": "@openrewrite/rewrite-bundled-starter",
-  "version": "1.0.0",
-  "description": "",
-  "dependencies": {
-  }
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "Node16",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "rootDir": "./scripts",
+    "experimentalDecorators": true,
+    "moduleResolution": "node16"
+  },
+  "include": ["scripts/**/*"]
 }

@@ -24,7 +24,13 @@ dependencies {
     testImplementation("org.openrewrite.recipe:rewrite-static-analysis:${latest}")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
 
+    testRuntimeOnly("org.openrewrite:rewrite-java-17")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
+}
+
+tasks.register<Exec>("installNodeDeps") {
+    dependsOn("processResources")
+    executable = "./install.sh"
 }
 
 tasks.clean {
@@ -34,6 +40,10 @@ tasks.clean {
 
 tasks.compileJava {
     options.release = 8
+}
+
+tasks.classes {
+    dependsOn("installNodeDeps")
 }
 
 tasks.withType<LicenseCheck> {

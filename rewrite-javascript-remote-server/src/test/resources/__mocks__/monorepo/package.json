@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 {
-  "name": "@openrewrite/rewrite-bundled-starter",
-  "version": "1.0.0",
-  "description": "",
-  "dependencies": {
-  }
+    "name": "@mock/super-good-package",
+    "version": "1.0.0",
+    "workspaces": [
+        "packages/upvote",
+        "packages/*"
+    ]
 }
