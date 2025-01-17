@@ -1193,13 +1193,13 @@ export class InferType extends JSMixin(Object) implements TypeTree, Expression {
 
 @LstType("org.openrewrite.javascript.tree.JS$ImportType")
 export class ImportType extends JSMixin(Object) implements Expression, TypeTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, hasTypeof: JRightPadded<boolean>, importArgument: Java.ParenthesizedTypeTree, qualifier: JLeftPadded<Expression> | null, typeArguments: JContainer<Expression> | null, _type: JavaType | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, hasTypeof: JRightPadded<boolean>, argumentAndAttributes: JContainer<J>, qualifier: JLeftPadded<Expression> | null, typeArguments: JContainer<Expression> | null, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
         this._hasTypeof = hasTypeof;
-        this._importArgument = importArgument;
+        this._argumentAndAttributes = argumentAndAttributes;
         this._qualifier = qualifier;
         this._typeArguments = typeArguments;
         this._type = _type;
@@ -1212,7 +1212,7 @@ export class ImportType extends JSMixin(Object) implements Expression, TypeTree 
         }
 
         public withId(id: UUID): ImportType {
-            return id === this._id ? this : new ImportType(id, this._prefix, this._markers, this._hasTypeof, this._importArgument, this._qualifier, this._typeArguments, this._type);
+            return id === this._id ? this : new ImportType(id, this._prefix, this._markers, this._hasTypeof, this._argumentAndAttributes, this._qualifier, this._typeArguments, this._type);
         }
 
         private readonly _prefix: Space;
@@ -1222,7 +1222,7 @@ export class ImportType extends JSMixin(Object) implements Expression, TypeTree 
         }
 
         public withPrefix(prefix: Space): ImportType {
-            return prefix === this._prefix ? this : new ImportType(this._id, prefix, this._markers, this._hasTypeof, this._importArgument, this._qualifier, this._typeArguments, this._type);
+            return prefix === this._prefix ? this : new ImportType(this._id, prefix, this._markers, this._hasTypeof, this._argumentAndAttributes, this._qualifier, this._typeArguments, this._type);
         }
 
         private readonly _markers: Markers;
@@ -1232,7 +1232,7 @@ export class ImportType extends JSMixin(Object) implements Expression, TypeTree 
         }
 
         public withMarkers(markers: Markers): ImportType {
-            return markers === this._markers ? this : new ImportType(this._id, this._prefix, markers, this._hasTypeof, this._importArgument, this._qualifier, this._typeArguments, this._type);
+            return markers === this._markers ? this : new ImportType(this._id, this._prefix, markers, this._hasTypeof, this._argumentAndAttributes, this._qualifier, this._typeArguments, this._type);
         }
 
         private readonly _hasTypeof: JRightPadded<boolean>;
@@ -1245,14 +1245,14 @@ export class ImportType extends JSMixin(Object) implements Expression, TypeTree 
             return this.padding.withHasTypeof(this._hasTypeof.withElement(hasTypeof));
         }
 
-        private readonly _importArgument: Java.ParenthesizedTypeTree;
+        private readonly _argumentAndAttributes: JContainer<J>;
 
-        public get importArgument(): Java.ParenthesizedTypeTree {
-            return this._importArgument;
+        public get argumentAndAttributes(): J[] {
+            return this._argumentAndAttributes.elements;
         }
 
-        public withImportArgument(importArgument: Java.ParenthesizedTypeTree): ImportType {
-            return importArgument === this._importArgument ? this : new ImportType(this._id, this._prefix, this._markers, this._hasTypeof, importArgument, this._qualifier, this._typeArguments, this._type);
+        public withArgumentAndAttributes(argumentAndAttributes: J[]): ImportType {
+            return this.padding.withArgumentAndAttributes(JContainer.withElements(this._argumentAndAttributes, argumentAndAttributes));
         }
 
         private readonly _qualifier: JLeftPadded<Expression> | null;
@@ -1282,7 +1282,7 @@ export class ImportType extends JSMixin(Object) implements Expression, TypeTree 
         }
 
         public withType(_type: JavaType | null): ImportType {
-            return _type === this._type ? this : new ImportType(this._id, this._prefix, this._markers, this._hasTypeof, this._importArgument, this._qualifier, this._typeArguments, _type);
+            return _type === this._type ? this : new ImportType(this._id, this._prefix, this._markers, this._hasTypeof, this._argumentAndAttributes, this._qualifier, this._typeArguments, _type);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
@@ -1296,19 +1296,25 @@ export class ImportType extends JSMixin(Object) implements Expression, TypeTree 
                 return t._hasTypeof;
             }
             public withHasTypeof(hasTypeof: JRightPadded<boolean>): ImportType {
-                return t._hasTypeof === hasTypeof ? t : new ImportType(t._id, t._prefix, t._markers, hasTypeof, t._importArgument, t._qualifier, t._typeArguments, t._type);
+                return t._hasTypeof === hasTypeof ? t : new ImportType(t._id, t._prefix, t._markers, hasTypeof, t._argumentAndAttributes, t._qualifier, t._typeArguments, t._type);
+            }
+            public get argumentAndAttributes(): JContainer<J> {
+                return t._argumentAndAttributes;
+            }
+            public withArgumentAndAttributes(argumentAndAttributes: JContainer<J>): ImportType {
+                return t._argumentAndAttributes === argumentAndAttributes ? t : new ImportType(t._id, t._prefix, t._markers, t._hasTypeof, argumentAndAttributes, t._qualifier, t._typeArguments, t._type);
             }
             public get qualifier(): JLeftPadded<Expression> | null {
                 return t._qualifier;
             }
             public withQualifier(qualifier: JLeftPadded<Expression> | null): ImportType {
-                return t._qualifier === qualifier ? t : new ImportType(t._id, t._prefix, t._markers, t._hasTypeof, t._importArgument, qualifier, t._typeArguments, t._type);
+                return t._qualifier === qualifier ? t : new ImportType(t._id, t._prefix, t._markers, t._hasTypeof, t._argumentAndAttributes, qualifier, t._typeArguments, t._type);
             }
             public get typeArguments(): JContainer<Expression> | null {
                 return t._typeArguments;
             }
             public withTypeArguments(typeArguments: JContainer<Expression> | null): ImportType {
-                return t._typeArguments === typeArguments ? t : new ImportType(t._id, t._prefix, t._markers, t._hasTypeof, t._importArgument, t._qualifier, typeArguments, t._type);
+                return t._typeArguments === typeArguments ? t : new ImportType(t._id, t._prefix, t._markers, t._hasTypeof, t._argumentAndAttributes, t._qualifier, typeArguments, t._type);
             }
         }
     }
@@ -1759,6 +1765,102 @@ export namespace ImportAttributes {
             With = 0,
             Assert = 1,
 
+    }
+
+}
+
+@LstType("org.openrewrite.javascript.tree.JS$ImportTypeAttributes")
+export class ImportTypeAttributes extends JSMixin(Object) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, token: JRightPadded<Expression>, elements: JContainer<ImportAttribute>, end: Space) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._token = token;
+        this._elements = elements;
+        this._end = end;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): ImportTypeAttributes {
+            return id === this._id ? this : new ImportTypeAttributes(id, this._prefix, this._markers, this._token, this._elements, this._end);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): ImportTypeAttributes {
+            return prefix === this._prefix ? this : new ImportTypeAttributes(this._id, prefix, this._markers, this._token, this._elements, this._end);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): ImportTypeAttributes {
+            return markers === this._markers ? this : new ImportTypeAttributes(this._id, this._prefix, markers, this._token, this._elements, this._end);
+        }
+
+        private readonly _token: JRightPadded<Expression>;
+
+        public get token(): Expression {
+            return this._token.element;
+        }
+
+        public withToken(token: Expression): ImportTypeAttributes {
+            return this.padding.withToken(this._token.withElement(token));
+        }
+
+        private readonly _elements: JContainer<ImportAttribute>;
+
+        public get elements(): ImportAttribute[] {
+            return this._elements.elements;
+        }
+
+        public withElements(elements: ImportAttribute[]): ImportTypeAttributes {
+            return this.padding.withElements(JContainer.withElements(this._elements, elements));
+        }
+
+        private readonly _end: Space;
+
+        public get end(): Space {
+            return this._end;
+        }
+
+        public withEnd(end: Space): ImportTypeAttributes {
+            return end === this._end ? this : new ImportTypeAttributes(this._id, this._prefix, this._markers, this._token, this._elements, end);
+        }
+
+    public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
+        return v.visitImportTypeAttributes(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get token(): JRightPadded<Expression> {
+                return t._token;
+            }
+            public withToken(token: JRightPadded<Expression>): ImportTypeAttributes {
+                return t._token === token ? t : new ImportTypeAttributes(t._id, t._prefix, t._markers, token, t._elements, t._end);
+            }
+            public get elements(): JContainer<ImportAttribute> {
+                return t._elements;
+            }
+            public withElements(elements: JContainer<ImportAttribute>): ImportTypeAttributes {
+                return t._elements === elements ? t : new ImportTypeAttributes(t._id, t._prefix, t._markers, t._token, elements, t._end);
+            }
+        }
     }
 
 }
@@ -5652,7 +5754,7 @@ export class BindingElement extends JSMixin(Object) implements Statement, Expres
 
 @LstType("org.openrewrite.javascript.tree.JS$ExportDeclaration")
 export class ExportDeclaration extends JSMixin(Object) implements Statement {
-    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], typeOnly: JLeftPadded<boolean>, exportClause: Expression | null, moduleSpecifier: JLeftPadded<Expression> | null) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, modifiers: Java.Modifier[], typeOnly: JLeftPadded<boolean>, exportClause: Expression | null, moduleSpecifier: JLeftPadded<Expression> | null, attributes: ImportAttributes | null) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -5661,6 +5763,7 @@ export class ExportDeclaration extends JSMixin(Object) implements Statement {
         this._typeOnly = typeOnly;
         this._exportClause = exportClause;
         this._moduleSpecifier = moduleSpecifier;
+        this._attributes = attributes;
     }
 
         private readonly _id: UUID;
@@ -5670,7 +5773,7 @@ export class ExportDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withId(id: UUID): ExportDeclaration {
-            return id === this._id ? this : new ExportDeclaration(id, this._prefix, this._markers, this._modifiers, this._typeOnly, this._exportClause, this._moduleSpecifier);
+            return id === this._id ? this : new ExportDeclaration(id, this._prefix, this._markers, this._modifiers, this._typeOnly, this._exportClause, this._moduleSpecifier, this._attributes);
         }
 
         private readonly _prefix: Space;
@@ -5680,7 +5783,7 @@ export class ExportDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withPrefix(prefix: Space): ExportDeclaration {
-            return prefix === this._prefix ? this : new ExportDeclaration(this._id, prefix, this._markers, this._modifiers, this._typeOnly, this._exportClause, this._moduleSpecifier);
+            return prefix === this._prefix ? this : new ExportDeclaration(this._id, prefix, this._markers, this._modifiers, this._typeOnly, this._exportClause, this._moduleSpecifier, this._attributes);
         }
 
         private readonly _markers: Markers;
@@ -5690,7 +5793,7 @@ export class ExportDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withMarkers(markers: Markers): ExportDeclaration {
-            return markers === this._markers ? this : new ExportDeclaration(this._id, this._prefix, markers, this._modifiers, this._typeOnly, this._exportClause, this._moduleSpecifier);
+            return markers === this._markers ? this : new ExportDeclaration(this._id, this._prefix, markers, this._modifiers, this._typeOnly, this._exportClause, this._moduleSpecifier, this._attributes);
         }
 
         private readonly _modifiers: Java.Modifier[];
@@ -5700,7 +5803,7 @@ export class ExportDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withModifiers(modifiers: Java.Modifier[]): ExportDeclaration {
-            return modifiers === this._modifiers ? this : new ExportDeclaration(this._id, this._prefix, this._markers, modifiers, this._typeOnly, this._exportClause, this._moduleSpecifier);
+            return modifiers === this._modifiers ? this : new ExportDeclaration(this._id, this._prefix, this._markers, modifiers, this._typeOnly, this._exportClause, this._moduleSpecifier, this._attributes);
         }
 
         private readonly _typeOnly: JLeftPadded<boolean>;
@@ -5720,7 +5823,7 @@ export class ExportDeclaration extends JSMixin(Object) implements Statement {
         }
 
         public withExportClause(exportClause: Expression | null): ExportDeclaration {
-            return exportClause === this._exportClause ? this : new ExportDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._typeOnly, exportClause, this._moduleSpecifier);
+            return exportClause === this._exportClause ? this : new ExportDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._typeOnly, exportClause, this._moduleSpecifier, this._attributes);
         }
 
         private readonly _moduleSpecifier: JLeftPadded<Expression> | null;
@@ -5731,6 +5834,16 @@ export class ExportDeclaration extends JSMixin(Object) implements Statement {
 
         public withModuleSpecifier(moduleSpecifier: Expression | null): ExportDeclaration {
             return this.padding.withModuleSpecifier(JLeftPadded.withElement(this._moduleSpecifier, moduleSpecifier));
+        }
+
+        private readonly _attributes: ImportAttributes | null;
+
+        public get attributes(): ImportAttributes | null {
+            return this._attributes;
+        }
+
+        public withAttributes(attributes: ImportAttributes | null): ExportDeclaration {
+            return attributes === this._attributes ? this : new ExportDeclaration(this._id, this._prefix, this._markers, this._modifiers, this._typeOnly, this._exportClause, this._moduleSpecifier, attributes);
         }
 
     public acceptJavaScript<P>(v: JavaScriptVisitor<P>, p: P): J | null {
@@ -5744,13 +5857,13 @@ export class ExportDeclaration extends JSMixin(Object) implements Statement {
                 return t._typeOnly;
             }
             public withTypeOnly(typeOnly: JLeftPadded<boolean>): ExportDeclaration {
-                return t._typeOnly === typeOnly ? t : new ExportDeclaration(t._id, t._prefix, t._markers, t._modifiers, typeOnly, t._exportClause, t._moduleSpecifier);
+                return t._typeOnly === typeOnly ? t : new ExportDeclaration(t._id, t._prefix, t._markers, t._modifiers, typeOnly, t._exportClause, t._moduleSpecifier, t._attributes);
             }
             public get moduleSpecifier(): JLeftPadded<Expression> | null {
                 return t._moduleSpecifier;
             }
             public withModuleSpecifier(moduleSpecifier: JLeftPadded<Expression> | null): ExportDeclaration {
-                return t._moduleSpecifier === moduleSpecifier ? t : new ExportDeclaration(t._id, t._prefix, t._markers, t._modifiers, t._typeOnly, t._exportClause, moduleSpecifier);
+                return t._moduleSpecifier === moduleSpecifier ? t : new ExportDeclaration(t._id, t._prefix, t._markers, t._modifiers, t._typeOnly, t._exportClause, moduleSpecifier, t._attributes);
             }
         }
     }

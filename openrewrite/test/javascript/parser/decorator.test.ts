@@ -107,6 +107,16 @@ describe('class decorator mapping', () => {
           `)
         );
     });
+
+    test.skip('decorator after modifiers', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export @decorator() class Foo {}
+                export default @decorator() class {}
+            `)
+        );
+    });
 });
 
 // according to TypeScript documentation decorators are not allowed with

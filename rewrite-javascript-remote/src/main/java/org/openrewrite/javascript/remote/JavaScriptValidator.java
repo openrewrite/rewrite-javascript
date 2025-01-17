@@ -153,7 +153,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.ImportType visitImportType(JS.ImportType importType, P p) {
-        visitAndValidateNonNull(importType.getImportArgument(), J.ParenthesizedTypeTree.class, p);
+        visitAndValidate(importType.getArgumentAndAttributes(), J.class, p);
         visitAndValidate(importType.getQualifier(), Expression.class, p);
         visitAndValidate(importType.getTypeArguments(), Expression.class, p);
         return importType;
@@ -191,6 +191,13 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     public JS.ImportAttributes visitImportAttributes(JS.ImportAttributes importAttributes, P p) {
         visitAndValidate(importAttributes.getElements(), JS.ImportAttribute.class, p);
         return importAttributes;
+    }
+
+    @Override
+    public JS.ImportTypeAttributes visitImportTypeAttributes(JS.ImportTypeAttributes importTypeAttributes, P p) {
+        visitAndValidateNonNull(importTypeAttributes.getToken(), Expression.class, p);
+        visitAndValidate(importTypeAttributes.getElements(), JS.ImportAttribute.class, p);
+        return importTypeAttributes;
     }
 
     @Override
@@ -497,6 +504,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
         ListUtils.map(exportDeclaration.getModifiers(), el -> visitAndValidateNonNull(el, J.Modifier.class, p));
         visitAndValidate(exportDeclaration.getExportClause(), Expression.class, p);
         visitAndValidate(exportDeclaration.getModuleSpecifier(), Expression.class, p);
+        visitAndValidate(exportDeclaration.getAttributes(), JS.ImportAttributes.class, p);
         return exportDeclaration;
     }
 
@@ -1003,6 +1011,11 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
     @Override
     public J.Unknown.Source visitUnknownSource(J.Unknown.Source source, P p) {
         return source;
+    }
+
+    @Override
+    public J.Erroneous visitErroneous(J.Erroneous erroneous, P p) {
+        return erroneous;
     }
 
 }

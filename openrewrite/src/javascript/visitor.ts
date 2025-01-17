@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {JS, isJavaScript, JsLeftPadded, JsRightPadded, JsContainer, JsSpace} from "./tree";
-import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportClause, NamedImports, JsImportSpecifier, ImportAttributes, ImportAttribute, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, WithStatement, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, JSTry, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from "./tree";
+import {CompilationUnit, Alias, ArrowFunction, Await, ConditionalType, DefaultType, Delete, Export, ExpressionStatement, TrailingTokenStatement, ExpressionWithTypeArguments, FunctionType, InferType, ImportType, JsImport, JsImportClause, NamedImports, JsImportSpecifier, ImportAttributes, ImportTypeAttributes, ImportAttribute, JsBinary, LiteralType, MappedType, ObjectBindingDeclarations, PropertyAssignment, SatisfiesExpression, ScopedVariableDeclarations, StatementExpression, WithStatement, TaggedTemplateExpression, TemplateExpression, Tuple, TypeDeclaration, TypeOf, TypeQuery, TypeOperator, TypePredicate, Unary, Union, Intersection, Void, Yield, TypeInfo, JSVariableDeclarations, JSMethodDeclaration, JSForOfLoop, JSForInLoop, JSForInOfLoopControl, JSTry, NamespaceDeclaration, FunctionDeclaration, TypeLiteral, IndexSignatureDeclaration, ArrayBindingPattern, BindingElement, ExportDeclaration, ExportAssignment, NamedExports, ExportSpecifier, IndexedAccessType, JsAssignmentOperation, TypeTreeExpression} from "./tree";
 import {Expression, J, JContainer, JLeftPadded, JRightPadded, Space, Statement} from "../java/tree";
 import {JavaVisitor} from "../java";
 import * as Java from "../java/tree";
@@ -214,7 +214,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         importType = tempExpression as ImportType;
         importType = importType.withMarkers(this.visitMarkers(importType.markers, p));
         importType = importType.padding.withHasTypeof(this.visitJsRightPadded(importType.padding.hasTypeof, JsRightPadded.Location.IMPORT_TYPE_HAS_TYPEOF, p)!);
-        importType = importType.withImportArgument(this.visitAndCast(importType.importArgument, p)!);
+        importType = importType.padding.withArgumentAndAttributes(this.visitJsContainer(importType.padding.argumentAndAttributes, JsContainer.Location.IMPORT_TYPE_ARGUMENT_AND_ATTRIBUTES, p)!);
         importType = importType.padding.withQualifier(this.visitJsLeftPadded(importType.padding.qualifier, JsLeftPadded.Location.IMPORT_TYPE_QUALIFIER, p));
         importType = importType.padding.withTypeArguments(this.visitJsContainer(importType.padding.typeArguments, JsContainer.Location.IMPORT_TYPE_TYPE_ARGUMENTS, p));
         return importType;
@@ -276,6 +276,15 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         importAttributes = importAttributes.withMarkers(this.visitMarkers(importAttributes.markers, p));
         importAttributes = importAttributes.padding.withElements(this.visitJsContainer(importAttributes.padding.elements, JsContainer.Location.IMPORT_ATTRIBUTES_ELEMENTS, p)!);
         return importAttributes;
+    }
+
+    public visitImportTypeAttributes(importTypeAttributes: ImportTypeAttributes, p: P): J | null {
+        importTypeAttributes = importTypeAttributes.withPrefix(this.visitJsSpace(importTypeAttributes.prefix, JsSpace.Location.IMPORT_TYPE_ATTRIBUTES_PREFIX, p)!);
+        importTypeAttributes = importTypeAttributes.withMarkers(this.visitMarkers(importTypeAttributes.markers, p));
+        importTypeAttributes = importTypeAttributes.padding.withToken(this.visitJsRightPadded(importTypeAttributes.padding.token, JsRightPadded.Location.IMPORT_TYPE_ATTRIBUTES_TOKEN, p)!);
+        importTypeAttributes = importTypeAttributes.padding.withElements(this.visitJsContainer(importTypeAttributes.padding.elements, JsContainer.Location.IMPORT_TYPE_ATTRIBUTES_ELEMENTS, p)!);
+        importTypeAttributes = importTypeAttributes.withEnd(this.visitJsSpace(importTypeAttributes.end, JsSpace.Location.IMPORT_TYPE_ATTRIBUTES_END, p)!);
+        return importTypeAttributes;
     }
 
     public visitImportAttribute(importAttribute: ImportAttribute, p: P): J | null {
@@ -887,6 +896,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         exportDeclaration = exportDeclaration.padding.withTypeOnly(this.visitJsLeftPadded(exportDeclaration.padding.typeOnly, JsLeftPadded.Location.EXPORT_DECLARATION_TYPE_ONLY, p)!);
         exportDeclaration = exportDeclaration.withExportClause(this.visitAndCast(exportDeclaration.exportClause, p));
         exportDeclaration = exportDeclaration.padding.withModuleSpecifier(this.visitJsLeftPadded(exportDeclaration.padding.moduleSpecifier, JsLeftPadded.Location.EXPORT_DECLARATION_MODULE_SPECIFIER, p));
+        exportDeclaration = exportDeclaration.withAttributes(this.visitAndCast(exportDeclaration.attributes, p));
         return exportDeclaration;
     }
 

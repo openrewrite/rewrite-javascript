@@ -46,6 +46,16 @@ describe('prefix operator mapping', () => {
           typeScript('[ ...[] ]')
         );
     });
+    test('spread in method param', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                class Foo {
+                    constructor(@multiInject(BAR) /*a*/...args: Bar[][]) {}
+                }
+            `)
+        );
+    });
 });
 
 describe('postfix operator mapping', () => {

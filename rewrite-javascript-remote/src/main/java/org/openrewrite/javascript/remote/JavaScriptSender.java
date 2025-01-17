@@ -211,7 +211,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(importType, JS.ImportType::getPrefix, JavaScriptSender::sendSpace);
             ctx.sendNode(importType, JS.ImportType::getMarkers, ctx::sendMarkers);
             ctx.sendNode(importType, e -> e.getPadding().getHasTypeof(), JavaScriptSender::sendRightPadded);
-            ctx.sendNode(importType, JS.ImportType::getImportArgument, ctx::sendTree);
+            ctx.sendNode(importType, e -> e.getPadding().getArgumentAndAttributes(), JavaScriptSender::sendContainer);
             ctx.sendNode(importType, e -> e.getPadding().getQualifier(), JavaScriptSender::sendLeftPadded);
             ctx.sendNode(importType, e -> e.getPadding().getTypeArguments(), JavaScriptSender::sendContainer);
             ctx.sendTypedValue(importType, JS.ImportType::getType);
@@ -270,6 +270,17 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendValue(importAttributes, JS.ImportAttributes::getToken);
             ctx.sendNode(importAttributes, e -> e.getPadding().getElements(), JavaScriptSender::sendContainer);
             return importAttributes;
+        }
+
+        @Override
+        public JS.ImportTypeAttributes visitImportTypeAttributes(JS.ImportTypeAttributes importTypeAttributes, SenderContext ctx) {
+            ctx.sendValue(importTypeAttributes, JS.ImportTypeAttributes::getId);
+            ctx.sendNode(importTypeAttributes, JS.ImportTypeAttributes::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(importTypeAttributes, JS.ImportTypeAttributes::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(importTypeAttributes, e -> e.getPadding().getToken(), JavaScriptSender::sendRightPadded);
+            ctx.sendNode(importTypeAttributes, e -> e.getPadding().getElements(), JavaScriptSender::sendContainer);
+            ctx.sendNode(importTypeAttributes, JS.ImportTypeAttributes::getEnd, JavaScriptSender::sendSpace);
+            return importTypeAttributes;
         }
 
         @Override
@@ -737,6 +748,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(exportDeclaration, e -> e.getPadding().getTypeOnly(), JavaScriptSender::sendLeftPadded);
             ctx.sendNode(exportDeclaration, JS.ExportDeclaration::getExportClause, ctx::sendTree);
             ctx.sendNode(exportDeclaration, e -> e.getPadding().getModuleSpecifier(), JavaScriptSender::sendLeftPadded);
+            ctx.sendNode(exportDeclaration, JS.ExportDeclaration::getAttributes, ctx::sendTree);
             return exportDeclaration;
         }
 
@@ -1545,6 +1557,15 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(source, J.Unknown.Source::getMarkers, ctx::sendMarkers);
             ctx.sendValue(source, J.Unknown.Source::getText);
             return source;
+        }
+
+        @Override
+        public J.Erroneous visitErroneous(J.Erroneous erroneous, SenderContext ctx) {
+            ctx.sendValue(erroneous, J.Erroneous::getId);
+            ctx.sendNode(erroneous, J.Erroneous::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(erroneous, J.Erroneous::getMarkers, ctx::sendMarkers);
+            ctx.sendValue(erroneous, J.Erroneous::getText);
+            return erroneous;
         }
 
     }

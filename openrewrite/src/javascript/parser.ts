@@ -737,7 +737,7 @@ export class JavaScriptParserVisitor {
                             randomId(),
                             Space.EMPTY,
                             Markers.EMPTY,
-                            this.leftPadded(Space.EMPTY, JS.Unary.Type.Spread),
+                            this.leftPadded(this.prefix(node.dotDotDotToken), JS.Unary.Type.Spread),
                             this.visit(node.name),
                             this.mapType(node)
                         ),
@@ -1174,6 +1174,9 @@ export class JavaScriptParserVisitor {
     }
 
     visitConstructor(node: ts.ConstructorDeclaration) {
+        // using string literal for the following case: class A { "constructor"() {} }
+        const constructorKeyword = node.getChildren()
+            .find(n => (n.kind === ts.SyntaxKind.ConstructorKeyword) || ((n.kind === ts.SyntaxKind.StringLiteral) && (n.getText().includes("constructor"))))!;
         return new J.MethodDeclaration(
             randomId(),
             this.prefix(node),
@@ -1183,7 +1186,7 @@ export class JavaScriptParserVisitor {
             null,
             null,
             new J.MethodDeclaration.IdentifierWithAnnotations(
-                this.mapIdentifier(node.getChildren().find(n => n.kind == ts.SyntaxKind.ConstructorKeyword)!, "constructor"), []
+                this.mapIdentifier(constructorKeyword, constructorKeyword.getText()), []
             ),
             this.mapCommaSeparatedList(this.getParameterListNodes(node)),
             null,
@@ -1786,22 +1789,33 @@ export class JavaScriptParserVisitor {
     }
 
     visitImportType(node: ts.ImportTypeNode) {
+        let importTypeAttributes = null;
+        if (node.attributes) {
+            const openBraceIndex = node.attributes.getChildren().findIndex(n => n.kind === ts.SyntaxKind.OpenBraceToken);
+            const attributes = this.mapCommaSeparatedList<JS.ImportAttribute>(node.attributes.getChildren(this.sourceFile).slice(openBraceIndex, openBraceIndex + 3));
+            importTypeAttributes = new JS.ImportTypeAttributes(
+                randomId(),
+                this.prefix(this.findChildNode(node, ts.SyntaxKind.OpenBraceToken)!),
+                Markers.EMPTY,
+                this.rightPadded(
+                    this.mapIdentifier(this.findChildNode(node, node.attributes.token)!,
+                        ts.SyntaxKind.WithKeyword === node.attributes.token ? "with" : "assert"),
+                    this.prefix(this.findChildNode(node, ts.SyntaxKind.ColonToken)!)),
+                attributes,
+                this.suffix(node.attributes)
+            )
+        }
+
         return new JS.ImportType(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
             node.isTypeOf ? this.rightPadded(true, this.suffix(this.findChildNode(node, ts.SyntaxKind.TypeOfKeyword)!)) : this.rightPadded(false, Space.EMPTY),
-            new J.ParenthesizedTypeTree(
-                randomId(),
+            new JContainer(
                 this.suffix(this.findChildNode(node, ts.SyntaxKind.ImportKeyword)!),
-                Markers.EMPTY,
-                [],
-                new J.Parentheses(
-                    randomId(),
-                    Space.EMPTY,
-                    Markers.EMPTY,
-                    this.rightPadded(this.visit(node.argument), this.suffix(node.argument))
-                )
+                [this.rightPadded(this.visit(node.argument), this.suffix(node.argument))].
+                    concat(importTypeAttributes ? [this.rightPadded(importTypeAttributes, this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!))] : []),
+                Markers.EMPTY
             ),
             node.qualifier ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.DotToken)!), this.visit(node.qualifier)): null,
             node.typeArguments ? this.mapTypeArguments(this.suffix(node.qualifier!), node.typeArguments) : null,
@@ -2636,8 +2650,8 @@ export class JavaScriptParserVisitor {
             this.prefix(node),
             Markers.EMPTY,
             this.rightPadded(this.visit(node.statement),
-                node.statement.kind === ts.SyntaxKind.ExpressionStatement ? this.prefix(node.statement.getLastToken()!) : this.suffix(node.statement),
-                node.statement.kind === ts.SyntaxKind.ExpressionStatement ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY),
+                this.semicolonPrefix(node.statement),
+                node.statement.getChildAt(node.statement.getChildCount() - 1)?.kind == ts.SyntaxKind.SemicolonToken ? Markers.build([new Semicolon(randomId())]) : Markers.EMPTY),
             this.leftPadded(
                 this.prefix(this.findChildNode(node, ts.SyntaxKind.WhileKeyword)!),
                 new J.ControlParentheses(
@@ -3345,7 +3359,8 @@ export class JavaScriptParserVisitor {
             this.mapModifiers(node),
             this.leftPadded(node.isTypeOnly ? this.prefix(this.findChildNode(node, ts.SyntaxKind.TypeKeyword)!) : Space.EMPTY, node.isTypeOnly),
             node.exportClause ? this.visit(node.exportClause) : this.mapIdentifier(this.findChildNode(node, ts.SyntaxKind.AsteriskToken)!, "*"),
-            node.moduleSpecifier ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.FromKeyword)!), this.visit(node.moduleSpecifier)) : null
+            node.moduleSpecifier ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.FromKeyword)!), this.visit(node.moduleSpecifier)) : null,
+            node.attributes ? this.visit(node.attributes) : null
         );
     }
 

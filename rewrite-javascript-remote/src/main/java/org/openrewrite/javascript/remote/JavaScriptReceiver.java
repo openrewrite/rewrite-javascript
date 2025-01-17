@@ -229,7 +229,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
             importType = importType.withPrefix(ctx.receiveNonNullNode(importType.getPrefix(), JavaScriptReceiver::receiveSpace));
             importType = importType.withMarkers(ctx.receiveNonNullNode(importType.getMarkers(), ctx::receiveMarkers));
             importType = importType.getPadding().withHasTypeof(ctx.receiveNonNullNode(importType.getPadding().getHasTypeof(), rightPaddedValueReceiver(java.lang.Boolean.class)));
-            importType = importType.withImportArgument(ctx.receiveNonNullNode(importType.getImportArgument(), ctx::receiveTree));
+            importType = importType.getPadding().withArgumentAndAttributes(ctx.receiveNonNullNode(importType.getPadding().getArgumentAndAttributes(), JavaScriptReceiver::receiveContainer));
             importType = importType.getPadding().withQualifier(ctx.receiveNode(importType.getPadding().getQualifier(), JavaScriptReceiver::receiveLeftPaddedTree));
             importType = importType.getPadding().withTypeArguments(ctx.receiveNode(importType.getPadding().getTypeArguments(), JavaScriptReceiver::receiveContainer));
             importType = importType.withType(ctx.receiveValue(importType.getType(), JavaType.class));
@@ -288,6 +288,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
             importAttributes = importAttributes.withToken(ctx.receiveNonNullValue(importAttributes.getToken(), JS.ImportAttributes.Token.class));
             importAttributes = importAttributes.getPadding().withElements(ctx.receiveNonNullNode(importAttributes.getPadding().getElements(), JavaScriptReceiver::receiveContainer));
             return importAttributes;
+        }
+
+        @Override
+        public JS.ImportTypeAttributes visitImportTypeAttributes(JS.ImportTypeAttributes importTypeAttributes, ReceiverContext ctx) {
+            importTypeAttributes = importTypeAttributes.withId(ctx.receiveNonNullValue(importTypeAttributes.getId(), UUID.class));
+            importTypeAttributes = importTypeAttributes.withPrefix(ctx.receiveNonNullNode(importTypeAttributes.getPrefix(), JavaScriptReceiver::receiveSpace));
+            importTypeAttributes = importTypeAttributes.withMarkers(ctx.receiveNonNullNode(importTypeAttributes.getMarkers(), ctx::receiveMarkers));
+            importTypeAttributes = importTypeAttributes.getPadding().withToken(ctx.receiveNonNullNode(importTypeAttributes.getPadding().getToken(), JavaScriptReceiver::receiveRightPaddedTree));
+            importTypeAttributes = importTypeAttributes.getPadding().withElements(ctx.receiveNonNullNode(importTypeAttributes.getPadding().getElements(), JavaScriptReceiver::receiveContainer));
+            importTypeAttributes = importTypeAttributes.withEnd(ctx.receiveNonNullNode(importTypeAttributes.getEnd(), JavaScriptReceiver::receiveSpace));
+            return importTypeAttributes;
         }
 
         @Override
@@ -755,6 +766,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
             exportDeclaration = exportDeclaration.getPadding().withTypeOnly(ctx.receiveNonNullNode(exportDeclaration.getPadding().getTypeOnly(), leftPaddedValueReceiver(java.lang.Boolean.class)));
             exportDeclaration = exportDeclaration.withExportClause(ctx.receiveNode(exportDeclaration.getExportClause(), ctx::receiveTree));
             exportDeclaration = exportDeclaration.getPadding().withModuleSpecifier(ctx.receiveNode(exportDeclaration.getPadding().getModuleSpecifier(), JavaScriptReceiver::receiveLeftPaddedTree));
+            exportDeclaration = exportDeclaration.withAttributes(ctx.receiveNode(exportDeclaration.getAttributes(), ctx::receiveTree));
             return exportDeclaration;
         }
 
@@ -1536,6 +1548,15 @@ public class JavaScriptReceiver implements Receiver<JS> {
             return source;
         }
 
+        @Override
+        public J.Erroneous visitErroneous(J.Erroneous erroneous, ReceiverContext ctx) {
+            erroneous = erroneous.withId(ctx.receiveNonNullValue(erroneous.getId(), UUID.class));
+            erroneous = erroneous.withPrefix(ctx.receiveNonNullNode(erroneous.getPrefix(), JavaScriptReceiver::receiveSpace));
+            erroneous = erroneous.withMarkers(ctx.receiveNonNullNode(erroneous.getMarkers(), ctx::receiveMarkers));
+            erroneous = erroneous.withText(ctx.receiveNonNullValue(erroneous.getText(), String.class));
+            return erroneous;
+        }
+
     }
 
     private static class Factory implements ReceiverFactory {
@@ -1562,6 +1583,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 if (type == JS.NamedImports.class) return Factory::createJSNamedImports;
                 if (type == JS.JsImportSpecifier.class) return Factory::createJSJsImportSpecifier;
                 if (type == JS.ImportAttributes.class) return Factory::createJSImportAttributes;
+                if (type == JS.ImportTypeAttributes.class) return Factory::createJSImportTypeAttributes;
                 if (type == JS.ImportAttribute.class) return Factory::createJSImportAttribute;
                 if (type == JS.JsBinary.class) return Factory::createJSJsBinary;
                 if (type == JS.LiteralType.class) return Factory::createJSLiteralType;
@@ -1679,6 +1701,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 if (type == J.Yield.class) return Factory::createJYield;
                 if (type == J.Unknown.class) return Factory::createJUnknown;
                 if (type == J.Unknown.Source.class) return Factory::createJUnknownSource;
+                if (type == J.Erroneous.class) return Factory::createJErroneous;
                 throw new IllegalArgumentException("Unknown type: " + type);
             }
         };
@@ -1844,7 +1867,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullNode(null, rightPaddedValueReceiver(java.lang.Boolean.class)),
-                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
@@ -1902,6 +1925,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),
                     ctx.receiveNonNullValue(null, JS.ImportAttributes.Token.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer)
+            );
+        }
+
+        private static JS.ImportTypeAttributes createJSImportTypeAttributes(ReceiverContext ctx) {
+            return new JS.ImportTypeAttributes(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace)
             );
         }
 
@@ -2369,7 +2403,8 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNodes(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNode(null, ctx::receiveTree),
-                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree)
+                    ctx.receiveNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
+                    ctx.receiveNode(null, ctx::receiveTree)
             );
         }
 
@@ -3174,6 +3209,15 @@ public class JavaScriptReceiver implements Receiver<JS> {
 
         private static J.Unknown.Source createJUnknownSource(ReceiverContext ctx) {
             return new J.Unknown.Source(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullValue(null, String.class)
+            );
+        }
+
+        private static J.Erroneous createJErroneous(ReceiverContext ctx) {
+            return new J.Erroneous(
                     ctx.receiveNonNullValue(null, UUID.class),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
                     ctx.receiveNonNullNode(null, ctx::receiveMarkers),

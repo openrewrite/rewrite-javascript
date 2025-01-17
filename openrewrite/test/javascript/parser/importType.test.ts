@@ -103,9 +103,40 @@ describe('import type mapping', () => {
                 }
 
                 // main.ts
-                type UserResponse = import("./library").Models.Response<{ id: string; name: string }>;
+                type UserResponse = import(/*a*/"./library"/*b*/).Models.Response<{ id: string; name: string }>;
             `)
         );
     });
 
+    test('import with attributes', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type A = import("foo", {with: {type: "json"}})
+            `)
+        );
+    });
+
+    test('import with attributes with comments', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type A = import("foo"/*0*/, /*a*/{/*b*/assert/*c*/:/*d*/ {type: "json"}/*e*/}/*f*/)
+            `)
+        );
+    });
+
+    test('import with attributes and qualifiers', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export type LocalInterface =
+                    & import("pkg", { with: {"resolution-mode": "foobar"} }).RequireInterface
+                    & import("pkg", { with: {"resolution-mode": "import"} }).ImportInterface;
+
+                export const a = (null as any as import("pkg", { with: {"resolution-mode": "foobar"} }).RequireInterface);
+                export const b = (null as any as import("pkg", { with: {"resolution-mode": "import"} }).ImportInterface);
+            `)
+        );
+    });
 });

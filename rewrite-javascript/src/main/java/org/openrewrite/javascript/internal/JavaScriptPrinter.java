@@ -22,7 +22,6 @@ import org.openrewrite.Tree;
 import org.openrewrite.java.JavaPrinter;
 import org.openrewrite.java.marker.OmitParentheses;
 import org.openrewrite.java.marker.Semicolon;
-import org.openrewrite.java.marker.TrailingComma;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.javascript.JavaScriptVisitor;
 import org.openrewrite.javascript.markers.*;
@@ -245,7 +244,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitRightPadded(importType.getPadding().getHasTypeof(), JsRightPadded.Location.IMPORT_TYPE_TYPEOF, p);
         }
         p.append("import");
-        visit(importType.getImportArgument(), p);
+        visitContainer("(", importType.getPadding().getArgumentAndAttributes(), JsContainer.Location.IMPORT_TYPE_ARGUMENTS_AND_ATTRIBUTES, ",", ")", p);
         visitLeftPadded(".", importType.getPadding().getQualifier(), JsLeftPadded.Location.IMPORT_TYPE_QUALIFIER, p);
         visitContainer("<", importType.getPadding().getTypeArguments(), JsContainer.Location.IMPORT_TYPE_TYPE_ARGUMENTS, ",", ">", p);
         afterSyntax(importType, p);
@@ -321,6 +320,21 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         visitContainer("{", importAttributes.getPadding().getElements(), JsContainer.Location.JS_IMPORT_ATTRIBUTES_ELEMENTS, ",", "}", p);
 
+        afterSyntax(importAttributes, p);
+        return importAttributes;
+    }
+
+    @Override
+    public J visitImportTypeAttributes(JS.ImportTypeAttributes importAttributes, PrintOutputCapture<P> p) {
+        beforeSyntax(importAttributes, JsSpace.Location.JS_IMPORT_TYPE_ATTRIBUTES_PREFIX, p);
+        p.append("{");
+
+        visitRightPadded(importAttributes.getPadding().getToken(), JsRightPadded.Location.JS_IMPORT_TYPE_ATTRIBUTES_TOKEN, p);
+        p.append(":");
+        visitContainer("{", importAttributes.getPadding().getElements(), JsContainer.Location.JS_IMPORT_TYPE_ATTRIBUTES_ELEMENTS, ",", "}", p);
+        visitSpace(importAttributes.getEnd(), JsSpace.Location.JS_IMPORT_TYPE_ATTRIBUTES_END_SUFFIX, p);
+
+        p.append("}");
         afterSyntax(importAttributes, p);
         return importAttributes;
     }
@@ -988,6 +1002,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
         visit(ed.getExportClause(), p);
         visitLeftPadded("from", ed.getPadding().getModuleSpecifier(), JsLeftPadded.Location.EXPORT_DECLARATION_MODULE_SPECIFIER, p);
+        visit(ed.getAttributes(), p);
         afterSyntax(ed, p);
         return ed;
     }

@@ -190,4 +190,13 @@ describe('empty mapping', () => {
           `)
         );
     });
+
+    test.skip('enum with non identifier name', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript(`
+              enum A { ['baz'] }
+          `)
+        );
+    });
 });

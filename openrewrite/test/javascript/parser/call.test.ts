@@ -167,4 +167,16 @@ describe('call mapping', () => {
         );
     });
 
+
+    // perhaps a bug in a Node parser
+    // node.getChildren() skips token '/*a*/<'
+    test.skip('call expression with sequential <<', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                expectTypeOf(o.get).toMatchTypeOf/*a*/<<K extends keyof EmberObject>(key: K) => EmberObject[K]>();
+            `)
+        );
+    });
+
 });
