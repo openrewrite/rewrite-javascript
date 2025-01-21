@@ -10,3 +10,4 @@ bin/
 .vscode/*
 /rewrite-javascript-remote-server/src/main/resources/node-server/node_modules/
 /rewrite-javascript-remote-server/src/main/resources/node-server/package-lock.json
+.DS_Store
