@@ -75,12 +75,26 @@ export class JavaScriptTypeMapping {
       return JavaType.Primitive.of(JavaType.PrimitiveKind.Null);
     } else if (type.flags === ts.TypeFlags.Undefined) {
       return JavaType.Primitive.of(JavaType.PrimitiveKind.None);
-    } else if (type.flags === ts.TypeFlags.Number) {
+    } else if (
+      type.flags === ts.TypeFlags.Number ||
+      type.flags === ts.TypeFlags.NumberLiteral ||
+      type.flags === ts.TypeFlags.NumberLike
+    ) {
       return JavaType.Primitive.of(JavaType.PrimitiveKind.Double);
-    } else if (type.flags === ts.TypeFlags.String) {
+    } else if (
+      type.flags === ts.TypeFlags.String ||
+      type.flags === ts.TypeFlags.StringLiteral ||
+      type.flags === ts.TypeFlags.StringLike
+    ) {
       return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
     } else if (type.flags === ts.TypeFlags.Void) {
       return JavaType.Primitive.of(JavaType.PrimitiveKind.Void);
+    } else if (
+      type.flags === ts.TypeFlags.BigInt ||
+      type.flags === ts.TypeFlags.BigIntLiteral ||
+      type.flags === ts.TypeFlags.BigIntLike
+    ) {
+      return JavaType.Primitive.of(JavaType.PrimitiveKind.Long);
     } else if (
       (type.symbol !== undefined && type.symbol === this.regExpSymbol) ||
       this.checker.typeToString(type) === "RegExp"
@@ -94,7 +108,8 @@ export class JavaScriptTypeMapping {
      */
     if (
       type.flags & ts.TypeFlags.Boolean ||
-      type.flags & ts.TypeFlags.BooleanLiteral
+      type.flags & ts.TypeFlags.BooleanLiteral ||
+      type.flags & ts.TypeFlags.BooleanLike
     ) {
       return JavaType.Primitive.of(JavaType.PrimitiveKind.Boolean);
     }
@@ -121,6 +136,7 @@ export class JavaScriptTypeMapping {
     // if (ts.isRegularExpressionLiteral(node)) {
     //     return JavaType.Primitive.of(JavaType.PrimitiveKind.String);
     // }
+
     return JavaType.Unknown.INSTANCE;
   }
 }

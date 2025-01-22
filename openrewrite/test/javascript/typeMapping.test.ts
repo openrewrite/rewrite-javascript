@@ -51,7 +51,7 @@ function getFirstVariableTypeNode(sourceText: string): ts.TypeNode {
   return declaration.type;
 }
 
-const createTypeChecker = (sourceText: string): ts.TypeChecker => {
+function createTypeChecker(sourceText: string): ts.TypeChecker {
   const sourceFile = ts.createSourceFile(
     "test.ts",
     sourceText,
@@ -59,103 +59,149 @@ const createTypeChecker = (sourceText: string): ts.TypeChecker => {
     true
   );
 
-  const compilerHost = ts.createCompilerHost({});
-  compilerHost.getSourceFile = (fileName) =>
-    fileName === "test.ts" ? sourceFile : undefined;
+  const options: ts.CompilerOptions = {
+    strict: true,
+    lib: ["lib.esnext.d.ts"],
+  };
 
-  const program = ts.createProgram({
-    rootNames: ["test.ts"],
-    options: { lib: ["lib.esnext.d.ts"], strict: true },
-    host: compilerHost,
-  });
+  const compilerHost = ts.createCompilerHost(options);
+  const defaultGetSourceFile = compilerHost.getSourceFile;
+
+  compilerHost.getSourceFile = (fileName, languageVersion) => {
+    if (fileName.endsWith("test.ts")) {
+      return sourceFile;
+    }
+    return defaultGetSourceFile(fileName, languageVersion);
+  };
+
+  const program = ts.createProgram(["test.ts"], options, compilerHost);
 
   return program.getTypeChecker();
-};
+}
 
 describe("JavaScriptTypeMapping", () => {
-  describe("literal types", () => {
-    test("number literal", () => {
-      const source = `const x = 42;`;
-      const checker = createTypeChecker(source);
-      const mapping = new JavaScriptTypeMapping(checker);
-      const initializer = getFirstVariableInitializer(source);
+  describe("explicitly declared types", () => {
+    const expectedTypeMapping: Record<
+      string,
+      JavaType.PrimitiveKind | JavaType.Unknown
+    > = {
+      // JavaScript primitive types
+      string: JavaType.PrimitiveKind.String,
+      number: JavaType.PrimitiveKind.Double,
+      boolean: JavaType.PrimitiveKind.Boolean,
+      bigint: JavaType.PrimitiveKind.Long,
+      symbol: JavaType.Unknown,
 
-      const result = mapping.type(initializer);
-      expect(result).toBeInstanceOf(JavaType.Primitive);
-      expect((result as JavaType.Primitive).kind).toBe(
-        JavaType.PrimitiveKind.Double
-      );
-    });
+      // JavaScript special value types
+      null: JavaType.PrimitiveKind.Null,
+      undefined: JavaType.PrimitiveKind.None,
+      void: JavaType.PrimitiveKind.Void,
+      // TODO this one feels kind of strange
+      RegExp: JavaType.PrimitiveKind.String,
 
-    test("string literal", () => {
-      const source = `const x = "hello";`;
-      const checker = createTypeChecker(source);
-      const mapping = new JavaScriptTypeMapping(checker);
-      const initializer = getFirstVariableInitializer(source);
+      // TypeScript meta types
+      any: JavaType.Unknown,
+      unknown: JavaType.Unknown,
+      never: JavaType.Unknown,
+      "unique symbol": JavaType.Unknown,
 
-      const result = mapping.type(initializer);
-      expect(result).toBeInstanceOf(JavaType.Primitive);
-      expect((result as JavaType.Primitive).kind).toBe(
-        JavaType.PrimitiveKind.String
-      );
-    });
+      // Literal types
+      1: JavaType.PrimitiveKind.Double,
+      "'someStringLiteral'": JavaType.PrimitiveKind.String,
+      true: JavaType.PrimitiveKind.Boolean,
+      false: JavaType.PrimitiveKind.Boolean,
+    };
 
-    test("boolean literal", () => {
-      const source = `const x = true;`;
-      const checker = createTypeChecker(source);
-      const mapping = new JavaScriptTypeMapping(checker);
-      const initializer = getFirstVariableInitializer(source);
+    for (const [key, value] of Object.entries(expectedTypeMapping)) {
+      const source = `const x: ${key};`;
+      test(source, () => {
+        const checker = createTypeChecker(source);
+        const mapping = new JavaScriptTypeMapping(checker);
+        const node = getFirstVariableTypeNode(source);
 
-      const result = mapping.type(initializer);
-      expect(result).toBeInstanceOf(JavaType.Primitive);
-      expect((result as JavaType.Primitive).kind).toBe(
-        JavaType.PrimitiveKind.Boolean
-      );
-    });
+        const result = mapping.type(node);
+        if (value === JavaType.Unknown) {
+          expect(result).toBeInstanceOf(JavaType.Unknown);
+        } else {
+          expect(result).toBeInstanceOf(JavaType.Primitive);
+          expect((result as JavaType.Primitive).kind).toBe(value);
+        }
+      });
+    }
   });
 
-  describe("explicity declared types", () => {
-    test("number type", () => {
-      const source = `const x: number = 42;`;
-      const checker = createTypeChecker(source);
-      const mapping = new JavaScriptTypeMapping(checker);
-      const node = getFirstVariableTypeNode(source);
+  describe("inferred type of initializer", () => {
+    const expectedTypeMapping: Record<
+      string,
+      JavaType.PrimitiveKind | JavaType.Unknown
+    > = {
+      "'abc'": JavaType.PrimitiveKind.String,
+      123: JavaType.PrimitiveKind.Double,
+      true: JavaType.PrimitiveKind.Boolean,
+      false: JavaType.PrimitiveKind.Boolean,
+      "123n": JavaType.PrimitiveKind.Long,
+      "Symbol()": JavaType.Unknown,
+      null: JavaType.PrimitiveKind.Null,
+      undefined: JavaType.PrimitiveKind.None,
+    };
 
-      const result = mapping.type(node);
-      expect(result).toBeInstanceOf(JavaType.Primitive);
-      expect((result as JavaType.Primitive).kind).toBe(
-        JavaType.PrimitiveKind.Double
-      );
-    });
+    for (const [key, value] of Object.entries(expectedTypeMapping)) {
+      const source = `const x = ${key};`;
+      test(source, () => {
+        const checker = createTypeChecker(source);
+        const mapping = new JavaScriptTypeMapping(checker);
+        const node = getFirstVariableInitializer(source);
 
-    test("string type", () => {
-      const source = `const x: string = "hello";`;
-      const checker = createTypeChecker(source);
-      const mapping = new JavaScriptTypeMapping(checker);
-      const node = getFirstVariableTypeNode(source);
-
-      const result = mapping.type(node);
-      expect(result).toBeInstanceOf(JavaType.Primitive);
-      expect((result as JavaType.Primitive).kind).toBe(
-        JavaType.PrimitiveKind.String
-      );
-    });
-
-    test("boolean type", () => {
-      const source = `const x: boolean = true;`;
-      const checker = createTypeChecker(source);
-      const mapping = new JavaScriptTypeMapping(checker);
-      const node = getFirstVariableTypeNode(source);
-
-      const result = mapping.type(node);
-      expect(result).toBeInstanceOf(JavaType.Primitive);
-      expect((result as JavaType.Primitive).kind).toBe(
-        JavaType.PrimitiveKind.Boolean
-      );
-    });
+        const result = mapping.type(node);
+        if (value === JavaType.Unknown) {
+          expect(result).toBeInstanceOf(JavaType.Unknown);
+        } else {
+          expect(result).toBeInstanceOf(JavaType.Primitive);
+          expect((result as JavaType.Primitive).kind).toBe(value);
+        }
+      });
+    }
   });
 
-  test("string | number union", () => {
+  describe("common object types that for now we map to unknown", () => {
+    const expectedTypeMapping: Record<
+      string,
+      JavaType.PrimitiveKind | JavaType.Unknown
+    > = {
+      Function: JavaType.Unknown,
+      object: JavaType.Unknown,
+      "string[]": JavaType.Unknown,
+      "number[]": JavaType.Unknown,
+      "any[]": JavaType.Unknown,
+      "Array<string>": JavaType.Unknown,
+      "Array<number>": JavaType.Unknown,
+      "Array<any>": JavaType.Unknown,
+      "[string, number]": JavaType.Unknown,
+      "Record<string, any>": JavaType.Unknown,
+      "Promise<string>": JavaType.Unknown,
+      "Promise<any>": JavaType.Unknown,
+      "unique symbol": JavaType.Unknown,
+    };
+
+    for (const [key, value] of Object.entries(expectedTypeMapping)) {
+      const source = `let x: ${key};`;
+      test(source, () => {
+        const checker = createTypeChecker(source);
+        const mapping = new JavaScriptTypeMapping(checker);
+        const node = getFirstVariableTypeNode(source);
+
+        const result = mapping.type(node);
+        if (value === JavaType.Unknown) {
+          expect(result).toBeInstanceOf(JavaType.Unknown);
+        } else {
+          expect(result).toBeInstanceOf(JavaType.Primitive);
+          expect((result as JavaType.Primitive).kind).toBe(value);
+        }
+      });
+    }
+  });
+
+  test("union type", () => {
     const source = `let x: string | number;`;
     const checker = createTypeChecker(source);
     const mapping = new JavaScriptTypeMapping(checker);
@@ -165,18 +211,5 @@ describe("JavaScriptTypeMapping", () => {
     expect(result).toBeInstanceOf(JavaType.Union);
     const unionType = result as JavaType.Union;
     expect(unionType.types).toHaveLength(2);
-  });
-
-  test("RegExp type", () => {
-    const source = `let x: RegExp;`;
-    const checker = createTypeChecker(source);
-    const mapping = new JavaScriptTypeMapping(checker);
-    const node = getFirstVariableTypeNode(source);
-
-    const result = mapping.type(node);
-    expect(result).toBeInstanceOf(JavaType.Primitive);
-    expect((result as JavaType.Primitive).kind).toBe(
-      JavaType.PrimitiveKind.String
-    );
   });
 });
