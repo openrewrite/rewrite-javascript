@@ -40,6 +40,7 @@ export class JavaScriptParser extends Parser {
             target: ts.ScriptTarget.Latest,
             module: ts.ModuleKind.CommonJS,
             allowJs: true,
+            esModuleInterop: true,
         };
     }
 
@@ -141,19 +142,66 @@ export class JavaScriptParser extends Parser {
         for (const input of inputFiles.values()) {
             const filePath = input.path;
             const sourceFile = program.getSourceFile(filePath);
-            if (sourceFile) {
-                try {
-                    const parsed = new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile;
-                    result.push(parsed.withSourcePath(relativeTo != null ? path.relative(relativeTo, input.path) : input.path));
-                } catch (error) {
-                    result.push(ParseError.build(this, input, relativeTo, ctx, error instanceof Error ? error : new Error('Parser threw unknown error: ' + error), null));
-                }
-            } else {
+            if (!sourceFile) {
                 result.push(ParseError.build(this, input, relativeTo, ctx, new Error('Parser returned undefined'), null));
+                continue;
+            }
+
+            if (this.hasFlowAnnotation(sourceFile)) {
+                result.push(ParseError.build(this, input, relativeTo, ctx, new FlowSyntaxNotSupportedError(`Flow syntax not supported: ${input.path}`), null));
+                continue;
+            }
+
+            // ToDo: uncomment code after tests fixing
+            // const syntaxErrors = this.checkSyntaxErrors(program, sourceFile);
+            // if (syntaxErrors.length > 0) {
+            //     syntaxErrors.forEach(
+            //         e => result.push(ParseError.build(this, input, relativeTo, ctx, new SyntaxError(`Compiler error:  ${e[0]} [${e[1]}]`), null))
+            //     );
+            //     continue;
+            // }
+
+            try {
+                const parsed = new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile;
+                result.push(parsed.withSourcePath(relativeTo != null ? path.relative(relativeTo, input.path) : input.path));
+            } catch (error) {
+                result.push(ParseError.build(this, input, relativeTo, ctx, error instanceof Error ? error : new Error('Parser threw unknown error: ' + error), null));
             }
         }
-
         return result;
+    }
+
+    private checkSyntaxErrors(program: ts.Program, sourceFile: ts.SourceFile) {
+        const diagnostics = ts.getPreEmitDiagnostics(program, sourceFile);
+        // checking Parsing and Syntax Errors
+        let syntaxErrors : [errorMsg: string, errorCode: number][] = [];
+        if (diagnostics.length > 0) {
+            const errors = diagnostics.filter(d => d.code >= 1000 && d.code < 2000);
+            if (errors.length > 0) {
+                syntaxErrors = errors.map(e => {
+                    let errorMsg;
+                    if (e.file) {
+                        let {line, character} = ts.getLineAndCharacterOfPosition(e.file, e.start!);
+                        let message = ts.flattenDiagnosticMessageText(e.messageText, "\n");
+                        errorMsg = `${e.file.fileName} (${line + 1},${character + 1}): ${message}`;
+                    } else {
+                        errorMsg = ts.flattenDiagnosticMessageText(e.messageText, "\n");
+                    }
+                    return [errorMsg, e.code];
+                });
+            }
+        }
+        return syntaxErrors;
+    }
+
+    private hasFlowAnnotation(sourceFile: ts.SourceFile) {
+        if (sourceFile.fileName.endsWith('.js') || sourceFile.fileName.endsWith('.jsx')) {
+            const comments = sourceFile.getFullText().match(/\/\*[\s\S]*?\*\/|\/\/.*(?=[\r\n])/g);
+            if (comments) {
+                return comments.some(comment => comment.includes("@flow"));
+            }
+        }
+        return false;
     }
 
     accept(path: string): boolean {
@@ -4093,4 +4141,11 @@ function prefixFromNode(node: ts.Node, sourceFile: ts.SourceFile): Space {
 
     // Step 4: Return the Space object with comments and leading whitespace
     return new Space(comments, whitespace.length > 0 ? whitespace : null);
+}
+
+class FlowSyntaxNotSupportedError extends SyntaxError {
+    constructor(message: string = "Flow syntax is not supported") {
+        super(message);
+        this.name = "FlowSyntaxNotSupportedError";
+    }
 }
