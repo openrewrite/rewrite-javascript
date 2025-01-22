@@ -7,7 +7,7 @@ describe('empty mapping', () => {
     test('simple', () => {
         rewriteRun(
           //language=typescript
-          typeScript('if (true) ;')
+          typeScript('if (true) {/*a*/};')
         );
     });
 });
