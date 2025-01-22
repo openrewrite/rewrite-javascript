@@ -1379,6 +1379,7 @@ public class JavaScriptSender implements Sender<JS> {
             ctx.sendNode(switchExpression, J.SwitchExpression::getMarkers, ctx::sendMarkers);
             ctx.sendNode(switchExpression, J.SwitchExpression::getSelector, ctx::sendTree);
             ctx.sendNode(switchExpression, J.SwitchExpression::getCases, ctx::sendTree);
+            ctx.sendTypedValue(switchExpression, J.SwitchExpression::getType);
             return switchExpression;
         }
 
