@@ -543,6 +543,7 @@ class Visitor extends JavaVisitor<SenderContext> {
         ctx.sendNode(switchExpression, v => v.markers, ctx.sendMarkers);
         ctx.sendNode(switchExpression, v => v.selector, ctx.sendTree);
         ctx.sendNode(switchExpression, v => v.cases, ctx.sendTree);
+        ctx.sendTypedValue(switchExpression, v => v.type, ValueType.Object);
         return switchExpression;
     }
 

@@ -4817,13 +4817,14 @@ export class Switch extends JMixin(Object) implements Statement {
 
 @LstType("org.openrewrite.java.tree.J$SwitchExpression")
 export class SwitchExpression extends JMixin(Object) implements Expression, TypedTree {
-    public constructor(id: UUID, prefix: Space, markers: Markers, selector: ControlParentheses<Expression>, cases: Block) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, selector: ControlParentheses<Expression>, cases: Block, _type: JavaType | null) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
         this._selector = selector;
         this._cases = cases;
+        this._type = _type;
     }
 
         private readonly _id: UUID;
@@ -4833,7 +4834,7 @@ export class SwitchExpression extends JMixin(Object) implements Expression, Type
         }
 
         public withId(id: UUID): SwitchExpression {
-            return id === this._id ? this : new SwitchExpression(id, this._prefix, this._markers, this._selector, this._cases);
+            return id === this._id ? this : new SwitchExpression(id, this._prefix, this._markers, this._selector, this._cases, this._type);
         }
 
         private readonly _prefix: Space;
@@ -4843,7 +4844,7 @@ export class SwitchExpression extends JMixin(Object) implements Expression, Type
         }
 
         public withPrefix(prefix: Space): SwitchExpression {
-            return prefix === this._prefix ? this : new SwitchExpression(this._id, prefix, this._markers, this._selector, this._cases);
+            return prefix === this._prefix ? this : new SwitchExpression(this._id, prefix, this._markers, this._selector, this._cases, this._type);
         }
 
         private readonly _markers: Markers;
@@ -4853,7 +4854,7 @@ export class SwitchExpression extends JMixin(Object) implements Expression, Type
         }
 
         public withMarkers(markers: Markers): SwitchExpression {
-            return markers === this._markers ? this : new SwitchExpression(this._id, this._prefix, markers, this._selector, this._cases);
+            return markers === this._markers ? this : new SwitchExpression(this._id, this._prefix, markers, this._selector, this._cases, this._type);
         }
 
         private readonly _selector: ControlParentheses<Expression>;
@@ -4863,7 +4864,7 @@ export class SwitchExpression extends JMixin(Object) implements Expression, Type
         }
 
         public withSelector(selector: ControlParentheses<Expression>): SwitchExpression {
-            return selector === this._selector ? this : new SwitchExpression(this._id, this._prefix, this._markers, selector, this._cases);
+            return selector === this._selector ? this : new SwitchExpression(this._id, this._prefix, this._markers, selector, this._cases, this._type);
         }
 
         private readonly _cases: Block;
@@ -4873,19 +4874,21 @@ export class SwitchExpression extends JMixin(Object) implements Expression, Type
         }
 
         public withCases(cases: Block): SwitchExpression {
-            return cases === this._cases ? this : new SwitchExpression(this._id, this._prefix, this._markers, this._selector, cases);
+            return cases === this._cases ? this : new SwitchExpression(this._id, this._prefix, this._markers, this._selector, cases, this._type);
+        }
+
+        private readonly _type: JavaType | null;
+
+        public get type(): JavaType | null {
+            return this._type;
+        }
+
+        public withType(_type: JavaType | null): SwitchExpression {
+            return _type === this._type ? this : new SwitchExpression(this._id, this._prefix, this._markers, this._selector, this._cases, _type);
         }
 
     public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
         return v.visitSwitchExpression(this, p);
-    }
-
-    public get type(): JavaType | null {
-        return extensions.getJavaType(this);
-    }
-
-    public withType(type: JavaType): SwitchExpression {
-        return extensions.withJavaType(this, type);
     }
 
 }

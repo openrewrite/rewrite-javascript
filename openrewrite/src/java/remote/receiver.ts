@@ -543,6 +543,7 @@ class Visitor extends JavaVisitor<ReceiverContext> {
         switchExpression = switchExpression.withMarkers(ctx.receiveNode(switchExpression.markers, ctx.receiveMarkers)!);
         switchExpression = switchExpression.withSelector(ctx.receiveNode(switchExpression.selector, ctx.receiveTree)!);
         switchExpression = switchExpression.withCases(ctx.receiveNode(switchExpression.cases, ctx.receiveTree)!);
+        switchExpression = switchExpression.withType(ctx.receiveValue(switchExpression.type, ValueType.Object));
         return switchExpression;
     }
 
@@ -1289,7 +1290,8 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveNode<ControlParentheses<Expression>>(null, ctx.receiveTree)!,
-                ctx.receiveNode<Block>(null, ctx.receiveTree)!
+                ctx.receiveNode<Block>(null, ctx.receiveTree)!,
+                ctx.receiveValue(null, ValueType.Object)
             );
         }
 
