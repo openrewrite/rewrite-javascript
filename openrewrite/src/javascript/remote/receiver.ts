@@ -1014,6 +1014,16 @@ class Visitor extends JavaScriptVisitor<ReceiverContext> {
         return instanceOf;
     }
 
+    public visitDeconstructionPattern(deconstructionPattern: Java.DeconstructionPattern, ctx: ReceiverContext): J {
+        deconstructionPattern = deconstructionPattern.withId(ctx.receiveValue(deconstructionPattern.id, ValueType.UUID)!);
+        deconstructionPattern = deconstructionPattern.withPrefix(ctx.receiveNode(deconstructionPattern.prefix, receiveSpace)!);
+        deconstructionPattern = deconstructionPattern.withMarkers(ctx.receiveNode(deconstructionPattern.markers, ctx.receiveMarkers)!);
+        deconstructionPattern = deconstructionPattern.withDeconstructor(ctx.receiveNode(deconstructionPattern.deconstructor, ctx.receiveTree)!);
+        deconstructionPattern = deconstructionPattern.padding.withNested(ctx.receiveNode(deconstructionPattern.padding.nested, receiveContainer)!);
+        deconstructionPattern = deconstructionPattern.withType(ctx.receiveValue(deconstructionPattern.type, ValueType.Object)!);
+        return deconstructionPattern;
+    }
+
     public visitIntersectionType(intersectionType: Java.IntersectionType, ctx: ReceiverContext): J {
         intersectionType = intersectionType.withId(ctx.receiveValue(intersectionType.id, ValueType.UUID)!);
         intersectionType = intersectionType.withPrefix(ctx.receiveNode(intersectionType.prefix, receiveSpace)!);
@@ -2490,6 +2500,17 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<J>(null, ctx.receiveTree)!,
                 ctx.receiveNode<J>(null, ctx.receiveTree),
                 ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.java.tree.J$DeconstructionPattern") {
+            return new Java.DeconstructionPattern(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JContainer<J>>(null, receiveContainer)!,
+                ctx.receiveValue(null, ValueType.Object)!
             );
         }
 

@@ -2,7 +2,7 @@ import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
 import {JavaVisitor} from '..';
-import {J, Comment, Expression, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, Loop, MethodCall, NameTree, Space, Statement, TextComment, TypedTree, TypeTree, AnnotatedType, Annotation, ArrayAccess, ArrayType, Assert, Assignment, AssignmentOperation, Binary, Block, Break, Case, ClassDeclaration, CompilationUnit, Continue, DoWhileLoop, Empty, EnumValue, EnumValueSet, FieldAccess, ForEachLoop, ForLoop, ParenthesizedTypeTree, Identifier, If, Import, InstanceOf, IntersectionType, Label, Lambda, Literal, MemberReference, MethodDeclaration, MethodInvocation, Modifier, MultiCatch, NewArray, ArrayDimension, NewClass, NullableType, Package, ParameterizedType, Parentheses, ControlParentheses, Primitive, Return, Switch, SwitchExpression, Synchronized, Ternary, Throw, Try, TypeCast, TypeParameter, TypeParameters, Unary, VariableDeclarations, WhileLoop, Wildcard, Yield, Unknown, Erroneous} from '../tree';
+import {J, Comment, Expression, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, Loop, MethodCall, NameTree, Space, Statement, TextComment, TypedTree, TypeTree, AnnotatedType, Annotation, ArrayAccess, ArrayType, Assert, Assignment, AssignmentOperation, Binary, Block, Break, Case, ClassDeclaration, CompilationUnit, Continue, DoWhileLoop, Empty, EnumValue, EnumValueSet, FieldAccess, ForEachLoop, ForLoop, ParenthesizedTypeTree, Identifier, If, Import, InstanceOf, DeconstructionPattern, IntersectionType, Label, Lambda, Literal, MemberReference, MethodDeclaration, MethodInvocation, Modifier, MultiCatch, NewArray, ArrayDimension, NewClass, NullableType, Package, ParameterizedType, Parentheses, ControlParentheses, Primitive, Return, Switch, SwitchExpression, Synchronized, Ternary, Throw, Try, TypeCast, TypeParameter, TypeParameters, Unary, VariableDeclarations, WhileLoop, Wildcard, Yield, Unknown, Erroneous} from '../tree';
 import * as Java from "../../java/tree";
 
 export class JavaReceiver implements Receiver<J> {
@@ -326,6 +326,16 @@ class Visitor extends JavaVisitor<ReceiverContext> {
         instanceOf = instanceOf.withPattern(ctx.receiveNode(instanceOf.pattern, ctx.receiveTree));
         instanceOf = instanceOf.withType(ctx.receiveValue(instanceOf.type, ValueType.Object));
         return instanceOf;
+    }
+
+    public visitDeconstructionPattern(deconstructionPattern: DeconstructionPattern, ctx: ReceiverContext): J {
+        deconstructionPattern = deconstructionPattern.withId(ctx.receiveValue(deconstructionPattern.id, ValueType.UUID)!);
+        deconstructionPattern = deconstructionPattern.withPrefix(ctx.receiveNode(deconstructionPattern.prefix, receiveSpace)!);
+        deconstructionPattern = deconstructionPattern.withMarkers(ctx.receiveNode(deconstructionPattern.markers, ctx.receiveMarkers)!);
+        deconstructionPattern = deconstructionPattern.withDeconstructor(ctx.receiveNode(deconstructionPattern.deconstructor, ctx.receiveTree)!);
+        deconstructionPattern = deconstructionPattern.padding.withNested(ctx.receiveNode(deconstructionPattern.padding.nested, receiveContainer)!);
+        deconstructionPattern = deconstructionPattern.withType(ctx.receiveValue(deconstructionPattern.type, ValueType.Object)!);
+        return deconstructionPattern;
     }
 
     public visitIntersectionType(intersectionType: IntersectionType, ctx: ReceiverContext): J {
@@ -1051,6 +1061,17 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode<J>(null, ctx.receiveTree)!,
                 ctx.receiveNode<J>(null, ctx.receiveTree),
                 ctx.receiveValue(null, ValueType.Object)
+            );
+        }
+
+        if (type === "org.openrewrite.java.tree.J$DeconstructionPattern") {
+            return new DeconstructionPattern(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveNode(null, receiveSpace)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveNode<Expression>(null, ctx.receiveTree)!,
+                ctx.receiveNode<JContainer<J>>(null, receiveContainer)!,
+                ctx.receiveValue(null, ValueType.Object)!
             );
         }
 

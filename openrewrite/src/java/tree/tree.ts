@@ -2792,6 +2792,96 @@ export class InstanceOf extends JMixin(Object) implements Expression, TypedTree 
 
 }
 
+@LstType("org.openrewrite.java.tree.J$DeconstructionPattern")
+export class DeconstructionPattern extends JMixin(Object) implements TypedTree {
+    public constructor(id: UUID, prefix: Space, markers: Markers, deconstructor: Expression, nested: JContainer<J>, _type: JavaType) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._deconstructor = deconstructor;
+        this._nested = nested;
+        this._type = _type;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): DeconstructionPattern {
+            return id === this._id ? this : new DeconstructionPattern(id, this._prefix, this._markers, this._deconstructor, this._nested, this._type);
+        }
+
+        private readonly _prefix: Space;
+
+        public get prefix(): Space {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: Space): DeconstructionPattern {
+            return prefix === this._prefix ? this : new DeconstructionPattern(this._id, prefix, this._markers, this._deconstructor, this._nested, this._type);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): DeconstructionPattern {
+            return markers === this._markers ? this : new DeconstructionPattern(this._id, this._prefix, markers, this._deconstructor, this._nested, this._type);
+        }
+
+        private readonly _deconstructor: Expression;
+
+        public get deconstructor(): Expression {
+            return this._deconstructor;
+        }
+
+        public withDeconstructor(deconstructor: Expression): DeconstructionPattern {
+            return deconstructor === this._deconstructor ? this : new DeconstructionPattern(this._id, this._prefix, this._markers, deconstructor, this._nested, this._type);
+        }
+
+        private readonly _nested: JContainer<J>;
+
+        public get nested(): J[] {
+            return this._nested.elements;
+        }
+
+        public withNested(nested: J[]): DeconstructionPattern {
+            return this.padding.withNested(JContainer.withElements(this._nested, nested));
+        }
+
+        private readonly _type: JavaType;
+
+        public get type(): JavaType {
+            return this._type;
+        }
+
+        public withType(_type: JavaType): DeconstructionPattern {
+            return _type === this._type ? this : new DeconstructionPattern(this._id, this._prefix, this._markers, this._deconstructor, this._nested, _type);
+        }
+
+    public acceptJava<P>(v: JavaVisitor<P>, p: P): J | null {
+        return v.visitDeconstructionPattern(this, p);
+    }
+
+    get padding() {
+        const t = this;
+        return new class {
+            public get nested(): JContainer<J> {
+                return t._nested;
+            }
+            public withNested(nested: JContainer<J>): DeconstructionPattern {
+                return t._nested === nested ? t : new DeconstructionPattern(t._id, t._prefix, t._markers, t._deconstructor, nested, t._type);
+            }
+        }
+    }
+
+}
+
 @LstType("org.openrewrite.java.tree.J$IntersectionType")
 export class IntersectionType extends JMixin(Object) implements TypeTree, Expression {
     public constructor(id: UUID, prefix: Space, markers: Markers, bounds: JContainer<TypeTree>) {

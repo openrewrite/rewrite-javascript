@@ -1150,6 +1150,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
         }
 
         @Override
+        public J.DeconstructionPattern visitDeconstructionPattern(J.DeconstructionPattern deconstructionPattern, ReceiverContext ctx) {
+            deconstructionPattern = deconstructionPattern.withId(ctx.receiveNonNullValue(deconstructionPattern.getId(), UUID.class));
+            deconstructionPattern = deconstructionPattern.withPrefix(ctx.receiveNonNullNode(deconstructionPattern.getPrefix(), JavaScriptReceiver::receiveSpace));
+            deconstructionPattern = deconstructionPattern.withMarkers(ctx.receiveNonNullNode(deconstructionPattern.getMarkers(), ctx::receiveMarkers));
+            deconstructionPattern = deconstructionPattern.withDeconstructor(ctx.receiveNonNullNode(deconstructionPattern.getDeconstructor(), ctx::receiveTree));
+            deconstructionPattern = deconstructionPattern.getPadding().withNested(ctx.receiveNonNullNode(deconstructionPattern.getPadding().getNested(), JavaScriptReceiver::receiveContainer));
+            deconstructionPattern = deconstructionPattern.withType(ctx.receiveValue(deconstructionPattern.getType(), JavaType.class));
+            return deconstructionPattern;
+        }
+
+        @Override
         public J.IntersectionType visitIntersectionType(J.IntersectionType intersectionType, ReceiverContext ctx) {
             intersectionType = intersectionType.withId(ctx.receiveNonNullValue(intersectionType.getId(), UUID.class));
             intersectionType = intersectionType.withPrefix(ctx.receiveNonNullNode(intersectionType.getPrefix(), JavaScriptReceiver::receiveSpace));
@@ -1664,6 +1675,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                 if (type == J.If.Else.class) return Factory::createJIfElse;
                 if (type == J.Import.class) return Factory::createJImport;
                 if (type == J.InstanceOf.class) return Factory::createJInstanceOf;
+                if (type == J.DeconstructionPattern.class) return Factory::createJDeconstructionPattern;
                 if (type == J.IntersectionType.class) return Factory::createJIntersectionType;
                 if (type == J.Label.class) return Factory::createJLabel;
                 if (type == J.Lambda.class) return Factory::createJLambda;
@@ -2795,6 +2807,17 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveRightPaddedTree),
                     ctx.receiveNonNullNode(null, ctx::receiveTree),
                     ctx.receiveNode(null, ctx::receiveTree),
+                    ctx.receiveValue(null, JavaType.class)
+            );
+        }
+
+        private static J.DeconstructionPattern createJDeconstructionPattern(ReceiverContext ctx) {
+            return new J.DeconstructionPattern(
+                    ctx.receiveNonNullValue(null, UUID.class),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
+                    ctx.receiveNonNullNode(null, ctx::receiveMarkers),
+                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
                     ctx.receiveValue(null, JavaType.class)
             );
         }

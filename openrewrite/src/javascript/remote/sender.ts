@@ -1009,6 +1009,16 @@ class Visitor extends JavaScriptVisitor<SenderContext> {
         return instanceOf;
     }
 
+    public visitDeconstructionPattern(deconstructionPattern: Java.DeconstructionPattern, ctx: SenderContext): J {
+        ctx.sendValue(deconstructionPattern, v => v.id, ValueType.UUID);
+        ctx.sendNode(deconstructionPattern, v => v.prefix, Visitor.sendSpace);
+        ctx.sendNode(deconstructionPattern, v => v.markers, ctx.sendMarkers);
+        ctx.sendNode(deconstructionPattern, v => v.deconstructor, ctx.sendTree);
+        ctx.sendNode(deconstructionPattern, v => v.padding.nested, Visitor.sendContainer(ValueType.Tree));
+        ctx.sendTypedValue(deconstructionPattern, v => v.type, ValueType.Object);
+        return deconstructionPattern;
+    }
+
     public visitIntersectionType(intersectionType: Java.IntersectionType, ctx: SenderContext): J {
         ctx.sendValue(intersectionType, v => v.id, ValueType.UUID);
         ctx.sendNode(intersectionType, v => v.prefix, Visitor.sendSpace);

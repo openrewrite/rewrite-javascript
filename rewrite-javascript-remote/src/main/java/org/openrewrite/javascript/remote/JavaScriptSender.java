@@ -1140,6 +1140,17 @@ public class JavaScriptSender implements Sender<JS> {
         }
 
         @Override
+        public J.DeconstructionPattern visitDeconstructionPattern(J.DeconstructionPattern deconstructionPattern, SenderContext ctx) {
+            ctx.sendValue(deconstructionPattern, J.DeconstructionPattern::getId);
+            ctx.sendNode(deconstructionPattern, J.DeconstructionPattern::getPrefix, JavaScriptSender::sendSpace);
+            ctx.sendNode(deconstructionPattern, J.DeconstructionPattern::getMarkers, ctx::sendMarkers);
+            ctx.sendNode(deconstructionPattern, J.DeconstructionPattern::getDeconstructor, ctx::sendTree);
+            ctx.sendNode(deconstructionPattern, e -> e.getPadding().getNested(), JavaScriptSender::sendContainer);
+            ctx.sendTypedValue(deconstructionPattern, J.DeconstructionPattern::getType);
+            return deconstructionPattern;
+        }
+
+        @Override
         public J.IntersectionType visitIntersectionType(J.IntersectionType intersectionType, SenderContext ctx) {
             ctx.sendValue(intersectionType, J.IntersectionType::getId);
             ctx.sendNode(intersectionType, J.IntersectionType::getPrefix, JavaScriptSender::sendSpace);

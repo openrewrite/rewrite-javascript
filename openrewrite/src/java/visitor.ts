@@ -1,7 +1,7 @@
 import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
 import {J, isJava, Comment, Expression, JavaSourceFile, JavaType, JContainer, JLeftPadded, JRightPadded, Loop, MethodCall, NameTree, Space, Statement, TextComment, TypedTree, TypeTree} from "./tree";
-import {AnnotatedType, Annotation, ArrayAccess, ArrayType, Assert, Assignment, AssignmentOperation, Binary, Block, Break, Case, ClassDeclaration, CompilationUnit, Continue, DoWhileLoop, Empty, EnumValue, EnumValueSet, FieldAccess, ForEachLoop, ForLoop, ParenthesizedTypeTree, Identifier, If, Import, InstanceOf, IntersectionType, Label, Lambda, Literal, MemberReference, MethodDeclaration, MethodInvocation, Modifier, MultiCatch, NewArray, ArrayDimension, NewClass, NullableType, Package, ParameterizedType, Parentheses, ControlParentheses, Primitive, Return, Switch, SwitchExpression, Synchronized, Ternary, Throw, Try, TypeCast, TypeParameter, TypeParameters, Unary, VariableDeclarations, WhileLoop, Wildcard, Yield, Unknown, Erroneous} from "./tree";
+import {AnnotatedType, Annotation, ArrayAccess, ArrayType, Assert, Assignment, AssignmentOperation, Binary, Block, Break, Case, ClassDeclaration, CompilationUnit, Continue, DoWhileLoop, Empty, EnumValue, EnumValueSet, FieldAccess, ForEachLoop, ForLoop, ParenthesizedTypeTree, Identifier, If, Import, InstanceOf, DeconstructionPattern, IntersectionType, Label, Lambda, Literal, MemberReference, MethodDeclaration, MethodInvocation, Modifier, MultiCatch, NewArray, ArrayDimension, NewClass, NullableType, Package, ParameterizedType, Parentheses, ControlParentheses, Primitive, Return, Switch, SwitchExpression, Synchronized, Ternary, Throw, Try, TypeCast, TypeParameter, TypeParameters, Unary, VariableDeclarations, WhileLoop, Wildcard, Yield, Unknown, Erroneous} from "./tree";
 
 export class JavaVisitor<P> extends TreeVisitor<J, P> {
     isAcceptable(sourceFile: SourceFile, p: P): boolean {
@@ -435,6 +435,14 @@ export class JavaVisitor<P> extends TreeVisitor<J, P> {
         instanceOf = instanceOf.withClazz(this.visitAndCast(instanceOf.clazz, p)!);
         instanceOf = instanceOf.withPattern(this.visitAndCast(instanceOf.pattern, p));
         return instanceOf;
+    }
+
+    public visitDeconstructionPattern(deconstructionPattern: DeconstructionPattern, p: P): J | null {
+        deconstructionPattern = deconstructionPattern.withPrefix(this.visitSpace(deconstructionPattern.prefix, Space.Location.DECONSTRUCTION_PATTERN_PREFIX, p)!);
+        deconstructionPattern = deconstructionPattern.withMarkers(this.visitMarkers(deconstructionPattern.markers, p));
+        deconstructionPattern = deconstructionPattern.withDeconstructor(this.visitAndCast(deconstructionPattern.deconstructor, p)!);
+        deconstructionPattern = deconstructionPattern.padding.withNested(this.visitContainer(deconstructionPattern.padding.nested, JContainer.Location.DECONSTRUCTION_PATTERN_NESTED, p)!);
+        return deconstructionPattern;
     }
 
     public visitIntersectionType(intersectionType: IntersectionType, p: P): J | null {

@@ -692,6 +692,7 @@ export namespace Space {
         WILDCARD_PREFIX,
         YIELD_PREFIX,
         ERRONEOUS_PREFIX,
+        DECONSTRUCTION_PATTERN_PREFIX,
     }
 }
 
@@ -798,6 +799,7 @@ export namespace JContainer {
         TRY_RESOURCES,
         TYPE_BOUNDS,
         TYPE_PARAMETERS,
+        DECONSTRUCTION_PATTERN_NESTED,
     }
 
     export namespace Location {
