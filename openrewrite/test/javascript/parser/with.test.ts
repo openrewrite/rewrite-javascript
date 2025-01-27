@@ -57,6 +57,7 @@ describe('with mapping', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
+                export {};
                 with ( await obj?.foo) {}
             `)
         );

@@ -70,7 +70,7 @@ describe('import mapping', () => {
     test('dynamic import', () => {
         rewriteRun(
           //language=typescript
-          typeScript('const module = await import("module-name");')
+          typeScript('export {};const module = await import("module-name");')
         )
     });
 
@@ -105,13 +105,13 @@ describe('import mapping', () => {
         );
     });
 
-    test('experimental: import with import attributes', () => {
+    test('import with import attributes', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
+                import type { SpyInstance } from 'jest';
+                ///*{1}*/import /*{2}*/type /*{3}*/{ /*{4}*/ SpyInstance /*{5}*/} /*{6}*/ from /*{7}*/ 'jest' /*{8}*/;
                 import SpyInstance = jest.SpyInstance;
-                import type SpyInstance = jest.SpyInstance;
-                /*{1}*/import /*{2}*/type /*{3}*/SpyInstance /*{4}*/= /*{5}*/jest.SpyInstance/*{6}*/;
             `)
         );
     });

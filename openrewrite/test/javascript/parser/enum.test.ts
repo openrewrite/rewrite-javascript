@@ -1,6 +1,6 @@
 import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
-describe('empty mapping', () => {
+describe('enum mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 
@@ -142,7 +142,7 @@ describe('empty mapping', () => {
           typeScript(`
               enum Test {
                   A  = "AA",
-                  B,
+                  B = undefined,
                   C = 10,
                   D = globalThis.NaN,
                   E = (2 + 2),

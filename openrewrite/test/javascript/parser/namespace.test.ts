@@ -166,7 +166,7 @@ describe('namespace mapping', () => {
           typeScript(`
               /*pref*/ declare namespace /*middle*/ TestNamespace /*after*/ {
                   /*bcd*/
-                  /*1*/ a = 10
+                  /*1*/ const a = 10;
                   /*efg*/
                   /*2*/ function abc() {
                       return null
@@ -244,6 +244,7 @@ describe('namespace mapping', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
+                export {}
                 declare namespace MyLibrary {
                     function sayHello(name: string): void;
                 }

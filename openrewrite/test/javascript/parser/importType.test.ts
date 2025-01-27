@@ -131,11 +131,22 @@ describe('import type mapping', () => {
             //language=typescript
             typeScript(`
                 export type LocalInterface =
-                    & import("pkg", { with: {"resolution-mode": "foobar"} }).RequireInterface
+                    & import("pkg", { with: {"resolution-mode": "require"} }).RequireInterface
                     & import("pkg", { with: {"resolution-mode": "import"} }).ImportInterface;
 
-                export const a = (null as any as import("pkg", { with: {"resolution-mode": "foobar"} }).RequireInterface);
+                export const a = (null as any as import("pkg", { with: {"resolution-mode": "require"} }).RequireInterface);
                 export const b = (null as any as import("pkg", { with: {"resolution-mode": "import"} }).ImportInterface);
+            `)
+        );
+    });
+
+    test('import type without qualifier an with type argument', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                declare module "ContextUtils" {
+                    export function createContext<Config extends import("tailwindcss").Config>(config: ReturnType<typeof import("tailwindcss/resolveConfig")<Config>>,): import("./types.ts").TailwindContext;
+                }
             `)
         );
     });

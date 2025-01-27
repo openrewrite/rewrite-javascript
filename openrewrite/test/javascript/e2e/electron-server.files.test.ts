@@ -281,12 +281,10 @@ describe('electron-release-server files tests', () => {
                                                 }
 
                                                 // If not the first changenote, prefix with new line
-                                                var newChangeNote = !prevNotes.length ? '' : '
-                                                ';
+                                                var newChangeNote = !prevNotes.length ? '' : '';
 
                                                 // Add the version name and notes
-                                                newChangeNote += '## ' + newVersion.name + '
-                                                ' + newVersion.notes;
+                                                newChangeNote += '## ' + newVersion.name + '' + newVersion.notes;
 
                                                 // Add the new changenote to the previous ones
                                                 return prevNotes + newChangeNote;

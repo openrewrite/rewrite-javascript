@@ -23,7 +23,7 @@ import {
     randomId,
     SourceFile
 } from "../core";
-import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan} from "./parserUtils";
+import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan, hasFlowAnnotation, checkSyntaxErrors} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
 import path from "node:path";
 import {ExpressionStatement, TypeTreeExpression} from ".";
@@ -41,6 +41,8 @@ export class JavaScriptParser extends Parser {
             module: ts.ModuleKind.CommonJS,
             allowJs: true,
             esModuleInterop: true,
+            experimentalDecorators: true,
+            emitDecoratorMetadata: true
         };
     }
 
@@ -147,19 +149,18 @@ export class JavaScriptParser extends Parser {
                 continue;
             }
 
-            if (this.hasFlowAnnotation(sourceFile)) {
+            if (hasFlowAnnotation(sourceFile)) {
                 result.push(ParseError.build(this, input, relativeTo, ctx, new FlowSyntaxNotSupportedError(`Flow syntax not supported: ${input.path}`), null));
                 continue;
             }
 
-            // ToDo: uncomment code after tests fixing
-            // const syntaxErrors = this.checkSyntaxErrors(program, sourceFile);
-            // if (syntaxErrors.length > 0) {
-            //     syntaxErrors.forEach(
-            //         e => result.push(ParseError.build(this, input, relativeTo, ctx, new SyntaxError(`Compiler error:  ${e[0]} [${e[1]}]`), null))
-            //     );
-            //     continue;
-            // }
+            const syntaxErrors = checkSyntaxErrors(program, sourceFile);
+            if (syntaxErrors.length > 0) {
+                syntaxErrors.forEach(
+                    e => result.push(ParseError.build(this, input, relativeTo, ctx, new SyntaxError(`Compiler error:  ${e[0]} [${e[1]}]`), null))
+                );
+                continue;
+            }
 
             try {
                 const parsed = new JavaScriptParserVisitor(this, sourceFile, typeChecker).visit(sourceFile) as SourceFile;
@@ -169,39 +170,6 @@ export class JavaScriptParser extends Parser {
             }
         }
         return result;
-    }
-
-    private checkSyntaxErrors(program: ts.Program, sourceFile: ts.SourceFile) {
-        const diagnostics = ts.getPreEmitDiagnostics(program, sourceFile);
-        // checking Parsing and Syntax Errors
-        let syntaxErrors : [errorMsg: string, errorCode: number][] = [];
-        if (diagnostics.length > 0) {
-            const errors = diagnostics.filter(d => d.code >= 1000 && d.code < 2000);
-            if (errors.length > 0) {
-                syntaxErrors = errors.map(e => {
-                    let errorMsg;
-                    if (e.file) {
-                        let {line, character} = ts.getLineAndCharacterOfPosition(e.file, e.start!);
-                        let message = ts.flattenDiagnosticMessageText(e.messageText, "\n");
-                        errorMsg = `${e.file.fileName} (${line + 1},${character + 1}): ${message}`;
-                    } else {
-                        errorMsg = ts.flattenDiagnosticMessageText(e.messageText, "\n");
-                    }
-                    return [errorMsg, e.code];
-                });
-            }
-        }
-        return syntaxErrors;
-    }
-
-    private hasFlowAnnotation(sourceFile: ts.SourceFile) {
-        if (sourceFile.fileName.endsWith('.js') || sourceFile.fileName.endsWith('.jsx')) {
-            const comments = sourceFile.getFullText().match(/\/\*[\s\S]*?\*\/|\/\/.*(?=[\r\n])/g);
-            if (comments) {
-                return comments.some(comment => comment.includes("@flow"));
-            }
-        }
-        return false;
     }
 
     accept(path: string): boolean {
@@ -1866,7 +1834,7 @@ export class JavaScriptParserVisitor {
                 Markers.EMPTY
             ),
             node.qualifier ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.DotToken)!), this.visit(node.qualifier)): null,
-            node.typeArguments ? this.mapTypeArguments(this.suffix(node.qualifier!), node.typeArguments) : null,
+            node.typeArguments ? this.mapTypeArguments(this.prefix(this.findChildNode(node, ts.SyntaxKind.LessThanToken)!), node.typeArguments) : null,
             this.mapType(node)
         );
     }

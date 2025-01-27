@@ -4,11 +4,25 @@ describe('flow annotation checking test', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 
-    test('@flow in a comment in js', () => {
+    test('@flow in a one line comment in js', () => {
         const faultyTest = () => rewriteRun(
             //language=javascript
             javaScript(`
                 //@flow
+
+                import Rocket from './rocket';
+                import RocketLaunch from './rocket-launch';
+            `)
+        );
+
+        expect(faultyTest).toThrow(/FlowSyntaxNotSupportedError/);
+    });
+
+    test('@flow in a comment in js', () => {
+        const faultyTest = () => rewriteRun(
+            //language=javascript
+            javaScript(`
+                /* @flow */
 
                 import Rocket from './rocket';
                 import RocketLaunch from './rocket-launch';
