@@ -82,8 +82,10 @@ describe('if mapping', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
+                function foo() {
                     for (let opt of el.options)
-                         if (opt.selected !== opt.defaultSelected) return !0;
+                        if (opt.selected !== opt.defaultSelected) return !0;
+                }
             `)
         );
     });
@@ -104,8 +106,10 @@ describe('if mapping', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
-               if (prevProps)
-                    return abs(prevProps)/*a*/;/*b*/
+                function foo() {
+                    if (prevProps)
+                        return abs(prevProps)/*a*/;/*b*/
+                }
             `)
         );
     });

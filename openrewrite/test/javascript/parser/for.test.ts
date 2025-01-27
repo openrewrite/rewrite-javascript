@@ -125,7 +125,7 @@ describe('for mapping', () => {
     test('for-of with await and comments', () => {
         rewriteRun(
             //language=typescript
-            typeScript('/*a*/for/*b*/ await/*bb*/(/*c*/const /*d*/char /*e*/of /*f*/ "text"/*g*/)/*h*/ {/*j*/} /*k*/;/*l*/')
+            typeScript('export {};/*a*/for/*b*/ await/*bb*/(/*c*/const /*d*/char /*e*/of /*f*/ "text"/*g*/)/*h*/ {/*j*/} /*k*/;/*l*/')
         );
     });
 
@@ -181,12 +181,14 @@ describe('for mapping', () => {
         rewriteRun(
             //language=typescript
             typeScript(`
-                let b;
-                for (b in a) return !1;
-                for (b of a) return !1;
-                let i, str;
-                for (i = 0; i < 9; i++) {
-                    str = str + i;
+                function foo () {
+                    let b;
+                    for (b in a) return !1;
+                    for (b of a) return !1;
+                    let i, str;
+                    for (i = 0; i < 9; i++) {
+                        str = str + i;
+                    }
                 }
             `)
         );

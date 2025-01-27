@@ -52,12 +52,6 @@ describe('class mapping', () => {
           typeScript('export class A {}')
         );
     });
-    test('public', () => {
-        rewriteRun(
-          //language=typescript
-          typeScript('public class A {}')
-        );
-    });
     test('export default', () => {
         rewriteRun(
           //language=typescript

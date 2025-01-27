@@ -7,7 +7,7 @@ describe('await mapping', () => {
     test('simple', () => {
         rewriteRun(
           //language=typescript
-          typeScript('await 1')
+          typeScript('export {}; await 1')
         );
     });
 });

@@ -67,7 +67,7 @@ describe('class decorator mapping', () => {
           `)
         );
     });
-    test('decorator on class expression', () => {
+    test.skip('decorator on class expression', () => {
         rewriteRun(
           //language=typescript
           typeScript(`

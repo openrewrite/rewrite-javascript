@@ -9,7 +9,7 @@ describe('yield mapping', () => {
     test('simple', () => {
         rewriteRun(
           //language=typescript
-          typeScript('yield 42')
+          typeScript('function* generatorFunction() { yield 42;}')
         );
     });
     test('empty', () => {

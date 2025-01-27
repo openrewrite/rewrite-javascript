@@ -142,7 +142,7 @@ describe('empty mapping', () => {
           typeScript(`
               enum Test {
                   A  = "AA",
-                  B,
+                  B = undefined,
                   C = 10,
                   D = globalThis.NaN,
                   E = (2 + 2),

@@ -7,13 +7,13 @@ describe('return mapping', () => {
     test('simple', () => {
         rewriteRun(
           //language=typescript
-          typeScript('return 1;')
+          typeScript('function f() {return 1;}')
         );
     });
     test('empty', () => {
         rewriteRun(
           //language=typescript
-          typeScript('return')
+          typeScript('function f() {return}')
         );
     });
 });
