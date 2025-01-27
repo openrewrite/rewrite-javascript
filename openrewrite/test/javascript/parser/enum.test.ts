@@ -1,6 +1,6 @@
 import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
-describe('empty mapping', () => {
+describe('enum mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 

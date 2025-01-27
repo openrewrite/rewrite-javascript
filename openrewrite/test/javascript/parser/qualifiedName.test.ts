@@ -1,6 +1,6 @@
 import {connect, disconnect, rewriteRun, typeScript} from '../testHarness';
 
-describe('empty mapping', () => {
+describe('qualified name mapping', () => {
     beforeAll(() => connect());
     afterAll(() => disconnect());
 
