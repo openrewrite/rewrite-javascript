@@ -203,7 +203,7 @@ export function checkSyntaxErrors(program: ts.Program, sourceFile: ts.SourceFile
                 if (e.file) {
                     let {line, character} = ts.getLineAndCharacterOfPosition(e.file, e.start!);
                     let message = ts.flattenDiagnosticMessageText(e.messageText, "\n");
-                    errorMsg = `${e.file.fileName} (${line + 1},${character + 1}): ${message}`;
+                    errorMsg = `(${line + 1},${character + 1}): ${message}`;
                 } else {
                     errorMsg = ts.flattenDiagnosticMessageText(e.messageText, "\n");
                 }
@@ -222,6 +222,7 @@ const additionalCriticalCodes = new Set([
     // Other critical errors
 ]);
 
+// errors code description available at https://github.com/microsoft/TypeScript/blob/main/src/compiler/diagnosticMessages.json
 const excludedCodes = new Set([1039, 1064, 1101, 1107, 1111, 1155, 1166, 1170, 1183, 1203, 1207, 1215, 1238, 1239, 1240, 1241, 1244, 1250,
     1251, 1252, 1253, 1254, 1308, 1314, 1315, 1324, 1329, 1335, 1338, 1340, 1343, 1344, 1345, 1355, 1360, 1378, 1432]);
 

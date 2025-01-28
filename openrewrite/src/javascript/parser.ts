@@ -156,9 +156,8 @@ export class JavaScriptParser extends Parser {
 
             const syntaxErrors = checkSyntaxErrors(program, sourceFile);
             if (syntaxErrors.length > 0) {
-                syntaxErrors.forEach(
-                    e => result.push(ParseError.build(this, input, relativeTo, ctx, new SyntaxError(`Compiler error:  ${e[0]} [${e[1]}]`), null))
-                );
+                let errors = syntaxErrors.map(e => `${e[0]} [${e[1]}]`).join('; ');
+                result.push(ParseError.build(this, input, relativeTo, ctx, new SyntaxError(`Compiler error(s) for ${sourceFile.fileName}: ${errors}`), null))
                 continue;
             }
 
