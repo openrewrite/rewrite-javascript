@@ -23,7 +23,7 @@ import {
     randomId,
     SourceFile
 } from "../core";
-import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan, hasFlowAnnotation, checkSyntaxErrors} from "./parserUtils";
+import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan, hasFlowAnnotation, checkSyntaxErrors, isValidSurrogateRange} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
 import path from "node:path";
 import {ExpressionStatement, TypeTreeExpression} from ".";
@@ -599,12 +599,19 @@ export class JavaScriptParserVisitor {
 
     private mapLiteral(node: ts.LiteralExpression | ts.TrueLiteral | ts.FalseLiteral | ts.NullLiteral | ts.Identifier
         | ts.TemplateHead | ts.TemplateMiddle | ts.TemplateTail, value: any): J.Literal {
+
+        let valueSource = node.getText();
+        if (!isValidSurrogateRange(valueSource)) {
+            // TODO: Fix to prevent ingestion failure for invalid surrogate pairs. Should be reworked with J.Literal.UnicodeEscape
+            throw new InvalidSurrogatesNotSupportedError();
+        }
+
         return new J.Literal(
             randomId(),
             this.prefix(node),
             Markers.EMPTY,
             value,
-            node.getText(),
+            valueSource,
             null,
             this.mapPrimitiveType(node)
         );
@@ -4114,5 +4121,12 @@ class FlowSyntaxNotSupportedError extends SyntaxError {
     constructor(message: string = "Flow syntax is not supported") {
         super(message);
         this.name = "FlowSyntaxNotSupportedError";
+    }
+}
+
+class InvalidSurrogatesNotSupportedError extends SyntaxError {
+    constructor(message: string = "String literal contains invalid surrogate pairs, that is not supported") {
+        super(message);
+        this.name = "InvalidSurrogatesNotSupportedError";
     }
 }

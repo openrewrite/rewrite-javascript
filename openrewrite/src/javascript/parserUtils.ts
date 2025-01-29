@@ -224,8 +224,40 @@ const additionalCriticalCodes = new Set([
 
 // errors code description available at https://github.com/microsoft/TypeScript/blob/main/src/compiler/diagnosticMessages.json
 const excludedCodes = new Set([1039, 1064, 1101, 1107, 1111, 1155, 1166, 1170, 1183, 1203, 1207, 1215, 1238, 1239, 1240, 1241, 1244, 1250,
-    1251, 1252, 1253, 1254, 1308, 1314, 1315, 1324, 1329, 1335, 1338, 1340, 1343, 1344, 1345, 1355, 1360, 1378, 1432]);
+    1251, 1252, 1253, 1254, 1308, 1314, 1315, 1324, 1329, 1335, 1338, 1340, 1343, 1344, 1345, 1355, 1360, 1375, 1378, 1432]);
 
 function isCriticalDiagnostic(code: number): boolean {
     return (code > 1000 && code < 2000 && !excludedCodes.has(code)) || additionalCriticalCodes.has(code);
+}
+
+export function isValidSurrogateRange(unicodeString: string): boolean {
+    const matches = unicodeString.match(/(?<!\\)\\u([a-fA-F0-9]{4})/g);
+
+    if (!matches) {
+        return true;
+    }
+
+    const codes = matches.map(m => {
+        const codePointStr = m.slice(2);
+        const codePoint = parseInt(codePointStr, 16);
+        return codePoint;
+    });
+
+    const isHighSurrogate = (charCode: number): boolean => charCode >= 0xD800 && charCode <= 0xDBFF;
+    const isLowSurrogate = (charCode: number): boolean => charCode >= 0xDC00 && charCode <= 0xDFFF;
+
+    for (let i = 0; i < codes.length; i++) {
+        const c = codes[i];
+
+        if (isHighSurrogate(c)) {
+            // Ensure that the high surrogate is followed by a valid low surrogate
+            if (i + 1 >= codes.length || !isLowSurrogate(codes[i + 1])) {
+                return false; // Invalid high surrogate or no low surrogate after it
+            }
+            i++; // Skip the low surrogate
+        } else if (isLowSurrogate(c)) {
+            return false; // Lone low surrogate (not preceded by a high surrogate)
+        }
+    }
+    return true;
 }
