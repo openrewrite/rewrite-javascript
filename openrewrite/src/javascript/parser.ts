@@ -602,8 +602,8 @@ export class JavaScriptParserVisitor {
 
         let valueSource = node.getText();
         if (!isValidSurrogateRange(valueSource)) {
-            // TODO: should be reworked because introduce inequality between literals, to prevent ingestion failure for invalid surrogate
-            valueSource = valueSource.replace(/\\/g, "\\\\");
+            // TODO: Fix to prevent ingestion failure for invalid surrogate pairs. Should be reworked with J.Literal.UnicodeEscape
+            throw new InvalidSurrogatesNotSupportedError();
         }
 
         return new J.Literal(
@@ -4121,5 +4121,12 @@ class FlowSyntaxNotSupportedError extends SyntaxError {
     constructor(message: string = "Flow syntax is not supported") {
         super(message);
         this.name = "FlowSyntaxNotSupportedError";
+    }
+}
+
+class InvalidSurrogatesNotSupportedError extends SyntaxError {
+    constructor(message: string = "String literal contains invalid surrogate pairs, that is not supported") {
+        super(message);
+        this.name = "InvalidSurrogatesNotSupportedError";
     }
 }
