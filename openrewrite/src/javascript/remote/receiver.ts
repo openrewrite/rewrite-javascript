@@ -1630,7 +1630,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, receiveSpace)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveValue(null, ValueType.Enum)!,
-                ctx.receiveNode<JContainer<ImportAttribute>>(null, receiveContainer)!
+                ctx.receiveNode<JContainer<Statement>>(null, receiveContainer)!
             );
         }
 

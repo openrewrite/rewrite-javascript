@@ -176,4 +176,28 @@ describe('mapped type mapping', () => {
         );
     });
 
+    test('no node type ', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Type = {
+                    // comment
+                    readonly [T in number] /*a*/
+                };
+            `)
+        );
+    });
+
+    test('no node type with ;', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                type Type = {
+                    // comment
+                    readonly [T in number] /*a*/;/*b*/
+                };
+          `)
+        );
+    });
+
 });

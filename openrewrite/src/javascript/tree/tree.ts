@@ -1683,7 +1683,7 @@ export class JsImportSpecifier extends JSMixin(Object) implements Expression, Ty
 
 @LstType("org.openrewrite.javascript.tree.JS$ImportAttributes")
 export class ImportAttributes extends JSMixin(Object) {
-    public constructor(id: UUID, prefix: Space, markers: Markers, token: ImportAttributes.Token, elements: JContainer<ImportAttribute>) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, token: ImportAttributes.Token, elements: JContainer<Statement>) {
         super();
         this._id = id;
         this._prefix = prefix;
@@ -1732,13 +1732,13 @@ export class ImportAttributes extends JSMixin(Object) {
             return token === this._token ? this : new ImportAttributes(this._id, this._prefix, this._markers, token, this._elements);
         }
 
-        private readonly _elements: JContainer<ImportAttribute>;
+        private readonly _elements: JContainer<Statement>;
 
-        public get elements(): ImportAttribute[] {
+        public get elements(): Statement[] {
             return this._elements.elements;
         }
 
-        public withElements(elements: ImportAttribute[]): ImportAttributes {
+        public withElements(elements: Statement[]): ImportAttributes {
             return this.padding.withElements(JContainer.withElements(this._elements, elements));
         }
 
@@ -1749,10 +1749,10 @@ export class ImportAttributes extends JSMixin(Object) {
     get padding() {
         const t = this;
         return new class {
-            public get elements(): JContainer<ImportAttribute> {
+            public get elements(): JContainer<Statement> {
                 return t._elements;
             }
-            public withElements(elements: JContainer<ImportAttribute>): ImportAttributes {
+            public withElements(elements: JContainer<Statement>): ImportAttributes {
                 return t._elements === elements ? t : new ImportAttributes(t._id, t._prefix, t._markers, t._token, elements);
             }
         }
@@ -1866,7 +1866,7 @@ export class ImportTypeAttributes extends JSMixin(Object) {
 }
 
 @LstType("org.openrewrite.javascript.tree.JS$ImportAttribute")
-export class ImportAttribute extends JSMixin(Object) {
+export class ImportAttribute extends JSMixin(Object) implements Statement {
     public constructor(id: UUID, prefix: Space, markers: Markers, name: Expression, value: JLeftPadded<Expression>) {
         super();
         this._id = id;

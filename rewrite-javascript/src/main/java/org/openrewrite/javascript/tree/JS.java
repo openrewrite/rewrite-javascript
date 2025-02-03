@@ -1636,13 +1636,13 @@ public interface JS extends J {
         @Getter
         Token token;
 
-        JContainer<ImportAttribute> elements;
+        JContainer<Statement> elements;
 
-        public List<ImportAttribute> getElements() {
+        public List<Statement> getElements() {
             return elements.getElements();
         }
 
-        public ImportAttributes withElements(List<ImportAttribute> elements) {
+        public ImportAttributes withElements(List<Statement> elements) {
             return getPadding().withElements(JContainer.withElements(this.elements, elements));
         }
 
@@ -1675,11 +1675,11 @@ public interface JS extends J {
         public static class Padding {
             private final ImportAttributes t;
 
-            public JContainer<ImportAttribute> getElements() {
+            public JContainer<Statement> getElements() {
                 return t.elements;
             }
 
-            public ImportAttributes withElements(JContainer<ImportAttribute> elements) {
+            public ImportAttributes withElements(JContainer<Statement> elements) {
                 return t.elements == elements ? t : new ImportAttributes(t.id, t.prefix, t.markers, t.token, elements);
             }
         }
@@ -1777,7 +1777,7 @@ public interface JS extends J {
     @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
     @RequiredArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    final class ImportAttribute implements JS {
+    final class ImportAttribute implements JS, Statement {
         @Nullable
         @NonFinal
         transient WeakReference<Padding> padding;
@@ -1827,6 +1827,11 @@ public interface JS extends J {
                 }
             }
             return p;
+        }
+
+        @Override
+        public CoordinateBuilder.Statement getCoordinates() {
+            return new CoordinateBuilder.Statement(this);
         }
 
         @RequiredArgsConstructor
