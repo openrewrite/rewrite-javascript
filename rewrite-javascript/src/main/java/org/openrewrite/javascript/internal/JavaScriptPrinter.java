@@ -531,7 +531,8 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitLeftPaddedBoolean("?", mappedType.getPadding().getHasQuestionToken(), JsLeftPadded.Location.MAPPED_TYPE_QUESTION_TOKEN, p);
         }
 
-        visitContainer(":", mappedType.getPadding().getValueType(), JsContainer.Location.MAPPED_TYPE_VALUE_TYPE, "", "", p);
+        String colon = mappedType.getValueType().get(0) instanceof J.Empty ? "" : ":";
+        visitContainer(colon, mappedType.getPadding().getValueType(), JsContainer.Location.MAPPED_TYPE_VALUE_TYPE, "", "", p);
 
         p.append("}");
         afterSyntax(mappedType, p);

@@ -1686,15 +1686,20 @@ export class JavaScriptParserVisitor {
                 )
             ): null,
             node.questionToken ? this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.QuestionToken)!), true) : this.leftPadded(Space.EMPTY, false),
-            new JContainer(
+            node.type ? new JContainer(
                 this.prefix(this.findChildNode(node, ts.SyntaxKind.ColonToken)!),
-                [this.rightPadded(this.visit(node.type!), this.suffix(node.type!)),
+                [this.rightPadded(this.visit(node.type), this.suffix(node.type)),
                     this.findChildNode(node, ts.SyntaxKind.SemicolonToken) ?
                        this.rightPadded(this.newJEmpty(Space.EMPTY, Markers.build([new Semicolon(randomId())])), this.prefix(node.getLastToken()!))
                        : this.rightPadded(this.newJEmpty(), this.prefix(node.getLastToken()!))
                 ],
                 Markers.EMPTY
-            ),
+            ) : new JContainer(
+                Space.EMPTY,
+                [this.findChildNode(node, ts.SyntaxKind.SemicolonToken) ?
+                        this.rightPadded(this.newJEmpty(this.prefix(this.findChildNode(node, ts.SyntaxKind.SemicolonToken)!), Markers.build([new Semicolon(randomId())])), this.prefix(node.getLastToken()!))
+                        : this.rightPadded(this.newJEmpty(), this.prefix(node.getLastToken()!))
+                ], Markers.EMPTY),
             this.mapType(node)
         );
     }
@@ -3606,7 +3611,7 @@ export class JavaScriptParserVisitor {
 
     visitImportAttributes(node: ts.ImportAttributes) {
         const openBraceIndex = node.getChildren().findIndex(n => n.kind === ts.SyntaxKind.OpenBraceToken);
-        const elements = this.mapCommaSeparatedList<JS.ImportAttribute>(node.getChildren(this.sourceFile).slice(openBraceIndex, openBraceIndex + 3));
+        const elements = this.mapCommaSeparatedList(node.getChildren(this.sourceFile).slice(openBraceIndex, openBraceIndex + 3));
         return new JS.ImportAttributes(
             randomId(),
             this.prefix(node),

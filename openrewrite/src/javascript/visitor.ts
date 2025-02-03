@@ -289,6 +289,12 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
 
     public visitImportAttribute(importAttribute: ImportAttribute, p: P): J | null {
         importAttribute = importAttribute.withPrefix(this.visitJsSpace(importAttribute.prefix, JsSpace.Location.IMPORT_ATTRIBUTE_PREFIX, p)!);
+        let tempStatement = this.visitStatement(importAttribute, p) as Statement;
+        if (!(tempStatement instanceof ImportAttribute))
+        {
+            return tempStatement;
+        }
+        importAttribute = tempStatement as ImportAttribute;
         importAttribute = importAttribute.withMarkers(this.visitMarkers(importAttribute.markers, p));
         importAttribute = importAttribute.withName(this.visitAndCast(importAttribute.name, p)!);
         importAttribute = importAttribute.padding.withValue(this.visitJsLeftPadded(importAttribute.padding.value, JsLeftPadded.Location.IMPORT_ATTRIBUTE_VALUE, p)!);

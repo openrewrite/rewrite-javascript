@@ -189,7 +189,7 @@ class JavaScriptValidator<P> extends JavaScriptIsoVisitor<P> {
 
     @Override
     public JS.ImportAttributes visitImportAttributes(JS.ImportAttributes importAttributes, P p) {
-        visitAndValidate(importAttributes.getElements(), JS.ImportAttribute.class, p);
+        visitAndValidate(importAttributes.getElements(), Statement.class, p);
         return importAttributes;
     }
 
