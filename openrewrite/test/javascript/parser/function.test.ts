@@ -48,7 +48,7 @@ describe('function mapping', () => {
         );
     });
 
-    test('parameter with trailing comma', () => {
+    test('function with type params', () => {
       rewriteRun(
         //language=typescript
         typeScript(`

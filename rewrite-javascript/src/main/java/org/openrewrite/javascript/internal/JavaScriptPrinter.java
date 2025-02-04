@@ -190,7 +190,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         p.append("export");
 
         boolean printBrackets = export.getPadding().getExports() != null && export.getPadding().getExports().getMarkers().findFirst(Braces.class).isPresent();
-        visitContainer(printBrackets ? "{" : "", export.getPadding().getExports(), JsContainer.Location.FUNCTION_TYPE_PARAMETER, ",", printBrackets ? "}" : "", p);
+        visitContainer(printBrackets ? "{" : "", export.getPadding().getExports(), JsContainer.Location.FUNCTION_TYPE_PARAMETERS, ",", printBrackets ? "}" : "", p);
 
         if (export.getFrom() != null) {
             visitSpace(export.getFrom(), Space.Location.LANGUAGE_EXTENSION, p);
@@ -220,10 +220,9 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             visitRightPadded(typeParameters.getPadding().getTypeParameters(), JRightPadded.Location.TYPE_PARAMETER, ",", p);
             p.append(">");
         }
-        visitContainer("(", functionType.getPadding().getParameters(), JsContainer.Location.FUNCTION_TYPE_PARAMETER, ",", ")", p);
-        visitSpace(functionType.getArrow(), JsSpace.Location.FUNCTION_TYPE_ARROW_PREFIX, p);
-        p.append("=>");
-        visit(functionType.getReturnType(), p);
+        visitContainer("(", functionType.getPadding().getParameters(), JsContainer.Location.FUNCTION_TYPE_PARAMETERS, ",", ")", p);
+        visitLeftPadded("=>", functionType.getPadding().getReturnType(), JsLeftPadded.Location.FUNCTION_TYPE_RETURN_TYPE, p);
+
         afterSyntax(functionType, p);
         return functionType;
     }

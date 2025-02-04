@@ -1024,13 +1024,15 @@ public interface JS extends J {
             return getPadding().withParameters(JContainer.withElements(this.parameters, parameters));
         }
 
-        @Getter
-        @With
-        Space arrow;
+        JLeftPadded<Expression> returnType;
 
-        @Getter
-        @With
-        Expression returnType;
+        public Expression getReturnType() {
+            return returnType.getElement();
+        }
+
+        public FunctionType withReturnType(Expression returnType) {
+            return getPadding().withReturnType(JLeftPadded.withElement(this.returnType, returnType));
+        }
 
         @Getter
         @With
@@ -1072,7 +1074,7 @@ public interface JS extends J {
 
             public FunctionType withConstructorType(JLeftPadded<Boolean> constructor) {
                 return t.constructorType == constructor ? t :
-                        new FunctionType(t.id, t.prefix, t.markers, t.modifiers, constructor, t.typeParameters, t.parameters, t.arrow, t.returnType, t.type);
+                        new FunctionType(t.id, t.prefix, t.markers, t.modifiers, constructor, t.typeParameters, t.parameters, t.returnType, t.type);
             }
 
             public JContainer<Statement> getParameters() {
@@ -1080,7 +1082,15 @@ public interface JS extends J {
             }
 
             public FunctionType withParameters(JContainer<Statement> parameters) {
-                return t.parameters == parameters ? t : new FunctionType(t.id, t.prefix, t.markers, t.modifiers, t.constructorType, t.typeParameters, parameters, t.arrow, t.returnType, t.type);
+                return t.parameters == parameters ? t : new FunctionType(t.id, t.prefix, t.markers, t.modifiers, t.constructorType, t.typeParameters, parameters, t.returnType, t.type);
+            }
+
+            public JLeftPadded<Expression> getReturnType() {
+                return t.returnType;
+            }
+
+            public FunctionType withReturnType(JLeftPadded<Expression> returnType) {
+                return t.returnType == returnType ? t : new FunctionType(t.id, t.prefix, t.markers, t.modifiers, t.constructorType, t.typeParameters, t.parameters, returnType, t.type);
             }
         }
     }

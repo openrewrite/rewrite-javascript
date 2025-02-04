@@ -207,8 +207,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
             functionType = functionType.getPadding().withConstructorType(ctx.receiveNonNullNode(functionType.getPadding().getConstructorType(), leftPaddedValueReceiver(java.lang.Boolean.class)));
             functionType = functionType.withTypeParameters(ctx.receiveNode(functionType.getTypeParameters(), ctx::receiveTree));
             functionType = functionType.getPadding().withParameters(ctx.receiveNonNullNode(functionType.getPadding().getParameters(), JavaScriptReceiver::receiveContainer));
-            functionType = functionType.withArrow(ctx.receiveNonNullNode(functionType.getArrow(), JavaScriptReceiver::receiveSpace));
-            functionType = functionType.withReturnType(ctx.receiveNonNullNode(functionType.getReturnType(), ctx::receiveTree));
+            functionType = functionType.getPadding().withReturnType(ctx.receiveNonNullNode(functionType.getPadding().getReturnType(), JavaScriptReceiver::receiveLeftPaddedTree));
             functionType = functionType.withType(ctx.receiveValue(functionType.getType(), JavaType.class));
             return functionType;
         }
@@ -1859,8 +1858,7 @@ public class JavaScriptReceiver implements Receiver<JS> {
                     ctx.receiveNonNullNode(null, leftPaddedValueReceiver(java.lang.Boolean.class)),
                     ctx.receiveNode(null, ctx::receiveTree),
                     ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveContainer),
-                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveSpace),
-                    ctx.receiveNonNullNode(null, ctx::receiveTree),
+                    ctx.receiveNonNullNode(null, JavaScriptReceiver::receiveLeftPaddedTree),
                     ctx.receiveValue(null, JavaType.class)
             );
         }

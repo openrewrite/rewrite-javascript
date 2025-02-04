@@ -204,4 +204,16 @@ describe('variable declaration mapping', () => {
             `)
         );
     });
+
+    test.skip('variable declaration with decorator', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                export namespace process {
+                    // @ts-ignore: decorator
+                    @lazy export const platform = "wasm";
+                }
+            `)
+        );
+    });
 });
