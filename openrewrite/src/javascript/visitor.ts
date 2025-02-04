@@ -186,8 +186,7 @@ export class JavaScriptVisitor<P> extends JavaVisitor<P> {
         functionType = functionType.padding.withConstructorType(this.visitJsLeftPadded(functionType.padding.constructorType, JsLeftPadded.Location.FUNCTION_TYPE_CONSTRUCTOR_TYPE, p)!);
         functionType = functionType.withTypeParameters(this.visitAndCast(functionType.typeParameters, p));
         functionType = functionType.padding.withParameters(this.visitJsContainer(functionType.padding.parameters, JsContainer.Location.FUNCTION_TYPE_PARAMETERS, p)!);
-        functionType = functionType.withArrow(this.visitJsSpace(functionType.arrow, JsSpace.Location.FUNCTION_TYPE_ARROW, p)!);
-        functionType = functionType.withReturnType(this.visitAndCast(functionType.returnType, p)!);
+        functionType = functionType.padding.withReturnType(this.visitJsLeftPadded(functionType.padding.returnType, JsLeftPadded.Location.FUNCTION_TYPE_RETURN_TYPE, p)!);
         return functionType;
     }
 

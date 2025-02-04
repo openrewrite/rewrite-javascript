@@ -1408,8 +1408,7 @@ export class JavaScriptParserVisitor {
                     : node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p)))
                     .concat(node.parameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!)) : []),
                 Markers.EMPTY),
-            this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsGreaterThanToken)!),
-            this.convert(node.type),
+            this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsGreaterThanToken)!), this.convert(node.type)),
             null);
     }
 
@@ -1428,8 +1427,7 @@ export class JavaScriptParserVisitor {
                     : node.parameters.map(p => this.rightPadded(this.visit(p), this.suffix(p)))
                         .concat(node.parameters.hasTrailingComma ? this.rightPadded(this.newJEmpty(), this.prefix(this.findChildNode(node, ts.SyntaxKind.CloseParenToken)!)) : []),
                 Markers.EMPTY),
-            this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsGreaterThanToken)!),
-            this.convert(node.type),
+            this.leftPadded(this.prefix(this.findChildNode(node, ts.SyntaxKind.EqualsGreaterThanToken)!), this.convert(node.type)),
             null);
     }
 
