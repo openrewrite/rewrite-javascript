@@ -268,7 +268,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         f = f.getPadding().withConstructorType(Objects.requireNonNull(visitLeftPadded(f.getPadding().getConstructorType(), JsLeftPadded.Location.FUNCTION_TYPE_CONSTRUCTOR, p)));
         f = f.withTypeParameters(visitAndCast(f.getTypeParameters(), p));
         f = f.getPadding().withParameters(Objects.requireNonNull(visitContainer(f.getPadding().getParameters(), JsContainer.Location.FUNCTION_TYPE_PARAMETERS, p)));
-        f = f.withParameters(Objects.requireNonNull(ListUtils.map(f.getParameters(), e -> visitAndCast(e, p))));
         f = f.getPadding().withReturnType((Objects.requireNonNull(visitLeftPadded(f.getPadding().getReturnType(), JsLeftPadded.Location.FUNCTION_TYPE_RETURN_TYPE, p))));
         f = f.withType(visitType(f.getType(), p));
         return f;
@@ -1042,7 +1041,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         f = f.getPadding().withAsteriskToken(Objects.requireNonNull(visitLeftPadded(f.getPadding().getAsteriskToken(), JsLeftPadded.Location.FUNCTION_DECLARATION_ASTERISK_TOKEN, p)));
         f = f.getPadding().withName(Objects.requireNonNull(visitLeftPadded(f.getPadding().getName(), JsLeftPadded.Location.FUNCTION_DECLARATION_NAME, p)));
         f = f.withTypeParameters(visitAndCast(f.getTypeParameters(), p));
-        f = f.getPadding().withParameters(Objects.requireNonNull(visitContainer(f.getPadding().getParameters(), JContainer.Location.METHOD_DECLARATION_PARAMETERS, p)));
+        f = f.getPadding().withParameters(Objects.requireNonNull(visitContainer(f.getPadding().getParameters(), JsContainer.Location.FUNCTION_DECLARATION_PARAMETERS, p)));
         f = f.withReturnTypeExpression(visitAndCast(f.getReturnTypeExpression(), p));
         f = f.withBody(visitAndCast(f.getBody(), p));
         f = f.withType(visitType(f.getType(), p));

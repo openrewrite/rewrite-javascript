@@ -887,7 +887,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             p.append(">");
         }
 
-        visitContainer("(", functionDeclaration.getPadding().getParameters(), JsContainer.Location.JSMETHOD_DECLARATION_PARAMETERS, ",", ")", p);
+        visitContainer("(", functionDeclaration.getPadding().getParameters(), JsContainer.Location.FUNCTION_DECLARATION_PARAMETERS, ",", ")", p);
         if (functionDeclaration.getReturnTypeExpression() != null) {
             visit(functionDeclaration.getReturnTypeExpression(), p);
         }
