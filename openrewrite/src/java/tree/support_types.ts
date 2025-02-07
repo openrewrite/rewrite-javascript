@@ -564,6 +564,8 @@ export namespace Space {
         BREAK_PREFIX,
         CASE,
         CASE_PREFIX,
+        CASE_CASE_LABELS,
+        CASE_CASE_LABELS_SUFFIX,
         CASE_BODY,
         CASE_EXPRESSION,
         CASE_SUFFIX,
@@ -693,60 +695,61 @@ export namespace Space {
         YIELD_PREFIX,
         ERRONEOUS_PREFIX,
         DECONSTRUCTION_PATTERN_PREFIX,
+        TRAILING_COMMA_SUFFIX
     }
 }
 
 export namespace JRightPadded {
     export enum Location {
-        ANNOTATION_ARGUMENT,
+        ANNOTATION_ARGUMENT = Space.Location.ANNOTATION_ARGUMENT_SUFFIX,
         ARRAY_INDEX,
-        BLOCK_STATEMENT,
-        CASE,
+        BLOCK_STATEMENT = Space.Location.BLOCK_STATEMENT_SUFFIX,
+        CASE = Space.Location.CASE_SUFFIX,
+        CASE_CASE_LABELS = Space.Location.CASE_CASE_LABELS_SUFFIX,
         CASE_BODY,
         CASE_EXPRESSION,
         CATCH_ALTERNATIVE,
         CONTROL_PARENTHESES_TREE,
         DIMENSION,
-        ENUM_VALUE,
+        ENUM_VALUE = Space.Location.ENUM_VALUE_SUFFIX,
         FOREACH_ITERABLE,
         FOREACH_VARIABLE,
-        FOR_BODY,
-        FOR_CONDITION,
-        FOR_INIT,
-        FOR_UPDATE,
+        FOR_BODY = Space.Location.FOR_BODY_SUFFIX,
+        FOR_CONDITION = Space.Location.FOR_CONDITION_SUFFIX,
+        FOR_INIT = Space.Location.FOR_INIT_SUFFIX,
+        FOR_UPDATE = Space.Location.FOR_UPDATE_SUFFIX,
         IF_ELSE,
         IF_THEN,
-        IMPLEMENTS,
+        IMPLEMENTS = Space.Location.IMPLEMENTS_SUFFIX,
         IMPORT,
         INSTANCEOF,
         LABEL,
-        LAMBDA_PARAM,
-        LANGUAGE_EXTENSION,
+        LAMBDA_PARAM = Space.Location.LAMBDA_PARAMETER,
+        LANGUAGE_EXTENSION = Space.Location.LANGUAGE_EXTENSION,
         MEMBER_REFERENCE_CONTAINING,
-        METHOD_DECLARATION_PARAMETER,
-        METHOD_INVOCATION_ARGUMENT,
-        METHOD_SELECT,
-        NAMED_VARIABLE,
-        NEW_ARRAY_INITIALIZER,
-        NEW_CLASS_ARGUMENTS,
-        NEW_CLASS_ENCLOSING,
+        METHOD_DECLARATION_PARAMETER = Space.Location.METHOD_DECLARATION_PARAMETER_SUFFIX,
+        METHOD_INVOCATION_ARGUMENT = Space.Location.METHOD_INVOCATION_ARGUMENT_SUFFIX,
+        METHOD_SELECT = Space.Location.METHOD_SELECT_SUFFIX,
+        NAMED_VARIABLE = Space.Location.NAMED_VARIABLE_SUFFIX,
+        NEW_ARRAY_INITIALIZER = Space.Location.NEW_ARRAY_INITIALIZER_SUFFIX,
+        NEW_CLASS_ARGUMENTS = Space.Location.NEW_CLASS_ARGUMENTS_SUFFIX,
+        NEW_CLASS_ENCLOSING = Space.Location.NEW_CLASS_ENCLOSING_SUFFIX,
         NULLABLE,
         PACKAGE,
-        PARENTHESES,
+        PARENTHESES = Space.Location.PARENTHESES_SUFFIX,
         PERMITS,
-        RECORD_STATE_VECTOR,
-        STATIC_INIT,
+        RECORD_STATE_VECTOR = Space.Location.RECORD_STATE_VECTOR_SUFFIX,
+        STATIC_INIT = Space.Location.STATIC_INIT_SUFFIX,
         THROWS,
         TRY_RESOURCE,
-        TYPE_BOUND,
-        TYPE_PARAMETER,
+        TYPE_BOUND = Space.Location.TYPE_BOUND_SUFFIX,
+        TYPE_PARAMETER = Space.Location.TYPE_PARAMETER_SUFFIX,
         WHILE_BODY,
     }
 
     export namespace Location {
         export function afterLocation(location: Location): Space.Location {
-            // FIXME
-            return null!;
+            return location as unknown as Space.Location;
         }
     }
 }
@@ -754,12 +757,12 @@ export namespace JRightPadded {
 export namespace JLeftPadded {
     export enum Location {
         ASSERT_DETAIL,
-        ASSIGNMENT,
-        ASSIGNMENT_OPERATION_OPERATOR,
-        BINARY_OPERATOR,
+        ASSIGNMENT = Space.Location.ASSIGNMENT,
+        ASSIGNMENT_OPERATION_OPERATOR = Space.Location.ASSIGNMENT_OPERATION_OPERATOR,
+        BINARY_OPERATOR = Space.Location.BINARY_OPERATOR,
         CLASS_KIND,
-        EXTENDS,
-        FIELD_ACCESS_NAME,
+        EXTENDS = Space.Location.EXTENDS,
+        FIELD_ACCESS_NAME = Space.Location.FIELD_ACCESS_NAME,
         IMPORT_ALIAS_PREFIX,
         LANGUAGE_EXTENSION,
         MEMBER_REFERENCE_NAME,
@@ -768,16 +771,15 @@ export namespace JLeftPadded {
         TERNARY_TRUE,
         TERNARY_FALSE,
         TRY_FINALLY,
-        UNARY_OPERATOR,
-        VARIABLE_INITIALIZER,
+        UNARY_OPERATOR = Space.Location.UNARY_OPERATOR,
+        VARIABLE_INITIALIZER = Space.Location.VARIABLE_INITIALIZER,
         WHILE_CONDITION,
         WILDCARD_BOUND,
     }
 
     export namespace Location {
         export function beforeLocation(location: Location): Space.Location {
-            // FIXME
-            return null!;
+            return location as unknown as Space.Location;
         }
     }
 }
@@ -802,15 +804,32 @@ export namespace JContainer {
         DECONSTRUCTION_PATTERN_NESTED,
     }
 
+    export const LocationDetails = {
+        [Location.LANGUAGE_EXTENSION]: [Space.Location.LANGUAGE_EXTENSION, JRightPadded.Location.LANGUAGE_EXTENSION],
+        [Location.TYPE_PARAMETERS]: [Space.Location.TYPE_PARAMETERS, JRightPadded.Location.TYPE_PARAMETER],
+        [Location.RECORD_STATE_VECTOR]: [Space.Location.RECORD_STATE_VECTOR, JRightPadded.Location.RECORD_STATE_VECTOR],
+        [Location.IMPLEMENTS]: [Space.Location.IMPLEMENTS, JRightPadded.Location.IMPLEMENTS],
+        [Location.METHOD_DECLARATION_PARAMETERS]: [Space.Location.METHOD_DECLARATION_PARAMETERS, JRightPadded.Location.METHOD_DECLARATION_PARAMETER],
+        [Location.METHOD_INVOCATION_ARGUMENTS]: [Space.Location.METHOD_INVOCATION_ARGUMENTS, JRightPadded.Location.METHOD_INVOCATION_ARGUMENT],
+        [Location.TYPE_BOUNDS]: [Space.Location.TYPE_BOUNDS, JRightPadded.Location.TYPE_BOUND],
+        [Location.ANNOTATION_ARGUMENTS]: [Space.Location.ANNOTATION_ARGUMENTS, JRightPadded.Location.ANNOTATION_ARGUMENT],
+        [Location.NEW_ARRAY_INITIALIZER]: [Space.Location.NEW_ARRAY_INITIALIZER, JRightPadded.Location.NEW_ARRAY_INITIALIZER],
+        [Location.NEW_CLASS_ARGUMENTS]: [Space.Location.NEW_CLASS_ARGUMENTS, JRightPadded.Location.NEW_CLASS_ARGUMENTS],
+        [Location.CASE_CASE_LABELS]: [Space.Location.CASE_CASE_LABELS, JRightPadded.Location.CASE_CASE_LABELS],
+        [Location.CASE]: [Space.Location.CASE, JRightPadded.Location.CASE],
+    };
+
     export namespace Location {
         export function beforeLocation(location: Location): Space.Location {
-            // FIXME
-            return null!;
+            // @ts-ignore
+            const [before] = JContainer.LocationDetails[location];
+            return before as Space.Location;
         }
 
         export function elementLocation(location: Location): JRightPadded.Location {
-            // FIXME
-            return null!;
+            // @ts-ignore
+            const [, element] = JContainer.LocationDetails[location];
+            return element as JRightPadded.Location;
         }
     }
 }
