@@ -129,8 +129,8 @@ public class UseCaseFallThrough extends Recipe {
                 return cases;
             }
 
-            private boolean changeCondition(List<Expression> expressions) {
-                for (Expression expression : expressions) {
+            private boolean changeCondition(List<J> expressions) {
+                for (J expression : expressions) {
                     if (!(expression instanceof J.Binary) || !isTarget((J.Binary) expression)) {
                         return false;
                     }
