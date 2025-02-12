@@ -71,7 +71,7 @@ public class UseCaseFallThrough extends Recipe {
                 }
 
                 s = s.withCases(s.getCases().withStatements(ListUtils.flatMap(s.getCases().getStatements(), it -> {
-                    if (it instanceof J.Case && changeCondition(((J.Case) it).getExpressions())) {
+                    if (it instanceof J.Case && changeCondition(((J.Case) it).getCaseLabels())) {
                         J.Case c = (J.Case) it;
                         final List<Statement> converted = convertToFallThrough(c);
                         return ListUtils.map(converted, (i, st) -> {
