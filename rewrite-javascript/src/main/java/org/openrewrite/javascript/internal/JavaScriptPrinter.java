@@ -675,7 +675,7 @@ public class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
         p.append(keyword);
 
-        visitLeftPadded(typeOperator.getPadding().getExpression(), JsLeftPadded.Location.TYPE_OPERATOR, p);
+        visitLeftPadded(typeOperator.getPadding().getExpression(), JsLeftPadded.Location.TYPE_OPERATOR_EXPRESSION, p);
 
         afterSyntax(typeOperator, p);
         return typeOperator;

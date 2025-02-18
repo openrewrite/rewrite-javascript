@@ -1,39 +1,31 @@
-import * as ts from 'typescript';
 import * as J from '../java';
 
 import {
-    FieldAccess,
-    JavaType,
     JContainer,
     JLeftPadded,
     JRightPadded,
-    Lambda, Literal,
+    Literal,
     Semicolon,
     Space,
-    TrailingComma,
-    TypedTree
+    TrailingComma
 } from '../java';
 import * as JS from '.';
 import {
     Cursor,
-    ExecutionContext, Marker,
     Markers,
-    ParseError,
-    ParseExceptionResult,
-    Parser,
-    ParserInput, PrintOutputCapture,
-    randomId,
-    SourceFile, Tree
+    PrintOutputCapture,
+    Tree
 } from "../core";
-import {JavaScriptVisitor, JsContainer, JsLeftPadded, JsRightPadded, JsSpace} from ".";
+import {JavaScriptVisitor, JsContainer, JsLeftPadded, JsRightPadded, JsSpace, NamespaceDeclaration} from ".";
 
 export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P>> {
 
     JAVA_SCRIPT_MARKER_WRAPPER: (out: string) => string = (out) => `/*~~${out}${out.length === 0 ? "" : "~~"}>*/`;
 
-    // constructor(cursor: Cursor) {
-    //     super(cursor)
-    // }
+    constructor(cursor: Cursor) {
+        super();
+        this.cursor = cursor;
+    }
 
     visit(tree: Tree | null, p: PrintOutputCapture<P>): J.J | null {
         return super.visit(tree, p);
@@ -52,12 +44,359 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     // visitCompilationUnit(cu: J.CompilationUnit, p: PrintOutputCapture<P>): J.J | null {
     //     this.beforeSyntax(cu, Space.Location.COMPILATION_UNIT_PREFIX, p);
     //
-    //     //this.visitRightPadded(cu.padding.getStatements(), JRightPadded.Location.LANGUAGE_EXTENSION, "", p);
+    //     //this.visitJRightPadded(cu.padding.getStatements(), JRightPadded.Location.LANGUAGE_EXTENSION, "", p);
     //
     //     this.visitSpace(cu.eof, Space.Location.COMPILATION_UNIT_EOF, p);
     //     this.afterSyntax(cu, p);
     //     return cu;
     // }
+
+    visitAlias(alias: JS.Alias, p: PrintOutputCapture<P>): JS.Alias {
+        this.beforeSyntax(alias, JsSpace.Location.ALIAS_PREFIX, p);
+        this.visitJsRightPadded(alias.padding.propertyName, JsRightPadded.Location.ALIAS_PROPERTY_NAME, p);
+        p.append("as");
+        this.visit(alias.alias, p);
+        this.afterSyntax(alias, p);
+        return alias;
+    }
+
+    visitAwait(awaitExpr: JS.Await, p: PrintOutputCapture<P>): JS.Await {
+        this.beforeSyntax(awaitExpr, JsSpace.Location.AWAIT_PREFIX, p);
+        p.append("await");
+        this.visit(awaitExpr.expression, p);
+        this.afterSyntax(awaitExpr, p);
+        return awaitExpr;
+    }
+
+    visitBindingElement(binding: JS.BindingElement, p: PrintOutputCapture<P>): JS.BindingElement {
+        this.beforeSyntax(binding, JsSpace.Location.BINDING_ELEMENT_PREFIX, p);
+        if (binding.propertyName) {
+            this.visitJsRightPadded(binding.padding.propertyName, JsRightPadded.Location.BINDING_ELEMENT_PROPERTY_NAME, p);
+            p.append(":");
+        }
+        this.visit(binding.name, p);
+        this.visitJsLeftPaddedLocal("=", binding.padding.initializer, JsLeftPadded.Location.BINDING_ELEMENT_INITIALIZER, p);
+        this.afterSyntax(binding, p);
+        return binding;
+    }
+
+    visitDelete(del: JS.Delete, p: PrintOutputCapture<P>): JS.Delete {
+        this.beforeSyntax(del, JsSpace.Location.DELETE_PREFIX, p);
+        p.append("delete");
+        this.visit(del.expression, p);
+        this.afterSyntax(del, p);
+        return del;
+    }
+
+    visitTrailingTokenStatement(statement: JS.TrailingTokenStatement, p: PrintOutputCapture<P>): JS.TrailingTokenStatement {
+        this.beforeSyntax(statement, JsSpace.Location.TRAILING_TOKEN_STATEMENT_PREFIX, p);
+        this.visitJsRightPadded(statement.padding.expression, JsRightPadded.Location.TRAILING_TOKEN_STATEMENT_EXPRESSION, p);
+        this.afterSyntax(statement, p);
+        return statement;
+    }
+
+    visitInferType(inferType: JS.InferType, p: PrintOutputCapture<P>): JS.InferType {
+        this.beforeSyntax(inferType, JsSpace.Location.INFER_TYPE_PREFIX, p);
+        this.visitJsLeftPaddedLocal("infer", inferType.padding.typeParameter, JsLeftPadded.Location.INFER_TYPE_TYPE_PARAMETER, p);
+        this.afterSyntax(inferType, p);
+        return inferType;
+    }
+
+    visitJsImport(jsImport: JS.JsImport, p: PrintOutputCapture<P>): JS.JsImport {
+        this.beforeSyntax(jsImport, JsSpace.Location.JS_IMPORT_PREFIX, p);
+        jsImport.modifiers.forEach(m => this.visitModifier(m, p));
+        p.append("import");
+        this.visit(jsImport.importClause, p);
+
+        this.visitJsLeftPaddedLocal(jsImport.importClause ? "from" : "", jsImport.padding.moduleSpecifier, JsLeftPadded.Location.JS_IMPORT_MODULE_SPECIFIER, p);
+
+        this.visit(jsImport.attributes, p);
+
+        this.afterSyntax(jsImport, p);
+        return jsImport;
+    }
+
+    visitJsImportClause(jsImportClause: JS.JsImportClause, p: PrintOutputCapture<P>): JS.JsImportClause {
+        this.beforeSyntax(jsImportClause, JsSpace.Location.JS_IMPORT_CLAUSE_PREFIX, p);
+
+        if (jsImportClause.typeOnly) {
+            p.append("type");
+        }
+
+        const name = jsImportClause.padding.name;
+        this.visitJsRightPadded(name, JsRightPadded.Location.JS_IMPORT_CLAUSE_NAME, p);
+
+        if (name && jsImportClause.namedBindings) {
+            p.append(",");
+        }
+
+        this.visit(jsImportClause.namedBindings, p);
+
+        this.afterSyntax(jsImportClause, p);
+
+        return jsImportClause;
+    }
+
+    visitTypeTreeExpression(typeTreeExpression: JS.TypeTreeExpression, p: PrintOutputCapture<P>): JS.TypeTreeExpression {
+        this.beforeSyntax(typeTreeExpression, JsSpace.Location.TYPE_TREE_EXPRESSION_PREFIX, p);
+        this.visit(typeTreeExpression.expression, p);
+        this.afterSyntax(typeTreeExpression, p);
+        return typeTreeExpression;
+    }
+
+    visitNamespaceDeclaration(namespaceDeclaration: JS.NamespaceDeclaration, p: PrintOutputCapture<P>): JS.NamespaceDeclaration {
+        this.beforeSyntax(namespaceDeclaration, JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p);
+        namespaceDeclaration.modifiers.forEach(it => this.visitModifier(it, p));
+        this.visitSpace(namespaceDeclaration.padding.keywordType.before, JsSpace.Location.NAMESPACE_DECLARATION_KEYWORD_TYPE_PREFIX, p);
+
+        switch (namespaceDeclaration.keywordType) {
+            case NamespaceDeclaration.KeywordType.Namespace:
+                p.append("namespace");
+                break;
+            case NamespaceDeclaration.KeywordType.Module:
+                p.append("module");
+                break;
+            default:
+                break;
+        }
+
+        this.visitJsRightPadded(namespaceDeclaration.padding.name, JsRightPadded.Location.NAMESPACE_DECLARATION_NAME, p);
+
+        if (namespaceDeclaration.body) {
+            this.visit(namespaceDeclaration.body, p);
+        }
+
+        this.afterSyntax(namespaceDeclaration, p);
+        return namespaceDeclaration;
+    }
+
+    visitSatisfiesExpression(satisfiesExpression: JS.SatisfiesExpression, p: PrintOutputCapture<P>): JS.SatisfiesExpression {
+        this.beforeSyntax(satisfiesExpression, JsSpace.Location.SATISFIES_EXPRESSION_PREFIX, p);
+        this.visit(satisfiesExpression.expression, p);
+        this.visitJsLeftPaddedLocal("satisfies", satisfiesExpression.padding.satisfiesType, JsLeftPadded.Location.SATISFIES_EXPRESSION_SATISFIES_TYPE, p);
+        this.afterSyntax(satisfiesExpression, p);
+        return satisfiesExpression;
+    }
+
+    visitVoid(aVoid: JS.Void, p: PrintOutputCapture<P>): JS.Void {
+        this.beforeSyntax(aVoid, JsSpace.Location.VOID_PREFIX, p);
+        p.append("void");
+        this.visit(aVoid.expression, p);
+        this.afterSyntax(aVoid, p);
+        return aVoid;
+    }
+
+    visitJsYield(yield_: JS.Yield, p: PrintOutputCapture<P>): JS.Yield {
+        this.beforeSyntax(yield_, JsSpace.Location.YIELD_PREFIX, p);
+
+        p.append("yield");
+
+        if (yield_.delegated) {
+            this.visitJsLeftPaddedLocal("*", yield_.padding.delegated, JsLeftPadded.Location.YIELD_DELEGATED, p);
+        }
+
+        this.visit(yield_.expression, p);
+
+        this.afterSyntax(yield_, p);
+        return yield_;
+    }
+
+    visitTry(try_: J.Try, p: PrintOutputCapture<P>): J.Try {
+        this.beforeSyntax(try_, Space.Location.TRY_PREFIX, p);
+        p.append("try");
+        this.visit(try_.body, p);
+        this.visitNodes(try_.catches, p);
+        this.visitJLeftPaddedLocal("finally", try_.padding.finally, JLeftPadded.Location.TRY_FINALLY, p);
+        this.afterSyntax(try_, p);
+        return try_;
+    }
+
+    visitCatch(catch_: J.Try.Catch, p: PrintOutputCapture<P>): J.Try.Catch {
+        this.beforeSyntax(catch_, Space.Location.CATCH_PREFIX, p);
+        p.append("catch");
+        if (catch_.parameter.tree.variables.length > 0) {
+            this.visit(catch_.parameter, p);
+        }
+        this.visit(catch_.body, p);
+        this.afterSyntax(catch_, p);
+        return catch_;
+    }
+
+    visitJSTry(jsTry: JS.JSTry, p: PrintOutputCapture<P>): JS.JSTry {
+        this.beforeSyntax(jsTry, JsSpace.Location.JSTRY_PREFIX, p);
+        p.append("try");
+        this.visit(jsTry.body, p);
+        this.visit(jsTry.catches, p);
+        this.visitJsLeftPaddedLocal("finally", jsTry.padding.finallie, JsLeftPadded.Location.JSTRY_FINALLIE, p);
+        this.afterSyntax(jsTry, p);
+        return jsTry;
+    }
+
+    visitJSTryJSCatch(jsCatch: JS.JSTry.JSCatch, p: PrintOutputCapture<P>): JS.JSTry.JSCatch {
+        this.beforeSyntax(jsCatch, JsSpace.Location.JSTRY_JSCATCH_PREFIX, p);
+        p.append("catch");
+        this.visit(jsCatch.parameter, p);
+        this.visit(jsCatch.body, p);
+        this.afterSyntax(jsCatch, p);
+        return jsCatch;
+    }
+
+    visitJSVariableDeclarations(multiVariable: JS.JSVariableDeclarations, p: PrintOutputCapture<P>): JS.JSVariableDeclarations {
+        this.beforeSyntax(multiVariable, JsSpace.Location.JSVARIABLE_DECLARATIONS_PREFIX, p);
+        this.visitNodes(multiVariable.leadingAnnotations, p);
+        multiVariable.modifiers.forEach(it => this.visitModifier(it, p));
+
+        const variables = multiVariable.padding.variables;
+        for (let i = 0; i < variables.length; i++) {
+            const variable = variables[i];
+            this.beforeSyntax(variable.element, JsSpace.Location.JSVARIABLE_DECLARATIONS_JSNAMED_VARIABLE_PREFIX, p);
+            if (multiVariable.varargs) {
+                p.append("...");
+            }
+
+            this.visit(variable.element.name, p);
+
+            this.visitSpace(variable.after, JsSpace.Location.JSVARIABLE_DECLARATIONS_VARIABLES_SUFFIX, p);
+            if (multiVariable.typeExpression) {
+                this.visit(multiVariable.typeExpression, p);
+            }
+
+            if (variable.element.initializer) {
+                this.visitJsLeftPaddedLocal("=", variable.element.padding.initializer, JsLeftPadded.Location.JSVARIABLE_DECLARATIONS_JSNAMED_VARIABLE_INITIALIZER, p);
+            }
+
+            this.afterSyntax(variable.element, p);
+            if (i < variables.length - 1) {
+                p.append(",");
+            } else if (variable.markers.findFirst(Semicolon) !== undefined) {
+                p.append(";");
+            }
+        }
+
+        this.afterSyntax(multiVariable, p);
+        return multiVariable;
+    }
+
+    visitJSVariableDeclarationsJSNamedVariable(variable: JS.JSVariableDeclarations.JSNamedVariable, p: PrintOutputCapture<P>): JS.JSVariableDeclarations.JSNamedVariable {
+        this.beforeSyntax(variable, JsSpace.Location.JSVARIABLE_DECLARATIONS_JSNAMED_VARIABLE_PREFIX, p);
+        this.visit(variable.name, p);
+        const initializer = variable.padding.initializer;
+        this.visitJsLeftPaddedLocal("=", initializer, JsLeftPadded.Location.JSVARIABLE_DECLARATIONS_JSNAMED_VARIABLE_INITIALIZER, p);
+        this.afterSyntax(variable, p);
+        return variable;
+    }
+
+    visitArrayDimension(arrayDimension: J.ArrayDimension, p: PrintOutputCapture<P>): J.ArrayDimension {
+        this.beforeSyntax(arrayDimension, Space.Location.DIMENSION_PREFIX, p);
+        p.append("[");
+        this.visitJRightPaddedLocalSingle(arrayDimension.padding.index, JRightPadded.Location.ARRAY_INDEX, "]", p);
+        this.afterSyntax(arrayDimension, p);
+        return arrayDimension;
+    }
+
+    visitArrayType(arrayType: J.ArrayType, p: PrintOutputCapture<P>): J.ArrayType {
+        this.beforeSyntax(arrayType, Space.Location.ARRAY_TYPE_PREFIX, p);
+        let type: J.TypeTree = arrayType;
+
+        while (type instanceof J.ArrayType) {
+            type = (type as J.ArrayType).elementType;
+        }
+
+        this.visit(type, p);
+        this.visitNodes(arrayType.annotations, p);
+
+        if (arrayType.dimension) {
+            this.visitSpace(arrayType.dimension.before, Space.Location.DIMENSION_PREFIX, p);
+            p.append("[");
+            this.visitSpace(arrayType.dimension.element, Space.Location.DIMENSION, p);
+            p.append("]");
+
+            if (arrayType.elementType instanceof J.ArrayType) {
+                this.printDimensions(arrayType.elementType as J.ArrayType, p);
+            }
+        }
+
+        this.afterSyntax(arrayType, p);
+        return arrayType;
+    }
+
+    private printDimensions(arrayType: J.ArrayType, p: PrintOutputCapture<P>) {
+        this.beforeSyntax(arrayType, Space.Location.ARRAY_TYPE_PREFIX, p);
+        this.visitNodes(arrayType.annotations, p);
+        this.visitSpace(arrayType.dimension?.before ?? Space.EMPTY, Space.Location.DIMENSION_PREFIX, p);
+
+        p.append("[");
+        this.visitSpace(arrayType.dimension?.element ?? Space.EMPTY, Space.Location.DIMENSION, p);
+        p.append("]");
+
+        if (arrayType.elementType instanceof J.ArrayType) {
+            this.printDimensions(arrayType.elementType as J.ArrayType, p);
+        }
+
+        this.afterSyntax(arrayType, p);
+    }
+
+    visitTernary(ternary: J.Ternary, p: PrintOutputCapture<P>): J.Ternary {
+        this.beforeSyntax(ternary, Space.Location.TERNARY_PREFIX, p);
+        this.visit(ternary.condition, p);
+        this.visitJLeftPaddedLocal("?", ternary.padding.truePart, JLeftPadded.Location.TERNARY_TRUE, p);
+        this.visitJLeftPaddedLocal(":", ternary.padding.falsePart, JLeftPadded.Location.TERNARY_FALSE, p);
+        this.afterSyntax(ternary, p);
+        return ternary;
+    }
+
+    visitThrow(thrown: J.Throw, p: PrintOutputCapture<P>): J.Throw {
+        this.beforeSyntax(thrown, Space.Location.THROW_PREFIX, p);
+        p.append("throw");
+        this.visit(thrown.exception, p);
+        this.afterSyntax(thrown, p);
+        return thrown;
+    }
+
+    visitIf(iff: J.If, p: PrintOutputCapture<P>): J.If {
+        this.beforeSyntax(iff, Space.Location.IF_PREFIX, p);
+        p.append("if");
+        this.visit(iff.ifCondition, p);
+        this.visitStatementLocal(iff.padding.thenPart, JRightPadded.Location.IF_THEN, p);
+        this.visit(iff.elsePart, p);
+        this.afterSyntax(iff, p);
+        return iff;
+    }
+
+    visitElse(else_: J.If.Else, p: PrintOutputCapture<P>): J.If.Else {
+        this.beforeSyntax(else_, Space.Location.ELSE_PREFIX, p);
+        p.append("else");
+        this.visitStatementLocal(else_.padding.body, JRightPadded.Location.IF_ELSE, p);
+        this.afterSyntax(else_, p);
+        return else_;
+    }
+
+    visitDoWhileLoop(doWhileLoop: J.DoWhileLoop, p: PrintOutputCapture<P>): J.DoWhileLoop {
+        this.beforeSyntax(doWhileLoop, Space.Location.DO_WHILE_PREFIX, p);
+        p.append("do");
+        this.visitStatementLocal(doWhileLoop.padding.body, JRightPadded.Location.WHILE_BODY, p);
+        this.visitJLeftPaddedLocal("while", doWhileLoop.padding.whileCondition, JLeftPadded.Location.WHILE_CONDITION, p);
+        this.afterSyntax(doWhileLoop, p);
+        return doWhileLoop;
+    }
+
+    visitWhileLoop(whileLoop: J.WhileLoop, p: PrintOutputCapture<P>): J.WhileLoop {
+        this.beforeSyntax(whileLoop, Space.Location.WHILE_PREFIX, p);
+        p.append("while");
+        this.visit(whileLoop.condition, p);
+        this.visitStatementLocal(whileLoop.padding.body, JRightPadded.Location.WHILE_BODY, p);
+        this.afterSyntax(whileLoop, p);
+        return whileLoop;
+    }
+
+    visitInstanceOf(instanceOf: J.InstanceOf, p: PrintOutputCapture<P>): J.InstanceOf {
+        this.beforeSyntax(instanceOf, Space.Location.INSTANCEOF_PREFIX, p);
+        this.visitJRightPaddedLocalSingle(instanceOf.padding.expression, JRightPadded.Location.INSTANCEOF, "instanceof", p);
+        this.visit(instanceOf.clazz, p);
+        this.visit(instanceOf.pattern, p);
+        this.afterSyntax(instanceOf, p);
+        return instanceOf;
+    }
 
     visitLiteral(literal: Literal, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(literal, Space.Location.LITERAL_PREFIX, p);
@@ -441,7 +780,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         if (method.name.toString().length === 0) {
             this.visitRightPadded(method.padding.select, JRightPadded.Location.METHOD_SELECT, p);
         } else {
-            this.visitJRightPaddedLocal(method.padding.select ? [method.padding.select] : [], JRightPadded.Location.METHOD_SELECT, ".", p);
+            this.visitJRightPaddedLocalSingle(method.padding.select, JRightPadded.Location.METHOD_SELECT, "", p);
             this.visit(method.name, p);
         }
 
@@ -583,6 +922,96 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return namedImports;
     }
 
+    visitJsImportSpecifier(jis: JS.JsImportSpecifier, p: PrintOutputCapture<P>): JS.JsImportSpecifier {
+        this.beforeSyntax(jis, JsSpace.Location.JS_IMPORT_SPECIFIER_PREFIX, p);
+
+        if (jis.importType) {
+            this.visitJsLeftPaddedLocal("type", jis.padding.importType, JsLeftPadded.Location.JS_IMPORT_SPECIFIER_IMPORT_TYPE, p);
+        }
+
+        this.visit(jis.specifier, p);
+
+        this.afterSyntax(jis, p);
+        return jis;
+    }
+
+    visitExportDeclaration(ed: JS.ExportDeclaration, p: PrintOutputCapture<P>): JS.ExportDeclaration {
+        this.beforeSyntax(ed, JsSpace.Location.EXPORT_DECLARATION_PREFIX, p);
+        p.append("export");
+        ed.modifiers.forEach(it => this.visitModifier(it, p));
+
+        if (ed.typeOnly) {
+            this.visitJsLeftPaddedLocal("type", ed.padding.typeOnly, JsLeftPadded.Location.EXPORT_DECLARATION_TYPE_ONLY, p);
+        }
+
+        this.visit(ed.exportClause, p);
+        this.visitJsLeftPaddedLocal("from", ed.padding.moduleSpecifier, JsLeftPadded.Location.EXPORT_DECLARATION_MODULE_SPECIFIER, p);
+        this.visit(ed.attributes, p);
+
+        this.afterSyntax(ed, p);
+        return ed;
+    }
+
+    visitExportAssignment(es: JS.ExportAssignment, p: PrintOutputCapture<P>): JS.ExportAssignment {
+        this.beforeSyntax(es, JsSpace.Location.EXPORT_ASSIGNMENT_PREFIX, p);
+        p.append("export");
+        es.modifiers.forEach(it => this.visitModifier(it, p));
+
+        if (es.exportEquals) {
+            this.visitJsLeftPaddedLocal("=", es.padding.exportEquals, JsLeftPadded.Location.EXPORT_ASSIGNMENT_EXPORT_EQUALS, p);
+        }
+
+        this.visit(es.expression, p);
+        this.afterSyntax(es, p);
+        return es;
+    }
+
+    visitIndexedAccessType(iat: JS.IndexedAccessType, p: PrintOutputCapture<P>): JS.IndexedAccessType {
+        this.beforeSyntax(iat, JsSpace.Location.INDEXED_ACCESS_TYPE_PREFIX, p);
+
+        this.visit(iat.objectType, p);
+        // expect that this element is printed accordingly
+        // <space_before>[<inner_space_before>index<inner_right_padded_suffix_space>]<right_padded_suffix_space>
+        this.visit(iat.indexType, p);
+
+        this.afterSyntax(iat, p);
+        return iat;
+    }
+
+    visitIndexedAccessTypeIndexType(iatit: JS.IndexedAccessType.IndexType, p: PrintOutputCapture<P>): JS.IndexedAccessType.IndexType {
+        this.beforeSyntax(iatit, JsSpace.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE_PREFIX, p);
+
+        p.append("[");
+        this.visitJsRightPadded(iatit.padding.element, JsRightPadded.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE_ELEMENT, p);
+        p.append("]");
+
+        this.afterSyntax(iatit, p);
+        return iatit;
+    }
+
+    visitWithStatement(withStatement: JS.WithStatement, p: PrintOutputCapture<P>): JS.WithStatement {
+        this.beforeSyntax(withStatement, JsSpace.Location.WITH_STATEMENT_PREFIX, p);
+        p.append("with");
+        this.visit(withStatement.expression, p);
+        this.visitJsRightPadded(withStatement.padding.body, JsRightPadded.Location.WITH_STATEMENT_BODY, p);
+        this.afterSyntax(withStatement, p);
+        return withStatement;
+    }
+
+    visitExportSpecifier(es: JS.ExportSpecifier, p: PrintOutputCapture<P>): JS.ExportSpecifier {
+        this.beforeSyntax(es, JsSpace.Location.EXPORT_SPECIFIER_PREFIX, p);
+        if (es.typeOnly) {
+            this.visitJsLeftPaddedLocal("type", es.padding.typeOnly, JsLeftPadded.Location.EXPORT_SPECIFIER_TYPE_ONLY, p);
+        }
+
+        this.visit(es.specifier, p);
+
+        this.afterSyntax(es, p);
+        return es;
+    }
+
+
+
     visitNamedExports(ne: JS.NamedExports, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(ne, JsSpace.Location.NAMED_EXPORTS_PREFIX, p);
         this.visitJsContainerLocal("{", ne.padding.elements, JsContainer.Location.NAMED_EXPORTS_ELEMENTS, ",", "}", p);
@@ -707,6 +1136,22 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return taggedTemplateExpression;
     }
 
+    visitTemplateExpression(templateExpression: JS.TemplateExpression, p: PrintOutputCapture<P>): JS.TemplateExpression {
+        this.beforeSyntax(templateExpression, JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p);
+        this.visit(templateExpression.head, p);
+        this.visitJsRightPaddedLocal(templateExpression.padding.templateSpans, JsRightPadded.Location.TEMPLATE_EXPRESSION_TEMPLATE_SPANS, "", p);
+        this.afterSyntax(templateExpression, p);
+        return templateExpression;
+    }
+
+    visitTemplateExpressionTemplateSpan(value: JS.TemplateExpression.TemplateSpan, p: PrintOutputCapture<P>): JS.TemplateExpression.TemplateSpan {
+        this.beforeSyntax(value, JsSpace.Location.TEMPLATE_EXPRESSION_TEMPLATE_SPAN_PREFIX, p);
+        this.visit(value.expression, p);
+        this.visit(value.tail, p);
+        this.afterSyntax(value, p);
+        return value;
+    }
+
     visitTuple(tuple: JS.Tuple, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(tuple, JsSpace.Location.TUPLE_PREFIX, p);
         this.visitJsContainerLocal("[", tuple.padding.elements, JsContainer.Location.TUPLE_ELEMENTS, ",", "]", p);
@@ -721,6 +1166,48 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         this.visitJsContainerLocal("<", typeQuery.padding.typeArguments, JsContainer.Location.TYPE_QUERY_TYPE_ARGUMENTS, ",", ">", p);
         this.afterSyntax(typeQuery, p);
         return typeQuery;
+    }
+
+    visitTypeOf(typeOf: JS.TypeOf, p: PrintOutputCapture<P>): JS.TypeOf {
+        this.beforeSyntax(typeOf, JsSpace.Location.TYPE_OF_PREFIX, p);
+        p.append("typeof");
+        this.visit(typeOf.expression, p);
+        this.afterSyntax(typeOf, p);
+        return typeOf;
+    }
+
+    visitTypeOperator(typeOperator: JS.TypeOperator, p: PrintOutputCapture<P>): JS.TypeOperator {
+        this.beforeSyntax(typeOperator, JsSpace.Location.TYPE_OPERATOR_PREFIX, p);
+
+        let keyword = "";
+        if (typeOperator.operator === JS.TypeOperator.Type.ReadOnly) {
+            keyword = "readonly";
+        } else if (typeOperator.operator === JS.TypeOperator.Type.KeyOf) {
+            keyword = "keyof";
+        } else if (typeOperator.operator === JS.TypeOperator.Type.Unique) {
+            keyword = "unique";
+        }
+
+        p.append(keyword);
+
+        this.visitJsLeftPadded(typeOperator.padding.expression, JsLeftPadded.Location.TYPE_OPERATOR_EXPRESSION, p);
+
+        this.afterSyntax(typeOperator, p);
+        return typeOperator;
+    }
+
+    visitTypePredicate(typePredicate: JS.TypePredicate, p: PrintOutputCapture<P>): JS.TypePredicate {
+        this.beforeSyntax(typePredicate, JsSpace.Location.TYPE_PREDICATE_PREFIX, p);
+
+        if (typePredicate.asserts) {
+            this.visitJsLeftPaddedLocal("asserts", typePredicate.padding.asserts, JsLeftPadded.Location.TYPE_PREDICATE_ASSERTS, p);
+        }
+
+        this.visit(typePredicate.parameterName, p);
+        this.visitJsLeftPaddedLocal("is", typePredicate.padding.expression, JsLeftPadded.Location.TYPE_PREDICATE_EXPRESSION, p);
+
+        this.afterSyntax(typePredicate, p);
+        return typePredicate;
     }
 
     visitIndexSignatureDeclaration(isd: JS.IndexSignatureDeclaration, p: PrintOutputCapture<P>): J.J {
@@ -756,7 +1243,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
 
     visitNewClass(newClass: J.NewClass, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(newClass, Space.Location.NEW_CLASS_PREFIX, p);
-        this.visitJRightPaddedLocal(newClass.padding.enclosing ? [newClass.padding.enclosing] : [], JRightPadded.Location.NEW_CLASS_ENCLOSING, ".", p);
+        this.visitJRightPaddedLocalSingle(newClass.padding.enclosing, JRightPadded.Location.NEW_CLASS_ENCLOSING, ".", p);
         this.visitSpace(newClass.new, Space.Location.NEW_PREFIX, p);
 
         if (newClass.clazz) {
@@ -801,6 +1288,22 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return case_;
     }
 
+    visitLabel(label: J.Label, p: PrintOutputCapture<P>): J.Label {
+        this.beforeSyntax(label, Space.Location.LABEL_PREFIX, p);
+        this.visitJRightPaddedLocalSingle(label.padding.label, JRightPadded.Location.LABEL, ":", p);
+        this.visit(label.statement, p);
+        this.afterSyntax(label, p);
+        return label;
+    }
+
+    visitContinue(continueStatement: J.Continue, p: PrintOutputCapture<P>): J.Continue {
+        this.beforeSyntax(continueStatement, Space.Location.CONTINUE_PREFIX, p);
+        p.append("continue");
+        this.visit(continueStatement.label, p);
+        this.afterSyntax(continueStatement, p);
+        return continueStatement;
+    }
+
     visitBreak(breakStatement: J.Break, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(breakStatement, Space.Location.BREAK_PREFIX, p);
         p.append("break");
@@ -819,6 +1322,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return fieldAccess;
     }
 
+
     visitTypeLiteral(tl: JS.TypeLiteral, p: PrintOutputCapture<P>): JS.TypeLiteral {
         this.beforeSyntax(tl, JsSpace.Location.TYPE_LITERAL_PREFIX, p);
 
@@ -831,8 +1335,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     visitParentheses<T extends J.J>(parens: J.Parentheses<T>, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(parens, Space.Location.PARENTHESES_PREFIX, p);
         p.append('(');
-        this.visitJRightPaddedLocal(parens.padding.tree ? [parens.padding.tree] : [], JRightPadded.Location.PARENTHESES, "", p);
-        p.append(')');
+        this.visitJRightPaddedLocalSingle(parens.padding.tree, JRightPadded.Location.PARENTHESES, ")", p);
         this.afterSyntax(parens, p);
         return parens;
     }
@@ -1200,8 +1703,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         p.append('(');
         this.visitJRightPaddedLocal(ctrl.padding.init, JRightPadded.Location.FOR_INIT, ",", p);
         p.append(';');
-        this.visitJRightPaddedLocal(ctrl.padding.condition ? [ctrl.padding.condition] : [], JRightPadded.Location.FOR_CONDITION, "", p);
-        p.append(';');
+        this.visitJRightPaddedLocalSingle(ctrl.padding.condition, JRightPadded.Location.FOR_CONDITION, ";", p);
         this.visitJRightPaddedLocal(ctrl.padding.update, JRightPadded.Location.FOR_UPDATE, ",", p);
         p.append(')');
         this.visitStatementLocal(forLoop.padding.body, JRightPadded.Location.FOR_BODY, p);
@@ -1243,11 +1745,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         this.afterSyntax(loop, p);
         return loop;
     }
-
-
-
-
-
+    
     // ---- print utils
 
     private visitStatements(statements: JRightPadded<J.Statement>[], location: JRightPadded.Location, p: PrintOutputCapture<P>) {
@@ -1348,6 +1846,20 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
     }
 
+    private visitJRightPaddedLocalSingle(node: JRightPadded<J.J> | null, location: JRightPadded.Location, suffix: string, p: PrintOutputCapture<P>) {
+        if (node) {
+            this.visit(node.element, p);
+
+            if (location) {
+                const loc = JRightPadded.Location.afterLocation(location);
+                this.visitSpace(node.after, loc, p);
+            }
+            this.visitMarkers(node.markers, p);
+
+            p.append(suffix);
+        }
+    }
+
     private visitJsRightPaddedLocal(nodes: JRightPadded<J.J>[], location: JsRightPadded.Location, suffixBetween: string, p: PrintOutputCapture<P>) {
         for (let i = 0; i < nodes.length; i++) {
             const node = nodes[i];
@@ -1363,6 +1875,20 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
             if (i < nodes.length - 1) {
                 p.append(suffixBetween);
             }
+        }
+    }
+
+    private visitJsRightPaddedLocalSingle(node: JRightPadded<J.J> | null, location: JsRightPadded.Location, suffix: string, p: PrintOutputCapture<P>) {
+        if (node) {
+            this.visit(node.element, p);
+
+            if (location) {
+                const loc = JsRightPadded.Location.afterLocation(location);
+                this.visitSpace(node.after, loc, p);
+            }
+            this.visitMarkers(node.markers, p);
+
+            p.append(suffix);
         }
     }
 
@@ -1470,18 +1996,15 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     public visitControlParentheses<T extends J.J>(controlParens: J.ControlParentheses<T>, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(controlParens, Space.Location.CONTROL_PARENTHESES_PREFIX, p);
 
-        if (this.getParentCursor(0)?.value() instanceof J.TypeCast) {
+        if (this.getParentCursor(1)?.value() instanceof J.TypeCast) {
             p.append('<');
-            this.visitJRightPaddedLocal(controlParens.padding.tree ? [controlParens.padding.tree] : [], JRightPadded.Location.PARENTHESES, "", p);
-            p.append('>')
+            this.visitJRightPaddedLocalSingle(controlParens.padding.tree, JRightPadded.Location.PARENTHESES, ">", p);
         } else {
             p.append('(');
-            this.visitJRightPaddedLocal(controlParens.padding.tree ? [controlParens.padding.tree] : [], JRightPadded.Location.PARENTHESES, "", p);
-            p.append(')');
+            this.visitJRightPaddedLocalSingle(controlParens.padding.tree, JRightPadded.Location.PARENTHESES, ")", p);
         }
 
         this.afterSyntax(controlParens, p);
         return controlParens;
     }
-
 }

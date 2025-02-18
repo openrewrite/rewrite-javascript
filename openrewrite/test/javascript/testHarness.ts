@@ -38,8 +38,8 @@ registerJavaCodecs(SenderContext, ReceiverContext, RemotingContext)
 let client: net.Socket;
 let remoting: RemotingContext;
 let javaTestEngine: ChildProcessWithoutNullStreams
-const ci = process.env.NODE_ENV === "ci"
-console.log("NODE_ENV: " + process.env.NODE_ENV)
+// to run integration tests with JavaPrinter set env NODE_ENV=it
+const it = process.env.NODE_ENV === "it"
 
 function getRandomInt(min: number, max: number): number {
     min = Math.ceil(min);
@@ -80,7 +80,7 @@ const getNextPort = async (port: number): Promise<number> => {
 };
 
 export async function connect(): Promise<RemotingContext | undefined> {
-    if (ci) {
+    if (it) {
         return new Promise((resolve, reject) => {
             const pathToJar = path.resolve(__dirname, '../../../rewrite-test-engine-remote/build/libs/rewrite-test-engine-remote-fat-jar.jar');
             console.log(pathToJar);
@@ -132,7 +132,7 @@ export async function connect(): Promise<RemotingContext | undefined> {
 }
 
 export async function disconnect(): Promise<void> {
-    if (ci) {
+    if (it) {
         return new Promise((resolve, reject) => {
             if (client) {
                 client.end();
@@ -220,7 +220,7 @@ export function typeScript(before: string, spec?: (sourceFile: JS.CompilationUni
 }
 
 function print(parsed: SourceFile) {
-    if (ci) {
+    if (it) {
         remoting.reset();
         remoting.client?.reset();
     } else {
@@ -231,8 +231,7 @@ function print(parsed: SourceFile) {
 
 class LocalPrintFactory extends PrinterFactory {
     createPrinter<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
-        const printer = new JavaScriptPrinter<P>();
-        printer.cursor = cursor;
+        const printer = new JavaScriptPrinter<P>(cursor);
         return printer;
     }
 }
