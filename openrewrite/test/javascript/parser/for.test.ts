@@ -25,6 +25,13 @@ describe('for mapping', () => {
         );
     });
 
+    test('for with assigment condition', () => {
+        rewriteRun(
+          //language=typescript
+          typeScript('for(var r,a=0;r=t[a++];);')
+        );
+    });
+
     test('for indexed multiple variables', () => {
         rewriteRun(
           //language=typescript

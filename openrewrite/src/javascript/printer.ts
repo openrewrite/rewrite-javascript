@@ -27,11 +27,11 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         this.cursor = cursor;
     }
 
-    visit(tree: Tree | null, p: PrintOutputCapture<P>): J.J | null {
+    override visit(tree: Tree | null, p: PrintOutputCapture<P>): J.J | null {
         return super.visit(tree, p);
     }
 
-    visitJsCompilationUnit(cu: JS.CompilationUnit, p: PrintOutputCapture<P>): J.J | null {
+    override visitJsCompilationUnit(cu: JS.CompilationUnit, p: PrintOutputCapture<P>): J.J | null {
         this.beforeSyntax(cu, Space.Location.COMPILATION_UNIT_PREFIX, p);
 
         this.visitJsRightPaddedLocal(cu.padding.statements, JsRightPadded.Location.COMPILATION_UNIT_STATEMENTS, "", p);
@@ -41,7 +41,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return cu;
     }
 
-    // visitCompilationUnit(cu: J.CompilationUnit, p: PrintOutputCapture<P>): J.J | null {
+    // override visitCompilationUnit(cu: J.CompilationUnit, p: PrintOutputCapture<P>): J.J | null {
     //     this.beforeSyntax(cu, Space.Location.COMPILATION_UNIT_PREFIX, p);
     //
     //     //this.visitJRightPadded(cu.padding.getStatements(), JRightPadded.Location.LANGUAGE_EXTENSION, "", p);
@@ -51,7 +51,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
     //     return cu;
     // }
 
-    visitAlias(alias: JS.Alias, p: PrintOutputCapture<P>): JS.Alias {
+    override visitAlias(alias: JS.Alias, p: PrintOutputCapture<P>): JS.Alias {
         this.beforeSyntax(alias, JsSpace.Location.ALIAS_PREFIX, p);
         this.visitJsRightPadded(alias.padding.propertyName, JsRightPadded.Location.ALIAS_PROPERTY_NAME, p);
         p.append("as");
@@ -60,7 +60,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return alias;
     }
 
-    visitAwait(awaitExpr: JS.Await, p: PrintOutputCapture<P>): JS.Await {
+    override visitAwait(awaitExpr: JS.Await, p: PrintOutputCapture<P>): JS.Await {
         this.beforeSyntax(awaitExpr, JsSpace.Location.AWAIT_PREFIX, p);
         p.append("await");
         this.visit(awaitExpr.expression, p);
@@ -68,7 +68,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return awaitExpr;
     }
 
-    visitBindingElement(binding: JS.BindingElement, p: PrintOutputCapture<P>): JS.BindingElement {
+    override visitBindingElement(binding: JS.BindingElement, p: PrintOutputCapture<P>): JS.BindingElement {
         this.beforeSyntax(binding, JsSpace.Location.BINDING_ELEMENT_PREFIX, p);
         if (binding.propertyName) {
             this.visitJsRightPadded(binding.padding.propertyName, JsRightPadded.Location.BINDING_ELEMENT_PROPERTY_NAME, p);
@@ -80,7 +80,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return binding;
     }
 
-    visitDelete(del: JS.Delete, p: PrintOutputCapture<P>): JS.Delete {
+    override visitDelete(del: JS.Delete, p: PrintOutputCapture<P>): JS.Delete {
         this.beforeSyntax(del, JsSpace.Location.DELETE_PREFIX, p);
         p.append("delete");
         this.visit(del.expression, p);
@@ -88,21 +88,21 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return del;
     }
 
-    visitTrailingTokenStatement(statement: JS.TrailingTokenStatement, p: PrintOutputCapture<P>): JS.TrailingTokenStatement {
+    override visitTrailingTokenStatement(statement: JS.TrailingTokenStatement, p: PrintOutputCapture<P>): JS.TrailingTokenStatement {
         this.beforeSyntax(statement, JsSpace.Location.TRAILING_TOKEN_STATEMENT_PREFIX, p);
         this.visitJsRightPadded(statement.padding.expression, JsRightPadded.Location.TRAILING_TOKEN_STATEMENT_EXPRESSION, p);
         this.afterSyntax(statement, p);
         return statement;
     }
 
-    visitInferType(inferType: JS.InferType, p: PrintOutputCapture<P>): JS.InferType {
+    override visitInferType(inferType: JS.InferType, p: PrintOutputCapture<P>): JS.InferType {
         this.beforeSyntax(inferType, JsSpace.Location.INFER_TYPE_PREFIX, p);
         this.visitJsLeftPaddedLocal("infer", inferType.padding.typeParameter, JsLeftPadded.Location.INFER_TYPE_TYPE_PARAMETER, p);
         this.afterSyntax(inferType, p);
         return inferType;
     }
 
-    visitJsImport(jsImport: JS.JsImport, p: PrintOutputCapture<P>): JS.JsImport {
+    override visitJsImport(jsImport: JS.JsImport, p: PrintOutputCapture<P>): JS.JsImport {
         this.beforeSyntax(jsImport, JsSpace.Location.JS_IMPORT_PREFIX, p);
         jsImport.modifiers.forEach(m => this.visitModifier(m, p));
         p.append("import");
@@ -116,7 +116,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return jsImport;
     }
 
-    visitJsImportClause(jsImportClause: JS.JsImportClause, p: PrintOutputCapture<P>): JS.JsImportClause {
+    override visitJsImportClause(jsImportClause: JS.JsImportClause, p: PrintOutputCapture<P>): JS.JsImportClause {
         this.beforeSyntax(jsImportClause, JsSpace.Location.JS_IMPORT_CLAUSE_PREFIX, p);
 
         if (jsImportClause.typeOnly) {
@@ -137,14 +137,14 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return jsImportClause;
     }
 
-    visitTypeTreeExpression(typeTreeExpression: JS.TypeTreeExpression, p: PrintOutputCapture<P>): JS.TypeTreeExpression {
+    override visitTypeTreeExpression(typeTreeExpression: JS.TypeTreeExpression, p: PrintOutputCapture<P>): JS.TypeTreeExpression {
         this.beforeSyntax(typeTreeExpression, JsSpace.Location.TYPE_TREE_EXPRESSION_PREFIX, p);
         this.visit(typeTreeExpression.expression, p);
         this.afterSyntax(typeTreeExpression, p);
         return typeTreeExpression;
     }
 
-    visitNamespaceDeclaration(namespaceDeclaration: JS.NamespaceDeclaration, p: PrintOutputCapture<P>): JS.NamespaceDeclaration {
+    override visitNamespaceDeclaration(namespaceDeclaration: JS.NamespaceDeclaration, p: PrintOutputCapture<P>): JS.NamespaceDeclaration {
         this.beforeSyntax(namespaceDeclaration, JsSpace.Location.NAMESPACE_DECLARATION_PREFIX, p);
         namespaceDeclaration.modifiers.forEach(it => this.visitModifier(it, p));
         this.visitSpace(namespaceDeclaration.padding.keywordType.before, JsSpace.Location.NAMESPACE_DECLARATION_KEYWORD_TYPE_PREFIX, p);
@@ -170,7 +170,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return namespaceDeclaration;
     }
 
-    visitSatisfiesExpression(satisfiesExpression: JS.SatisfiesExpression, p: PrintOutputCapture<P>): JS.SatisfiesExpression {
+    override visitSatisfiesExpression(satisfiesExpression: JS.SatisfiesExpression, p: PrintOutputCapture<P>): JS.SatisfiesExpression {
         this.beforeSyntax(satisfiesExpression, JsSpace.Location.SATISFIES_EXPRESSION_PREFIX, p);
         this.visit(satisfiesExpression.expression, p);
         this.visitJsLeftPaddedLocal("satisfies", satisfiesExpression.padding.satisfiesType, JsLeftPadded.Location.SATISFIES_EXPRESSION_SATISFIES_TYPE, p);
@@ -178,7 +178,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return satisfiesExpression;
     }
 
-    visitVoid(aVoid: JS.Void, p: PrintOutputCapture<P>): JS.Void {
+    override visitVoid(aVoid: JS.Void, p: PrintOutputCapture<P>): JS.Void {
         this.beforeSyntax(aVoid, JsSpace.Location.VOID_PREFIX, p);
         p.append("void");
         this.visit(aVoid.expression, p);
@@ -186,7 +186,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return aVoid;
     }
 
-    visitJsYield(yield_: JS.Yield, p: PrintOutputCapture<P>): JS.Yield {
+    override visitJsYield(yield_: JS.Yield, p: PrintOutputCapture<P>): JS.Yield {
         this.beforeSyntax(yield_, JsSpace.Location.YIELD_PREFIX, p);
 
         p.append("yield");
@@ -201,7 +201,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return yield_;
     }
 
-    visitTry(try_: J.Try, p: PrintOutputCapture<P>): J.Try {
+    override visitTry(try_: J.Try, p: PrintOutputCapture<P>): J.Try {
         this.beforeSyntax(try_, Space.Location.TRY_PREFIX, p);
         p.append("try");
         this.visit(try_.body, p);
@@ -211,7 +211,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return try_;
     }
 
-    visitCatch(catch_: J.Try.Catch, p: PrintOutputCapture<P>): J.Try.Catch {
+    override visitCatch(catch_: J.Try.Catch, p: PrintOutputCapture<P>): J.Try.Catch {
         this.beforeSyntax(catch_, Space.Location.CATCH_PREFIX, p);
         p.append("catch");
         if (catch_.parameter.tree.variables.length > 0) {
@@ -222,7 +222,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return catch_;
     }
 
-    visitJSTry(jsTry: JS.JSTry, p: PrintOutputCapture<P>): JS.JSTry {
+    override visitJSTry(jsTry: JS.JSTry, p: PrintOutputCapture<P>): JS.JSTry {
         this.beforeSyntax(jsTry, JsSpace.Location.JSTRY_PREFIX, p);
         p.append("try");
         this.visit(jsTry.body, p);
@@ -232,7 +232,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return jsTry;
     }
 
-    visitJSTryJSCatch(jsCatch: JS.JSTry.JSCatch, p: PrintOutputCapture<P>): JS.JSTry.JSCatch {
+    override visitJSTryJSCatch(jsCatch: JS.JSTry.JSCatch, p: PrintOutputCapture<P>): JS.JSTry.JSCatch {
         this.beforeSyntax(jsCatch, JsSpace.Location.JSTRY_JSCATCH_PREFIX, p);
         p.append("catch");
         this.visit(jsCatch.parameter, p);
@@ -241,7 +241,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return jsCatch;
     }
 
-    visitJSVariableDeclarations(multiVariable: JS.JSVariableDeclarations, p: PrintOutputCapture<P>): JS.JSVariableDeclarations {
+    override visitJSVariableDeclarations(multiVariable: JS.JSVariableDeclarations, p: PrintOutputCapture<P>): JS.JSVariableDeclarations {
         this.beforeSyntax(multiVariable, JsSpace.Location.JSVARIABLE_DECLARATIONS_PREFIX, p);
         this.visitNodes(multiVariable.leadingAnnotations, p);
         multiVariable.modifiers.forEach(it => this.visitModifier(it, p));
@@ -277,7 +277,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return multiVariable;
     }
 
-    visitJSVariableDeclarationsJSNamedVariable(variable: JS.JSVariableDeclarations.JSNamedVariable, p: PrintOutputCapture<P>): JS.JSVariableDeclarations.JSNamedVariable {
+    override visitJSVariableDeclarationsJSNamedVariable(variable: JS.JSVariableDeclarations.JSNamedVariable, p: PrintOutputCapture<P>): JS.JSVariableDeclarations.JSNamedVariable {
         this.beforeSyntax(variable, JsSpace.Location.JSVARIABLE_DECLARATIONS_JSNAMED_VARIABLE_PREFIX, p);
         this.visit(variable.name, p);
         const initializer = variable.padding.initializer;
@@ -286,7 +286,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return variable;
     }
 
-    visitArrayDimension(arrayDimension: J.ArrayDimension, p: PrintOutputCapture<P>): J.ArrayDimension {
+    override visitArrayDimension(arrayDimension: J.ArrayDimension, p: PrintOutputCapture<P>): J.ArrayDimension {
         this.beforeSyntax(arrayDimension, Space.Location.DIMENSION_PREFIX, p);
         p.append("[");
         this.visitJRightPaddedLocalSingle(arrayDimension.padding.index, JRightPadded.Location.ARRAY_INDEX, "]", p);
@@ -294,7 +294,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return arrayDimension;
     }
 
-    visitArrayType(arrayType: J.ArrayType, p: PrintOutputCapture<P>): J.ArrayType {
+    override visitArrayType(arrayType: J.ArrayType, p: PrintOutputCapture<P>): J.ArrayType {
         this.beforeSyntax(arrayType, Space.Location.ARRAY_TYPE_PREFIX, p);
         let type: J.TypeTree = arrayType;
 
@@ -336,7 +336,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         this.afterSyntax(arrayType, p);
     }
 
-    visitTernary(ternary: J.Ternary, p: PrintOutputCapture<P>): J.Ternary {
+    override visitTernary(ternary: J.Ternary, p: PrintOutputCapture<P>): J.Ternary {
         this.beforeSyntax(ternary, Space.Location.TERNARY_PREFIX, p);
         this.visit(ternary.condition, p);
         this.visitJLeftPaddedLocal("?", ternary.padding.truePart, JLeftPadded.Location.TERNARY_TRUE, p);
@@ -345,7 +345,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return ternary;
     }
 
-    visitThrow(thrown: J.Throw, p: PrintOutputCapture<P>): J.Throw {
+    override visitThrow(thrown: J.Throw, p: PrintOutputCapture<P>): J.Throw {
         this.beforeSyntax(thrown, Space.Location.THROW_PREFIX, p);
         p.append("throw");
         this.visit(thrown.exception, p);
@@ -353,7 +353,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return thrown;
     }
 
-    visitIf(iff: J.If, p: PrintOutputCapture<P>): J.If {
+    override visitIf(iff: J.If, p: PrintOutputCapture<P>): J.If {
         this.beforeSyntax(iff, Space.Location.IF_PREFIX, p);
         p.append("if");
         this.visit(iff.ifCondition, p);
@@ -363,7 +363,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return iff;
     }
 
-    visitElse(else_: J.If.Else, p: PrintOutputCapture<P>): J.If.Else {
+    override visitElse(else_: J.If.Else, p: PrintOutputCapture<P>): J.If.Else {
         this.beforeSyntax(else_, Space.Location.ELSE_PREFIX, p);
         p.append("else");
         this.visitStatementLocal(else_.padding.body, JRightPadded.Location.IF_ELSE, p);
@@ -371,7 +371,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return else_;
     }
 
-    visitDoWhileLoop(doWhileLoop: J.DoWhileLoop, p: PrintOutputCapture<P>): J.DoWhileLoop {
+    override visitDoWhileLoop(doWhileLoop: J.DoWhileLoop, p: PrintOutputCapture<P>): J.DoWhileLoop {
         this.beforeSyntax(doWhileLoop, Space.Location.DO_WHILE_PREFIX, p);
         p.append("do");
         this.visitStatementLocal(doWhileLoop.padding.body, JRightPadded.Location.WHILE_BODY, p);
@@ -380,7 +380,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return doWhileLoop;
     }
 
-    visitWhileLoop(whileLoop: J.WhileLoop, p: PrintOutputCapture<P>): J.WhileLoop {
+    override visitWhileLoop(whileLoop: J.WhileLoop, p: PrintOutputCapture<P>): J.WhileLoop {
         this.beforeSyntax(whileLoop, Space.Location.WHILE_PREFIX, p);
         p.append("while");
         this.visit(whileLoop.condition, p);
@@ -389,7 +389,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return whileLoop;
     }
 
-    visitInstanceOf(instanceOf: J.InstanceOf, p: PrintOutputCapture<P>): J.InstanceOf {
+    override visitInstanceOf(instanceOf: J.InstanceOf, p: PrintOutputCapture<P>): J.InstanceOf {
         this.beforeSyntax(instanceOf, Space.Location.INSTANCEOF_PREFIX, p);
         this.visitJRightPaddedLocalSingle(instanceOf.padding.expression, JRightPadded.Location.INSTANCEOF, "instanceof", p);
         this.visit(instanceOf.clazz, p);
@@ -398,7 +398,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return instanceOf;
     }
 
-    visitLiteral(literal: Literal, p: PrintOutputCapture<P>): J.J {
+    override visitLiteral(literal: Literal, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(literal, Space.Location.LITERAL_PREFIX, p);
 
         const unicodeEscapes = literal.unicodeEscapes;
@@ -432,7 +432,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return literal;
     }
 
-    public visitScopedVariableDeclarations(variableDeclarations: JS.ScopedVariableDeclarations, p: PrintOutputCapture<P>): J.J {
+    override visitScopedVariableDeclarations(variableDeclarations: JS.ScopedVariableDeclarations, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(variableDeclarations, JsSpace.Location.SCOPED_VARIABLE_DECLARATIONS_PREFIX, p);
 
         variableDeclarations.modifiers.forEach(m => this.visitModifier(m, p));
@@ -466,7 +466,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return variableDeclarations;
     }
 
-    visitVariableDeclarations(multiVariable: J.VariableDeclarations, p: PrintOutputCapture<P>): J.J {
+    override visitVariableDeclarations(multiVariable: J.VariableDeclarations, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(multiVariable, Space.Location.VARIABLE_DECLARATIONS_PREFIX, p);
         this.visitNodes(multiVariable.leadingAnnotations, p);
 
@@ -506,7 +506,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return multiVariable;
     }
 
-    visitVariable(variable: J.VariableDeclarations.NamedVariable, p: PrintOutputCapture<P>): J.J {
+    override visitVariable(variable: J.VariableDeclarations.NamedVariable, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(variable, Space.Location.VARIABLE_PREFIX, p);
         this.visit(variable.name, p);
 
@@ -517,7 +517,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return variable;
     }
 
-    visitIdentifier(ident: J.Identifier, p: PrintOutputCapture<P>): J.J {
+    override visitIdentifier(ident: J.Identifier, p: PrintOutputCapture<P>): J.J {
         this.visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
         this.visitNodes(ident.annotations, p);
         this.beforeSyntax(ident, Space.Location.IDENTIFIER_PREFIX, p);
@@ -526,7 +526,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return ident;
     }
 
-    visitFunctionDeclaration(functionDeclaration: JS.FunctionDeclaration, p: PrintOutputCapture<P>): JS.FunctionDeclaration {
+    override visitFunctionDeclaration(functionDeclaration: JS.FunctionDeclaration, p: PrintOutputCapture<P>): JS.FunctionDeclaration {
         this.beforeSyntax(functionDeclaration, JsSpace.Location.FUNCTION_DECLARATION_PREFIX, p);
 
         functionDeclaration.modifiers.forEach((m) => this.visitModifier(m, p));
@@ -560,7 +560,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return functionDeclaration;
     }
 
-    visitBlock(block: J.Block, p: PrintOutputCapture<P>): J.Block {
+    override visitBlock(block: J.Block, p: PrintOutputCapture<P>): J.Block {
         this.beforeSyntax(block, Space.Location.BLOCK_PREFIX, p);
 
         if (block.static) {
@@ -577,7 +577,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return block;
     }
 
-    visitTypeInfo(typeInfo: JS.TypeInfo, p: PrintOutputCapture<P>): JS.TypeInfo {
+    override visitTypeInfo(typeInfo: JS.TypeInfo, p: PrintOutputCapture<P>): JS.TypeInfo {
         this.beforeSyntax(typeInfo, JsSpace.Location.TYPE_INFO_PREFIX, p);
         p.append(":");
         this.visit(typeInfo.typeIdentifier, p);
@@ -585,7 +585,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return typeInfo;
     }
 
-    visitReturn(return_: J.Return, p: PrintOutputCapture<P>): J.Return {
+    override visitReturn(return_: J.Return, p: PrintOutputCapture<P>): J.Return {
         this.beforeSyntax(return_, Space.Location.RETURN_PREFIX, p);
         p.append("return");
         this.visit(return_.expression, p);
@@ -593,7 +593,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return return_;
     }
 
-    public visitModifier(mod: J.Modifier, p: PrintOutputCapture<P>): J.Modifier {
+    override visitModifier(mod: J.Modifier, p: PrintOutputCapture<P>): J.Modifier {
         this.visitNodes(mod.annotations, p);
 
         let keyword: string;
@@ -653,7 +653,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return mod;
     }
 
-    visitFunctionType(functionType: JS.FunctionType, p: PrintOutputCapture<P>): JS.FunctionType {
+    override visitFunctionType(functionType: JS.FunctionType, p: PrintOutputCapture<P>): JS.FunctionType {
         this.beforeSyntax(functionType, JsSpace.Location.FUNCTION_TYPE_PREFIX, p);
         functionType.modifiers.forEach(m => this.visitModifier(m, p));
 
@@ -678,7 +678,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return functionType;
     }
 
-    visitClassDeclaration(classDecl: J.ClassDeclaration, p: PrintOutputCapture<P>): J.ClassDeclaration {
+    override visitClassDeclaration(classDecl: J.ClassDeclaration, p: PrintOutputCapture<P>): J.ClassDeclaration {
         let kind = "";
         switch (classDecl.padding.kind.type) {
             case J.ClassDeclaration.Kind.Type.Class:
@@ -717,7 +717,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return classDecl;
     }
 
-    visitMethodDeclaration(method: J.MethodDeclaration, p: PrintOutputCapture<P>): J.J {
+    override visitMethodDeclaration(method: J.MethodDeclaration, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(method, Space.Location.METHOD_DECLARATION_PREFIX, p);
         this.visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
         this.visitNodes(method.leadingAnnotations, p);
@@ -746,7 +746,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return method;
     }
 
-    visitJSMethodDeclaration(method: JS.JSMethodDeclaration, p: PrintOutputCapture<P>): JS.JSMethodDeclaration {
+    override visitJSMethodDeclaration(method: JS.JSMethodDeclaration, p: PrintOutputCapture<P>): JS.JSMethodDeclaration {
         this.beforeSyntax(method, JsSpace.Location.JSMETHOD_DECLARATION_PREFIX, p);
         this.visitSpace(Space.EMPTY, Space.Location.ANNOTATIONS, p);
         this.visitNodes(method.leadingAnnotations, p);
@@ -774,7 +774,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return method;
     }
 
-    visitMethodInvocation(method: J.MethodInvocation, p: PrintOutputCapture<P>): J.MethodInvocation {
+    override visitMethodInvocation(method: J.MethodInvocation, p: PrintOutputCapture<P>): J.MethodInvocation {
         this.beforeSyntax(method, Space.Location.METHOD_INVOCATION_PREFIX, p);
 
         if (method.name.toString().length === 0) {
@@ -791,7 +791,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return method;
     }
 
-    visitTypeParameter(typeParameter: J.TypeParameter, p: PrintOutputCapture<P>): J.TypeParameter {
+    override visitTypeParameter(typeParameter: J.TypeParameter, p: PrintOutputCapture<P>): J.TypeParameter {
         this.beforeSyntax(typeParameter, Space.Location.TYPE_PARAMETERS_PREFIX, p);
         this.visitNodes(typeParameter.annotations, p);
         typeParameter.modifiers.forEach(m => this.visitModifier(m, p));
@@ -818,7 +818,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return typeParameter;
     }
 
-    visitArrowFunction(arrowFunction: JS.ArrowFunction, p: PrintOutputCapture<P>): J.J {
+    override visitArrowFunction(arrowFunction: JS.ArrowFunction, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(arrowFunction, JsSpace.Location.ARROW_FUNCTION_PREFIX, p);
         this.visitNodes(arrowFunction.leadingAnnotations, p);
         arrowFunction.modifiers.forEach(m => this.visitModifier(m, p));
@@ -852,7 +852,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return arrowFunction;
     }
 
-    visitConditionalType(conditionalType: JS.ConditionalType, p: PrintOutputCapture<P>): J.J {
+    override visitConditionalType(conditionalType: JS.ConditionalType, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(conditionalType, JsSpace.Location.CONDITIONAL_TYPE_PREFIX, p);
         this.visit(conditionalType.checkType, p);
         this.visitJsContainerLocal("extends", conditionalType.padding.condition, JsContainer.Location.CONDITIONAL_TYPE_CONDITION, "", "", p);
@@ -860,7 +860,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return conditionalType;
     }
 
-    visitExpressionWithTypeArguments(type: JS.ExpressionWithTypeArguments, p: PrintOutputCapture<P>): J.J {
+    override visitExpressionWithTypeArguments(type: JS.ExpressionWithTypeArguments, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(type, JsSpace.Location.EXPRESSION_WITH_TYPE_ARGUMENTS_PREFIX, p);
         this.visit(type.clazz, p);
         this.visitJsContainerLocal("<", type.padding.typeArguments, JsContainer.Location.EXPRESSION_WITH_TYPE_ARGUMENTS_TYPE_ARGUMENTS, ",", ">", p);
@@ -868,7 +868,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return type;
     }
 
-    visitImportType(importType: JS.ImportType, p: PrintOutputCapture<P>): J.J {
+    override visitImportType(importType: JS.ImportType, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(importType, JsSpace.Location.IMPORT_TYPE_PREFIX, p);
 
         if (importType.hasTypeof) {
@@ -885,7 +885,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return importType;
     }
 
-    visitTypeDeclaration(typeDeclaration: JS.TypeDeclaration, p: PrintOutputCapture<P>): J.J {
+    override visitTypeDeclaration(typeDeclaration: JS.TypeDeclaration, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(typeDeclaration, JsSpace.Location.TYPE_DECLARATION_PREFIX, p);
 
         typeDeclaration.modifiers.forEach(m => this.visitModifier(m, p));
@@ -908,21 +908,21 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return typeDeclaration;
     }
 
-    visitLiteralType(literalType: JS.LiteralType, p: PrintOutputCapture<P>): J.J {
+    override visitLiteralType(literalType: JS.LiteralType, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(literalType, JsSpace.Location.LITERAL_TYPE_PREFIX, p);
         this.visit(literalType.literal, p);
         this.afterSyntax(literalType, p);
         return literalType;
     }
 
-    visitNamedImports(namedImports: JS.NamedImports, p: PrintOutputCapture<P>): J.J {
+    override visitNamedImports(namedImports: JS.NamedImports, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(namedImports, JsSpace.Location.NAMED_IMPORTS_PREFIX, p);
         this.visitJsContainerLocal("{", namedImports.padding.elements, JsContainer.Location.NAMED_IMPORTS_ELEMENTS, ",", "}", p);
         this.afterSyntax(namedImports, p);
         return namedImports;
     }
 
-    visitJsImportSpecifier(jis: JS.JsImportSpecifier, p: PrintOutputCapture<P>): JS.JsImportSpecifier {
+    override visitJsImportSpecifier(jis: JS.JsImportSpecifier, p: PrintOutputCapture<P>): JS.JsImportSpecifier {
         this.beforeSyntax(jis, JsSpace.Location.JS_IMPORT_SPECIFIER_PREFIX, p);
 
         if (jis.importType) {
@@ -935,7 +935,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return jis;
     }
 
-    visitExportDeclaration(ed: JS.ExportDeclaration, p: PrintOutputCapture<P>): JS.ExportDeclaration {
+    override visitExportDeclaration(ed: JS.ExportDeclaration, p: PrintOutputCapture<P>): JS.ExportDeclaration {
         this.beforeSyntax(ed, JsSpace.Location.EXPORT_DECLARATION_PREFIX, p);
         p.append("export");
         ed.modifiers.forEach(it => this.visitModifier(it, p));
@@ -952,7 +952,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return ed;
     }
 
-    visitExportAssignment(es: JS.ExportAssignment, p: PrintOutputCapture<P>): JS.ExportAssignment {
+    override visitExportAssignment(es: JS.ExportAssignment, p: PrintOutputCapture<P>): JS.ExportAssignment {
         this.beforeSyntax(es, JsSpace.Location.EXPORT_ASSIGNMENT_PREFIX, p);
         p.append("export");
         es.modifiers.forEach(it => this.visitModifier(it, p));
@@ -966,7 +966,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return es;
     }
 
-    visitIndexedAccessType(iat: JS.IndexedAccessType, p: PrintOutputCapture<P>): JS.IndexedAccessType {
+    override visitIndexedAccessType(iat: JS.IndexedAccessType, p: PrintOutputCapture<P>): JS.IndexedAccessType {
         this.beforeSyntax(iat, JsSpace.Location.INDEXED_ACCESS_TYPE_PREFIX, p);
 
         this.visit(iat.objectType, p);
@@ -978,7 +978,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return iat;
     }
 
-    visitIndexedAccessTypeIndexType(iatit: JS.IndexedAccessType.IndexType, p: PrintOutputCapture<P>): JS.IndexedAccessType.IndexType {
+    override visitIndexedAccessTypeIndexType(iatit: JS.IndexedAccessType.IndexType, p: PrintOutputCapture<P>): JS.IndexedAccessType.IndexType {
         this.beforeSyntax(iatit, JsSpace.Location.INDEXED_ACCESS_TYPE_INDEX_TYPE_PREFIX, p);
 
         p.append("[");
@@ -989,7 +989,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return iatit;
     }
 
-    visitWithStatement(withStatement: JS.WithStatement, p: PrintOutputCapture<P>): JS.WithStatement {
+    override visitWithStatement(withStatement: JS.WithStatement, p: PrintOutputCapture<P>): JS.WithStatement {
         this.beforeSyntax(withStatement, JsSpace.Location.WITH_STATEMENT_PREFIX, p);
         p.append("with");
         this.visit(withStatement.expression, p);
@@ -998,7 +998,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return withStatement;
     }
 
-    visitExportSpecifier(es: JS.ExportSpecifier, p: PrintOutputCapture<P>): JS.ExportSpecifier {
+    override visitExportSpecifier(es: JS.ExportSpecifier, p: PrintOutputCapture<P>): JS.ExportSpecifier {
         this.beforeSyntax(es, JsSpace.Location.EXPORT_SPECIFIER_PREFIX, p);
         if (es.typeOnly) {
             this.visitJsLeftPaddedLocal("type", es.padding.typeOnly, JsLeftPadded.Location.EXPORT_SPECIFIER_TYPE_ONLY, p);
@@ -1010,16 +1010,14 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return es;
     }
 
-
-
-    visitNamedExports(ne: JS.NamedExports, p: PrintOutputCapture<P>): J.J {
+    override visitNamedExports(ne: JS.NamedExports, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(ne, JsSpace.Location.NAMED_EXPORTS_PREFIX, p);
         this.visitJsContainerLocal("{", ne.padding.elements, JsContainer.Location.NAMED_EXPORTS_ELEMENTS, ",", "}", p);
         this.afterSyntax(ne, p);
         return ne;
     }
 
-    visitImportAttributes(importAttributes: JS.ImportAttributes, p: PrintOutputCapture<P>): J.J {
+    override visitImportAttributes(importAttributes: JS.ImportAttributes, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(importAttributes, JsSpace.Location.IMPORT_ATTRIBUTES_PREFIX, p);
 
         p.append(JS.ImportAttributes.Token[importAttributes.token].toLowerCase());
@@ -1029,7 +1027,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return importAttributes;
     }
 
-    visitImportAttribute(importAttribute: JS.ImportAttribute, p: PrintOutputCapture<P>): J.J {
+    override visitImportAttribute(importAttribute: JS.ImportAttribute, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(importAttribute, JsSpace.Location.IMPORT_ATTRIBUTE_PREFIX, p);
 
         this.visit(importAttribute.name, p);
@@ -1039,7 +1037,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return importAttribute;
     }
 
-    visitImportTypeAttributes(importAttributes: JS.ImportTypeAttributes, p: PrintOutputCapture<P>): J.J {
+    override visitImportTypeAttributes(importAttributes: JS.ImportTypeAttributes, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(importAttributes, JsSpace.Location.IMPORT_TYPE_ATTRIBUTES_PREFIX, p);
         p.append("{");
 
@@ -1053,7 +1051,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return importAttributes;
     }
 
-    visitArrayBindingPattern(abp: JS.ArrayBindingPattern, p: PrintOutputCapture<P>): J.J {
+    override visitArrayBindingPattern(abp: JS.ArrayBindingPattern, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(abp, JsSpace.Location.ARRAY_BINDING_PATTERN_PREFIX, p);
 
         this.visitJsContainerLocal("[", abp.padding.elements, JsContainer.Location.ARRAY_BINDING_PATTERN_ELEMENTS, ",", "]", p);
@@ -1062,7 +1060,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return abp;
     }
 
-    visitMappedType(mappedType: JS.MappedType, p: PrintOutputCapture<P>): J.J {
+    override visitMappedType(mappedType: JS.MappedType, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(mappedType, JsSpace.Location.MAPPED_TYPE_PREFIX, p);
         p.append("{");
 
@@ -1092,7 +1090,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return mappedType;
     }
 
-    visitMappedTypeKeysRemapping(mappedTypeKeys: JS.MappedType.KeysRemapping, p: PrintOutputCapture<P>): J.J {
+    override visitMappedTypeKeysRemapping(mappedTypeKeys: JS.MappedType.KeysRemapping, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(mappedTypeKeys, JsSpace.Location.MAPPED_TYPE_KEYS_REMAPPING_PREFIX, p);
         p.append("[");
         this.visitJsRightPadded(mappedTypeKeys.padding.typeParameter, JsRightPadded.Location.MAPPED_TYPE_KEYS_REMAPPING_TYPE_PARAMETER, p);
@@ -1107,7 +1105,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return mappedTypeKeys;
     }
 
-    visitMappedTypeMappedTypeParameter(mappedTypeParameter: JS.MappedType.MappedTypeParameter, p: PrintOutputCapture<P>): J.J {
+    override visitMappedTypeMappedTypeParameter(mappedTypeParameter: JS.MappedType.MappedTypeParameter, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(mappedTypeParameter, JsSpace.Location.MAPPED_TYPE_MAPPED_TYPE_PARAMETER_PREFIX, p);
         this.visit(mappedTypeParameter.name, p);
         this.visitJsLeftPaddedLocal("in", mappedTypeParameter.padding.iterateType, JsLeftPadded.Location.MAPPED_TYPE_MAPPED_TYPE_PARAMETER_ITERATE_TYPE, p);
@@ -1115,7 +1113,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return mappedTypeParameter;
     }
 
-    visitObjectBindingDeclarations(objectBindingDeclarations: JS.ObjectBindingDeclarations, p: PrintOutputCapture<P>): J.J {
+    override visitObjectBindingDeclarations(objectBindingDeclarations: JS.ObjectBindingDeclarations, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(objectBindingDeclarations, JsSpace.Location.OBJECT_BINDING_DECLARATIONS_PREFIX, p);
         this.visitNodes(objectBindingDeclarations.leadingAnnotations, p);
         objectBindingDeclarations.modifiers.forEach(m => this.visitModifier(m, p));
@@ -1127,7 +1125,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return objectBindingDeclarations;
     }
 
-    visitTaggedTemplateExpression(taggedTemplateExpression: JS.TaggedTemplateExpression, p: PrintOutputCapture<P>): J.J {
+    override visitTaggedTemplateExpression(taggedTemplateExpression: JS.TaggedTemplateExpression, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(taggedTemplateExpression, JsSpace.Location.TAGGED_TEMPLATE_EXPRESSION_PREFIX, p);
         this.visitJsRightPadded(taggedTemplateExpression.padding.tag, JsRightPadded.Location.TAGGED_TEMPLATE_EXPRESSION_TAG, p);
         this.visitJsContainerLocal("<", taggedTemplateExpression.padding.typeArguments, JsContainer.Location.TAGGED_TEMPLATE_EXPRESSION_TYPE_ARGUMENTS, ",", ">", p);
@@ -1136,7 +1134,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return taggedTemplateExpression;
     }
 
-    visitTemplateExpression(templateExpression: JS.TemplateExpression, p: PrintOutputCapture<P>): JS.TemplateExpression {
+    override visitTemplateExpression(templateExpression: JS.TemplateExpression, p: PrintOutputCapture<P>): JS.TemplateExpression {
         this.beforeSyntax(templateExpression, JsSpace.Location.TEMPLATE_EXPRESSION_PREFIX, p);
         this.visit(templateExpression.head, p);
         this.visitJsRightPaddedLocal(templateExpression.padding.templateSpans, JsRightPadded.Location.TEMPLATE_EXPRESSION_TEMPLATE_SPANS, "", p);
@@ -1144,7 +1142,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return templateExpression;
     }
 
-    visitTemplateExpressionTemplateSpan(value: JS.TemplateExpression.TemplateSpan, p: PrintOutputCapture<P>): JS.TemplateExpression.TemplateSpan {
+    override visitTemplateExpressionTemplateSpan(value: JS.TemplateExpression.TemplateSpan, p: PrintOutputCapture<P>): JS.TemplateExpression.TemplateSpan {
         this.beforeSyntax(value, JsSpace.Location.TEMPLATE_EXPRESSION_TEMPLATE_SPAN_PREFIX, p);
         this.visit(value.expression, p);
         this.visit(value.tail, p);
@@ -1152,14 +1150,14 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return value;
     }
 
-    visitTuple(tuple: JS.Tuple, p: PrintOutputCapture<P>): J.J {
+    override visitTuple(tuple: JS.Tuple, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(tuple, JsSpace.Location.TUPLE_PREFIX, p);
         this.visitJsContainerLocal("[", tuple.padding.elements, JsContainer.Location.TUPLE_ELEMENTS, ",", "]", p);
         this.afterSyntax(tuple, p);
         return tuple;
     }
 
-    visitTypeQuery(typeQuery: JS.TypeQuery, p: PrintOutputCapture<P>): J.J {
+    override visitTypeQuery(typeQuery: JS.TypeQuery, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(typeQuery, JsSpace.Location.TYPE_QUERY_PREFIX, p);
         p.append("typeof");
         this.visit(typeQuery.typeExpression, p);
@@ -1168,7 +1166,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return typeQuery;
     }
 
-    visitTypeOf(typeOf: JS.TypeOf, p: PrintOutputCapture<P>): JS.TypeOf {
+    override visitTypeOf(typeOf: JS.TypeOf, p: PrintOutputCapture<P>): JS.TypeOf {
         this.beforeSyntax(typeOf, JsSpace.Location.TYPE_OF_PREFIX, p);
         p.append("typeof");
         this.visit(typeOf.expression, p);
@@ -1176,7 +1174,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return typeOf;
     }
 
-    visitTypeOperator(typeOperator: JS.TypeOperator, p: PrintOutputCapture<P>): JS.TypeOperator {
+    override visitTypeOperator(typeOperator: JS.TypeOperator, p: PrintOutputCapture<P>): JS.TypeOperator {
         this.beforeSyntax(typeOperator, JsSpace.Location.TYPE_OPERATOR_PREFIX, p);
 
         let keyword = "";
@@ -1196,7 +1194,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return typeOperator;
     }
 
-    visitTypePredicate(typePredicate: JS.TypePredicate, p: PrintOutputCapture<P>): JS.TypePredicate {
+    override visitTypePredicate(typePredicate: JS.TypePredicate, p: PrintOutputCapture<P>): JS.TypePredicate {
         this.beforeSyntax(typePredicate, JsSpace.Location.TYPE_PREDICATE_PREFIX, p);
 
         if (typePredicate.asserts) {
@@ -1210,7 +1208,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return typePredicate;
     }
 
-    visitIndexSignatureDeclaration(isd: JS.IndexSignatureDeclaration, p: PrintOutputCapture<P>): J.J {
+    override visitIndexSignatureDeclaration(isd: JS.IndexSignatureDeclaration, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(isd, JsSpace.Location.INDEX_SIGNATURE_DECLARATION_PREFIX, p);
 
         isd.modifiers.forEach(m => this.visitModifier(m, p));
@@ -1221,7 +1219,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return isd;
     }
 
-    visitAnnotation(annotation: J.Annotation, p: PrintOutputCapture<P>): J.J {
+    override visitAnnotation(annotation: J.Annotation, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(annotation, Space.Location.ANNOTATION_PREFIX, p);
 
         p.append("@");
@@ -1232,7 +1230,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return annotation;
     }
 
-    visitNewArray(newArray: J.NewArray, p: PrintOutputCapture<P>): J.J {
+    override visitNewArray(newArray: J.NewArray, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(newArray, Space.Location.NEW_ARRAY_PREFIX, p);
         this.visit(newArray.typeExpression, p);
         this.visitNodes(newArray.dimensions, p);
@@ -1241,7 +1239,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return newArray;
     }
 
-    visitNewClass(newClass: J.NewClass, p: PrintOutputCapture<P>): J.J {
+    override visitNewClass(newClass: J.NewClass, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(newClass, Space.Location.NEW_CLASS_PREFIX, p);
         this.visitJRightPaddedLocalSingle(newClass.padding.enclosing, JRightPadded.Location.NEW_CLASS_ENCLOSING, ".", p);
         this.visitSpace(newClass.new, Space.Location.NEW_PREFIX, p);
@@ -1260,7 +1258,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return newClass;
     }
 
-    visitSwitch(switch_: J.Switch, p: PrintOutputCapture<P>): J.J {
+    override visitSwitch(switch_: J.Switch, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(switch_, Space.Location.SWITCH_PREFIX, p);
         p.append("switch");
         this.visit(switch_.selector, p);
@@ -1269,7 +1267,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return switch_;
     }
 
-    visitCase(case_: J.Case, p: PrintOutputCapture<P>): J.J {
+    override visitCase(case_: J.Case, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(case_, Space.Location.CASE_PREFIX, p);
 
         const elem = case_.caseLabels[0];
@@ -1288,7 +1286,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return case_;
     }
 
-    visitLabel(label: J.Label, p: PrintOutputCapture<P>): J.Label {
+    override visitLabel(label: J.Label, p: PrintOutputCapture<P>): J.Label {
         this.beforeSyntax(label, Space.Location.LABEL_PREFIX, p);
         this.visitJRightPaddedLocalSingle(label.padding.label, JRightPadded.Location.LABEL, ":", p);
         this.visit(label.statement, p);
@@ -1296,7 +1294,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return label;
     }
 
-    visitContinue(continueStatement: J.Continue, p: PrintOutputCapture<P>): J.Continue {
+    override visitContinue(continueStatement: J.Continue, p: PrintOutputCapture<P>): J.Continue {
         this.beforeSyntax(continueStatement, Space.Location.CONTINUE_PREFIX, p);
         p.append("continue");
         this.visit(continueStatement.label, p);
@@ -1304,7 +1302,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return continueStatement;
     }
 
-    visitBreak(breakStatement: J.Break, p: PrintOutputCapture<P>): J.J {
+    override visitBreak(breakStatement: J.Break, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(breakStatement, Space.Location.BREAK_PREFIX, p);
         p.append("break");
         this.visit(breakStatement.label, p);
@@ -1312,18 +1310,16 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return breakStatement;
     }
 
-    visitFieldAccess(fieldAccess: J.FieldAccess, p: PrintOutputCapture<P>): J.FieldAccess {
+    override visitFieldAccess(fieldAccess: J.FieldAccess, p: PrintOutputCapture<P>): J.FieldAccess {
         this.beforeSyntax(fieldAccess, Space.Location.FIELD_ACCESS_PREFIX, p);
         this.visit(fieldAccess.target, p);
-        //const postFixOperator = fieldAccess.markers.findFirst(PostFixOperator).orElse(null);
 
         this.visitJLeftPaddedLocal(".", fieldAccess.padding.name, JLeftPadded.Location.FIELD_ACCESS_NAME, p);
         this.afterSyntax(fieldAccess, p);
         return fieldAccess;
     }
 
-
-    visitTypeLiteral(tl: JS.TypeLiteral, p: PrintOutputCapture<P>): JS.TypeLiteral {
+    override visitTypeLiteral(tl: JS.TypeLiteral, p: PrintOutputCapture<P>): JS.TypeLiteral {
         this.beforeSyntax(tl, JsSpace.Location.TYPE_LITERAL_PREFIX, p);
 
         this.visit(tl.members, p);
@@ -1332,7 +1328,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return tl;
     }
 
-    visitParentheses<T extends J.J>(parens: J.Parentheses<T>, p: PrintOutputCapture<P>): J.J {
+    override visitParentheses<T extends J.J>(parens: J.Parentheses<T>, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(parens, Space.Location.PARENTHESES_PREFIX, p);
         p.append('(');
         this.visitJRightPaddedLocalSingle(parens.padding.tree, JRightPadded.Location.PARENTHESES, ")", p);
@@ -1340,7 +1336,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return parens;
     }
 
-    visitParameterizedType(type: J.ParameterizedType, p: PrintOutputCapture<P>): J.J {
+    override visitParameterizedType(type: J.ParameterizedType, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(type, Space.Location.PARAMETERIZED_TYPE_PREFIX, p);
         this.visit(type.clazz, p);
         this.visitJContainerLocal("<", type.padding.typeParameters, JContainer.Location.TYPE_PARAMETERS, ",", ">", p);
@@ -1348,7 +1344,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return type;
     }
 
-    visitAssignment(assignment: J.Assignment, p: PrintOutputCapture<P>): J.J {
+    override visitAssignment(assignment: J.Assignment, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(assignment, Space.Location.ASSIGNMENT_PREFIX, p);
         this.visit(assignment.variable, p);
         this.visitJLeftPaddedLocal("=", assignment.padding.assignment, JLeftPadded.Location.ASSIGNMENT, p);
@@ -1356,7 +1352,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return assignment;
     }
 
-    public visitPropertyAssignment(propertyAssignment: JS.PropertyAssignment, p: PrintOutputCapture<P>): J.J {
+    override visitPropertyAssignment(propertyAssignment: JS.PropertyAssignment, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(propertyAssignment, JsSpace.Location.PROPERTY_ASSIGNMENT_PREFIX, p);
 
         this.visitJsRightPadded(propertyAssignment.padding.name, JsRightPadded.Location.PROPERTY_ASSIGNMENT_NAME, p);
@@ -1376,7 +1372,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return propertyAssignment;
     }
 
-    public visitAssignmentOperation(assignOp: J.AssignmentOperation, p: PrintOutputCapture<P>): J.J {
+    override visitAssignmentOperation(assignOp: J.AssignmentOperation, p: PrintOutputCapture<P>): J.J {
         let keyword = "";
         switch (assignOp.operator) {
             case J.AssignmentOperation.Type.Addition:
@@ -1424,7 +1420,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return assignOp;
     }
 
-    visitJsAssignmentOperation(assignOp: JS.JsAssignmentOperation, p: PrintOutputCapture<P>): J.J {
+    override visitJsAssignmentOperation(assignOp: JS.JsAssignmentOperation, p: PrintOutputCapture<P>): J.J {
         let keyword = "";
         switch (assignOp.operator) {
             case JS.JsAssignmentOperation.Type.QuestionQuestion:
@@ -1454,7 +1450,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return assignOp;
     }
 
-    visitEnumValue(enum_: J.EnumValue, p: PrintOutputCapture<P>): J.J {
+    override visitEnumValue(enum_: J.EnumValue, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(enum_, Space.Location.ENUM_VALUE_PREFIX, p);
         this.visit(enum_.name, p);
 
@@ -1472,7 +1468,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return enum_;
     }
 
-    visitEnumValueSet(enums: J.EnumValueSet, p: PrintOutputCapture<P>): J.J {
+    override visitEnumValueSet(enums: J.EnumValueSet, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(enums, Space.Location.ENUM_VALUE_SET_PREFIX, p);
         this.visitJRightPaddedLocal(enums.padding.enums, JRightPadded.Location.ENUM_VALUE, ",", p);
 
@@ -1484,7 +1480,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return enums;
     }
 
-    visitBinary(binary: J.Binary, p: PrintOutputCapture<P>): J.J {
+    override visitBinary(binary: J.Binary, p: PrintOutputCapture<P>): J.J {
         let keyword = "";
         switch (binary.operator) {
             case J.Binary.Type.Addition:
@@ -1539,7 +1535,6 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
                 keyword = ">>>";
                 break;
             case J.Binary.Type.Or:
-                //keyword = binary.markers.find((marker) => marker instanceof Comma) ? "," : "||";
                 keyword = "||";
                 break;
             case J.Binary.Type.And:
@@ -1557,7 +1552,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return binary;
     }
 
-    visitJsBinary(binary: JS.JsBinary, p: PrintOutputCapture<P>): J.J {
+    override visitJsBinary(binary: JS.JsBinary, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(binary, JsSpace.Location.JS_BINARY_PREFIX, p);
 
         this.visit(binary.left, p);
@@ -1593,7 +1588,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return binary;
     }
 
-    visitUnary(unary: J.Unary, p: PrintOutputCapture<P>): J.Unary {
+    override visitUnary(unary: J.Unary, p: PrintOutputCapture<P>): J.Unary {
         this.beforeSyntax(unary, Space.Location.UNARY_PREFIX, p);
         switch (unary.operator) {
             case J.Unary.Type.PreIncrement:
@@ -1635,7 +1630,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return unary;
     }
 
-    visitJsUnary(unary: JS.Unary, p: PrintOutputCapture<P>): J.J {
+    override visitJsUnary(unary: JS.Unary, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(unary, JsSpace.Location.UNARY_PREFIX, p);
 
         switch (unary.operator) {
@@ -1677,7 +1672,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return unary;
     }
 
-    visitUnion(union: JS.Union, p: PrintOutputCapture<P>): JS.Union {
+    override visitUnion(union: JS.Union, p: PrintOutputCapture<P>): JS.Union {
         this.beforeSyntax(union, JsSpace.Location.UNION_PREFIX, p);
 
         this.visitJsRightPaddedLocal(union.padding.types, JsRightPadded.Location.UNION_TYPES, "|", p);
@@ -1686,7 +1681,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return union;
     }
 
-    visitIntersection(intersection: JS.Intersection, p: PrintOutputCapture<P>): JS.Intersection {
+    override visitIntersection(intersection: JS.Intersection, p: PrintOutputCapture<P>): JS.Intersection {
         this.beforeSyntax(intersection, JsSpace.Location.INTERSECTION_PREFIX, p);
 
         this.visitJsRightPaddedLocal(intersection.padding.types, JsRightPadded.Location.INTERSECTION_TYPES, "&", p);
@@ -1695,7 +1690,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return intersection;
     }
 
-    visitForLoop(forLoop: J.ForLoop, p: PrintOutputCapture<P>): J.ForLoop {
+    override visitForLoop(forLoop: J.ForLoop, p: PrintOutputCapture<P>): J.ForLoop {
         this.beforeSyntax(forLoop, Space.Location.FOR_PREFIX, p);
         p.append("for");
         const ctrl = forLoop.control;
@@ -1711,7 +1706,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return forLoop;
     }
 
-    visitJSForOfLoop(loop: JS.JSForOfLoop, p: PrintOutputCapture<P>): JS.JSForOfLoop {
+    override visitJSForOfLoop(loop: JS.JSForOfLoop, p: PrintOutputCapture<P>): JS.JSForOfLoop {
         this.beforeSyntax(loop, JsSpace.Location.JSFOR_OF_LOOP_PREFIX, p);
         p.append("for");
         if (loop.await) {
@@ -1730,7 +1725,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         return loop;
     }
 
-    visitJSForInLoop(loop: JS.JSForInLoop, p: PrintOutputCapture<P>): JS.JSForInLoop {
+    override visitJSForInLoop(loop: JS.JSForInLoop, p: PrintOutputCapture<P>): JS.JSForInLoop {
         this.beforeSyntax(loop, JsSpace.Location.JSFOR_IN_LOOP_PREFIX, p);
         p.append("for");
 
@@ -1745,7 +1740,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         this.afterSyntax(loop, p);
         return loop;
     }
-    
+
     // ---- print utils
 
     private visitStatements(statements: JRightPadded<J.Statement>[], location: JRightPadded.Location, p: PrintOutputCapture<P>) {
@@ -1814,7 +1809,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
     }
 
-    visitSpace(space: Space, loc: Space.Location | JsSpace.Location | null, p: PrintOutputCapture<P>): Space {
+    override visitSpace(space: Space, loc: Space.Location | JsSpace.Location | null, p: PrintOutputCapture<P>): Space {
         p.append(space.whitespace!);
 
         const comments = space.comments;
@@ -1960,7 +1955,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         p.append(after === null ? "" : after);
     }
 
-    visitMarker<M>(marker: M, p: PrintOutputCapture<P>): M {
+    override visitMarker<M>(marker: M, p: PrintOutputCapture<P>): M {
         if (marker instanceof Semicolon) {
             p.append(';');
         }
@@ -1993,7 +1988,7 @@ export class JavaScriptPrinter<P> extends JavaScriptVisitor<PrintOutputCapture<P
         }
     }
 
-    public visitControlParentheses<T extends J.J>(controlParens: J.ControlParentheses<T>, p: PrintOutputCapture<P>): J.J {
+    override visitControlParentheses<T extends J.J>(controlParens: J.ControlParentheses<T>, p: PrintOutputCapture<P>): J.J {
         this.beforeSyntax(controlParens, Space.Location.CONTROL_PARENTHESES_PREFIX, p);
 
         if (this.getParentCursor(1)?.value() instanceof J.TypeCast) {
