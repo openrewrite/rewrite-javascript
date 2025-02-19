@@ -623,7 +623,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         } else {
             t = (JS.TypeOperator) temp;
         }
-        t = t.getPadding().withExpression(Objects.requireNonNull(visitLeftPadded(t.getPadding().getExpression(), JsLeftPadded.Location.TYPE_OPERATOR, p)));
+        t = t.getPadding().withExpression(Objects.requireNonNull(visitLeftPadded(t.getPadding().getExpression(), JsLeftPadded.Location.TYPE_OPERATOR_EXPRESSION, p)));
         return t;
     }
 

@@ -11,14 +11,16 @@ import {
     PrinterFactory,
     PrintOutputCapture,
     RecipeRunException,
-    SourceFile
+    SourceFile,
+    Tree,
+    TreeVisitor
 } from '../../dist/src/core';
 import * as J from "../../dist/src/java/tree";
 import * as JS from "../../dist/src/javascript/tree";
 import dedent from "dedent";
 import {ReceiverContext, RemotePrinterFactory, RemotingContext, SenderContext} from "@openrewrite/rewrite-remote";
 import net from "net";
-import {JavaScriptParser, JavaScriptVisitor} from "../../dist/src/javascript";
+import {JavaScriptParser, JavaScriptVisitor, JavaScriptPrinter} from "../../dist/src/javascript";
 import {ChildProcessWithoutNullStreams, spawn} from "node:child_process";
 import path from "node:path";
 
@@ -36,7 +38,10 @@ registerJavaCodecs(SenderContext, ReceiverContext, RemotingContext)
 let client: net.Socket;
 let remoting: RemotingContext;
 let javaTestEngine: ChildProcessWithoutNullStreams
-function getRandomInt(min: number, max:number):number {
+// to run integration tests with JavaPrinter set env NODE_ENV=it
+const it = process.env.NODE_ENV === "it"
+
+function getRandomInt(min: number, max: number): number {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -44,20 +49,16 @@ function getRandomInt(min: number, max:number):number {
 
 const Socket = net.Socket;
 
-const getNextPort = async (port: number): Promise<number> =>
-{
-    return new Promise((resolve, reject) =>
-    {
+const getNextPort = async (port: number): Promise<number> => {
+    return new Promise((resolve, reject) => {
         const socket = new Socket();
 
-        const timeout = () =>
-        {
+        const timeout = () => {
             resolve(port);
             socket.destroy();
         };
 
-        const next = () =>
-        {
+        const next = () => {
             socket.destroy();
             resolve(getNextPort(++port));
         };
@@ -67,8 +68,7 @@ const getNextPort = async (port: number): Promise<number> =>
 
         socket.on("connect", () => next());
 
-        socket.on("error", (error: any) =>
-        {
+        socket.on("error", (error: any) => {
             if (error.code !== "ECONNREFUSED")
                 reject(error);
             else
@@ -79,76 +79,83 @@ const getNextPort = async (port: number): Promise<number> =>
     });
 };
 
+export async function connect(): Promise<RemotingContext | undefined> {
+    if (it) {
+        return new Promise((resolve, reject) => {
+            const pathToJar = path.resolve(__dirname, '../../../rewrite-test-engine-remote/build/libs/rewrite-test-engine-remote-fat-jar.jar');
+            console.log(pathToJar);
+            client = new net.Socket();
+            client.connect(65432, 'localhost');
 
-export async function connect(): Promise<RemotingContext> {
-    return new Promise((resolve, reject) => {
-        const pathToJar = path.resolve(__dirname, '../../../rewrite-test-engine-remote/build/libs/rewrite-test-engine-remote-fat-jar.jar');
-        console.log(pathToJar);
-        client = new net.Socket();
-        client.connect(65432, 'localhost');
+            client.once('error', (err) => {
+                const randomPort = getRandomInt(50000, 60000);
+                getNextPort(randomPort).then(port => {
+                    javaTestEngine = spawn('java', ['-jar', pathToJar, port.toString()]);
+                    const errorfn = (data: string) => {
+                        console.error(`stderr: ${data}`);
+                        reject(data);
+                    };
+                    const startfn = (data: string) => {
+                        console.log(`stdout: ${data}`);
+                        javaTestEngine.stderr.off("data", errorfn);
+                        client = new net.Socket();
+                        client.connect(port, 'localhost');
 
-        client.once('error', (err) => {
-            const randomPort = getRandomInt(50000, 60000);
-            getNextPort(randomPort).then(port => {
-                javaTestEngine = spawn('java', ['-jar', pathToJar, port.toString()]);
-                const errorfn = (data: string) => {
-                    console.error(`stderr: ${data}`);
-                    reject(data);
-                };
-                const startfn = (data : string) => {
-                    console.log(`stdout: ${data}`);
-                    javaTestEngine.stderr.off("data", errorfn);
-                    client = new net.Socket();
-                    client.connect(port, 'localhost');
+                        client.once('error', (err) => reject(err));
+                        client.once('connect', () => {
+                            remoting = new RemotingContext();
+                            remoting.connect(client);
+                            PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
+                            resolve(remoting);
+                        });
+                        client.setTimeout(10000, () => {
+                            client.destroy();
+                            reject(new Error('Connection timed out'));
+                        });
+                    }
 
-                    client.once('error', (err) => reject(err));
-                    client.once('connect', () => {
-                        remoting = new RemotingContext();
-                        remoting.connect(client);
-                        PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
-                        resolve(remoting);
-                    });
-                    client.setTimeout(10000, () => {
-                        client.destroy();
-                        reject(new Error('Connection timed out'));
-                    });
-                }
-
-                javaTestEngine.stdout.once('data', startfn);
-                javaTestEngine.stderr.on('data', errorfn);
+                    javaTestEngine.stdout.once('data', startfn);
+                    javaTestEngine.stderr.on('data', errorfn);
+                });
             });
-        });
-        client.once('connect', () => {
-            remoting = new RemotingContext();
-            remoting.connect(client);
-            PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
-            resolve(remoting);
-        });
+            client.once('connect', () => {
+                remoting = new RemotingContext();
+                remoting.connect(client);
+                PrinterFactory.current = new RemotePrinterFactory(remoting.client!);
+                resolve(remoting);
+            });
 
-    });
+        });
+    } else {
+        return undefined;
+    }
 }
 
 export async function disconnect(): Promise<void> {
-    return new Promise((resolve, reject) => {
-        if (client) {
-            client.end();
-            client.destroy();
-            if (remoting) {
-                remoting.close();
-            }
+    if (it) {
+        return new Promise((resolve, reject) => {
+            if (client) {
+                client.end();
+                client.destroy();
+                if (remoting) {
+                    remoting.close();
+                }
 
-            if (javaTestEngine) {
-                javaTestEngine.once('close', (code: string) => {
-                    resolve()
-                });
-                javaTestEngine.kill("SIGINT");
+                if (javaTestEngine) {
+                    javaTestEngine.once('close', (code: string) => {
+                        resolve()
+                    });
+                    javaTestEngine.kill("SIGINT");
+                } else {
+                    resolve();
+                }
             } else {
                 resolve();
             }
-        } else {
-            resolve();
-        }
-    });
+        });
+    } else {
+        return Promise.resolve();
+    }
 }
 
 export function rewriteRun(...sourceSpecs: SourceSpec[]) {
@@ -166,14 +173,14 @@ function sourceFile(before: string, defaultPath: string, spec?: (sourceFile: JS.
         const ctx = new InMemoryExecutionContext();
         before = options.normalizeIndent ?? true ? dedent(before) : before;
         const [sourceFile] = parser.parseInputs(
-          [new ParserInput(
-            defaultPath,
+            [new ParserInput(
+                defaultPath,
+                null,
+                true,
+                () => Buffer.from(before)
+            )],
             null,
-            true,
-            () => Buffer.from(before)
-          )],
-          null,
-          ctx) as Iterable<SourceFile>;
+            ctx) as Iterable<SourceFile>;
         if (isParseError(sourceFile)) {
             throw new Error(`Parsing failed for ${sourceFile.sourcePath}: ${sourceFile.markers.findFirst(ParseExceptionResult)!.message}`);
         }
@@ -213,7 +220,18 @@ export function typeScript(before: string, spec?: (sourceFile: JS.CompilationUni
 }
 
 function print(parsed: SourceFile) {
-    remoting.reset();
-    remoting.client?.reset();
+    if (it) {
+        remoting.reset();
+        remoting.client?.reset();
+    } else {
+        PrinterFactory.current = new LocalPrintFactory();
+    }
     return parsed.print(new Cursor(null, Cursor.ROOT_VALUE), new PrintOutputCapture(0));
+}
+
+class LocalPrintFactory extends PrinterFactory {
+    createPrinter<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
+        const printer = new JavaScriptPrinter<P>(cursor);
+        return printer;
+    }
 }

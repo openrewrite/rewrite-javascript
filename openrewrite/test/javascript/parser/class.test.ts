@@ -372,7 +372,7 @@ describe('class mapping', () => {
                         return this._name;
                     }
 
-                    Setter
+                    // Setter
                     set name(value: string) {
                         this._name = value;
                     }
