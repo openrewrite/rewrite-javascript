@@ -71,7 +71,7 @@ public class UseCaseFallThrough extends Recipe {
                 }
 
                 s = s.withCases(s.getCases().withStatements(ListUtils.flatMap(s.getCases().getStatements(), it -> {
-                    if (it instanceof J.Case && changeCondition(((J.Case) it).getExpressions())) {
+                    if (it instanceof J.Case && changeCondition(((J.Case) it).getCaseLabels())) {
                         J.Case c = (J.Case) it;
                         final List<Statement> converted = convertToFallThrough(c);
                         return ListUtils.map(converted, (i, st) -> {
@@ -129,8 +129,8 @@ public class UseCaseFallThrough extends Recipe {
                 return cases;
             }
 
-            private boolean changeCondition(List<Expression> expressions) {
-                for (Expression expression : expressions) {
+            private boolean changeCondition(List<J> expressions) {
+                for (J expression : expressions) {
                     if (!(expression instanceof J.Binary) || !isTarget((J.Binary) expression)) {
                         return false;
                     }
