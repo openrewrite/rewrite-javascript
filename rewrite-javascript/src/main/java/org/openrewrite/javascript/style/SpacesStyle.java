@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@ package org.openrewrite.javascript.style;
 
 import lombok.Value;
 import lombok.With;
-import org.openrewrite.javascript.JavaScriptStyle;
+import org.openrewrite.style.Style;
+import org.openrewrite.style.StyleHelper;
 
 @Value
 @With
@@ -90,7 +91,7 @@ public class SpacesStyle implements JavaScriptStyle {
     @Value
     @With
     public static class Within {
-        Boolean brackets;
+        Boolean indexAccessBrackets;
         Boolean groupingParentheses;
         Boolean functionDeclarationParentheses;
         Boolean functionCallParentheses;
@@ -123,7 +124,6 @@ public class SpacesStyle implements JavaScriptStyle {
         Boolean beforeComma;
         Boolean afterComma;
         Boolean beforeForSemicolon;
-        Boolean afterForSemicolon;
         Boolean beforePropertyNameValueSeparator;
         Boolean afterPropertyNameValueSeparator;
         Boolean afterVarArgInRestOrSpread;
@@ -131,5 +131,10 @@ public class SpacesStyle implements JavaScriptStyle {
         Boolean afterAsteriskInGenerator;
         Boolean beforeTypeReferenceColon;
         Boolean afterTypeReferenceColon;
+    }
+
+    @Override
+    public Style applyDefaults() {
+        return StyleHelper.merge(IntelliJ.TypeScript.spaces(), this);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.javascript;
+package org.openrewrite.javascript.style;
 
+import lombok.Value;
+import lombok.With;
 import org.openrewrite.style.Style;
+import org.openrewrite.style.StyleHelper;
 
-public interface JavaScriptStyle extends Style {
+@Value
+@With
+public class WrappingAndBraces implements JavaScriptStyle {
+
+    @Override
+    public Style applyDefaults() {
+        return StyleHelper.merge(IntelliJ.TypeScript.wrappingAndBraces(), this);
+    }
 }

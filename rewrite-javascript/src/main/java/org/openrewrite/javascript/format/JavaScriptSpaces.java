@@ -26,7 +26,7 @@ import org.openrewrite.javascript.tree.JS;
 import static java.util.Objects.requireNonNull;
 
 @Incubating(since = "1.x")
-public class Spaces extends Recipe {
+public class JavaScriptSpaces extends Recipe {
 
     @Override
     public String getDisplayName() {
@@ -50,9 +50,9 @@ public class Spaces extends Recipe {
                 JS.CompilationUnit cu = (JS.CompilationUnit) requireNonNull(tree);
                 SpacesStyle style = cu.getStyle(SpacesStyle.class);
                 if (style == null) {
-                    style = IntelliJ.spaces();
+                    style = IntelliJ.TypeScript.spaces();
                 }
-                doAfterVisit(new SpacesVisitor<>(style));
+                doAfterVisit(new JavaScriptSpacesVisitor<>(style));
             }
             return super.visit(tree, ctx);
         }
