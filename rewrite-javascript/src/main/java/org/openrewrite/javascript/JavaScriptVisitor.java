@@ -214,9 +214,6 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
             es = (JS.ExpressionStatement) temp;
         }
         J expression = visit(es.getExpression(), p);
-        if (expression instanceof Statement) {
-            return expression;
-        }
         es = es.withExpression((Expression) Objects.requireNonNull(expression));
         return es;
     }

@@ -23,7 +23,7 @@ import {
     randomId,
     SourceFile
 } from "../core";
-import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan, hasFlowAnnotation, checkSyntaxErrors, isValidSurrogateRange} from "./parserUtils";
+import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan, hasFlowAnnotation, checkSyntaxErrors, isValidSurrogateRange, statement_implementations_list} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
 import path from "node:path";
 import {ExpressionStatement, TypeTreeExpression} from ".";
@@ -2626,9 +2626,8 @@ export class JavaScriptParserVisitor {
 
     visitExpressionStatement(node: ts.ExpressionStatement): J.Statement {
         const expression = this.visit(node.expression) as J.Expression;
-        if (expression instanceof J.MethodInvocation || expression instanceof J.NewClass || expression instanceof J.Unknown ||
-            expression instanceof J.AssignmentOperation || expression instanceof J.Ternary || expression instanceof J.Empty ||
-            expression instanceof JS.ExpressionStatement || expression instanceof J.Assignment || expression instanceof J.FieldAccess) {
+        const isStatement = statement_implementations_list.some(cls => expression instanceof cls);
+        if (isStatement) {
             // FIXME this is a hack we currently require because our `Expression` and `Statement` interfaces don't have any type guards
             return expression as J.Statement;
         }
