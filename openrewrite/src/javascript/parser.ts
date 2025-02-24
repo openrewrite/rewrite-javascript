@@ -23,7 +23,7 @@ import {
     randomId,
     SourceFile
 } from "../core";
-import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan, hasFlowAnnotation, checkSyntaxErrors, isValidSurrogateRange, statement_implementations_list} from "./parserUtils";
+import {binarySearch, compareTextSpans, getNextSibling, getPreviousSibling, TextSpan, hasFlowAnnotation, checkSyntaxErrors, isValidSurrogateRange, isStatement} from "./parserUtils";
 import {JavaScriptTypeMapping} from "./typeMapping";
 import path from "node:path";
 import {ExpressionStatement, TypeTreeExpression} from ".";
@@ -2626,9 +2626,7 @@ export class JavaScriptParserVisitor {
 
     visitExpressionStatement(node: ts.ExpressionStatement): J.Statement {
         const expression = this.visit(node.expression) as J.Expression;
-        const isStatement = statement_implementations_list.some(cls => expression instanceof cls);
-        if (isStatement) {
-            // FIXME this is a hack we currently require because our `Expression` and `Statement` interfaces don't have any type guards
+        if (isStatement(expression)) {
             return expression as J.Statement;
         }
         return new JS.ExpressionStatement(
@@ -2718,7 +2716,7 @@ export class JavaScriptParserVisitor {
                 Markers.EMPTY,
                 [node.initializer ?
                     (ts.isVariableDeclarationList(node.initializer) ? this.rightPadded(this.visit(node.initializer), Space.EMPTY) :
-                        this.rightPadded(new ExpressionStatement(randomId(), this.visit(node.initializer)), this.suffix(node.initializer))) :
+                        this.rightPadded(ts.isStatement(node.initializer) ? this.visit(node.initializer) : new ExpressionStatement(randomId(), this.visit(node.initializer)), this.suffix(node.initializer))) :
                     this.rightPadded(this.newJEmpty(), this.suffix(this.findChildNode(node, ts.SyntaxKind.OpenParenToken)!))],  // to handle for (/*_*/; ; );
                 node.condition ? this.rightPadded(this.visit(node.condition), this.suffix(node.condition)) :
                     this.rightPadded(this.newJEmpty(), this.suffix(this.findChildNode(node, ts.SyntaxKind.SemicolonToken)!)),  // to handle for ( ;/*_*/; );

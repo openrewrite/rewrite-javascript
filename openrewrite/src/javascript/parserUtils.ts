@@ -2,7 +2,7 @@ import * as ts from "typescript";
 import * as J from '../java'
 import * as JS from "./tree";
 
-export const statement_implementations_list: Array<{ new (...args: any[]): J.Statement }> = [
+const is_statements = [
     J.Assert,
     J.Assignment,
     J.AssignmentOperation,
@@ -62,6 +62,89 @@ export const statement_implementations_list: Array<{ new (...args: any[]): J.Sta
     JS.ExpressionStatement,
     JS.StatementExpression
 ]
+
+const is_expressions = [
+    J.AnnotatedType,
+    J.Annotation,
+    J.ArrayAccess,
+    J.ArrayType,
+    J.Assignment,
+    J.AssignmentOperation,
+    J.Binary,
+    J.ControlParentheses,
+    J.Empty,
+    J.Erroneous,
+    J.FieldAccess,
+    J.Identifier,
+    J.InstanceOf,
+    J.IntersectionType,
+    J.Lambda,
+    J.Literal,
+    J.MethodInvocation,
+    J.MemberReference,
+    J.NewArray,
+    J.NewClass,
+    J.NullableType,
+    J.ParameterizedType,
+    J.Parentheses,
+    J.ParenthesizedTypeTree,
+    J.Primitive,
+    J.SwitchExpression,
+    J.Ternary,
+    J.TypeCast,
+    J.Unary,
+    J.Unknown,
+    J.Wildcard,
+    JS.Alias,
+    JS.ArrayBindingPattern,
+    JS.ArrowFunction,
+    JS.Await,
+    JS.BindingElement,
+    JS.ConditionalType,
+    JS.DefaultType,
+    JS.Delete,
+    JS.ExportSpecifier,
+    JS.ExpressionWithTypeArguments,
+    JS.FunctionDeclaration,
+    JS.FunctionType,
+    JS.ImportType,
+    JS.IndexedAccessType,
+    JS.IndexedAccessType.IndexType,
+    JS.InferType,
+    JS.Intersection,
+    JS.JsAssignmentOperation,
+    JS.JsBinary,
+    JS.JsImportSpecifier,
+    JS.LiteralType,
+    JS.MappedType,
+    JS.NamedExports,
+    JS.NamedImports,
+    JS.ObjectBindingDeclarations,
+    JS.SatisfiesExpression,
+    JS.TaggedTemplateExpression,
+    JS.TemplateExpression,
+    JS.TrailingTokenStatement,
+    JS.Tuple,
+    JS.TypeInfo,
+    JS.TypeLiteral,
+    JS.TypeOf,
+    JS.TypeOperator,
+    JS.TypePredicate,
+    JS.TypeQuery,
+    JS.TypeTreeExpression,
+    JS.Unary,
+    JS.Union,
+    JS.Void,
+    JS.Yield
+]
+
+export function isStatement(statement: J.J):  statement is J.Statement {
+    return is_statements.some((cls: any) => statement instanceof cls);
+}
+
+export function isExpression(expression: J.J):  expression is J.Expression {
+    return is_expressions.some((cls: any) => expression instanceof cls);
+}
 
 export function getNextSibling(node: ts.Node): ts.Node | null {
     const parent = node.parent;
