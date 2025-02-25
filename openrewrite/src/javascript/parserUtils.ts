@@ -11,10 +11,13 @@ const is_statements = [
     J.Case,
     J.ClassDeclaration,
     J.Continue,
+    J.DoWhileLoop,
     J.Empty,
     J.EnumValueSet,
     J.Erroneous,
     J.FieldAccess,
+    J.ForEachLoop,
+    J.ForLoop,
     J.If,
     J.Import,
     J.Label,
@@ -32,6 +35,7 @@ const is_statements = [
     J.Unary,
     J.Unknown,
     J.VariableDeclarations,
+    J.WhileLoop,
     J.Yield,
     JS.ArrowFunction,
     JS.BindingElement,
@@ -40,6 +44,8 @@ const is_statements = [
     JS.ExportAssignment,
     JS.ExportDeclaration,
     JS.FunctionDeclaration,
+    JS.JSForInLoop,
+    JS.JSForOfLoop,
     JS.ImportAttribute,
     JS.IndexSignatureDeclaration,
     JS.JsAssignmentOperation,
@@ -135,7 +141,9 @@ const is_expressions = [
     JS.Unary,
     JS.Union,
     JS.Void,
-    JS.Yield
+    JS.Yield,
+    JS.ExpressionStatement,
+    JS.StatementExpression
 ]
 
 export function isStatement(statement: J.J):  statement is J.Statement {
