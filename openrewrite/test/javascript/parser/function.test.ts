@@ -442,4 +442,15 @@ describe('function mapping', () => {
             `)
         );
     });
+
+    test('function invocation', () => {
+        rewriteRun(
+            //language=typescript
+            typeScript(`
+                !function(e, t) {
+                    console.log("This is an IIFE", e, t);
+                }("Hello", "World");
+            `)
+        );
+    });
 });
