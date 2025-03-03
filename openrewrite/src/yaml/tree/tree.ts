@@ -251,13 +251,14 @@ export interface Block extends Yaml {
 
 @LstType("org.openrewrite.yaml.tree.Yaml$Scalar")
 export class Scalar extends YamlMixin(Object) implements Block, YamlKey {
-    public constructor(id: UUID, prefix: string, markers: Markers, style: Scalar.Style, anchor: Anchor | null, value: string) {
+    public constructor(id: UUID, prefix: string, markers: Markers, style: Scalar.Style, anchor: Anchor | null, tag: Tag | null, value: string) {
         super();
         this._id = id;
         this._prefix = prefix;
         this._markers = markers;
         this._style = style;
         this._anchor = anchor;
+        this._tag = tag;
         this._value = value;
     }
 
@@ -268,7 +269,7 @@ export class Scalar extends YamlMixin(Object) implements Block, YamlKey {
         }
 
         public withId(id: UUID): Scalar {
-            return id === this._id ? this : new Scalar(id, this._prefix, this._markers, this._style, this._anchor, this._value);
+            return id === this._id ? this : new Scalar(id, this._prefix, this._markers, this._style, this._anchor, this._tag, this._value);
         }
 
         private readonly _prefix: string;
@@ -278,7 +279,7 @@ export class Scalar extends YamlMixin(Object) implements Block, YamlKey {
         }
 
         public withPrefix(prefix: string): Scalar {
-            return prefix === this._prefix ? this : new Scalar(this._id, prefix, this._markers, this._style, this._anchor, this._value);
+            return prefix === this._prefix ? this : new Scalar(this._id, prefix, this._markers, this._style, this._anchor, this._tag, this._value);
         }
 
         private readonly _markers: Markers;
@@ -288,7 +289,7 @@ export class Scalar extends YamlMixin(Object) implements Block, YamlKey {
         }
 
         public withMarkers(markers: Markers): Scalar {
-            return markers === this._markers ? this : new Scalar(this._id, this._prefix, markers, this._style, this._anchor, this._value);
+            return markers === this._markers ? this : new Scalar(this._id, this._prefix, markers, this._style, this._anchor, this._tag, this._value);
         }
 
         private readonly _style: Scalar.Style;
@@ -298,7 +299,7 @@ export class Scalar extends YamlMixin(Object) implements Block, YamlKey {
         }
 
         public withStyle(style: Scalar.Style): Scalar {
-            return style === this._style ? this : new Scalar(this._id, this._prefix, this._markers, style, this._anchor, this._value);
+            return style === this._style ? this : new Scalar(this._id, this._prefix, this._markers, style, this._anchor, this._tag, this._value);
         }
 
         private readonly _anchor: Anchor | null;
@@ -308,7 +309,17 @@ export class Scalar extends YamlMixin(Object) implements Block, YamlKey {
         }
 
         public withAnchor(anchor: Anchor | null): Scalar {
-            return anchor === this._anchor ? this : new Scalar(this._id, this._prefix, this._markers, this._style, anchor, this._value);
+            return anchor === this._anchor ? this : new Scalar(this._id, this._prefix, this._markers, this._style, anchor, this._tag, this._value);
+        }
+
+        private readonly _tag: Tag | null;
+
+        public get tag(): Tag | null {
+            return this._tag;
+        }
+
+        public withTag(tag: Tag | null): Scalar {
+            return tag === this._tag ? this : new Scalar(this._id, this._prefix, this._markers, this._style, this._anchor, tag, this._value);
         }
 
         private readonly _value: string;
@@ -318,7 +329,7 @@ export class Scalar extends YamlMixin(Object) implements Block, YamlKey {
         }
 
         public withValue(value: string): Scalar {
-            return value === this._value ? this : new Scalar(this._id, this._prefix, this._markers, this._style, this._anchor, value);
+            return value === this._value ? this : new Scalar(this._id, this._prefix, this._markers, this._style, this._anchor, this._tag, value);
         }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
@@ -341,7 +352,7 @@ export namespace Scalar {
 
 @LstType("org.openrewrite.yaml.tree.Yaml$Mapping")
 export class Mapping extends YamlMixin(Object) implements Block {
-    public constructor(id: UUID, markers: Markers, openingBracePrefix: string | null, entries: Mapping.Entry[], closingBracePrefix: string | null, anchor: Anchor | null) {
+    public constructor(id: UUID, markers: Markers, openingBracePrefix: string | null, entries: Mapping.Entry[], closingBracePrefix: string | null, anchor: Anchor | null, tag: Tag | null) {
         super();
         this._id = id;
         this._markers = markers;
@@ -349,6 +360,7 @@ export class Mapping extends YamlMixin(Object) implements Block {
         this._entries = entries;
         this._closingBracePrefix = closingBracePrefix;
         this._anchor = anchor;
+        this._tag = tag;
     }
 
         private readonly _id: UUID;
@@ -358,7 +370,7 @@ export class Mapping extends YamlMixin(Object) implements Block {
         }
 
         public withId(id: UUID): Mapping {
-            return id === this._id ? this : new Mapping(id, this._markers, this._openingBracePrefix, this._entries, this._closingBracePrefix, this._anchor);
+            return id === this._id ? this : new Mapping(id, this._markers, this._openingBracePrefix, this._entries, this._closingBracePrefix, this._anchor, this._tag);
         }
 
         private readonly _markers: Markers;
@@ -368,7 +380,7 @@ export class Mapping extends YamlMixin(Object) implements Block {
         }
 
         public withMarkers(markers: Markers): Mapping {
-            return markers === this._markers ? this : new Mapping(this._id, markers, this._openingBracePrefix, this._entries, this._closingBracePrefix, this._anchor);
+            return markers === this._markers ? this : new Mapping(this._id, markers, this._openingBracePrefix, this._entries, this._closingBracePrefix, this._anchor, this._tag);
         }
 
         private readonly _openingBracePrefix: string | null;
@@ -378,7 +390,7 @@ export class Mapping extends YamlMixin(Object) implements Block {
         }
 
         public withOpeningBracePrefix(openingBracePrefix: string | null): Mapping {
-            return openingBracePrefix === this._openingBracePrefix ? this : new Mapping(this._id, this._markers, openingBracePrefix, this._entries, this._closingBracePrefix, this._anchor);
+            return openingBracePrefix === this._openingBracePrefix ? this : new Mapping(this._id, this._markers, openingBracePrefix, this._entries, this._closingBracePrefix, this._anchor, this._tag);
         }
 
         private readonly _entries: Mapping.Entry[];
@@ -388,7 +400,7 @@ export class Mapping extends YamlMixin(Object) implements Block {
         }
 
         public withEntries(entries: Mapping.Entry[]): Mapping {
-            return entries === this._entries ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, entries, this._closingBracePrefix, this._anchor);
+            return entries === this._entries ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, entries, this._closingBracePrefix, this._anchor, this._tag);
         }
 
         private readonly _closingBracePrefix: string | null;
@@ -398,7 +410,7 @@ export class Mapping extends YamlMixin(Object) implements Block {
         }
 
         public withClosingBracePrefix(closingBracePrefix: string | null): Mapping {
-            return closingBracePrefix === this._closingBracePrefix ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, this._entries, closingBracePrefix, this._anchor);
+            return closingBracePrefix === this._closingBracePrefix ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, this._entries, closingBracePrefix, this._anchor, this._tag);
         }
 
         private readonly _anchor: Anchor | null;
@@ -408,7 +420,17 @@ export class Mapping extends YamlMixin(Object) implements Block {
         }
 
         public withAnchor(anchor: Anchor | null): Mapping {
-            return anchor === this._anchor ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, this._entries, this._closingBracePrefix, anchor);
+            return anchor === this._anchor ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, this._entries, this._closingBracePrefix, anchor, this._tag);
+        }
+
+        private readonly _tag: Tag | null;
+
+        public get tag(): Tag | null {
+            return this._tag;
+        }
+
+        public withTag(tag: Tag | null): Mapping {
+            return tag === this._tag ? this : new Mapping(this._id, this._markers, this._openingBracePrefix, this._entries, this._closingBracePrefix, this._anchor, tag);
         }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
@@ -500,7 +522,7 @@ export namespace Mapping {
 
 @LstType("org.openrewrite.yaml.tree.Yaml$Sequence")
 export class Sequence extends YamlMixin(Object) implements Block {
-    public constructor(id: UUID, markers: Markers, openingBracketPrefix: string | null, entries: Sequence.Entry[], closingBracketPrefix: string | null, anchor: Anchor | null) {
+    public constructor(id: UUID, markers: Markers, openingBracketPrefix: string | null, entries: Sequence.Entry[], closingBracketPrefix: string | null, anchor: Anchor | null, tag: Tag | null) {
         super();
         this._id = id;
         this._markers = markers;
@@ -508,6 +530,7 @@ export class Sequence extends YamlMixin(Object) implements Block {
         this._entries = entries;
         this._closingBracketPrefix = closingBracketPrefix;
         this._anchor = anchor;
+        this._tag = tag;
     }
 
         private readonly _id: UUID;
@@ -517,7 +540,7 @@ export class Sequence extends YamlMixin(Object) implements Block {
         }
 
         public withId(id: UUID): Sequence {
-            return id === this._id ? this : new Sequence(id, this._markers, this._openingBracketPrefix, this._entries, this._closingBracketPrefix, this._anchor);
+            return id === this._id ? this : new Sequence(id, this._markers, this._openingBracketPrefix, this._entries, this._closingBracketPrefix, this._anchor, this._tag);
         }
 
         private readonly _markers: Markers;
@@ -527,7 +550,7 @@ export class Sequence extends YamlMixin(Object) implements Block {
         }
 
         public withMarkers(markers: Markers): Sequence {
-            return markers === this._markers ? this : new Sequence(this._id, markers, this._openingBracketPrefix, this._entries, this._closingBracketPrefix, this._anchor);
+            return markers === this._markers ? this : new Sequence(this._id, markers, this._openingBracketPrefix, this._entries, this._closingBracketPrefix, this._anchor, this._tag);
         }
 
         private readonly _openingBracketPrefix: string | null;
@@ -537,7 +560,7 @@ export class Sequence extends YamlMixin(Object) implements Block {
         }
 
         public withOpeningBracketPrefix(openingBracketPrefix: string | null): Sequence {
-            return openingBracketPrefix === this._openingBracketPrefix ? this : new Sequence(this._id, this._markers, openingBracketPrefix, this._entries, this._closingBracketPrefix, this._anchor);
+            return openingBracketPrefix === this._openingBracketPrefix ? this : new Sequence(this._id, this._markers, openingBracketPrefix, this._entries, this._closingBracketPrefix, this._anchor, this._tag);
         }
 
         private readonly _entries: Sequence.Entry[];
@@ -547,7 +570,7 @@ export class Sequence extends YamlMixin(Object) implements Block {
         }
 
         public withEntries(entries: Sequence.Entry[]): Sequence {
-            return entries === this._entries ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, entries, this._closingBracketPrefix, this._anchor);
+            return entries === this._entries ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, entries, this._closingBracketPrefix, this._anchor, this._tag);
         }
 
         private readonly _closingBracketPrefix: string | null;
@@ -557,7 +580,7 @@ export class Sequence extends YamlMixin(Object) implements Block {
         }
 
         public withClosingBracketPrefix(closingBracketPrefix: string | null): Sequence {
-            return closingBracketPrefix === this._closingBracketPrefix ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, this._entries, closingBracketPrefix, this._anchor);
+            return closingBracketPrefix === this._closingBracketPrefix ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, this._entries, closingBracketPrefix, this._anchor, this._tag);
         }
 
         private readonly _anchor: Anchor | null;
@@ -567,7 +590,17 @@ export class Sequence extends YamlMixin(Object) implements Block {
         }
 
         public withAnchor(anchor: Anchor | null): Sequence {
-            return anchor === this._anchor ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, this._entries, this._closingBracketPrefix, anchor);
+            return anchor === this._anchor ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, this._entries, this._closingBracketPrefix, anchor, this._tag);
+        }
+
+        private readonly _tag: Tag | null;
+
+        public get tag(): Tag | null {
+            return this._tag;
+        }
+
+        public withTag(tag: Tag | null): Sequence {
+            return tag === this._tag ? this : new Sequence(this._id, this._markers, this._openingBracketPrefix, this._entries, this._closingBracketPrefix, this._anchor, tag);
         }
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
@@ -776,6 +809,94 @@ export class Anchor extends YamlMixin(Object) {
 
     public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
         return v.visitAnchor(this, p);
+    }
+
+}
+
+@LstType("org.openrewrite.yaml.tree.Yaml$Tag")
+export class Tag extends YamlMixin(Object) {
+    public constructor(id: UUID, prefix: string, markers: Markers, name: string, suffix: string, kind: Tag.Kind) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._name = name;
+        this._suffix = suffix;
+        this._kind = kind;
+    }
+
+        private readonly _id: UUID;
+
+        public get id(): UUID {
+            return this._id;
+        }
+
+        public withId(id: UUID): Tag {
+            return id === this._id ? this : new Tag(id, this._prefix, this._markers, this._name, this._suffix, this._kind);
+        }
+
+        private readonly _prefix: string;
+
+        public get prefix(): string {
+            return this._prefix;
+        }
+
+        public withPrefix(prefix: string): Tag {
+            return prefix === this._prefix ? this : new Tag(this._id, prefix, this._markers, this._name, this._suffix, this._kind);
+        }
+
+        private readonly _markers: Markers;
+
+        public get markers(): Markers {
+            return this._markers;
+        }
+
+        public withMarkers(markers: Markers): Tag {
+            return markers === this._markers ? this : new Tag(this._id, this._prefix, markers, this._name, this._suffix, this._kind);
+        }
+
+        private readonly _name: string;
+
+        public get name(): string {
+            return this._name;
+        }
+
+        public withName(name: string): Tag {
+            return name === this._name ? this : new Tag(this._id, this._prefix, this._markers, name, this._suffix, this._kind);
+        }
+
+        private readonly _suffix: string;
+
+        public get suffix(): string {
+            return this._suffix;
+        }
+
+        public withSuffix(suffix: string): Tag {
+            return suffix === this._suffix ? this : new Tag(this._id, this._prefix, this._markers, this._name, suffix, this._kind);
+        }
+
+        private readonly _kind: Tag.Kind;
+
+        public get kind(): Tag.Kind {
+            return this._kind;
+        }
+
+        public withKind(kind: Tag.Kind): Tag {
+            return kind === this._kind ? this : new Tag(this._id, this._prefix, this._markers, this._name, this._suffix, kind);
+        }
+
+    public acceptYaml<P>(v: YamlVisitor<P>, p: P): Yaml | null {
+        return v.visitTag(this, p);
+    }
+
+}
+
+export namespace Tag {
+    export enum Kind {
+            LOCAL = 0,
+            IMPLICIT_GLOBAL = 1,
+            EXPLICIT_GLOBAL = 2,
+
     }
 
 }

@@ -1,5 +1,7 @@
+import * as extensions from "./extensions";
 import {ListUtils, SourceFile, Tree, TreeVisitor} from "../core";
-import {Yaml, isYaml, YamlKey, Documents, Document, Block, Scalar, Mapping, Sequence, Alias, Anchor} from "./tree";
+import {Yaml, isYaml, YamlKey} from "./tree";
+import {Documents, Document, Block, Scalar, Mapping, Sequence, Alias, Anchor, Tag} from "./tree";
 
 export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
     isAcceptable(sourceFile: SourceFile, p: P): boolean {
@@ -27,6 +29,7 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
     public visitScalar(scalar: Scalar, p: P): Yaml | null {
         scalar = scalar.withMarkers(this.visitMarkers(scalar.markers, p));
         scalar = scalar.withAnchor(this.visitAndCast(scalar.anchor, p));
+        scalar = scalar.withTag(this.visitAndCast(scalar.tag, p));
         return scalar;
     }
 
@@ -34,6 +37,7 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
         mapping = mapping.withMarkers(this.visitMarkers(mapping.markers, p));
         mapping = mapping.withEntries(ListUtils.map(mapping.entries, el => this.visitAndCast(el, p)));
         mapping = mapping.withAnchor(this.visitAndCast(mapping.anchor, p));
+        mapping = mapping.withTag(this.visitAndCast(mapping.tag, p));
         return mapping;
     }
 
@@ -48,6 +52,7 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
         sequence = sequence.withMarkers(this.visitMarkers(sequence.markers, p));
         sequence = sequence.withEntries(ListUtils.map(sequence.entries, el => this.visitAndCast(el, p)));
         sequence = sequence.withAnchor(this.visitAndCast(sequence.anchor, p));
+        sequence = sequence.withTag(this.visitAndCast(sequence.tag, p));
         return sequence;
     }
 
@@ -66,6 +71,11 @@ export class YamlVisitor<P> extends TreeVisitor<Yaml, P> {
     public visitAnchor(anchor: Anchor, p: P): Yaml | null {
         anchor = anchor.withMarkers(this.visitMarkers(anchor.markers, p));
         return anchor;
+    }
+
+    public visitTag(tag: Tag, p: P): Yaml | null {
+        tag = tag.withMarkers(this.visitMarkers(tag.markers, p));
+        return tag;
     }
 
 }

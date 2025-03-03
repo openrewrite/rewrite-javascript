@@ -82,6 +82,7 @@ public class RemotingRecipeRunTest {
             RemotingRecipe remotingRecipe = new RemotingRecipe(new RecipeDescriptor(
               recipes.getRecipes().get(0).getDescriptor().getName(),
               recipes.getRecipes().get(0).getDescriptor().getDisplayName(),
+              recipes.getRecipes().get(0).getDescriptor().getInstanceName(),
               recipes.getRecipes().get(0).getDescriptor().getDescription(),
               recipes.getRecipes().get(0).getDescriptor().getTags(),
               recipes.getRecipes().get(0).getDescriptor().getEstimatedEffortPerOccurrence(),

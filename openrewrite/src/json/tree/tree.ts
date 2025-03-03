@@ -1,43 +1,19 @@
 // noinspection JSUnusedGlobalSymbols
 
 import * as extensions from "./extensions";
-import {Comment, JsonKey, JsonRightPadded, JsonValue, Space} from "./support_types";
-import {JsonVisitor} from "./visitor";
-import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../core";
+import {Json, JsonMixin, Comment, JsonKey, JsonRightPadded, JsonValue, Space} from "./support_types";
+import {JsonVisitor} from "../visitor";
+import {Checksum, Cursor, FileAttributes, LstType, Markers, PrintOutputCapture, PrinterFactory, SourceFile, SourceFileMixin, Tree, TreeVisitor, UUID} from "../../core";
 
-export abstract class Json implements Tree {
-    abstract get id(): UUID;
-
-    abstract withId(id: UUID): Tree;
-
-    abstract get markers(): Markers;
-
-    abstract withMarkers(markers: Markers): Tree;
-
-    public isAcceptable<P>(v: TreeVisitor<Tree, P>, p: P): boolean {
-        return v.isAdaptableTo(JsonVisitor);
+@LstType("org.openrewrite.json.tree.Json$Array")
+export class Array extends JsonMixin(Object) implements JsonValue {
+    public constructor(id: UUID, prefix: Space, markers: Markers, values: JsonRightPadded<JsonValue>[]) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._values = values;
     }
-
-    public accept<R extends Tree, P>(v: TreeVisitor<R, P>, p: P): R | null {
-        return this.acceptJson(v.adapt(JsonVisitor), p) as unknown as R | null;
-    }
-
-    public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
-        return v.defaultValue(this, p) as Json | null;
-    }
-
-}
-
-export namespace Json {
-    @LstType("org.openrewrite.json.tree.Json$Array")
-    export class Array extends Json implements JsonValue {
-        public constructor(id: UUID, prefix: Space, markers: Markers, values: JsonRightPadded<JsonValue>[]) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._values = values;
-        }
 
         private readonly _id: UUID;
 
@@ -79,39 +55,39 @@ export namespace Json {
             return this.padding.withValues(JsonRightPadded.withElements(this._values, values));
         }
 
-        public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
-            return v.visitArray(this, p);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get values(): JsonRightPadded<JsonValue>[] {
-                    return t._values;
-                }
-                public withValues(values: JsonRightPadded<JsonValue>[]): Array {
-                    return t._values === values ? t : new Json.Array(t._id, t._prefix, t._markers, values);
-                }
-            }
-        }
-
+    public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
+        return v.visitArray(this, p);
     }
 
-    @LstType("org.openrewrite.json.tree.Json$Document")
-    export class Document extends SourceFileMixin(Json) {
-        public constructor(id: UUID, sourcePath: string, prefix: Space, markers: Markers, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, fileAttributes: FileAttributes | null, value: JsonValue, eof: Space) {
-            super();
-            this._id = id;
-            this._sourcePath = sourcePath;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._charsetName = charsetName;
-            this._charsetBomMarked = charsetBomMarked;
-            this._checksum = checksum;
-            this._fileAttributes = fileAttributes;
-            this._value = value;
-            this._eof = eof;
+    get padding() {
+        const t = this;
+        return new class {
+            public get values(): JsonRightPadded<JsonValue>[] {
+                return t._values;
+            }
+            public withValues(values: JsonRightPadded<JsonValue>[]): Array {
+                return t._values === values ? t : new Array(t._id, t._prefix, t._markers, values);
+            }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.json.tree.Json$Document")
+export class Document extends SourceFileMixin(JsonMixin(Object)) {
+    public constructor(id: UUID, sourcePath: string, prefix: Space, markers: Markers, charsetName: string | null, charsetBomMarked: boolean, checksum: Checksum | null, fileAttributes: FileAttributes | null, value: JsonValue, eof: Space) {
+        super();
+        this._id = id;
+        this._sourcePath = sourcePath;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._charsetName = charsetName;
+        this._charsetBomMarked = charsetBomMarked;
+        this._checksum = checksum;
+        this._fileAttributes = fileAttributes;
+        this._value = value;
+        this._eof = eof;
+    }
 
         private readonly _id: UUID;
 
@@ -213,24 +189,24 @@ export namespace Json {
             return eof === this._eof ? this : new Document(this._id, this._sourcePath, this._prefix, this._markers, this._charsetName, this._charsetBomMarked, this._checksum, this._fileAttributes, this._value, eof);
         }
 
-        public printer<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
-            return PrinterFactory.current.createPrinter(cursor);
-        }
-
-        public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
-            return v.visitDocument(this, p);
-        }
-
+    public printer<P>(cursor: Cursor): TreeVisitor<Tree, PrintOutputCapture<P>> {
+        return PrinterFactory.current.createPrinter(cursor);
     }
 
-    @LstType("org.openrewrite.json.tree.Json$Empty")
-    export class Empty extends Json implements JsonValue {
-        public constructor(id: UUID, prefix: Space, markers: Markers) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-        }
+    public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
+        return v.visitDocument(this, p);
+    }
+
+}
+
+@LstType("org.openrewrite.json.tree.Json$Empty")
+export class Empty extends JsonMixin(Object) implements JsonValue {
+    public constructor(id: UUID, prefix: Space, markers: Markers) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+    }
 
         private readonly _id: UUID;
 
@@ -262,21 +238,21 @@ export namespace Json {
             return markers === this._markers ? this : new Empty(this._id, this._prefix, markers);
         }
 
-        public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
-            return v.visitEmpty(this, p);
-        }
-
+    public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
+        return v.visitEmpty(this, p);
     }
 
-    @LstType("org.openrewrite.json.tree.Json$Identifier")
-    export class Identifier extends Json implements JsonKey {
-        public constructor(id: UUID, prefix: Space, markers: Markers, name: string) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._name = name;
-        }
+}
+
+@LstType("org.openrewrite.json.tree.Json$Identifier")
+export class Identifier extends JsonMixin(Object) implements JsonKey {
+    public constructor(id: UUID, prefix: Space, markers: Markers, name: string) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._name = name;
+    }
 
         private readonly _id: UUID;
 
@@ -318,22 +294,22 @@ export namespace Json {
             return name === this._name ? this : new Identifier(this._id, this._prefix, this._markers, name);
         }
 
-        public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
-            return v.visitIdentifier(this, p);
-        }
-
+    public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
+        return v.visitIdentifier(this, p);
     }
 
-    @LstType("org.openrewrite.json.tree.Json$Literal")
-    export class Literal extends Json implements JsonValue, JsonKey {
-        public constructor(id: UUID, prefix: Space, markers: Markers, source: string, value: Object) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._source = source;
-            this._value = value;
-        }
+}
+
+@LstType("org.openrewrite.json.tree.Json$Literal")
+export class Literal extends JsonMixin(Object) implements JsonValue, JsonKey {
+    public constructor(id: UUID, prefix: Space, markers: Markers, source: string, value: Object | null) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._source = source;
+        this._value = value;
+    }
 
         private readonly _id: UUID;
 
@@ -375,32 +351,32 @@ export namespace Json {
             return source === this._source ? this : new Literal(this._id, this._prefix, this._markers, source, this._value);
         }
 
-        private readonly _value: Object;
+        private readonly _value: Object | null;
 
-        public get value(): Object {
+        public get value(): Object | null {
             return this._value;
         }
 
-        public withValue(value: Object): Literal {
+        public withValue(value: Object | null): Literal {
             return value === this._value ? this : new Literal(this._id, this._prefix, this._markers, this._source, value);
         }
 
-        public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
-            return v.visitLiteral(this, p);
-        }
-
+    public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
+        return v.visitLiteral(this, p);
     }
 
-    @LstType("org.openrewrite.json.tree.Json$Member")
-    export class Member extends Json {
-        public constructor(id: UUID, prefix: Space, markers: Markers, key: JsonRightPadded<JsonKey>, value: JsonValue) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._key = key;
-            this._value = value;
-        }
+}
+
+@LstType("org.openrewrite.json.tree.Json$Member")
+export class Member extends JsonMixin(Object) {
+    public constructor(id: UUID, prefix: Space, markers: Markers, key: JsonRightPadded<JsonKey>, value: JsonValue) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._key = key;
+        this._value = value;
+    }
 
         private readonly _id: UUID;
 
@@ -452,33 +428,33 @@ export namespace Json {
             return value === this._value ? this : new Member(this._id, this._prefix, this._markers, this._key, value);
         }
 
-        public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
-            return v.visitMember(this, p);
-        }
-
-        get padding() {
-            const t = this;
-            return new class {
-                public get key(): JsonRightPadded<JsonKey> {
-                    return t._key;
-                }
-                public withKey(key: JsonRightPadded<JsonKey>): Member {
-                    return t._key === key ? t : new Json.Member(t._id, t._prefix, t._markers, key, t._value);
-                }
-            }
-        }
-
+    public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
+        return v.visitMember(this, p);
     }
 
-    @LstType("org.openrewrite.json.tree.Json$JsonObject")
-    export class JsonObject extends Json implements JsonValue {
-        public constructor(id: UUID, prefix: Space, markers: Markers, members: JsonRightPadded<Json>[]) {
-            super();
-            this._id = id;
-            this._prefix = prefix;
-            this._markers = markers;
-            this._members = members;
+    get padding() {
+        const t = this;
+        return new class {
+            public get key(): JsonRightPadded<JsonKey> {
+                return t._key;
+            }
+            public withKey(key: JsonRightPadded<JsonKey>): Member {
+                return t._key === key ? t : new Member(t._id, t._prefix, t._markers, key, t._value);
+            }
         }
+    }
+
+}
+
+@LstType("org.openrewrite.json.tree.Json$JsonObject")
+export class JsonObject extends JsonMixin(Object) implements JsonValue {
+    public constructor(id: UUID, prefix: Space, markers: Markers, members: JsonRightPadded<Json>[]) {
+        super();
+        this._id = id;
+        this._prefix = prefix;
+        this._markers = markers;
+        this._members = members;
+    }
 
         private readonly _id: UUID;
 
@@ -520,22 +496,20 @@ export namespace Json {
             return this.padding.withMembers(JsonRightPadded.withElements(this._members, members));
         }
 
-        public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
-            return v.visitObject(this, p);
-        }
+    public acceptJson<P>(v: JsonVisitor<P>, p: P): Json | null {
+        return v.visitObject(this, p);
+    }
 
-        get padding() {
-            const t = this;
-            return new class {
-                public get members(): JsonRightPadded<Json>[] {
-                    return t._members;
-                }
-                public withMembers(members: JsonRightPadded<Json>[]): JsonObject {
-                    return t._members === members ? t : new Json.JsonObject(t._id, t._prefix, t._markers, members);
-                }
+    get padding() {
+        const t = this;
+        return new class {
+            public get members(): JsonRightPadded<Json>[] {
+                return t._members;
+            }
+            public withMembers(members: JsonRightPadded<Json>[]): JsonObject {
+                return t._members === members ? t : new JsonObject(t._id, t._prefix, t._markers, members);
             }
         }
-
     }
 
 }
