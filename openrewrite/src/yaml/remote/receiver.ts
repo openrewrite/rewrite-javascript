@@ -1,8 +1,8 @@
 import * as extensions from "./remote_extensions";
 import {Checksum, Cursor, FileAttributes, ListUtils, Tree} from '../../core';
 import {DetailsReceiver, Receiver, ReceiverContext, ReceiverFactory, ValueType} from '@openrewrite/rewrite-remote';
-import {YamlVisitor} from '../visitor';
-import {Yaml, YamlKey, Documents, Document, Block, Scalar, Mapping, Sequence, Alias, Anchor} from '../tree';
+import {YamlVisitor} from '..';
+import {Yaml, YamlKey, Documents, Document, Block, Scalar, Mapping, Sequence, Alias, Anchor, Tag} from '../tree';
 
 export class YamlReceiver implements Receiver<Yaml> {
     public fork(ctx: ReceiverContext): ReceiverContext {
@@ -61,6 +61,7 @@ class Visitor extends YamlVisitor<ReceiverContext> {
         scalar = scalar.withMarkers(ctx.receiveNode(scalar.markers, ctx.receiveMarkers)!);
         scalar = scalar.withStyle(ctx.receiveValue(scalar.style, ValueType.Enum)!);
         scalar = scalar.withAnchor(ctx.receiveNode(scalar.anchor, ctx.receiveTree));
+        scalar = scalar.withTag(ctx.receiveNode(scalar.tag, ctx.receiveTree));
         scalar = scalar.withValue(ctx.receiveValue(scalar.value, ValueType.Primitive)!);
         return scalar;
     }
@@ -72,6 +73,7 @@ class Visitor extends YamlVisitor<ReceiverContext> {
         mapping = mapping.withEntries(ctx.receiveNodes(mapping.entries, ctx.receiveTree)!);
         mapping = mapping.withClosingBracePrefix(ctx.receiveValue(mapping.closingBracePrefix, ValueType.Primitive));
         mapping = mapping.withAnchor(ctx.receiveNode(mapping.anchor, ctx.receiveTree));
+        mapping = mapping.withTag(ctx.receiveNode(mapping.tag, ctx.receiveTree));
         return mapping;
     }
 
@@ -92,6 +94,7 @@ class Visitor extends YamlVisitor<ReceiverContext> {
         sequence = sequence.withEntries(ctx.receiveNodes(sequence.entries, ctx.receiveTree)!);
         sequence = sequence.withClosingBracketPrefix(ctx.receiveValue(sequence.closingBracketPrefix, ValueType.Primitive));
         sequence = sequence.withAnchor(ctx.receiveNode(sequence.anchor, ctx.receiveTree));
+        sequence = sequence.withTag(ctx.receiveNode(sequence.tag, ctx.receiveTree));
         return sequence;
     }
 
@@ -120,6 +123,16 @@ class Visitor extends YamlVisitor<ReceiverContext> {
         anchor = anchor.withMarkers(ctx.receiveNode(anchor.markers, ctx.receiveMarkers)!);
         anchor = anchor.withKey(ctx.receiveValue(anchor.key, ValueType.Primitive)!);
         return anchor;
+    }
+
+    public visitTag(tag: Tag, ctx: ReceiverContext): Yaml {
+        tag = tag.withId(ctx.receiveValue(tag.id, ValueType.UUID)!);
+        tag = tag.withPrefix(ctx.receiveValue(tag.prefix, ValueType.Primitive)!);
+        tag = tag.withMarkers(ctx.receiveNode(tag.markers, ctx.receiveMarkers)!);
+        tag = tag.withName(ctx.receiveValue(tag.name, ValueType.Primitive)!);
+        tag = tag.withSuffix(ctx.receiveValue(tag.suffix, ValueType.Primitive)!);
+        tag = tag.withKind(ctx.receiveValue(tag.kind, ValueType.Enum)!);
+        return tag;
     }
 
 }
@@ -166,6 +179,7 @@ class Factory implements ReceiverFactory {
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveValue(null, ValueType.Enum)!,
                 ctx.receiveNode<Anchor>(null, ctx.receiveTree),
+                ctx.receiveNode<Tag>(null, ctx.receiveTree),
                 ctx.receiveValue(null, ValueType.Primitive)!
             );
         }
@@ -177,7 +191,8 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.Primitive),
                 ctx.receiveNodes<Mapping.Entry>(null, ctx.receiveTree)!,
                 ctx.receiveValue(null, ValueType.Primitive),
-                ctx.receiveNode<Anchor>(null, ctx.receiveTree)
+                ctx.receiveNode<Anchor>(null, ctx.receiveTree),
+                ctx.receiveNode<Tag>(null, ctx.receiveTree)
             );
         }
 
@@ -199,7 +214,8 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.Primitive),
                 ctx.receiveNodes<Sequence.Entry>(null, ctx.receiveTree)!,
                 ctx.receiveValue(null, ValueType.Primitive),
-                ctx.receiveNode<Anchor>(null, ctx.receiveTree)
+                ctx.receiveNode<Anchor>(null, ctx.receiveTree),
+                ctx.receiveNode<Tag>(null, ctx.receiveTree)
             );
         }
 
@@ -230,6 +246,17 @@ class Factory implements ReceiverFactory {
                 ctx.receiveValue(null, ValueType.Primitive)!,
                 ctx.receiveNode(null, ctx.receiveMarkers)!,
                 ctx.receiveValue(null, ValueType.Primitive)!
+            );
+        }
+
+        if (type === "org.openrewrite.yaml.tree.Yaml$Tag") {
+            return new Tag(
+                ctx.receiveValue(null, ValueType.UUID)!,
+                ctx.receiveValue(null, ValueType.Primitive)!,
+                ctx.receiveNode(null, ctx.receiveMarkers)!,
+                ctx.receiveValue(null, ValueType.Primitive)!,
+                ctx.receiveValue(null, ValueType.Primitive)!,
+                ctx.receiveValue(null, ValueType.Enum)!
             );
         }
 

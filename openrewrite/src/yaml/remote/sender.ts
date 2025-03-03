@@ -1,8 +1,8 @@
 import * as extensions from "./remote_extensions";
 import {Cursor, ListUtils, Tree} from '../../core';
 import {Sender, SenderContext, ValueType} from '@openrewrite/rewrite-remote';
-import {Yaml, YamlKey, Documents, Document, Block, Scalar, Mapping, Sequence, Alias, Anchor} from '../tree';
-import {YamlVisitor} from '../visitor';
+import {YamlVisitor} from '..';
+import {Yaml, YamlKey, Documents, Document, Block, Scalar, Mapping, Sequence, Alias, Anchor, Tag} from '../tree';
 
 export class YamlSender implements Sender<Yaml> {
     public send(after: Yaml, before: Yaml | null, ctx: SenderContext): void {
@@ -56,6 +56,7 @@ class Visitor extends YamlVisitor<SenderContext> {
         ctx.sendNode(scalar, v => v.markers, ctx.sendMarkers);
         ctx.sendValue(scalar, v => v.style, ValueType.Enum);
         ctx.sendNode(scalar, v => v.anchor, ctx.sendTree);
+        ctx.sendNode(scalar, v => v.tag, ctx.sendTree);
         ctx.sendValue(scalar, v => v.value, ValueType.Primitive);
         return scalar;
     }
@@ -67,6 +68,7 @@ class Visitor extends YamlVisitor<SenderContext> {
         ctx.sendNodes(mapping, v => v.entries, ctx.sendTree, t => t.id);
         ctx.sendValue(mapping, v => v.closingBracePrefix, ValueType.Primitive);
         ctx.sendNode(mapping, v => v.anchor, ctx.sendTree);
+        ctx.sendNode(mapping, v => v.tag, ctx.sendTree);
         return mapping;
     }
 
@@ -87,6 +89,7 @@ class Visitor extends YamlVisitor<SenderContext> {
         ctx.sendNodes(sequence, v => v.entries, ctx.sendTree, t => t.id);
         ctx.sendValue(sequence, v => v.closingBracketPrefix, ValueType.Primitive);
         ctx.sendNode(sequence, v => v.anchor, ctx.sendTree);
+        ctx.sendNode(sequence, v => v.tag, ctx.sendTree);
         return sequence;
     }
 
@@ -115,6 +118,16 @@ class Visitor extends YamlVisitor<SenderContext> {
         ctx.sendNode(anchor, v => v.markers, ctx.sendMarkers);
         ctx.sendValue(anchor, v => v.key, ValueType.Primitive);
         return anchor;
+    }
+
+    public visitTag(tag: Tag, ctx: SenderContext): Yaml {
+        ctx.sendValue(tag, v => v.id, ValueType.UUID);
+        ctx.sendValue(tag, v => v.prefix, ValueType.Primitive);
+        ctx.sendNode(tag, v => v.markers, ctx.sendMarkers);
+        ctx.sendValue(tag, v => v.name, ValueType.Primitive);
+        ctx.sendValue(tag, v => v.suffix, ValueType.Primitive);
+        ctx.sendValue(tag, v => v.kind, ValueType.Enum);
+        return tag;
     }
 
 }
