@@ -33,13 +33,13 @@ import static java.util.Collections.singletonList;
 import static org.openrewrite.javascript.Assertions.javaScript;
 
 @SuppressWarnings({"JSDuplicatedDeclaration", "ReservedWordAsName", "JSUnusedLocalSymbols", "InfiniteRecursionJS", "JSUnresolvedReference", "TrailingWhitespacesInTextBlock"})
-class SpacesTest implements RewriteTest {
+class JavaScriptSpacesTest implements RewriteTest {
 
     private static Consumer<RecipeSpec> spaces(UnaryOperator<SpacesStyle> with) {
-        return spec -> spec.recipe(new Spaces())
+        return spec -> spec.recipe(new JavaScriptSpaces())
                 .parser(JavaScriptParser.builder().styles(singletonList(
                         new NamedStyles(Tree.randomId(), "test", "test", "test", emptySet(),
-                                singletonList(with.apply(IntelliJ.spaces())))
+                                singletonList(with.apply(IntelliJ.TypeScript.spaces())))
                 )));
     }
 

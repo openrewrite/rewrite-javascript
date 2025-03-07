@@ -13,7 +13,9 @@ import {
     RecipeRunException,
     SourceFile,
     Tree,
-    TreeVisitor
+    TreeVisitor,
+    InMemoryLargeSourceSet,
+    RecipeRunResult
 } from '../../dist/src/core';
 import * as J from "../../dist/src/java/tree";
 import * as JS from "../../dist/src/javascript/tree";
@@ -23,6 +25,7 @@ import net from "net";
 import {JavaScriptParser, JavaScriptVisitor, JavaScriptPrinter} from "../../dist/src/javascript";
 import {ChildProcessWithoutNullStreams, spawn} from "node:child_process";
 import path from "node:path";
+import {RecipeSpec} from "./recipeHarness";
 
 export interface RewriteTestOptions {
     normalizeIndent?: boolean
@@ -30,7 +33,7 @@ export interface RewriteTestOptions {
     expectUnknowns?: boolean
 }
 
-export type SourceSpec = (options: RewriteTestOptions) => void;
+export type SourceSpec = (options: RewriteTestOptions, recipe?: RecipeSpec) => void;
 
 registerJsCodecs(SenderContext, ReceiverContext, RemotingContext)
 registerJavaCodecs(SenderContext, ReceiverContext, RemotingContext)
@@ -159,17 +162,45 @@ export async function disconnect(): Promise<void> {
 }
 
 export function rewriteRun(...sourceSpecs: SourceSpec[]) {
-    rewriteRunWithOptions({}, ...sourceSpecs);
+    rewriteRunWithRecipeAndOptions({}, undefined, ...sourceSpecs);
 }
 
 export function rewriteRunWithOptions(options: RewriteTestOptions, ...sourceSpecs: SourceSpec[]) {
-    sourceSpecs.forEach(sourceSpec => sourceSpec(options));
+    rewriteRunWithRecipeAndOptions(options, undefined, ...sourceSpecs);
+}
+
+export function rewriteRunWithRecipe(recipeSpec: RecipeSpec, ...sourceSpecs: SourceSpec[]) {
+    rewriteRunWithRecipeAndOptions({}, recipeSpec, ...sourceSpecs);
+}
+
+export function rewriteRunWithRecipeAndOptions(options: RewriteTestOptions, recipeSpec?: RecipeSpec, ...sourceSpecs: SourceSpec[]) {
+    sourceSpecs.forEach(sourceSpec => sourceSpec(options, recipeSpec));
 }
 
 const parser = JavaScriptParser.builder().build();
 
-function sourceFile(before: string, defaultPath: string, spec?: (sourceFile: JS.CompilationUnit) => void) {
-    return (options: RewriteTestOptions) => {
+function checkUnknowns(sourceFile: SourceFile, options: RewriteTestOptions) {
+    try {
+        let unknowns: J.Unknown[] = [];
+        new class extends JavaScriptVisitor<number> {
+            visitUnknown(unknown: J.Unknown, p: number): J.J | null {
+                unknowns.push(unknown);
+                return unknown;
+            }
+        }().visit(sourceFile, 0);
+        const expectUnknowns = options.expectUnknowns ?? false;
+        if (expectUnknowns && unknowns.length == 0) {
+            throw new Error("No J.Unknown instances were found. Adjust the test expectation.");
+        } else if (!expectUnknowns && unknowns.length != 0) {
+            throw new Error("No J.Unknown instances were expected: " + unknowns.map(u => u.source.text));
+        }
+    } catch (e) {
+        throw e instanceof RecipeRunException ? e.cause : e;
+    }
+}
+
+function sourceFile(before: string, defaultPath: string, after?: string, spec?: (sourceFile: JS.CompilationUnit) => void) {
+    return (options: RewriteTestOptions, recipeSpec?: RecipeSpec) => {
         const ctx = new InMemoryExecutionContext();
         before = options.normalizeIndent ?? true ? dedent(before) : before;
         const [sourceFile] = parser.parseInputs(
@@ -184,26 +215,23 @@ function sourceFile(before: string, defaultPath: string, spec?: (sourceFile: JS.
         if (isParseError(sourceFile)) {
             throw new Error(`Parsing failed for ${sourceFile.sourcePath}: ${sourceFile.markers.findFirst(ParseExceptionResult)!.message}`);
         }
-        try {
-            let unknowns: J.Unknown[] = [];
-            new class extends JavaScriptVisitor<number> {
-                visitUnknown(unknown: J.Unknown, p: number): J.J | null {
-                    unknowns.push(unknown);
-                    return unknown;
-                }
-            }().visit(sourceFile, 0);
-            const expectUnknowns = options.expectUnknowns ?? false;
-            if (expectUnknowns && unknowns.length == 0) {
-                throw new Error("No J.Unknown instances were found. Adjust the test expectation.");
-            } else if (!expectUnknowns && unknowns.length != 0) {
-                throw new Error("No J.Unknown instances were expected: " + unknowns.map(u => u.source.text));
+        checkUnknowns(sourceFile, options);
+        if (after) {
+            after = options.normalizeIndent ?? true ? dedent(after) : after;
+            let printed: string;
+            if (recipeSpec && recipeSpec.recipe) {
+                const before = new InMemoryLargeSourceSet([sourceFile])
+                const [result] = recipeSpec.recipe.run(before, new InMemoryExecutionContext()) as Iterable<RecipeRunResult>;
+                printed = print(result.after!);
+            } else {
+                printed = print(sourceFile);
             }
-        } catch (e) {
-            throw e instanceof RecipeRunException ? e.cause : e;
-        }
-        if (options.validatePrintIdempotence ?? true) {
-            let printed = print(sourceFile);
-            expect(printed).toBe(before);
+            expect(printed).toBe(after);
+        } else {
+            if (options.validatePrintIdempotence ?? true) {
+                let printed = print(sourceFile);
+                expect(printed).toBe(before);
+            }
         }
         if (spec) {
             spec(sourceFile as JS.CompilationUnit);
@@ -211,12 +239,12 @@ function sourceFile(before: string, defaultPath: string, spec?: (sourceFile: JS.
     };
 }
 
-export function javaScript(before: string, spec?: (sourceFile: JS.CompilationUnit) => void): SourceSpec {
-    return sourceFile(before, 'test.js', spec);
+export function javaScript(before: string, after?: string, spec?: (sourceFile: JS.CompilationUnit) => void): SourceSpec {
+    return sourceFile(before, 'test.js', after, spec);
 }
 
-export function typeScript(before: string, spec?: (sourceFile: JS.CompilationUnit) => void): SourceSpec {
-    return sourceFile(before, 'test.ts', spec);
+export function typeScript(before: string, after?: string, spec?: (sourceFile: JS.CompilationUnit) => void): SourceSpec {
+    return sourceFile(before, 'test.ts', after, spec);
 }
 
 function print(parsed: SourceFile) {

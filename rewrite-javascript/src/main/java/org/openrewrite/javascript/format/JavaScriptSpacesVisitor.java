@@ -25,11 +25,11 @@ import org.openrewrite.javascript.style.SpacesStyle;
 import java.util.List;
 
 @Incubating(since = "1.x")
-public class SpacesVisitor<P> extends JavaScriptIsoVisitor<P> {
+public class JavaScriptSpacesVisitor<P> extends JavaScriptIsoVisitor<P> {
 
     private final SpacesStyle style;
 
-    public SpacesVisitor(SpacesStyle style) {
+    public JavaScriptSpacesVisitor(SpacesStyle style) {
         this.style = style;
     }
 

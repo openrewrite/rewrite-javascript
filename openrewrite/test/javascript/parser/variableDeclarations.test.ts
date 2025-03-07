@@ -14,7 +14,7 @@ describe('variable declaration mapping', () => {
                 const c = 1;
                 /* c1*/  /*c2 */
                 const d = 1;
-            `, cu => {
+            `, undefined, cu => {
                 expect(cu).toBeDefined();
                 expect(cu.statements).toHaveLength(2);
                 cu.statements.forEach(statement => {
@@ -35,7 +35,7 @@ describe('variable declaration mapping', () => {
                 const c = 1;
                 /* c1*/  /*c2 */
                 const d = 1;
-            `, cu => {
+            `, undefined, cu => {
                 expect(cu).toBeDefined();
                 expect(cu.statements).toHaveLength(2);
                 cu.statements.forEach(statement => {

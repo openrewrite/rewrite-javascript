@@ -11,7 +11,7 @@ describe('arithmetic operator mapping', () => {
         rewriteRun(
           //language=typescript
           typeScript(
-            '1 + 2',
+            '1 + 2', undefined,
             cu => {
                 const binary = <J.Binary>(<JS.ExpressionStatement>cu.statements[0]).expression;
                 expect((<JavaType.Primitive>binary.type).kind).toBe(JavaType.PrimitiveKind.Double);
@@ -23,7 +23,7 @@ describe('arithmetic operator mapping', () => {
         rewriteRun(
           //language=typescript
           typeScript(
-            '"1" + 2',
+            '"1" + 2', undefined,
             cu => {
                 const binary = <J.Binary>(<JS.ExpressionStatement>cu.statements[0]).expression;
                 expect((<JavaType.Primitive>binary.type).kind).toBe(JavaType.PrimitiveKind.String);

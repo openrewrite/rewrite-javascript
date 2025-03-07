@@ -9,7 +9,7 @@ describe('void operator mapping', () => {
     test('void', () => {
         rewriteRun(
           //language=typescript
-          typeScript('void 1', cu => {
+          typeScript('void 1', undefined, cu => {
               const statement = cu.statements[0] as JS.ExpressionStatement;
               expect(statement).toBeInstanceOf(JS.Void);
               const type = statement.type as JavaType.Primitive;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2025 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,157 @@
  */
 package org.openrewrite.javascript.style;
 
-// TODO: extend NameStyles and implement remaining styles for JS/TS.
-public class IntelliJ {
+import org.openrewrite.style.NamedStyles;
+import java.util.Arrays;
+import java.util.Collections;
+import static org.openrewrite.Tree.randomId;
 
-    public static SpacesStyle spaces() {
-        return new SpacesStyle(
-                new SpacesStyle.BeforeParentheses(false, false, true, true, true, true, true, true, true),
-                new SpacesStyle.AroundOperators(true, true, true, true, true, true, true, true, false, true, false, false),
-                new SpacesStyle.BeforeLeftBrace(true, true, true, true, true, true, true, true, true, true, true),
-                new SpacesStyle.BeforeKeywords(true, true, true, true),
-                new SpacesStyle.Within(false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, false),
-                new SpacesStyle.TernaryOperator(true, true, true, true),
-                new SpacesStyle.Other(false, true, false, true, false, true, false, false, true, false, true)
+public class IntelliJ extends NamedStyles {
+
+    public IntelliJ() {
+        super(randomId(),
+                "org.openrewrite.javascript.style.IntelliJ",
+                "IntelliJ IDEA",
+                "IntelliJ IDEA default JS/TS style.",
+                Collections.emptySet(),
+                Arrays.asList(
+                        JavaScript.spaces(),
+                        JavaScript.wrappingAndBraces(),
+                        JavaScript.tabsAndIndents(),
+                        JavaScript.blankLines(),
+                        JavaScript.imports(),
+                        JavaScript.punctuation(),
+
+                        TypeScript.spaces(),
+                        TypeScript.wrappingAndBraces(),
+                        TypeScript.tabsAndIndents(),
+                        TypeScript.blankLines(),
+                        TypeScript.imports(),
+                        TypeScript.punctuation()
+                )
         );
     }
+
+    public static class JavaScript {
+
+        public static TabsAndIndentsStyle tabsAndIndents() {
+            return new TabsAndIndentsStyle(
+                    false, // useTabCharacter
+                    4,      // tabSize
+                    4,      // indentSize
+                    4,      // continuationIndent
+                    false,  // keepIndentsOnEmptyLines
+                    true,   // indentChainedMethods
+                    false   // indentAllChainedCallsInAGroup
+            );
+        }
+
+        public static SpacesStyle spaces() {
+            return new SpacesStyle(
+                    new SpacesStyle.BeforeParentheses(false, false, true, true, true, true, true, true, true),
+                    new SpacesStyle.AroundOperators(true, true, true, true, true, true, true, true, false, true, false, false),
+                    new SpacesStyle.BeforeLeftBrace(true, true, true, true, true, true, true, true, true, true, true),
+                    new SpacesStyle.BeforeKeywords(true, true, true, true),
+                    new SpacesStyle.Within(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false),
+                    new SpacesStyle.TernaryOperator(true, true, true, true),
+                    new SpacesStyle.Other(false, true, false, false, true, false, false, true, false, false)
+            );
+        }
+
+        public static BlankLinesStyle blankLines() {
+            return new BlankLinesStyle(
+                    new BlankLinesStyle.KeepMaximum(2),
+                    new BlankLinesStyle.Minimum(1, 1, null, 0, null, 1, 1)
+            );
+        }
+
+        public static ImportsStyle imports() {
+            return new ImportsStyle(
+                    true,
+                    false,
+                    true,
+                    ImportsStyle.UseFileExtensions.Auto,
+                    null, // TS specific config
+                    null, // TS specific config
+                    ImportsStyle.UsePathAliases.Always,
+                    Arrays.asList("rxjs/Rx",
+                            "node_modules/**",
+                             "**/node_modules/**",
+                             "@angular/material",
+                             "@angular/material/typings/**"),
+                    true,
+                    false
+            );
+        }
+
+        public static WrappingAndBraces wrappingAndBraces() {
+            return new WrappingAndBraces();
+        }
+
+        public static PunctuationStyle punctuation() {
+            return new PunctuationStyle(PunctuationStyle.TrailingComma.Keep);
+        }
+    }
+
+    public static class TypeScript {
+
+        public static TabsAndIndentsStyle tabsAndIndents() {
+            return new TabsAndIndentsStyle(
+                    false, // useTabCharacter
+                    4,      // tabSize
+                    4,      // indentSize
+                    4,      // continuationIndent
+                    false,  // keepIndentsOnEmptyLines
+                    true,   // indentChainedMethods
+                    false   // indentAllChainedCallsInAGroup
+            );
+        }
+
+        public static SpacesStyle spaces() {
+            return new SpacesStyle(
+                    new SpacesStyle.BeforeParentheses(false, false, true, true, true, true, true, true, true),
+                    new SpacesStyle.AroundOperators(true, true, true, true, true, true, true, true, false, true, false, false),
+                    new SpacesStyle.BeforeLeftBrace(true, true, true, true, true, true, true, true, true, true, false),
+                    new SpacesStyle.BeforeKeywords(true, true, true, true),
+                    new SpacesStyle.Within(false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, false),
+                    new SpacesStyle.TernaryOperator(true, true, true, true),
+                    new SpacesStyle.Other(false, true, false, false, true, false, false, true, false, true)
+            );
+        }
+
+        public static BlankLinesStyle blankLines() {
+            return new BlankLinesStyle(
+                    new BlankLinesStyle.KeepMaximum(2),
+                    new BlankLinesStyle.Minimum(1, 1, 0, 0, 1, 1, 1)
+            );
+        }
+
+        public static ImportsStyle imports() {
+            return new ImportsStyle(
+                    true,
+                    false,
+                    true,
+                    ImportsStyle.UseFileExtensions.Auto,
+                    ImportsStyle.UseTypeModifiersInImports.Auto,
+                    ImportsStyle.UsePathMappingsFromTSConfigJson.Always,
+                    null, // JS specific config
+                    Arrays.asList("rxjs/Rx",
+                            "node_modules/**",
+                            "**/node_modules/**",
+                            "@angular/material",
+                            "@angular/material/typings/**"),
+                    true,
+                    false
+            );
+        }
+
+        public static WrappingAndBraces wrappingAndBraces() {
+            return new WrappingAndBraces();
+        }
+
+        public static PunctuationStyle punctuation() {
+            return new PunctuationStyle(PunctuationStyle.TrailingComma.Keep);
+        }
+    }
+
 }

@@ -861,10 +861,12 @@ export class JavaScriptParserVisitor {
     }
 
     visitPropertySignature(node: ts.PropertySignature) {
+        const prefix = this.prefix(node);
+
         if (node.questionToken) {
             return new JS.JSVariableDeclarations(
                 randomId(),
-                this.prefix(node),
+                prefix,
                 Markers.EMPTY,
                 [], // no decorators allowed
                 this.mapModifiers(node),
@@ -890,7 +892,7 @@ export class JavaScriptParserVisitor {
         if (nameExpression instanceof J.Identifier) {
             return new J.VariableDeclarations(
                 randomId(),
-                this.prefix(node),
+                prefix,
                 Markers.EMPTY,
                 [], // no decorators allowed
                 this.mapModifiers(node),
@@ -913,7 +915,7 @@ export class JavaScriptParserVisitor {
         } else {
             return new JS.JSVariableDeclarations(
                 randomId(),
-                this.prefix(node),
+                prefix,
                 Markers.EMPTY,
                 [], // no decorators allowed
                 this.mapModifiers(node),
@@ -936,10 +938,12 @@ export class JavaScriptParserVisitor {
     }
 
     visitPropertyDeclaration(node: ts.PropertyDeclaration) {
+        const prefix = this.prefix(node);
+
         if (node.questionToken) {
             return new JS.JSVariableDeclarations(
                 randomId(),
-                this.prefix(node),
+                prefix,
                 Markers.EMPTY,
                 this.mapDecorators(node),
                 this.mapModifiers(node),
@@ -963,7 +967,7 @@ export class JavaScriptParserVisitor {
         if (node.exclamationToken) {
             return new JS.JSVariableDeclarations(
                 randomId(),
-                this.prefix(node),
+                prefix,
                 Markers.EMPTY,
                 this.mapDecorators(node),
                 this.mapModifiers(node),
@@ -996,7 +1000,7 @@ export class JavaScriptParserVisitor {
         if (nameExpression instanceof J.Identifier) {
             return new J.VariableDeclarations(
                 randomId(),
-                this.prefix(node),
+                prefix,
                 Markers.EMPTY,
                 this.mapDecorators(node),
                 this.mapModifiers(node),
@@ -1020,7 +1024,7 @@ export class JavaScriptParserVisitor {
 
         return new JS.JSVariableDeclarations(
             randomId(),
-            this.prefix(node),
+            prefix,
             Markers.EMPTY,
             this.mapDecorators(node),
             this.mapModifiers(node),
@@ -1042,10 +1046,12 @@ export class JavaScriptParserVisitor {
     }
 
     visitMethodSignature(node: ts.MethodSignature) {
+        const prefix = this.prefix(node);
+
         if (node.questionToken) {
             return new JS.JSMethodDeclaration(
                 randomId(),
-                this.prefix(node),
+                prefix,
                 Markers.EMPTY,
                 [], // no decorators allowed
                 [], // no modifiers allowed
@@ -1063,7 +1069,7 @@ export class JavaScriptParserVisitor {
         if (ts.isComputedPropertyName(node.name)) {
             return new JS.JSMethodDeclaration(
                 randomId(),
-                this.prefix(node),
+                prefix,
                 Markers.EMPTY,
                 [], // no decorators allowed
                 [], // no modifiers allowed
@@ -1086,7 +1092,7 @@ export class JavaScriptParserVisitor {
 
         return new J.MethodDeclaration(
             randomId(),
-            this.prefix(node),
+            prefix,
             Markers.EMPTY,
             [], // no decorators allowed
             [], // no modifiers allowed
@@ -1105,6 +1111,8 @@ export class JavaScriptParserVisitor {
     }
 
     visitMethodDeclaration(node: ts.MethodDeclaration) {
+        const prefix = this.prefix(node);
+
         if (node.questionToken || node.asteriskToken) {
             let methodName = node.questionToken ? this.getOptionalUnary(node) : this.visit(node.name);
 
@@ -1121,7 +1129,7 @@ export class JavaScriptParserVisitor {
 
             return new JS.JSMethodDeclaration(
                 randomId(),
-                this.prefix(node),
+                prefix,
                 Markers.EMPTY,
                 this.mapDecorators(node),
                 this.mapModifiers(node),
@@ -1135,11 +1143,12 @@ export class JavaScriptParserVisitor {
                 this.mapMethodType(node)
             );
         }
+
         const name = node.name ? this.visit(node.name) : this.mapIdentifier(node, "");
         if (!(name instanceof J.Identifier)) {
             return new JS.JSMethodDeclaration(
                 randomId(),
-                this.prefix(node),
+                prefix,
                 Markers.EMPTY,
                 this.mapDecorators(node),
                 this.mapModifiers(node),
@@ -1156,7 +1165,7 @@ export class JavaScriptParserVisitor {
 
         return new J.MethodDeclaration(
             randomId(),
-            this.prefix(node),
+            prefix,
             Markers.EMPTY,
             this.mapDecorators(node),
             this.mapModifiers(node),
