@@ -98,8 +98,7 @@ export abstract class TreeVisitor<T extends Tree, P> {
             if (e instanceof RecipeRunException) {
                 throw e;
             }
-            throw e;
-            //throw new RecipeRunException(e as Error, this.cursor);
+            throw new RecipeRunException(e as Error, this.cursor);
         }
 
         return isAcceptable ? t : (tree as T | null);
@@ -191,7 +190,6 @@ export class Cursor {
             }
             c = c.parent;
         }
-        //return null;
         throw new Error(`Expected to find parent tree cursor for ${c}`);
     }
 
