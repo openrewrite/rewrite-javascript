@@ -20,7 +20,7 @@ import lombok.With;
 
 @Value
 @With
-public class PunctuationStyle {
+public class PunctuationStyle implements JavaScriptStyle {
     TrailingComma trailingComma;
 
     public enum TrailingComma {

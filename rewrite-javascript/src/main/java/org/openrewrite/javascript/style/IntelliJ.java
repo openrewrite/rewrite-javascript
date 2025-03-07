@@ -15,9 +15,36 @@
  */
 package org.openrewrite.javascript.style;
 
+import org.openrewrite.style.NamedStyles;
 import java.util.Arrays;
+import java.util.Collections;
+import static org.openrewrite.Tree.randomId;
 
-public class IntelliJ {
+public class IntelliJ extends NamedStyles {
+
+    public IntelliJ() {
+        super(randomId(),
+                "org.openrewrite.javascript.style.IntelliJ",
+                "IntelliJ IDEA",
+                "IntelliJ IDEA default JS/TS style.",
+                Collections.emptySet(),
+                Arrays.asList(
+                        JavaScript.spaces(),
+                        JavaScript.wrappingAndBraces(),
+                        JavaScript.tabsAndIndents(),
+                        JavaScript.blankLines(),
+                        JavaScript.imports(),
+                        JavaScript.punctuation(),
+
+                        TypeScript.spaces(),
+                        TypeScript.wrappingAndBraces(),
+                        TypeScript.tabsAndIndents(),
+                        TypeScript.blankLines(),
+                        TypeScript.imports(),
+                        TypeScript.punctuation()
+                )
+        );
+    }
 
     public static class JavaScript {
 

@@ -10,28 +10,28 @@ describe('identifier mapping', () => {
     test('number', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          typeScript(' 1', sourceFile => {
+          typeScript(' 1', undefined, sourceFile => {
               assertLiteralLst(sourceFile, '1', JavaType.PrimitiveKind.Double);
           }));
     });
     test('string', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          typeScript('"1"', sourceFile => {
+          typeScript('"1"', undefined, sourceFile => {
               assertLiteralLst(sourceFile, '"1"', JavaType.PrimitiveKind.String);
           }));
     });
     test('boolean', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          typeScript('true', sourceFile => {
+          typeScript('true', undefined, sourceFile => {
               assertLiteralLst(sourceFile, 'true', JavaType.PrimitiveKind.Boolean);
           }));
     });
     test('null', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          typeScript('null', sourceFile => {
+          typeScript('null', undefined, sourceFile => {
               assertLiteralLst(sourceFile, 'null', JavaType.PrimitiveKind.Null);
           }));
     });
@@ -40,21 +40,21 @@ describe('identifier mapping', () => {
         // see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined#description
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          typeScript('undefined', sourceFile => {
+          typeScript('undefined', undefined, sourceFile => {
               assertLiteralLst(sourceFile, 'undefined', JavaType.PrimitiveKind.None);
           }));
     });
     test('regex', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          typeScript('/hello/gi', sourceFile => {
+          typeScript('/hello/gi', undefined, sourceFile => {
               assertLiteralLst(sourceFile, '/hello/gi', JavaType.PrimitiveKind.String);
           }));
     });
     test('template without substitutions', () => {
         rewriteRunWithOptions(
           {normalizeIndent: false},
-          typeScript('`hello!`', sourceFile => {
+          typeScript('`hello!`', undefined, sourceFile => {
               assertLiteralLst(sourceFile, '`hello!`', JavaType.PrimitiveKind.String);
           }));
     });

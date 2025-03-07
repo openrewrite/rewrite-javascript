@@ -23,7 +23,7 @@ import java.util.List;
 
 @Value
 @With
-public class ImportsStyle {
+public class ImportsStyle implements JavaScriptStyle {
     boolean mergeImportsForMembersFromTheSameModule;
     boolean usePathRelativeToTheProjectOrResourceOrSourcesRootsOrTsconfigJson;
     boolean useDirectoryImportsWhenIndexJsIsAvailable;

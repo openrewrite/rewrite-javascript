@@ -44,7 +44,7 @@ public class BlankLinesStyle implements JavaScriptStyle {
         @Nullable
         Integer aroundMethodInInterface;
         Integer aroundMethod;
-        Integer beforeFunction;
+        Integer aroundFunction;
     }
 
     @Override

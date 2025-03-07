@@ -98,7 +98,8 @@ export abstract class TreeVisitor<T extends Tree, P> {
             if (e instanceof RecipeRunException) {
                 throw e;
             }
-            throw new RecipeRunException(e as Error, this.cursor);
+            throw e;
+            //throw new RecipeRunException(e as Error, this.cursor);
         }
 
         return isAcceptable ? t : (tree as T | null);
@@ -162,12 +163,12 @@ export class Cursor {
 
     private readonly _parent: Cursor | null;
     private readonly _value: Object;
-    private _messages: Map<string, Object>;
+    private _messages: Map<string, any>;
 
     constructor(parent: Cursor | null, value: Object) {
         this._parent = parent;
         this._value = value;
-        this._messages = new Map<string, Object>();
+        this._messages = new Map<string, any>();
     }
 
     get parent(): Cursor | null {
@@ -180,6 +181,18 @@ export class Cursor {
 
     fork(): Cursor {
         return new Cursor(this._parent === null ? null : this._parent.fork(), this.value);
+    }
+
+    parentTreeCursor(): Cursor {
+        let c: Cursor | null = this.parent;
+        while (c && c.parent) {
+            if (isTree(c.value()) || c.parent.value() === Cursor.ROOT_VALUE) {
+                return c;
+            }
+            c = c.parent;
+        }
+        //return null;
+        throw new Error(`Expected to find parent tree cursor for ${c}`);
     }
 
     firstEnclosing<T>(type: Constructor<T>): T | null {
@@ -210,6 +223,10 @@ export class Cursor {
 
     getMessage<T>(key: string, defaultValue?: T | null): T | null {
         return this._messages.get(key) as T || defaultValue!;
+    }
+
+    putMessage(key: string, value: any) {
+        this._messages.set(key, value);
     }
 }
 

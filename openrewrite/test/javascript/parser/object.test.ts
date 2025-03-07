@@ -48,7 +48,7 @@ describe('object literal mapping', () => {
         rewriteRun(
           //language=typescript
           typeScript(
-            'const c = { [ 1 + 1 ] : 1 }',
+            'const c = { [ 1 + 1 ] : 1 }', undefined,
             cu => {
                 const literal = (<J.NewClass>(<J.VariableDeclarations>(<JS.ScopedVariableDeclarations>cu.statements[0]).variables[0]).variables[0].initializer);
                 expect(literal.body).toBeDefined();
