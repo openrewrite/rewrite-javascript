@@ -18,6 +18,24 @@ export class RecipeSpec {
     withRecipe(recipe: Recipe): RecipeSpec {
         return recipe === this._recipe ? this : new RecipeSpec(recipe);
     }
+
+    withRecipes(...recipes: Recipe[]): RecipeSpec {
+        return new RecipeSpec(new CompositeRecipe(recipes));
+    }
+
+}
+
+export class CompositeRecipe extends Recipe {
+    readonly recipes: Iterable<Recipe>;
+
+    constructor(recipes: Iterable<Recipe>) {
+        super();
+        this.recipes = recipes;
+    }
+
+    override getRecipeList(): Recipe[] {
+        return Array.from(this.recipes);
+    }
 }
 
 export class AdHocRecipe extends Recipe {

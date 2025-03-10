@@ -6,6 +6,7 @@ import {
     typeScript
 } from '../testHarness';
 import {BlankLinesFormatVisitor} from "../../../dist/src/javascript/format/blankLines";
+import {NormalizeFormatVisitor} from "../../../dist/src/javascript/format/normalizeSpaces";
 import {fromVisitor, RecipeSpec} from "../recipeHarness";
 import {IntelliJ} from "../../../dist/src/javascript/style";
 
@@ -29,7 +30,11 @@ let printed = print("sourceFile");`,
 
     test('blank lines after import and variables', () => {
         rewriteRunWithRecipe(
-            new RecipeSpec().withRecipe(fromVisitor(new BlankLinesFormatVisitor(IntelliJ.TypeScript.blankLines()))),
+            new RecipeSpec()
+                .withRecipes(
+                    fromVisitor(new NormalizeFormatVisitor()),
+                    fromVisitor(new BlankLinesFormatVisitor(IntelliJ.TypeScript.blankLines()))
+                ),
             //language=typescript
             typeScript(`
                     import {Component} from 'React'
@@ -50,7 +55,11 @@ let printed = print("sourceFile");`,
 
     test('blank lines exists after import and variables', () => {
         rewriteRunWithRecipe(
-            new RecipeSpec().withRecipe(fromVisitor(new BlankLinesFormatVisitor(IntelliJ.TypeScript.blankLines()))),
+            new RecipeSpec()
+                .withRecipes(
+                    fromVisitor(new NormalizeFormatVisitor()),
+                    fromVisitor(new BlankLinesFormatVisitor(IntelliJ.TypeScript.blankLines()))
+                ),
             //language=typescript
             typeScript(`
                     import {Component} from 'React'
@@ -70,7 +79,11 @@ let printed = print("sourceFile");`,
 
     test('blank lines exists after import and variables large maximum', () => {
         rewriteRunWithRecipe(
-            new RecipeSpec().withRecipe(fromVisitor(new BlankLinesFormatVisitor(IntelliJ.TypeScript.blankLines()))),
+            new RecipeSpec()
+                .withRecipes(
+                    fromVisitor(new NormalizeFormatVisitor()),
+                    fromVisitor(new BlankLinesFormatVisitor(IntelliJ.TypeScript.blankLines()))
+                ),
             //language=typescript
             typeScript(`
                     import {Component} from 'React'
