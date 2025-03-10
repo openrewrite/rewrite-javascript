@@ -94,15 +94,8 @@ export class BlankLinesFormatVisitor extends JavaScriptVisitor<InMemoryExecution
 }
 
 function adjustedLinesForTree(tree: J.J, minLines: number, maxLines: number): J.J {
-
-    if (tree instanceof JS.ScopedVariableDeclarations && tree.padding.scope) {
-        const prefix = tree.padding.scope.before;
-        return tree.padding.withScope(tree.padding.scope.withBefore(adjustedLinesForSpace(prefix, minLines, maxLines)));
-    } else {
         const prefix = tree.prefix;
         return tree.withPrefix(adjustedLinesForSpace(prefix, minLines, maxLines));
-    }
-
 }
 
 function adjustedLinesForSpace(prefix: Space, minLines: number, maxLines: number): Space {
