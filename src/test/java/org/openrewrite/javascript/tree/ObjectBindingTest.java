@@ -26,55 +26,55 @@ class ObjectBindingTest implements RewriteTest {
     @Test
     void destructObject() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const c = { fName : 'Foo' , lName : 'Bar' }
               const { fName, lName } = c
               """
-          )
+                )
         );
     }
 
     @Test
     void binding() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const { o1 , o2 , o3 } = "" ;
               """
-          )
+                )
         );
     }
 
     @Test
     void varArg() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const { o1 , o2 , ... o3 } = "" ;
               """
-          )
+                )
         );
     }
 
     @Test
     void propertyNames() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import followRedirects from 'follow-redirects';
               
               const { http : httpFollow , https : httpsFollow } = followRedirects ;
               """
-          )
+                )
         );
     }
 
     @Test
     void bindingInitializers() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const formDataToStream = ( form , headersHandler , options ) => {
                   const {
                       tag = 'form-data-boundary' ,
@@ -83,7 +83,7 @@ class ObjectBindingTest implements RewriteTest {
                   } = options || { } ;
               }
               """
-          )
+                )
         );
     }
 }

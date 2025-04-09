@@ -36,7 +36,8 @@ public interface TSCConversion<T> {
     }
 
     default T convertNonNull(TSCProgramContext context, V8Value value) {
-        @Nullable T converted = convertNullable(context, value);
+        @Nullable
+        T converted = convertNullable(context, value);
         if (converted == null) {
             throw new IllegalArgumentException("value converted to null, but was required to be non-null");
         }

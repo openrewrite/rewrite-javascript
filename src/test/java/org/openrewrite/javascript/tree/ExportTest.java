@@ -27,8 +27,8 @@ class ExportTest implements RewriteTest {
     @Test
     void exportDeclaration() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class ZipCodeValidator {
                 isAcceptable ( s : string ) {
                   return s . length === 5 ;
@@ -36,68 +36,68 @@ class ExportTest implements RewriteTest {
               }
               export { ZipCodeValidator } ;
               """
-          )
+                )
         );
     }
 
     @Test
     void fromClass() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export * from "./f0.ts" ;
               """
-          )
+                )
         );
     }
 
     @Test
     void exportAssignment() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export default null;
               """
-          )
+                )
         );
     }
 
     @Test
     void multiExport() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export {
                   first ,
                   second ,
                   third
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void alias() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export {
                   name as default
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void exportProperty() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export const numberRegexp = /^[0-9]+$/ ;
               """
-          )
+                )
         );
     }
 
@@ -105,89 +105,89 @@ class ExportTest implements RewriteTest {
     @Test
     void exportInterface() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export interface Foo {
                   ( value : any , defaultEncoder : ( value : any ) => any ) : any ;
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void exportInterfaceParameterizedAssignment() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export interface Foo < D = any > {
                   url ? : string ;
                   method ? : Method | string ;
                   baseURL ? : string ;
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void exportInterfaceAndExtends() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export interface Foo extends Bar {
                   encode ? : Baz ;
                   serialize ? : Buz ;
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void readOnlyProperty() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export interface Foo {
                   readonly encode ? : string ;
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void exportFunction() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export default function methodName() {
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void functionWithTypeParameter() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export function spread < T , R > ( t : T , r : R ) { }
               """
-          )
+                )
         );
     }
 
     @Test
     void exportType() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export type Value = string | string[] | number | boolean | null;
               """
-          )
+                )
         );
     }
 }

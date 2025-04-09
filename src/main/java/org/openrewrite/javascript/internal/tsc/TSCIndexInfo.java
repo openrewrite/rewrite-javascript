@@ -21,8 +21,10 @@ import lombok.Value;
 
 @Value
 public class TSCIndexInfo {
-    @NonNull TSCType keyType;
-    @NonNull TSCType type;
+    @NonNull
+    TSCType keyType;
+    @NonNull
+    TSCType type;
     boolean isReadonly;
     TSCNode declaration;
 

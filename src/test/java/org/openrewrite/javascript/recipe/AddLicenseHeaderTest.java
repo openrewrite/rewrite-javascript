@@ -30,7 +30,7 @@ class AddLicenseHeaderTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new AddLicenseHeader(
-          """
+                """
             Copyright ${CURRENT_YEAR} the original author or authors.
             <p>
             Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,12 +43,12 @@ class AddLicenseHeaderTest implements RewriteTest {
     @Test
     void addLicenseHeader() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Foo {
               }
               """,
-            """
+                        """
               /*
                * Copyright %s the original author or authors.
                * <p>
@@ -59,7 +59,7 @@ class AddLicenseHeaderTest implements RewriteTest {
               class Foo {
               }
               """.formatted(getInstance().get(YEAR))
-          )
+                )
         );
     }
 
@@ -67,15 +67,15 @@ class AddLicenseHeaderTest implements RewriteTest {
     @Test
     void dontChangeExistingHeader() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               /*
                * My license header
                */
               class Test {
               }
               """
-          )
+                )
         );
     }
 }

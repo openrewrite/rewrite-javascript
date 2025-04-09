@@ -26,41 +26,41 @@ class SemiColonTest implements RewriteTest {
     @Test
     void semiColon() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let hello = "World" ;
               """
-          )
+                )
         );
     }
 
     @Test
     void noSemiColon() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let hello = "World" 
               """
-          )
+                )
         );
     }
 
     @Test
     void multiSemiColon() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let hello = "World" ; ;
               """
-          )
+                )
         );
     }
 
     @Test
     void singleLineIfElseStatements() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( a : number ) {
                   if ( a <= 0 )
                       console . log ( "a <= 0" ) ;
@@ -70,7 +70,7 @@ class SemiColonTest implements RewriteTest {
                       console . log ( "other" ) ;
               }
               """
-          )
+                )
         );
     }
 }

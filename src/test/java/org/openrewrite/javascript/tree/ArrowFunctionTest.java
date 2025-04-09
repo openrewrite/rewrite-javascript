@@ -26,52 +26,52 @@ class ArrowFunctionTest implements RewriteTest {
     @Test
     void asMethodParameter() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import foo from './index.js';
               const bar = foo.map(protocol => {
                 return protocol + ':';
               });
               """
-          )
+                )
         );
     }
 
     @Test
     void asVariableInitializer() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let sum = ( a , b ) => {
                   return a + b ;
               };
               """
-          )
+                )
         );
     }
 
     @Test
     void varArg() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let sum = ( a , ... b ) => {
                   return a ;
               } ;
               """
-          )
+                )
         );
     }
 
     @Test
     void modifier() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const c = async ( ) => {
               }
               """
-          )
+                )
         );
     }
 }

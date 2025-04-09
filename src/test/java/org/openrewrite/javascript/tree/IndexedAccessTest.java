@@ -26,12 +26,12 @@ class IndexedAccessTest implements RewriteTest {
     @Test
     void indexedAccess() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let args : IArguments
               const a0 = args[0]
               """
-          )
+                )
         );
     }
 }

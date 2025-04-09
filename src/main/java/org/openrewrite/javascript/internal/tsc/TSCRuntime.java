@@ -158,7 +158,7 @@ public class TSCRuntime implements AutoCloseable {
                     V8ValueObject parseResultV8 = tsParseV8.call(null, sourceTextsV8, this.parseOptionsV8);
                     TSCProgramContext programContext = TSCProgramContext.fromJS(parseResultV8);
                     V8ValueMap sourceFilesByPathV8 = parseResultV8.get("sourceFiles")
-            ) {
+                    ) {
                 sourceFilesByPathV8.forEach((V8ValueString filePathV8, V8Value maybeSourceFileV8) -> {
                     if (maybeSourceFileV8.isNullOrUndefined()) {
                         // TODO figure out how to handle this

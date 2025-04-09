@@ -26,13 +26,13 @@ class EnumTest implements RewriteTest {
     @Test
     void enumDeclaration() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               enum Foo {
                 Bar , Buz
               }
               """
-          )
+                )
         );
     }
 }

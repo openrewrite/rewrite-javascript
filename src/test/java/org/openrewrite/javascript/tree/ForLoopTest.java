@@ -27,50 +27,50 @@ class ForLoopTest implements RewriteTest {
     @Test
     void forLoop() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               for ( let i = 0 ; i < 3 ; i++ ) {
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void multiDeclarationForLoop() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               for ( let i = 0 , j = 1 , k = 2 ; i < 10 ; i++ , j *= 2 , k += 2 ) {
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void forOfLoop() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let arr = [ 10 , 20 , 30 , 40 ] ;
               for ( var val of arr ) {
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void forInLoop() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let arr = [ 10 , 20 , 30 , 40 ] ;
               for ( var val in arr ) {
               }
               """
-          )
+                )
         );
     }
 
@@ -78,12 +78,12 @@ class ForLoopTest implements RewriteTest {
     @Test
     void destruct() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               for ( const { a , b } of [ { a : 1 , b : 2 } , { a : 3 , b : 4 } ] ) {
               }
               """
-          )
+                )
         );
     }
 }

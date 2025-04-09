@@ -26,35 +26,35 @@ class ClassDeclarationTest implements RewriteTest {
     @Test
     void classDeclaration() {
         rewriteRun(
-          javaScript(
-            "class Foo { }"
-          )
+                javaScript(
+                        "class Foo { }"
+                )
         );
     }
 
     @Test
     void abstractClass() {
         rewriteRun(
-          javaScript(
-            "abstract class Foo { }"
-          )
+                javaScript(
+                        "abstract class Foo { }"
+                )
         );
     }
 
     @Test
     void interfaceDeclaration() {
         rewriteRun(
-          javaScript(
-            "interface Foo { }"
-          )
+                javaScript(
+                        "interface Foo { }"
+                )
         );
     }
 
     @Test
     void withConstructor() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Foo {
                   private name : string ;
                   constructor ( theName : string ) {
@@ -62,15 +62,15 @@ class ClassDeclarationTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void parameterizedType() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Foo < T , S extends PT < S > & C > {
               }
               interface C {
@@ -78,22 +78,22 @@ class ClassDeclarationTest implements RewriteTest {
               interface PT < T > {
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void endOfFile() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Foo {
               }
                             
                             
                             
               """
-          )
+                )
         );
     }
 }

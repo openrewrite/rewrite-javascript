@@ -27,22 +27,22 @@ class MethodDeclarationTest implements RewriteTest {
     @Test
     void functionDeclaration() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( ) { }
               """
-          )
+                )
         );
     }
 
     @Test
     void functionParameters() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( x : number , y : number ) { }
               """
-          )
+                )
         );
     }
 
@@ -50,19 +50,19 @@ class MethodDeclarationTest implements RewriteTest {
     @Test
     void typeLiteral() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( x : { suit : string , card : number } [ ] ) { }
               """
-          )
+                )
         );
     }
 
     @Test
     void decorator() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function enumerable ( value : boolean ) {
                   return function ( target : any ,
                           propertyKey : string ,
@@ -71,42 +71,42 @@ class MethodDeclarationTest implements RewriteTest {
                   };
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void methodDeclaration() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Foo {
                   foo ( ) {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void arrowDeclaration() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let sum = ( a : number , b : number ) : number => {
                   return a + b ;
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void typeArguments() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class User {
               }
               
@@ -114,7 +114,7 @@ class MethodDeclarationTest implements RewriteTest {
                   return arg ;
               }
               """
-          )
+                )
         );
     }
 }

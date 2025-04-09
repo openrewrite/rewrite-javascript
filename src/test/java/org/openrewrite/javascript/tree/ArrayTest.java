@@ -27,30 +27,30 @@ class ArrayTest implements RewriteTest {
     @Test
     void array() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let arr : string [ ] = [ 'a' , 'b' , 'c' ]
               """
-          )
+                )
         );
     }
 
     @Test
     void multiDimensional() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var multi : number [ ] [ ] = [ [ 1 , 2 , 3 ] , [ 23 , 24 , 25 ] ]
               """
-          )
+                )
         );
     }
 
     @Test
     void multiline() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var multi : number [ ] [ ] =
               [
                     [
@@ -65,43 +65,43 @@ class ArrayTest implements RewriteTest {
                     ]
               ]
               """
-          )
+                )
         );
     }
 
     @Test
     void arrayAccess() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const arr = [ 1 , 2 ]
               const a = arr [ 0 ]
               """
-          )
+                )
         );
     }
 
     @Test
     void threeDimensional() {
         rewriteRun(
-          javaScript(
-            // This test is a proof that the dimensions are converted correctly from a TS Node to a J.ArrayType.
-            """
+                javaScript(
+                        // This test is a proof that the dimensions are converted correctly from a TS Node to a J.ArrayType.
+                        """
               const arr: number [ ] [ ] [ ] = [ ]
               """
-          )
+                )
         );
     }
 
     @Test
     void noElementType() {
         rewriteRun(
-          javaScript(
-            // This test is a proof that the dimensions are converted correctly from a TS Node to a J.ArrayType.
-            """
+                javaScript(
+                        // This test is a proof that the dimensions are converted correctly from a TS Node to a J.ArrayType.
+                        """
               const arr: [ ] [ ] [ ] = [ ]
               """
-          )
+                )
         );
     }
 

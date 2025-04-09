@@ -26,8 +26,8 @@ class AnnotationTest implements RewriteTest {
     @Test
     void classDecorator() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function enumerable ( value : boolean ) {
                   return function ( target : any ,
                           propertyKey : string,
@@ -42,15 +42,15 @@ class AnnotationTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void methodDecorator() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function enumerable ( value : boolean ) {
                   return function ( target : any ,
                           propertyKey : string,
@@ -65,15 +65,15 @@ class AnnotationTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void propertyDecorator() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function enumerable ( value : boolean ) {
                   return function ( target : any ,
                           propertyKey : string ,
@@ -86,7 +86,7 @@ class AnnotationTest implements RewriteTest {
                   foo : String = "hello" ;
               }
               """
-          )
+                )
         );
     }
 }

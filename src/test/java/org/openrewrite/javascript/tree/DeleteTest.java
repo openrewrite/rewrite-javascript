@@ -26,11 +26,11 @@ class DeleteTest implements RewriteTest {
     @Test
     void delete() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               delete console.log(1)
               """
-          )
+                )
         );
     }
 

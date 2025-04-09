@@ -28,48 +28,48 @@ class UnaryTest implements RewriteTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-      "++ n",
-      "-- n",
-      "n ++",
-      "n --",
+            "++ n",
+            "-- n",
+            "n ++",
+            "n --",
     })
     void incrementAndDecrement(String arg) {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var n = 1
               %s
               """.formatted(arg)
-          )
+                )
         );
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-      "! n",
-      "- n",
-      "+ n",
+            "! n",
+            "- n",
+            "+ n",
     })
     void unaryMinusAndPlus(String arg) {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const n1 = 1
               const n2 = %s
               """.formatted(arg)
-          )
+                )
         );
     }
 
     @Test
     void keyofKeyword() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               type Person = { name: string , age: number };
               type KeysOfPerson = keyof Person;
               """
-          )
+                )
         );
     }
 
@@ -77,13 +77,13 @@ class UnaryTest implements RewriteTest {
     @Test
     void spreadOperator() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function spread(arr) {
                 return [...arr]
               }
               """
-          )
+                )
         );
     }
 }

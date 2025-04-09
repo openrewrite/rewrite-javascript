@@ -110,7 +110,7 @@ public class JavetNativeBridge {
                 try (
                         InputStream inputStream = JavetLibLoader.class.getResourceAsStream(nativeLibPath);
                         FileOutputStream outputStream = new FileOutputStream(tempFile)
-                ) {
+                        ) {
                     if (inputStream == null) {
                         throw new IllegalStateException("Could not find bundled resource for " + nativeLibPath);
                     }

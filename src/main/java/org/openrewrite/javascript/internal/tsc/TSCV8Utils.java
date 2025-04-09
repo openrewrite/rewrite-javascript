@@ -60,7 +60,7 @@ public class TSCV8Utils {
         try (
                 V8ValueFunction outerFn = runtime.createV8ValueFunction(outerCode);
                 V8Value innerFnObject = outerFn.call(null, variables)
-        ) {
+                ) {
             if (!(innerFnObject instanceof V8ValueFunction)) {
                 throw new IllegalStateException("expected a function; found: " + innerFnObject.getClass().getSimpleName());
             }

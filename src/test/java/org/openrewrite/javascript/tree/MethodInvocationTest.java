@@ -27,25 +27,25 @@ class MethodInvocationTest implements RewriteTest {
     @Test
     void methodInvocation() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               console . log ( "hello world" )
               """
-          )
+                )
         );
     }
 
     @Test
     void statementParameter() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export default function ( req ) {
                 req . on ( 'data' , function ( ) {
                 } ) ;
               }
               """
-          )
+                )
         );
     }
 
@@ -53,8 +53,8 @@ class MethodInvocationTest implements RewriteTest {
     @Test
     void typeArguments() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class User {
               }
               
@@ -64,15 +64,15 @@ class MethodInvocationTest implements RewriteTest {
               
               const bar = foo<User>();
               """
-          )
+                )
         );
     }
 
     @Test
     void parenthesizedSelect() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Foo {
                   constructor( x : any ) { }
               }
@@ -81,7 +81,7 @@ class MethodInvocationTest implements RewriteTest {
                   const headers = new Foo( { x : 1 } ) ;
               } ) ( ) ;
               """
-          )
+                )
         );
     }
 }

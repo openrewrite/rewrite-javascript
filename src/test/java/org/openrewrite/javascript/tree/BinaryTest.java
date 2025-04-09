@@ -27,118 +27,118 @@ class BinaryTest implements RewriteTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-      "+",
-      "-",
-      "*",
-      "/",
-      "%",
+            "+",
+            "-",
+            "*",
+            "/",
+            "%",
     })
     void arithmeticOps(String arg) {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let n = 0 %s 1
               """.formatted(arg)
-          )
+                )
         );
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-      "<",
-      "<=",
-      ">",
-      "==",
-      "!=",
+            "<",
+            "<=",
+            ">",
+            "==",
+            "!=",
     })
     void comparisonOps(String arg) {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let n = 0 %s 1
               """.formatted(arg)
-          )
+                )
         );
     }
 
     @Issue("https://github.com/openrewrite/rewrite-javascript/issues/65")
     @ParameterizedTest
     @ValueSource(strings = {
-      "&&",
-      "||",
-      ",",
+            "&&",
+            "||",
+            ",",
     })
     void logicalOps(String arg) {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo( left : boolean , right : boolean ) {
                   if ( left %s right ) {
                   }
               }
               """.formatted(arg)
-          )
+                )
         );
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-      "&",
-      "|",
-      "^",
-      "<<",
+            "&",
+            "|",
+            "^",
+            "<<",
     })
     void bitwiseOps(String arg) {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let n = 0 %s 1
               """.formatted(arg)
-          )
+                )
         );
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-      ">=",
-      ">>",
-      ">>>",
+            ">=",
+            ">>",
+            ">>>",
     })
     void greaterThanOps(String arg) {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let n = 0 %s 1
               """.formatted(arg)
-          )
+                )
         );
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-      "===",
-      "!==",
+            "===",
+            "!==",
     })
     void identityEquals(String arg) {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               if ( 1 %s 2 ) {
               }
               """.formatted(arg)
-          )
+                )
         );
     }
 
     @Test
     void in() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let foo = { bar : 'v1' , buz : 'v2' }
               var x = 'bar' in foo
               """
-          )
+                )
         );
     }
 }

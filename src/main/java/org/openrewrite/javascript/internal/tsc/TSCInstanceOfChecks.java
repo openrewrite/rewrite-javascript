@@ -66,7 +66,7 @@ public class TSCInstanceOfChecks extends TSCV8ValueHolder {
                 V8ValueObject allocators = tsGlobalsV8.get("objectAllocator");
                 V8ValueArray constructors = runtimeV8.createV8ValueArray();
                 V8ValueObject outerVars = runtimeV8.createV8ValueObject()
-        ) {
+                ) {
 
             for (ConstructorKind constructorKind : ConstructorKind.values()) {
                 try (V8ValueFunction constructor = allocators.invoke(constructorKind.allocatorAccessorName)) {

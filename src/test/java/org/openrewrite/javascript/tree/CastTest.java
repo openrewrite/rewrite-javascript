@@ -26,12 +26,12 @@ class CastTest implements RewriteTest {
     @Test
     void castAs() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let x : unknown = 'hello'
               let b = ( x as string ) . length
               """
-          )
+                )
         );
     }
 }

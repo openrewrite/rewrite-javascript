@@ -26,30 +26,30 @@ class YieldTest implements RewriteTest {
     @Test
     void yield() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Foo {
                   async * encode ( ) {
                       yield this . headers;
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void asteriskPrefix() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Foo {
                   async * encode() {
                       yield * this . headers ;
                   }
               }
               """
-          )
+                )
         );
     }
 }

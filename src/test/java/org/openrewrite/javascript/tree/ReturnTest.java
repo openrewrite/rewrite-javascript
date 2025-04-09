@@ -26,13 +26,13 @@ class ReturnTest implements RewriteTest {
     @Test
     void returnValue() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function method ( ) {
                   return "42"
               }
               """
-          )
+                )
         );
     }
 }

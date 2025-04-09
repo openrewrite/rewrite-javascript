@@ -28,44 +28,44 @@ class VariableDeclarationTest implements RewriteTest {
     @Test
     void let() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let hello = "World" ;
               """
-          )
+                )
         );
     }
 
     @Test
     void multiTypeLet() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let stringWord : string | null ;
               """
-          )
+                )
         );
     }
 
     @Test
     void constant() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const hello = "World" ;
               """
-          )
+                )
         );
     }
 
     @Test
     void var() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var hello = "World" ;
               """
-          )
+                )
         );
     }
 
@@ -73,22 +73,22 @@ class VariableDeclarationTest implements RewriteTest {
     @Test
     void multiTypeVariableDeclaration() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let x : number , y : string ;
               """
-          )
+                )
         );
     }
 
     @Test
     void declareModifier() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               declare const name ;
               """
-          )
+                )
         );
     }
 
@@ -96,67 +96,67 @@ class VariableDeclarationTest implements RewriteTest {
     @Test
     void readOnlyModifier() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               interface SomeType {
                   readonly prop: string;
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void generic() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var v : Array < string > = [ 'foo' , 'bar', 'buz' ] ;
               """
-          )
+                )
         );
     }
 
     @Test
     void methodInvocationInitializer() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import parseProtocol from './parseProtocol.js';
               const protocol = parseProtocol("");
               """
-          )
+                )
         );
     }
 
     @Test
     void typeDeclaration() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               type Value = string | string[] | number | boolean | null;
               """
-          )
+                )
         );
     }
 
     @Test
     void typeDeclarationWithParameters() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import Foo from 'foo' ;
               type Other < T = unknown , D = any > = Foo < T , D > ;
               """
-          )
+                )
         );
     }
 
     @Test
     void optionalProperty() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import foo from 'foo' ;
               const config : foo . Bar = {
                   params : {
@@ -164,20 +164,20 @@ class VariableDeclarationTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void methodDeclarationInitializer() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let a = function all(promises) {
                   return Promise.all(promises);
               };
               """
-          )
+                )
         );
     }
 }

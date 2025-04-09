@@ -26,20 +26,20 @@ class IfStatementTest implements RewriteTest {
     @Test
     void ifStatement() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               if ( true ) {
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void ifElse() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo( a : number ) {
                   if ( a <= 0 ) {
                   } else if ( a > 0 && a <= 10 ) {
@@ -47,15 +47,15 @@ class IfStatementTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void singleLineIfElseStatements() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( a : number ) {
                   if ( a <= 0 )
                       console . log ( "a <= 0" )
@@ -65,7 +65,7 @@ class IfStatementTest implements RewriteTest {
                       console . log ( "other" )
               }
               """
-          )
+                )
         );
     }
 }

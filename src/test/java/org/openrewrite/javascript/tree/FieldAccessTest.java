@@ -26,8 +26,8 @@ class FieldAccessTest implements RewriteTest {
     @Test
     void thisAccess() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Test {
                   private id : String = "" ;
                   setId ( id : String ) {
@@ -35,15 +35,15 @@ class FieldAccessTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void superAccess() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Super {
                   id : string = "" ;
                   constructor ( theId : string ) {
@@ -61,15 +61,15 @@ class FieldAccessTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void nullSafeDereference() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Test {
                   property : number = 42
               }
@@ -77,7 +77,7 @@ class FieldAccessTest implements RewriteTest {
               const t = new Test ( )
               const p = t ?. property
               """
-          )
+                )
         );
     }
 }

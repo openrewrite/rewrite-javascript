@@ -26,20 +26,20 @@ class NewClassTest implements RewriteTest {
     @Test
     void newClass() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Foo { }
               const foo = new Foo ( ) ;
               """
-          )
+                )
         );
     }
 
     @Test
     void withParams() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Foo {
                   private name : string ;
                   constructor ( theName : string ) {
@@ -48,7 +48,7 @@ class NewClassTest implements RewriteTest {
               }
               const foo = new Foo ( "foooooo" ) ;
               """
-          )
+                )
         );
     }
 }

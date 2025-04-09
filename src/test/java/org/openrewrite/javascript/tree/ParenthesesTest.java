@@ -25,8 +25,8 @@ class ParenthesesTest implements RewriteTest {
     @Test
     void nestedParens() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var condition = true;
                                                      
               if ( ( ( condition ) ) ) {
@@ -37,7 +37,7 @@ class ParenthesesTest implements RewriteTest {
                 return ('42');
               }
               """
-          )
+                )
         );
     }
 
@@ -45,11 +45,11 @@ class ParenthesesTest implements RewriteTest {
     @Test
     void parensOnType() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               type Point = { x: ( (number) ) , y: number };
               """
-          )
+                )
         );
     }
 }

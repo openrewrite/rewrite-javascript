@@ -26,48 +26,48 @@ class SwitchTest implements RewriteTest {
     @Test
     void singleCase() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const n = 0 ;
               switch ( n ) {
                  case 0 :
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void defaultCase() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const n = 0 ;
               switch ( n ) {
                  default : console . log ( "default!" ) ;
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void noCases() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const n = 0 ;
               switch ( n ) { }
               """
-          )
+                )
         );
     }
 
     @Test
     void multipleCasesWithNoBody() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const n = 0 ;
               switch ( n ) {
                   case 0:
@@ -76,15 +76,15 @@ class SwitchTest implements RewriteTest {
                       break ;
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void multipleCases() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const n = 0 ;
               switch ( n ) {
                   case 0: {
@@ -95,7 +95,7 @@ class SwitchTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 }

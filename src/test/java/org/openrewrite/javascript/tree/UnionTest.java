@@ -26,11 +26,11 @@ class UnionTest implements RewriteTest {
     @Test
     void union() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let unionField: typeof Boolean | typeof Number
               """
-          )
+                )
         );
     }
 }

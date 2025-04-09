@@ -203,7 +203,7 @@ public interface TSCTypeAccessors extends TSCV8Backed {
                 if (enclosing != null) {
                     interfaceName = enclosing.getSimpleName();
                 }
-                return "Type[as " + interfaceName  + "]#" + getTypeId() + "(" + typeToString() + ")";
+                return "Type[as " + interfaceName + "]#" + getTypeId() + "(" + typeToString() + ")";
             }
         }
 

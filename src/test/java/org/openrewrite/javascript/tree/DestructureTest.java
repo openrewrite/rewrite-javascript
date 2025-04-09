@@ -28,12 +28,12 @@ class DestructureTest implements RewriteTest {
     @Test
     void destruct() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let input = [ 1 , 2 ] ;
               let [ first , second ] = input ;
               """
-          )
+                )
         );
     }
 
@@ -41,11 +41,11 @@ class DestructureTest implements RewriteTest {
     @Test
     void varArg() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let [ first , ... rest ] = [ 1 , 2 , 3 ]
               """
-          )
+                )
         );
     }
 }

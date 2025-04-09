@@ -26,40 +26,40 @@ class AssignmentTest implements RewriteTest {
     @Test
     void assignment() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let b = 1
               b = 2
               """
-          )
+                )
         );
     }
 
     @Test
     void methodDeclarationAssignment() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let a = null
               a = function all(promises) {
                   return Promise.all(promises);
               };
               """
-          )
+                )
         );
     }
 
     @Test
     void metaProperty() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import path from 'path';
               import {fileURLToPath} from "url";
               
               const __dirname = path.dirname(fileURLToPath(import.meta.url));
               """
-          )
+                )
         );
     }
 }

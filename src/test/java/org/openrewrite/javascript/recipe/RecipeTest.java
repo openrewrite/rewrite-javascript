@@ -30,28 +30,28 @@ class RecipeTest implements RewriteTest {
     @Test
     void simplifyBooleanExpression() {
         rewriteRun(
-          spec -> spec.recipe(new SimplifyBooleanExpression()),
-          javaScript(
-            """
+                spec -> spec.recipe(new SimplifyBooleanExpression()),
+                javaScript(
+                        """
               const b = !false
               """,
-              """
+                        """
               const b = true
               """
-          )
+                )
         );
     }
 
     @Test
     void shortenFullyQualifiedNames() {
         rewriteRun(
-          spec -> spec.recipe(new ShortenFullyQualifiedTypeReferences()),
-          javaScript(
-            """
+                spec -> spec.recipe(new ShortenFullyQualifiedTypeReferences()),
+                javaScript(
+                        """
               const a = { b: false }
               const c = a.b
               """
-          )
+                )
         );
     }
 }

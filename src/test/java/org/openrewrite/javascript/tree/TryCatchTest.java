@@ -26,29 +26,29 @@ class TryCatchTest implements RewriteTest {
     @Test
     void tryCatch() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               try {
                 throw new Error ( 'err' ) ;
               } catch ( e ) {
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void tryCatchFinally() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               try {
                 throw new Error ( 'err' ) ;
               } catch ( e ) {
               } finally {
               }
               """
-          )
+                )
         );
     }
 }

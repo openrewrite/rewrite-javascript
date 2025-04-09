@@ -26,22 +26,22 @@ class ContinueTest implements RewriteTest {
     @Test
     void continueStatement() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               for ( let i = 0 ; i < 10 ; i++ ) {
                   if ( i % 2 )
                       continue ;
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void labeled() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function test ( ) {
                   outer : for ( var i = 0 ; i < 3 ; i++ ) {
                       for ( var j = 0 ; j < 3 ; j++ ) {
@@ -52,7 +52,7 @@ class ContinueTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 }

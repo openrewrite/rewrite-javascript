@@ -26,21 +26,21 @@ class BreakTest implements RewriteTest {
     @Test
     void breakFromWhileLoop() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function method ( ) {
                   while ( true ) break
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void labeled() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function test ( ) {
                   outer : for ( var i = 0 ; i < 3 ; i++ ) {
                       for ( var j = 0 ; j < 3 ; j++ ) {
@@ -51,7 +51,7 @@ class BreakTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 }

@@ -124,7 +124,7 @@ public class TsTreePrinter {
         outputLines.add(line);
         List<TSCNode> tscNodes = node.getAllChildNodes();
 
-        for ( int i = 0; i < tscNodes.size(); i++) {
+        for (int i = 0; i < tscNodes.size(); i++) {
             TSCNode childNode = tscNodes.get(i);
             TSCNode nextChildNode = i < tscNodes.size() - 1 ? tscNodes.get(i + 1) : null;
             boolean hasGap = nextChildNode != null && nextChildNode.getStart() > childNode.getEnd();
@@ -161,7 +161,7 @@ public class TsTreePrinter {
     }
 
     private static String toString(TSCNode node) {
-        return "[" + node.getStart() + "," + node.getEnd() + ")"  + " | " + node.syntaxKind().name() + " | Text : \"" +
+        return "[" + node.getStart() + "," + node.getEnd() + ")" + " | " + node.syntaxKind().name() + " | Text : \"" +
                 truncate(node.getText()).replace("\n", "\\n").replace("\r", "\\r") + "\"";
     }
 
@@ -401,7 +401,7 @@ public class TsTreePrinter {
                 }
 
                 if (!digits.isEmpty()) {
-                    spacesSb.append(digits.poll()) ;
+                    spacesSb.append(digits.poll());
                 } else {
                     spacesSb.append(" ");
                 }

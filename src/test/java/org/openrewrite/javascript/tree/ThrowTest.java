@@ -26,13 +26,13 @@ class ThrowTest implements RewriteTest {
     @Test
     void throwError() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function method ( ) {
                   throw new Error ( "42" )
               }
               """
-          )
+                )
         );
     }
 }

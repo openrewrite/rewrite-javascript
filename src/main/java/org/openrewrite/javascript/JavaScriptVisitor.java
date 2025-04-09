@@ -242,6 +242,7 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         }
         return i;
     }
+
     public J visitJsOperator(JS.JsOperator operator, P p) {
         JS.JsOperator o = operator;
         o = o.withPrefix(visitSpace(o.getPrefix(), JsSpace.Location.OPERATOR_PREFIX, p));
@@ -458,7 +459,8 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         if (nameTrees == null) {
             return null;
         }
-        @SuppressWarnings("unchecked") List<JRightPadded<J2>> js = ListUtils.map(nameTrees.getPadding().getElements(),
+        @SuppressWarnings("unchecked")
+        List<JRightPadded<J2>> js = ListUtils.map(nameTrees.getPadding().getElements(),
                 t -> t.getElement() instanceof NameTree ? (JRightPadded<J2>) visitTypeName((JRightPadded<NameTree>) t, p) : t);
         return js == nameTrees.getPadding().getElements() ? nameTrees : JContainer.build(nameTrees.getBefore(), js, Markers.EMPTY);
     }

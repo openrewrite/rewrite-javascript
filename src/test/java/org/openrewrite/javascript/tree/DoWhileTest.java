@@ -25,24 +25,24 @@ class DoWhileTest implements RewriteTest {
     @Test
     void doWhileLoop() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var i = 0
               do { i++ } while ( i < 10 )
               """
-          )
+                )
         );
     }
 
     @Test
     void noBlock() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var i = 0
               do i++ ; while ( i < 10 )
               """
-          )
+                )
         );
     }
 }

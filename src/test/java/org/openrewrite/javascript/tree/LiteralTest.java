@@ -26,159 +26,159 @@ class LiteralTest implements RewriteTest {
     @Test
     void stringLiteral() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let hello = 'World' ;
               """
-          )
+                )
         );
     }
 
     @Test
     void numericLiteral() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let n = 0 ;
               """
-          )
+                )
         );
     }
 
     @Test
     void intentionallyBadUnicodeCharacter() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let s1 = "\\\\u{U1}"
               let s2 = "\\\\u1234"
               let s3 = "\\\\u{00AUF}"
               """
-          )
+                )
         );
     }
 
     @Test
     void unmatchedSurrogatePair() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let c1 = '\uD800'
               let c2 = '\uDfFf'
               """
-          )
+                )
         );
     }
 
     @Test
     void unmatchedSurrogatePairInString() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let s1 : String = "\uD800"
               let s2 : String = "\uDfFf"
               """
-          )
+                )
         );
     }
 
     @Test
     void templateSingleSpan() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( group : string ) {
                   console . log ( `${group}` )
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void whitespaceBetween() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( group : string ) {
                   console . log ( `${ group }` )
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void templateSingleSpanWithHead() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( group : string ) {
                   console . log ( `group: ${ group }` )
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void templateSingleSpanWithTail() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( group : string ) {
                   console . log ( `group: ${ group } after` )
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void templateWithMiddleSpan() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( group : string , version : string ) {
                   console . log ( `group: ${ group } version: ${ version } after` )
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void templateWithTag() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( ) {
                   const c = ""
                   console . log ( colorize ( ) `[${c}]: ✓ OK` ) ;
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void templateWithNoSpans() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( ) {
                   console . log ( `template` )
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void template() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import utils from "../utils.js" ;
               const CRLF = '\\r\\n' ;
               class Foo {
@@ -191,18 +191,18 @@ class LiteralTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void multipleSpansWithRawTextBetween() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const fn1 = ( a : number , b : number , c : number ) => `${a}-${b}-${c}` ;
               """
-          )
+                )
         );
     }
 }

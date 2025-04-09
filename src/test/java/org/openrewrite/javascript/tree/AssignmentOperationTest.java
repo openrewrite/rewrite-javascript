@@ -26,72 +26,72 @@ class AssignmentOperationTest implements RewriteTest {
     @Test
     void minusEqual() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var n = 0
               n -= 5
               """
-          )
+                )
         );
     }
 
     @Test
     void plusEqual() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var n = 0
               n += 5
               """
-          )
+                )
         );
     }
 
     @Test
     void timesEqual() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var n = 0
               n *= 5
               """
-          )
+                )
         );
     }
 
     @Test
     void divideEqual() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var n = 0
               n /= 5
               """
-          )
+                )
         );
     }
 
     @Test
     void moduloEqual() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var n = 0
               n = n %= 5
               """
-          )
+                )
         );
     }
 
     @Test
     void ternary() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let n = 0
               let r = ( n == 0 ) ? true : false
               """
-          )
+                )
         );
     }
 }

@@ -19,7 +19,8 @@ import com.caoccao.javet.values.IV8Value;
 import org.openrewrite.internal.lang.Nullable;
 
 public class JavetUtils {
-    private JavetUtils() {}
+    private JavetUtils() {
+    }
 
     public static void close(@Nullable IV8Value valueV8) {
         if (valueV8 != null && !valueV8.isClosed()) {

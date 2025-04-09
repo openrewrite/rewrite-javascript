@@ -29,36 +29,36 @@ class TypeOperatorTest implements RewriteTest {
     @Test
     void delete() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let foo = { bar : 'v1' , buz : 'v2' }
               delete foo . buz
               """
-          )
+                )
         );
     }
 
     @Test
     void typeof() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let s = "hello"
               let t = typeof s
               """
-          )
+                )
         );
     }
 
     @Test
     void instanceofOp() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let arr = [ 1, 2 ]
               let t = arr instanceof Array
               """
-          )
+                )
         );
     }
 
@@ -66,8 +66,8 @@ class TypeOperatorTest implements RewriteTest {
     @Test
     void extendsKeyword() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               type PartialPerson = { name?: string; age?: number };
 
               function merge<T extends object, U extends object>(obj1: T, obj2: U): T & U {
@@ -76,7 +76,7 @@ class TypeOperatorTest implements RewriteTest {
 
               const merged = merge({ name: 'John' }, { age: 30 });
               """
-          )
+                )
         );
     }
 
@@ -84,24 +84,24 @@ class TypeOperatorTest implements RewriteTest {
     @Test
     void typeLiteralDelimiterSemicolon() {
         rewriteRun(
-          javaScript("""
+                javaScript("""
             type Person = {
                 name: string ; // Semicolon as delimiter
                 age: number };
             """
-          )
+                )
         );
     }
 
     @Test
     void typeLiteralDelimiterComma() {
         rewriteRun(
-          javaScript("""
+                javaScript("""
             type Person = {
                 name: string , // Comma as delimiter
                 age: number };
             """
-          )
+                )
         );
     }
 }

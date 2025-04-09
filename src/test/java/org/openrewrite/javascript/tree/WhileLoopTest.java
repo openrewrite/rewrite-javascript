@@ -26,11 +26,11 @@ class WhileLoopTest implements RewriteTest {
     @Test
     void whileLoop() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               while ( true ) { }
               """
-          )
+                )
         );
     }
 }

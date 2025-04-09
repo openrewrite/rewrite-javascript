@@ -26,61 +26,61 @@ class TrailingCommaTest implements RewriteTest {
     @Test
     void onMethodParameter() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               console . log ( "hello world" , )
               """
-          )
+                )
         );
     }
 
     @Test
     void onTuple() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let tuple : [ number , boolean , ] = [ 1, true , ]
               """
-          )
+                )
         );
     }
 
     @Test
     void onEnum() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               enum Foo {
                 Bar , Buz ,
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void multiExport() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               export {
                   first ,
                   second ,
                   third ,
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void objectBindingDeclaration() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const { o1 , o2 , o3 , } = "" ;
               """
-          )
+                )
         );
     }
 }

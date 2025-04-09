@@ -210,20 +210,20 @@ public class V8InteropTests {
             TSCInstanceOfChecks instanceOfChecks = ctx.getProgramContext().getInstanceOfChecks();
 
             assertEquals(
-              TSCInstanceOfChecks.ConstructorKind.SourceFile,
-              instanceOfChecks.identifyConstructorKind(root.getBackingV8Object())
+                    TSCInstanceOfChecks.ConstructorKind.SourceFile,
+                    instanceOfChecks.identifyConstructorKind(root.getBackingV8Object())
             );
 
             TSCNode ident = root.firstNodeWithText("x");
             assertEquals(
-              TSCInstanceOfChecks.ConstructorKind.Identifier,
-              instanceOfChecks.identifyConstructorKind(ident.getBackingV8Object())
+                    TSCInstanceOfChecks.ConstructorKind.Identifier,
+                    instanceOfChecks.identifyConstructorKind(ident.getBackingV8Object())
             );
 
             TSCNode stmt = root.firstNodeWithText("const x = 3;");
             assertEquals(
-              TSCInstanceOfChecks.ConstructorKind.Node,
-              instanceOfChecks.identifyConstructorKind(stmt.getBackingV8Object())
+                    TSCInstanceOfChecks.ConstructorKind.Node,
+                    instanceOfChecks.identifyConstructorKind(stmt.getBackingV8Object())
             );
         });
     }
@@ -231,95 +231,95 @@ public class V8InteropTests {
     @Test
     public void testTypeNodeType() {
         parseSingleSource(
-          """
+                """
           class Foo {}
                           
           function test(x: Foo) {
           }
           """,
-          (root, ctx) -> {
-              TSCNode Foo = root.firstNodeWithText("class Foo {}");
-              TSCType FooType = Foo.getTypeForNode();
+                (root, ctx) -> {
+                    TSCNode Foo = root.firstNodeWithText("class Foo {}");
+                    TSCType FooType = Foo.getTypeForNode();
 
-              TSCNode x = root.firstNodeWithText("x: Foo");
-              TSCNode.TypeNode xTypeNode = x.getTypeNodeProperty("type");
-              TSCType xType = xTypeNode.getTypeFromTypeNode();
+                    TSCNode x = root.firstNodeWithText("x: Foo");
+                    TSCNode.TypeNode xTypeNode = x.getTypeNodeProperty("type");
+                    TSCType xType = xTypeNode.getTypeFromTypeNode();
 
-              assertSame(FooType, xType);
-          }
+                    assertSame(FooType, xType);
+                }
         );
     }
 
     @Test
     public void testGenericTypeBound() {
         parseSingleSource(
-          """
+                """
           class A<T extends string> {}
           """,
-          (root, ctx) -> {
-              TSCNode classDef = root.firstNodeContaining("class A");
-              TSCType classType = classDef.getTypeForNode();
-              assertNotNull(classType);
+                (root, ctx) -> {
+                    TSCNode classDef = root.firstNodeContaining("class A");
+                    TSCType classType = classDef.getTypeForNode();
+                    assertNotNull(classType);
 
-              TSCType.InterfaceType asInterfaceType = classType.assertInterfaceType();
-              List<TSCType> typeParams = asInterfaceType.getTypeParameters();
-              assertNotNull(typeParams);
-              assertEquals(1, typeParams.size());
+                    TSCType.InterfaceType asInterfaceType = classType.assertInterfaceType();
+                    List<TSCType> typeParams = asInterfaceType.getTypeParameters();
+                    assertNotNull(typeParams);
+                    assertEquals(1, typeParams.size());
 
-              TSCType typeParam = typeParams.get(0);
-              assertNotNull(typeParam);
+                    TSCType typeParam = typeParams.get(0);
+                    assertNotNull(typeParam);
 
-              TSCType typeParamConstraint = typeParam.getConstraint();
-              assertNotNull(typeParamConstraint);
+                    TSCType typeParamConstraint = typeParam.getConstraint();
+                    assertNotNull(typeParamConstraint);
 
-              TSCType globalStringType = ctx.getProgramContext().getTypeChecker().getStringType();
-              assertSame(globalStringType, typeParamConstraint);
-          }
+                    TSCType globalStringType = ctx.getProgramContext().getTypeChecker().getStringType();
+                    assertSame(globalStringType, typeParamConstraint);
+                }
         );
     }
 
     @Test
     public void testGenericTypeBoundWithLocalReference() {
         parseSingleSource(
-          """
+                """
           class A<T1, T2 extends B<string, T1, number>> {}
           interface B<U1, U2, U3> {
               foo(): [U1, U2, U3];
           }
           """,
-          (root, ctx) -> {
-              TSCType classA = root.firstNodeContaining("class A").getTypeForNode();
-              assertNotNull(classA);
+                (root, ctx) -> {
+                    TSCType classA = root.firstNodeContaining("class A").getTypeForNode();
+                    assertNotNull(classA);
 
-              TSCType interfaceB = root.firstNodeContaining("interface B").getTypeForNode();
-              assertNotNull(interfaceB);
+                    TSCType interfaceB = root.firstNodeContaining("interface B").getTypeForNode();
+                    assertNotNull(interfaceB);
 
-              TSCType.InterfaceType asInterfaceType = classA.assertInterfaceType();
-              List<TSCType> typeParams = asInterfaceType.getTypeParameters();
-              assertNotNull(typeParams);
-              assertEquals(2, typeParams.size());
+                    TSCType.InterfaceType asInterfaceType = classA.assertInterfaceType();
+                    List<TSCType> typeParams = asInterfaceType.getTypeParameters();
+                    assertNotNull(typeParams);
+                    assertEquals(2, typeParams.size());
 
-              TSCType typeParam1 = typeParams.get(0);
-              TSCType typeParam2 = typeParams.get(1);
-              assertNotNull(typeParam1);
-              assertNotNull(typeParam2);
+                    TSCType typeParam1 = typeParams.get(0);
+                    TSCType typeParam2 = typeParams.get(1);
+                    assertNotNull(typeParam1);
+                    assertNotNull(typeParam2);
 
-              TSCType typeParam1Constraint = typeParam1.getConstraint();
-              TSCType typeParam2Constraint = typeParam2.getConstraint();
-              assertNull(typeParam1Constraint);
-              assertNotNull(typeParam2Constraint);
+                    TSCType typeParam1Constraint = typeParam1.getConstraint();
+                    TSCType typeParam2Constraint = typeParam2.getConstraint();
+                    assertNull(typeParam1Constraint);
+                    assertNotNull(typeParam2Constraint);
 
-              TSCType globalStringType = ctx.getProgramContext().getTypeChecker().getStringType();
-              TSCType globalNumberType = ctx.getProgramContext().getTypeChecker().getNumberType();
+                    TSCType globalStringType = ctx.getProgramContext().getTypeChecker().getStringType();
+                    TSCType globalNumberType = ctx.getProgramContext().getTypeChecker().getNumberType();
 
-              // The constraint type args are those passed to `B` in `T2 extends B<string, T1, number>`
-              List<TSCType> constraintTypeArgs = typeParam2Constraint.assertTypeReference().getTypeArguments();
-              assertEquals(3, constraintTypeArgs.size());
-              // Used type variables, i.e. `string, T1, number`
-              assertSame(globalStringType, constraintTypeArgs.get(0));
-              assertSame(typeParam1, constraintTypeArgs.get(1));
-              assertSame(globalNumberType, constraintTypeArgs.get(2));
-          }
+                    // The constraint type args are those passed to `B` in `T2 extends B<string, T1, number>`
+                    List<TSCType> constraintTypeArgs = typeParam2Constraint.assertTypeReference().getTypeArguments();
+                    assertEquals(3, constraintTypeArgs.size());
+                    // Used type variables, i.e. `string, T1, number`
+                    assertSame(globalStringType, constraintTypeArgs.get(0));
+                    assertSame(typeParam1, constraintTypeArgs.get(1));
+                    assertSame(globalNumberType, constraintTypeArgs.get(2));
+                }
         );
     }
 
@@ -327,74 +327,74 @@ public class V8InteropTests {
     public void testLibSupport() {
         // Explicitly turn libs off --> `string` type should be empty
         parseSingleSource(
-          "const x: string = '';",
-          runtime -> runtime.setCompilerOptionOverride("noLib", true),
-          (root, ctx) -> {
-              TSCNode x = root.firstNodeContaining("x");
-              TSCType xType = x.getTypeForNode();
-              assertNotNull(xType);
-              assertEquals(0, xType.getTypeProperties().size());
-          }
+                "const x: string = '';",
+                runtime -> runtime.setCompilerOptionOverride("noLib", true),
+                (root, ctx) -> {
+                    TSCNode x = root.firstNodeContaining("x");
+                    TSCType xType = x.getTypeForNode();
+                    assertNotNull(xType);
+                    assertEquals(0, xType.getTypeProperties().size());
+                }
         );
 
         // Explicitly turn libs on --> `string` type should have properties
         parseSingleSource(
-          "const x: string = '';",
-          runtime -> runtime.setCompilerOptionOverride("lib", Collections.singletonList("ES2020")),
-          (root, ctx) -> {
-              TSCNode x = root.firstNodeContaining("x");
-              TSCType xType = x.getTypeForNode();
-              assertNotNull(xType);
-              assertNotEquals(0, xType.getTypeProperties().size());
-          }
+                "const x: string = '';",
+                runtime -> runtime.setCompilerOptionOverride("lib", Collections.singletonList("ES2020")),
+                (root, ctx) -> {
+                    TSCNode x = root.firstNodeContaining("x");
+                    TSCType xType = x.getTypeForNode();
+                    assertNotNull(xType);
+                    assertNotEquals(0, xType.getTypeProperties().size());
+                }
         );
 
         // Default lib --> `string` type should also have properties
         parseSingleSource(
-          "const x: string = '';",
-          (root, ctx) -> {
-              TSCNode x = root.firstNodeContaining("x");
-              TSCType xType = x.getTypeForNode();
-              assertNotNull(xType);
-              assertNotEquals(0, xType.getTypeProperties().size());
-          }
+                "const x: string = '';",
+                (root, ctx) -> {
+                    TSCNode x = root.firstNodeContaining("x");
+                    TSCType xType = x.getTypeForNode();
+                    assertNotNull(xType);
+                    assertNotEquals(0, xType.getTypeProperties().size());
+                }
         );
     }
 
     @Test
     public void testBridgeSourceInfo() {
         parseSingleSource(
-          """
+                """
           class Foo {}
                           
           function test(x: String) {}
           """,
-          "example.ts",
-          (root, ctx) -> {
-              TSCNode Foo = root.firstNodeWithText("Foo");
-              assertEquals(
-                new TSCProgramContext.CompilerBridgeSourceInfo(
-                  TSCProgramContext.CompilerBridgeSourceKind.ApplicationCode,
-                  Paths.get("example.ts")
-                ),
-                Foo.getSourceFile().getCompilerBridgeSourceInfo()
-              );
+                "example.ts",
+                (root, ctx) -> {
+                    TSCNode Foo = root.firstNodeWithText("Foo");
+                    assertEquals(
+                            new TSCProgramContext.CompilerBridgeSourceInfo(
+                                    TSCProgramContext.CompilerBridgeSourceKind.ApplicationCode,
+                                    Paths.get("example.ts")
+                            ),
+                            Foo.getSourceFile().getCompilerBridgeSourceInfo()
+                    );
 
-              TSCNode string = root.firstNodeWithText("String");
-              TSCType stringType = string.getTypeForNode();
-              assertNotNull(stringType);
-              List<TSCNode> declarations = stringType.getSymbolForType().getDeclarations();
-              assertNotNull(declarations);
-              assertFalse(declarations.isEmpty());
-              for (TSCNode declaration : declarations) {
-                  TSCProgramContext.CompilerBridgeSourceInfo declSourceInfo = declaration.getSourceFile().getCompilerBridgeSourceInfo();
-                  assertEquals(
-                    TSCProgramContext.CompilerBridgeSourceKind.SystemLibrary,
-                    declSourceInfo.getSourceKind()
-                  );
-                  assertTrue(declSourceInfo.getRelativePath().toString().startsWith("lib."));
-              }
-          }
+                    TSCNode string = root.firstNodeWithText("String");
+                    TSCType stringType = string.getTypeForNode();
+                    assertNotNull(stringType);
+                    List<TSCNode> declarations = stringType.getSymbolForType().getDeclarations();
+                    assertNotNull(declarations);
+                    assertFalse(declarations.isEmpty());
+                    for (TSCNode declaration : declarations) {
+                        TSCProgramContext.CompilerBridgeSourceInfo declSourceInfo = declaration.getSourceFile().getCompilerBridgeSourceInfo();
+                        assertEquals(
+                                TSCProgramContext.CompilerBridgeSourceKind.SystemLibrary,
+                                declSourceInfo.getSourceKind()
+                        );
+                        assertTrue(declSourceInfo.getRelativePath().toString().startsWith("lib."));
+                    }
+                }
         );
     }
 
@@ -432,6 +432,7 @@ public class V8InteropTests {
 
     @Test
     public void testEmptyFile() {
-        parseSingleSource("", (root, ctx) -> {});
+        parseSingleSource("", (root, ctx) -> {
+        });
     }
 }

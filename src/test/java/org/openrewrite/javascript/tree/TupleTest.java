@@ -27,22 +27,22 @@ class TupleTest implements RewriteTest {
     @Test
     void emptyTuple() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let tuple : [ ]
               """
-          )
+                )
         );
     }
 
     @Test
     void tuple() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let tuple : [ number , boolean ] = [ 1 , true ]
               """
-          )
+                )
         );
     }
 
@@ -50,24 +50,24 @@ class TupleTest implements RewriteTest {
     @Test
     void namedTupleMember() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               type NewLocation = [lat: number, long: number]
               """
-          )
+                )
         );
     }
 
     @Test
     void spreadOperators() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function concat(arr1, arr2) {
                   return [...arr1, ...arr2]
               }
               """
-          )
+                )
         );
     }
 
@@ -75,25 +75,25 @@ class TupleTest implements RewriteTest {
     @Test
     void arrayBindingPattern() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function tail(arg) {
                   const [_, ...result] = arg;
                   return result;
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void trailingCommas() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               let input : [  number , boolean , ] = [ 1 , true , ]
               """
-          )
+                )
         );
     }
 }

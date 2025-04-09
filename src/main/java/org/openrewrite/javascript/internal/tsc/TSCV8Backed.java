@@ -394,7 +394,7 @@ public interface TSCV8Backed {
     }
 
     default List<String> getAllPropertyNames() {
-        try(IV8ValueArray propertyNames = this.getBackingV8Object().getPropertyNames()) {
+        try (IV8ValueArray propertyNames = this.getBackingV8Object().getPropertyNames()) {
             List<String> result = new ArrayList<>(propertyNames.getLength());
             for (int i = 0; i < propertyNames.getLength(); i++) {
                 result.add(propertyNames.getString(i));

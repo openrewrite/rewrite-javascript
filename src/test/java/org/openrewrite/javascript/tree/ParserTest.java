@@ -27,9 +27,9 @@ class ParserTest implements RewriteTest {
     @Test
     void preservesOrder() {
         rewriteRun(
-          javaScript("class A {}", s -> s.path("A.js")),
-          javaScript("class B {}", s -> s.path("B.js")),
-          javaScript("class C {}", s -> s.path("C.js"))
+                javaScript("class A {}", s -> s.path("A.js")),
+                javaScript("class B {}", s -> s.path("B.js")),
+                javaScript("class C {}", s -> s.path("C.js"))
         );
     }
 }

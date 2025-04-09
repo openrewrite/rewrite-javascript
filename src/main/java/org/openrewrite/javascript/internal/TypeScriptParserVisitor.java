@@ -72,7 +72,8 @@ public class TypeScriptParserVisitor {
         List<JRightPadded<Statement>> statements = new ArrayList<>(statementList.size());
         Space prefix = whitespace();
         for (TSCNode child : statementList) {
-            @Nullable J visited;
+            @Nullable
+            J visited;
             int saveCursor = getCursor();
             try {
                 visited = visitNode(child);
@@ -1728,7 +1729,7 @@ public class TypeScriptParserVisitor {
 
     private J visitObjectLiteralExpression(TSCNode node) {
         Space prefix = whitespace();
-        return mapPropertyNodesToNewClass( node.getOptionalNodeListProperty("properties"), prefix);
+        return mapPropertyNodesToNewClass(node.getOptionalNodeListProperty("properties"), prefix);
     }
 
     private JS.ObjectBindingDeclarations mapObjectBindingDeclaration(TSCNode node) {
@@ -2334,7 +2335,7 @@ public class TypeScriptParserVisitor {
 
     private J visitTypeLiteral(TSCNode node) {
         Space prefix = whitespace();
-        return mapPropertyNodesToNewClass( node.getOptionalNodeListProperty("members"), prefix);
+        return mapPropertyNodesToNewClass(node.getOptionalNodeListProperty("members"), prefix);
     }
 
     private JS.TypeOperator visitTypeOperator(TSCNode node) {

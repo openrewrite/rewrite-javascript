@@ -35,8 +35,8 @@ class UseCaseFallThroughTest implements RewriteTest {
     @Test
     void noChange() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo(x) {
                   switch (x) {
                       case "a":
@@ -52,15 +52,15 @@ class UseCaseFallThroughTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void booleanLiteral() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function method(x: number) {
                   switch (true) {
                       case foo(), bar():
@@ -75,15 +75,15 @@ class UseCaseFallThroughTest implements RewriteTest {
               function bar(): boolean {
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void logicalAndWithOr() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo(x) {
                   switch (x) {
                       case "a" && "b" || "c":
@@ -94,7 +94,7 @@ class UseCaseFallThroughTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
@@ -102,8 +102,8 @@ class UseCaseFallThroughTest implements RewriteTest {
     @Test
     void logicalOrs() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo(x) {
                   switch (x) {
                       case "a" || "b" || "c":
@@ -114,7 +114,7 @@ class UseCaseFallThroughTest implements RewriteTest {
                   }
               }
               """,
-            """
+                        """
               function foo(x) {
                   switch (x) {
                       case "a":
@@ -127,15 +127,15 @@ class UseCaseFallThroughTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void logicalComma() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo(x) {
                   switch (x) {
                       case "a" , "b" , "c":
@@ -146,7 +146,7 @@ class UseCaseFallThroughTest implements RewriteTest {
                   }
               }
               """,
-            """
+                        """
               function foo(x) {
                   switch (x) {
                       case "a":
@@ -159,15 +159,15 @@ class UseCaseFallThroughTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void withBraces() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo(x) {
                   switch (x) {
                       case "a" , "b" , "c": {
@@ -179,7 +179,7 @@ class UseCaseFallThroughTest implements RewriteTest {
                   }
               }
               """,
-            """
+                        """
               function foo(x) {
                   switch (x) {
                       case "a":
@@ -193,7 +193,7 @@ class UseCaseFallThroughTest implements RewriteTest {
                   }
               }
               """
-          )
+                )
         );
     }
 }

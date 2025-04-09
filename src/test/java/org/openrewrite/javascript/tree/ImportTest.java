@@ -26,55 +26,55 @@ class ImportTest implements RewriteTest {
     @Test
     void importStatement() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import num from "./file"
               """
-          )
+                )
         );
     }
 
     @Test
     void importAssignment() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import axios = require ( 'foo' ) ;
               """
-          )
+                )
         );
     }
 
     @Test
     void importObjectLiteral() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import { First , Second , Third } from 'target';
               """
-          )
+                )
         );
     }
 
     @Test
     void mixedTypes() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import nameA , { First , Second } from 'targetA';
               """
-          )
+                )
         );
     }
 
     @Test
     void multiAlias() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import { FormData as FormDataPolyfill , Blob as BlobPolyfill , File as FilePolyfill } from 'formdata-node'
               """
-          )
+                )
         );
     }
 }

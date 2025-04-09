@@ -25,18 +25,18 @@ class PrimitiveTest implements RewriteTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-      "true",
-      "false",
-      "0",
-      "'c'",
+            "true",
+            "false",
+            "0",
+            "'c'",
     })
     void primitives(String arg) {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var a = %s
               """.formatted(arg)
-          )
+                )
         );
     }
 }

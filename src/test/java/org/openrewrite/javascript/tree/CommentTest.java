@@ -26,48 +26,48 @@ class CommentTest implements RewriteTest {
     @Test
     void singleLineComment() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Test {
                   // C1
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void multilineNestedInsideSingleLine() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Test { // /*
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void multilineComment() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Test {
                   /*
                     C1
                    */
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void preserveWhitespaceBetweenComments() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               class Test {
                   /*
                     C1
@@ -80,15 +80,15 @@ class CommentTest implements RewriteTest {
                    */
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void javaScriptDoc() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               var s ;
               
               /**
@@ -98,34 +98,34 @@ class CommentTest implements RewriteTest {
               function f ( p1 , p2 ) {
               }
               """
-          )
+                )
         );
     }
 
     @Test
     void leadingComment() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               /*
                *
                */
               class Foo {}
               """
-          )
+                )
         );
     }
 
     @Test
     void stringTemplateSingleSpanWithHead() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               function foo ( group : string) {
                   console . log ( `group: ${ /* C1 */ group /* C2 */ }` )
               }
               """
-          )
+                )
         );
     }
 }

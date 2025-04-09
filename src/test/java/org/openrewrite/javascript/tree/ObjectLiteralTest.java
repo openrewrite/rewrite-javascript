@@ -28,34 +28,34 @@ class ObjectLiteralTest implements RewriteTest {
     @Test
     void empty() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const value = { } ;
               """
-          )
+                )
         );
     }
 
     @Test
     void objectLiteralWithType() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               const value = { x : 1 } ;
               """
-          )
+                )
         );
     }
 
     @Test
     void innerObjectLiteral() {
         rewriteRun(
-          javaScript(
-            """
+                javaScript(
+                        """
               import foo from '/foo.js' ;
               foo . create ( { headers : { foo : 'bar' } } ) ;
               """
-          )
+                )
         );
     }
 }

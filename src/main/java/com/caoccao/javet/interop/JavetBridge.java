@@ -27,7 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class JavetBridge {
-    private JavetBridge() {}
+    private JavetBridge() {
+    }
 
     public static Map<Long, IV8ValueReference> getReferenceMapSnapshot(V8Runtime runtime) {
         return new HashMap<>(runtime.referenceMap);
