@@ -45,8 +45,8 @@ public class UseCaseFallThrough extends Recipe {
 
     @Override
     public String getDescription() {
-        return "The comma `,` operator evaluates each of its operands (from left to right) and returns the value of the last operand." +
-                "The logical OR `||` operator only evaluates the first argument." +
+        return "The comma `,` operator evaluates each of its operands (from left to right) and returns the value of the last operand. " +
+                "The logical OR `||` operator only evaluates the first argument. " +
                 "This recipe replaces the comma and logical OR operator with fall-through cases in switch statements.";
     }
 
