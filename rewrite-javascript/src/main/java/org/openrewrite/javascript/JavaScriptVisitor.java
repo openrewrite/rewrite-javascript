@@ -88,21 +88,15 @@ public class JavaScriptVisitor<P> extends JavaVisitor<P> {
         a = a.withTypeParameters(visitAndCast(a.getTypeParameters(), p));
 
         a = a.withParameters(
-                a.getParameters().withPrefix(
-                        visitSpace(a.getParameters().getPrefix(), Space.Location.LAMBDA_PARAMETERS_PREFIX, p)
-                )
-        );
-        a = a.withParameters(
-                a.getParameters().getPadding().withParams(
-                        Objects.requireNonNull(ListUtils.map(a.getParameters().getPadding().getParams(),
+                a.getParameters().getPadding().withParameters(
+                        Objects.requireNonNull(ListUtils.map(a.getParameters().getPadding().getParameters(),
                                 param -> visitRightPadded(param, JRightPadded.Location.LAMBDA_PARAM, p)
                         ))
-                )
+                ).withPrefix(visitSpace(a.getParameters().getPrefix(), Space.Location.LAMBDA_PARAMETERS_PREFIX, p))
         );
         a = a.withParameters(Objects.requireNonNull(visitAndCast(a.getParameters(), p)));
         a = a.withReturnTypeExpression(visitAndCast(a.getReturnTypeExpression(), p));
         a = a.getPadding().withBody(Objects.requireNonNull(visitLeftPadded(a.getPadding().getBody(), JsLeftPadded.Location.LAMBDA_ARROW, p)));
-        a = a.withBody(Objects.requireNonNull(visitAndCast(a.getBody(), p)));
         a = a.withType(visitType(a.getType(), p));
         return a;
     }
