@@ -82,7 +82,8 @@ class TypeOperatorTest implements RewriteTest {
     @Test
     void typeLiteralDelimiterSemicolon() {
         rewriteRun(
-          javaScript("""
+          javaScript(
+                """
             type Person = {
                 name: string ; // Semicolon as delimiter
                 age: number };
@@ -94,7 +95,8 @@ class TypeOperatorTest implements RewriteTest {
     @Test
     void typeLiteralDelimiterComma() {
         rewriteRun(
-          javaScript("""
+          javaScript(
+                """
             type Person = {
                 name: string , // Comma as delimiter
                 age: number };
